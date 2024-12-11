@@ -4,8 +4,8 @@
 	"private": true,
 	"scripts": {
 		"dev": "nitro dev",
-		"build": "nitro build --preset bun",
-		"start": "bun .output/server/index.mjs",
+		"build": "nitro build",
+		"start": "node .output/server/index.mjs",
 		"format": "prettier --write --ignore-unknown --ignore-path .gitignore .",
 		"prepare": "husky"
 	},
@@ -16,6 +16,7 @@
 		"@apollo/server": "^4.11.2",
 		"@as-integrations/h3": "^1.2.1",
 		"@neo4j/graphql": "^6.2.1",
+		"graphql-ws": "^5.16.0",
 		"jose": "^5.9.6",
 		"neo4j-driver": "^5.27.0"
 	},
