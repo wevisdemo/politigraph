@@ -12,10 +12,25 @@ const driver = neo4j.driver(
 	),
 );
 
-const schema = await new Neo4jGraphQL({ typeDefs, driver }).getSchema();
+const schema = await new Neo4jGraphQL({
+	typeDefs,
+	driver,
+	features: {
+		authorization: import.meta.env.JWT_SECRET
+			? {
+					key: import.meta.env.JWT_SECRET,
+				}
+			: undefined,
+	},
+}).getSchema();
 
 export default startServerAndCreateH3Handler(
 	new ApolloServer({
 		schema,
 	}),
+	{
+		context: async (req) => ({
+			token: req.event.headers.get('authorization').replace('Bearer ', ''),
+		}),
+	},
 );

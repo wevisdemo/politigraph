@@ -1,4 +1,6 @@
 export const typeDefs = `#graphql
+  extend schema @authentication(operations: [CREATE, UPDATE, DELETE, CREATE_RELATIONSHIP, DELETE_RELATIONSHIP])
+
   type Person @node {
     id: ID! @id
     name: String!
