@@ -1,0 +1,24 @@
+{
+  "name": "politigraph",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "nitro dev",
+    "build": "nitro build --preset bun",
+    "start": "bun .output/server/index.mjs",
+    "prepare": "nitro prepare"
+  },
+  "dependencies": {
+    "@apollo/server": "^4.11.2",
+    "@as-integrations/h3": "^1.2.1",
+    "@neo4j/graphql": "^6.2.1",
+    "neo4j-driver": "^5.27.0"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "nitropack": "^2.10.4"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  }
+}
