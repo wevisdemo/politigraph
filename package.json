@@ -1,24 +1,34 @@
 {
-  "name": "politigraph",
-  "type": "module",
-  "private": true,
-  "scripts": {
-    "dev": "nitro dev",
-    "build": "nitro build --preset bun",
-    "start": "bun .output/server/index.mjs",
-    "prepare": "nitro prepare"
-  },
-  "dependencies": {
-    "@apollo/server": "^4.11.2",
-    "@as-integrations/h3": "^1.2.1",
-    "@neo4j/graphql": "^6.2.1",
-    "neo4j-driver": "^5.27.0"
-  },
-  "devDependencies": {
-    "@types/bun": "latest",
-    "nitropack": "^2.10.4"
-  },
-  "peerDependencies": {
-    "typescript": "^5.0.0"
-  }
+	"name": "politigraph",
+	"type": "module",
+	"private": true,
+	"scripts": {
+		"dev": "nitro dev",
+		"build": "nitro build --preset bun",
+		"start": "bun .output/server/index.mjs",
+		"format": "prettier --write --ignore-unknown --ignore-path .gitignore .",
+		"prepare": "husky"
+	},
+	"lint-staged": {
+		"*": "prettier --write --ignore-unknown"
+	},
+	"dependencies": {
+		"@apollo/server": "^4.11.2",
+		"@as-integrations/h3": "^1.2.1",
+		"@neo4j/graphql": "^6.2.1",
+		"neo4j-driver": "^5.27.0"
+	},
+	"devDependencies": {
+		"@commitlint/cli": "^19.6.0",
+		"@commitlint/config-conventional": "^19.6.0",
+		"@ianvs/prettier-plugin-sort-imports": "^4.4.0",
+		"@types/bun": "latest",
+		"husky": "^9.1.7",
+		"lint-staged": "^15.2.11",
+		"nitropack": "^2.10.4",
+		"prettier": "^3.4.2"
+	},
+	"peerDependencies": {
+		"typescript": "^5.0.0"
+	}
 }
