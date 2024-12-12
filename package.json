@@ -1,11 +1,13 @@
 {
 	"name": "politigraph",
-	"type": "module",
 	"private": true,
+	"type": "module",
 	"scripts": {
-		"dev": "nitro dev",
-		"build": "nitro build",
-		"start": "node .output/server/index.mjs",
+		"build": "nuxt build",
+		"dev": "nuxt dev",
+		"generate": "nuxt generate",
+		"preview": "nuxt preview",
+		"postinstall": "nuxt prepare",
 		"format": "prettier --write --ignore-unknown --ignore-path .gitignore .",
 		"prepare": "husky"
 	},
@@ -18,16 +20,17 @@
 		"@neo4j/graphql": "^6.2.1",
 		"graphql-ws": "^5.16.0",
 		"jose": "^5.9.6",
-		"neo4j-driver": "^5.27.0"
+		"neo4j-driver": "^5.27.0",
+		"nuxt": "^3.14.1592",
+		"vue": "latest",
+		"vue-router": "latest"
 	},
 	"devDependencies": {
 		"@commitlint/cli": "^19.6.0",
 		"@commitlint/config-conventional": "^19.6.0",
 		"@ianvs/prettier-plugin-sort-imports": "^4.4.0",
-		"@types/bun": "latest",
 		"husky": "^9.1.7",
 		"lint-staged": "^15.2.11",
-		"nitropack": "^2.10.4",
 		"prettier": "^3.4.2"
 	},
 	"peerDependencies": {
