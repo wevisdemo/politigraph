@@ -1,8 +1,12 @@
+import { readFile } from 'fs/promises';
 import { ApolloServer } from '@apollo/server';
 import { startServerAndCreateH3Handler } from '@as-integrations/h3';
 import { Neo4jGraphQL } from '@neo4j/graphql';
 import neo4j from 'neo4j-driver';
-import { typeDefs } from '../../schemas/graph';
+
+const typeDefs = await readFile('schemas/politic.graphql', {
+	encoding: 'utf-8',
+});
 
 const driver = neo4j.driver(
 	'neo4j://localhost:7687',

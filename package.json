@@ -3,13 +3,14 @@
 	"private": true,
 	"type": "module",
 	"scripts": {
-		"build": "nuxt build",
-		"dev": "nuxt dev",
+		"prepare": "husky",
+		"build": "npm run genql && nuxt build",
+		"dev": "npm run genql && nuxt dev",
 		"generate": "nuxt generate",
 		"preview": "nuxt preview",
 		"postinstall": "nuxt prepare",
 		"format": "prettier --write --ignore-unknown --ignore-path .gitignore .",
-		"prepare": "husky"
+		"genql": "node scripts/genql-generate.js"
 	},
 	"lint-staged": {
 		"*": "prettier --write --ignore-unknown"
@@ -28,6 +29,8 @@
 	"devDependencies": {
 		"@commitlint/cli": "^19.6.0",
 		"@commitlint/config-conventional": "^19.6.0",
+		"@genql/cli": "^6.3.3",
+		"@graphql-tools/utils": "^10.6.2",
 		"@ianvs/prettier-plugin-sort-imports": "^4.4.0",
 		"husky": "^9.1.7",
 		"lint-staged": "^15.2.11",
