@@ -9,4 +9,5 @@ export default defineNuxtConfig({
 			},
 		},
 	},
+	watch: ['schemas/politic.graphql'],
 });
