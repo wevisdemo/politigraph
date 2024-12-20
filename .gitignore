@@ -24,3 +24,4 @@ logs
 !.env.example
 .neo4j
 .genql
+.better-auth

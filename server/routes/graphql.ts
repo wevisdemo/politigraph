@@ -20,11 +20,11 @@ const schema = await new Neo4jGraphQL({
 	typeDefs,
 	driver,
 	features: {
-		authorization: process.env.JWT_SECRET
-			? {
-					key: process.env.JWT_SECRET,
-				}
-			: undefined,
+		authorization: {
+			key: {
+				url: 'http://localhost:3000/auth/jwks',
+			},
+		},
 	},
 }).getSchema();
 
@@ -33,8 +33,20 @@ export default startServerAndCreateH3Handler(
 		schema,
 	}),
 	{
-		context: async (req) => ({
-			token: req.event.headers.get('authorization')?.replace('Bearer ', ''),
-		}),
+		context: async ({ event: { headers } }) => {
+			const token = headers.get('authorization')?.replace('Bearer ', '');
+
+			if (token) {
+				return { token };
+			}
+
+			const res = await fetch('http://localhost:3000/auth/token', {
+				headers,
+			});
+
+			if (res.ok) {
+				return res.json();
+			}
+		},
 	},
 );
