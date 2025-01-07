@@ -9,11 +9,8 @@ const typeDefs = await readFile('schemas/politic.graphql', {
 });
 
 const driver = neo4j.driver(
-	'neo4j://localhost:7687',
-	neo4j.auth.basic(
-		process.env.NEO4J_USERNAME as string,
-		process.env.NEO4J_PASSWORD as string,
-	),
+	`neo4j://${process.env.NEO4J_HOST ?? 'localhost'}:7687`,
+	neo4j.auth.basic(process.env.NEO4J_USERNAME!, process.env.NEO4J_PASSWORD!),
 );
 
 const schema = await new Neo4jGraphQL({

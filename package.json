@@ -11,7 +11,7 @@
 		"postinstall": "nuxt prepare",
 		"format": "prettier --write --ignore-unknown --ignore-path .gitignore .",
 		"genql": "node scripts/genql-generate.js",
-		"auth:generate": "npx @better-auth/cli generate",
+		"auth:generate": "npx @better-auth/cli generate --output migrations",
 		"auth:migrate": "npx @better-auth/cli migrate"
 	},
 	"lint-staged": {
