@@ -1,10 +1,8 @@
 <script setup lang="ts">
-import { signIn, signOut, useSession } from '~/utils/auth-client';
-
 const email = ref('');
 const password = ref('');
 
-const session = useSession();
+const { session, signIn, signOut } = useAuthClient();
 
 const graphql = await useAsyncData(
 	() =>

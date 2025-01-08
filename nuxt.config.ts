@@ -9,5 +9,10 @@ export default defineNuxtConfig({
 			},
 		},
 	},
+	runtimeConfig: {
+		public: {
+			baseUrl: 'http://localhost:3000',
+		},
+	},
 	watch: ['schemas/politic.graphql'],
 });
