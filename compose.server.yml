@@ -1,0 +1,29 @@
+services:
+  neo4j-staging:
+    extends:
+      file: compose.yml
+      service: neo4j
+    container_name: politigraph-neo4j-staging
+    volumes:
+      - neo4j_staging:/data
+  nuxt-staging:
+    container_name: politigraph-nuxt-staging
+    image: wevisdemo/politigraph:latest
+    depends_on:
+      - neo4j-staging
+    env_file:
+      - '.env'
+    environment:
+      NEO4J_HOST: neo4j-staging
+      BETTER_AUTH_URL: https://politigraph-staging.wevis.info
+    volumes:
+      - betterauth_staging:/app/.better-auth
+
+volumes:
+  neo4j_staging:
+  betterauth_staging:
+
+networks:
+  default:
+    name: server
+    external: true
