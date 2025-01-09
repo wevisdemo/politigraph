@@ -12,7 +12,7 @@
 		"format": "prettier --write --ignore-unknown --ignore-path .gitignore .",
 		"genql": "node scripts/genql-generate.js",
 		"auth:generate": "npx @better-auth/cli generate --output migrations",
-		"auth:migrate": "npx @better-auth/cli migrate"
+		"auth:migrate": "npx @better-auth/cli migrate --y"
 	},
 	"lint-staged": {
 		"*": "prettier --write --ignore-unknown"
