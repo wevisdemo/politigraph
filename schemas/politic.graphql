@@ -11,10 +11,13 @@ extend schema
 
 type Person @node {
 	id: ID! @id
+	prefix: String!
 	name: String!
 	email: String
 	gender: Gender
 	birth_date: Date
+	educations: String
+	previousOccupations: String
 	image: String
 	national_identity: String
 	posts: [Post!]!
@@ -23,6 +26,9 @@ type Person @node {
 			properties: "RelationWithPeriod"
 			direction: OUT
 		)
+	links: [Link!]!
+		@relationship(type: "HAVE", properties: "Relation", direction: OUT)
+
 	created_at: DateTime! @timestamp(operations: [CREATE])
 	updated_at: DateTime @timestamp(operations: [UPDATE])
 }
@@ -30,6 +36,7 @@ type Person @node {
 type Organization @node {
 	id: ID! @id
 	name: String!
+	description: String
 	classification: OrganizationType!
 	founding_date: Date
 	dissolution_date: Date
@@ -40,8 +47,18 @@ type Organization @node {
 		@relationship(type: "UNDER", properties: "Relation", direction: IN)
 	posts: [Post!]!
 		@relationship(type: "IN", properties: "Relation", direction: IN)
+	links: [Link!]!
+		@relationship(type: "HAVE", properties: "Relation", direction: OUT)
 	created_at: DateTime! @timestamp(operations: [CREATE])
 	updated_at: DateTime @timestamp(operations: [UPDATE])
+}
+
+union LinkOwner = Person | Organization # Link for either Person or Organization
+type Link @node {
+	url: String!
+	note: String
+	owner: [LinkOwner!]!
+		@relationship(type: "HAVE", properties: "Relation", direction: IN)
 }
 
 type Post @node {
@@ -66,6 +83,10 @@ type Relation @relationshipProperties {
 
 type RelationWithPeriod @relationshipProperties {
 	id: ID! @id
+	appointment_method: String
+	province: String
+	district_number: Int
+	partylist_number: Int
 	start_date: Date
 	end_date: Date
 	created_at: DateTime! @timestamp(operations: [CREATE])
@@ -83,4 +104,5 @@ enum OrganizationType {
 	HOUSE_OF_SENATE
 	CABINET
 	POLITICAL_PARTY
+	PRIVATE_ORGANIZATION
 }
