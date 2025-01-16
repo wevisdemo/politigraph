@@ -1,6 +1,7 @@
 import { readFile } from 'fs/promises';
 import { ApolloServer } from '@apollo/server';
 import { startServerAndCreateH3Handler } from '@as-integrations/h3';
+import { ApolloArmor } from '@escape.tech/graphql-armor';
 import { Neo4jGraphQL } from '@neo4j/graphql';
 import neo4j from 'neo4j-driver';
 
@@ -22,12 +23,22 @@ const schema = await new Neo4jGraphQL({
 				url: 'http://localhost:3000/auth/jwks',
 			},
 		},
+		excludeDeprecatedFields: {
+			implicitEqualFilters: true,
+			implicitSet: true,
+			deprecatedOptionsArgument: true,
+			directedArgument: true,
+			connectOrCreate: true,
+		},
 	},
 }).getSchema();
+
+const armor = new ApolloArmor();
 
 export default startServerAndCreateH3Handler(
 	new ApolloServer({
 		schema,
+		...armor.protect(),
 	}),
 	{
 		context: async ({ event: { headers } }) => {
