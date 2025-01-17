@@ -1,29 +1,47 @@
 services:
-  neo4j-staging:
-    extends:
-      file: compose.yml
-      service: neo4j
-    container_name: politigraph-neo4j-staging
+  nginx:
+    image: jonasal/nginx-certbot:5.4.0-alpine
+    container_name: nginx
     volumes:
-      - neo4j_staging:/data
-  nuxt-staging:
-    container_name: politigraph-nuxt-staging
+      - ./nginx.conf:/etc/nginx/user_conf.d/web.conf:ro
+      - letsencrypt:/etc/letsencrypt
+    ports:
+      - 80:80
+      - 443:443
+    environment:
+      CERTBOT_EMAIL: team@wevis.info
+    privileged: true
+  nuxt:
+    container_name: politigraph-nuxt
     image: wevisdemo/politigraph:latest
     depends_on:
-      - neo4j-staging
+      - neo4j
     env_file:
       - '.env'
     environment:
-      NEO4J_HOST: neo4j-staging
-      NUXT_PUBLIC_BASE_URL: https://politigraph-staging.wevis.info
+      NEO4J_HOST: neo4j
+      NUXT_PUBLIC_BASE_URL: https://politigraph.wevis.info
     volumes:
-      - betterauth_staging:/app/.better-auth
+      - betterauth:/app/.better-auth
+    ports:
+      - 3000:3000
+  neo4j:
+    extends:
+      file: compose.yml
+      service: neo4j
+    container_name: politigraph-neo4j
+    volumes:
+      - neo4j:/data
+
+  do-agent:
+    image: digitalocean/do-agent:stable
+    container_name: do-agent
+    restart: always
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
 
 volumes:
-  neo4j_staging:
-  betterauth_staging:
-
-networks:
-  default:
-    name: server
-    external: true
+  betterauth:
+  letsencrypt:
+  neo4j:

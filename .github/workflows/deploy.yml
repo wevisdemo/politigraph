@@ -1,4 +1,4 @@
-name: Push image and deploy to staging
+name: Build and deploy app
 
 on:
   push:
@@ -24,13 +24,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Upload compose files
-        uses: appleboy/scp-action@v0.1.7
+        uses: burnett01/rsync-deployments@7.0.1
         with:
-          host: ${{ secrets.SSH_HOST }}
-          username: bot
-          key: ${{ secrets.SSH_KEY }}
-          source: 'compose.yml,compose.server.yml'
-          target: ${{ secrets.SSH_APP_DIR }}
+          switches: -azvP --chown=bot:deployer --chmod=g+w
+          path: compose.yml compose.server.yml nginx.conf
+          remote_host: ${{ secrets.SSH_HOST }}
+          remote_user: bot
+          remote_key: ${{ secrets.SSH_KEY }}
+          remote_path: ${{ secrets.SSH_APP_DIR }}
       - name: Update server containers
         uses: appleboy/ssh-action@v1.2.0
         with:

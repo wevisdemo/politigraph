@@ -2,25 +2,33 @@
 
 [WIP] A Thai politics database
 
-## Deployment
+## Stack
 
-Using GitHub Actions to build and deploy Docker container
+- Nuxt
+- Better-Auth
+- Apollo GraphQL Server
+- Neo4J
 
-| Name    | Trigger              | URL                                    |
-| ------- | -------------------- | -------------------------------------- |
-| Staging | Code pushed / manual | https://politigraph-staging.wevis.info |
+## Set Up
 
-## Environment Variables
+### Environment Variables
+
+Add following variables to the `.env`
 
 ```env
 NEO4J_HOST=localhost
 NEO4J_USERNAME=neo4j
-NEO4J_PASSWORD=
+NEO4J_PASSWORD=<SOME_PASSWORD>
 BETTER_AUTH_URL=http://localhost:3000
-BETTER_AUTH_SECRET=
+BETTER_AUTH_SECRET=<RANDOM_STRING>
 ```
 
-## Set Up
+### Start Development Server
+
+```sh
+npm i	# Install dependencies for the first time
+npm run dev
+```
 
 ### Create User Account
 
@@ -34,9 +42,13 @@ Make a POST request to `/auth/sign-up/email` with the body:
 }
 ```
 
+## GraphQL Usage
+
+GraphQL is available at `/graphql` with a playground enabled on the local environment.
+
 ### API Authentication
 
-GraphQL required user account for write permission. To make an update to GraphQL outside the Politigraph website, make a POST request to `/auth/sign-in/stateless` with the body:
+GraphQL required user account for **write** permission. To make an update to GraphQL outside the Politigraph website, make a POST request to `/auth/sign-in/stateless` with the body to get the token.
 
 ```json
 {
@@ -45,4 +57,4 @@ GraphQL required user account for write permission. To make an update to GraphQL
 }
 ```
 
-Token will be returned from the response, and you can add `Authorization: Bearer <token>` with GraphQL request to get the permission.
+Then you can include the token in `Authorization: Bearer <token>` headers of GraphQL request to get the write permission.
