@@ -20,12 +20,9 @@ type Person @node {
 	previousOccupations: String
 	image: String
 	national_identity: String
-	posts: [Post!]!
-		@relationship(
-			type: "HELD"
-			properties: "RelationWithPeriod"
-			direction: OUT
-		)
+	memberships: [Membership!]!
+		@relationship(type: "HELD", properties: "Relation", direction: OUT)
+
 	links: [Link!]!
 		@relationship(type: "HAVE", properties: "Relation", direction: OUT)
 
@@ -78,10 +75,26 @@ type Post @node {
 	end_date: Date
 	organizations: [Organization!]!
 		@relationship(type: "IN", properties: "Relation", direction: OUT)
-	people: [Person!]!
-		@relationship(type: "HELD", properties: "RelationWithPeriod", direction: IN)
+	memberships: [Membership!]!
+		@relationship(type: "AS", properties: "Relation", direction: IN)
 	created_at: DateTime! @timestamp(operations: [CREATE])
 	updated_at: DateTime @timestamp(operations: [UPDATE])
+}
+
+type Membership @node {
+	id: ID! @id
+	label: String!
+	role: String
+	member: [Person!]!
+		@relationship(type: "HELD", properties: "Relation", direction: IN)
+	organization: [Organization!]!
+		@relationship(type: "IN", properties: "Relation", direction: OUT)
+	post: [Post!]!
+		@relationship(type: "AS", properties: "Relation", direction: OUT)
+	start_date: Date
+	end_date: Date
+	links: [Link!]!
+		@relationship(type: "HAVE", properties: "Relation", direction: OUT)
 }
 
 union MotionProposer = Person | Organization
