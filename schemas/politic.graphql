@@ -86,7 +86,6 @@ type Post @node {
 
 union MotionProposer = Person | Organization
 interface Motion {
-	id: ID! @id
 	organization: [Organization!]! @declareRelationship
 	creators: [MotionProposer!]! @declareRelationship
 	title: String
