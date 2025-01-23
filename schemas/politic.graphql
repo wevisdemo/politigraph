@@ -29,6 +29,11 @@ type Person @node {
 	links: [Link!]!
 		@relationship(type: "HAVE", properties: "Relation", direction: OUT)
 
+	votes: [Vote!]!
+		@relationship(type: "VOTE", properties: "Relation", direction: OUT)
+	proposed_motions: [Motion!]!
+		@relationship(type: "PROPOSED_BY", properties: "Relation", direction: IN)
+
 	created_at: DateTime! @timestamp(operations: [CREATE])
 	updated_at: DateTime @timestamp(operations: [UPDATE])
 }
@@ -47,13 +52,17 @@ type Organization @node {
 		@relationship(type: "UNDER", properties: "Relation", direction: IN)
 	posts: [Post!]!
 		@relationship(type: "IN", properties: "Relation", direction: IN)
+
+	motions: [Motion!]!
+		@relationship(type: "MOTION_IN", properties: "Relation", direction: IN)
+
 	links: [Link!]!
 		@relationship(type: "HAVE", properties: "Relation", direction: OUT)
 	created_at: DateTime! @timestamp(operations: [CREATE])
 	updated_at: DateTime @timestamp(operations: [UPDATE])
 }
 
-union LinkOwner = Person | Organization # Link for either Person or Organization
+union LinkOwner = Person | Organization | Bill # Link for Person, Organization or Bill
 type Link @node {
 	url: String!
 	note: String
@@ -73,6 +82,66 @@ type Post @node {
 		@relationship(type: "HELD", properties: "RelationWithPeriod", direction: IN)
 	created_at: DateTime! @timestamp(operations: [CREATE])
 	updated_at: DateTime @timestamp(operations: [UPDATE])
+}
+
+union MotionProposer = Person | Organization
+interface Motion {
+	organization: [Organization!]! @declareRelationship
+	creators: [MotionProposer!]! @declareRelationship
+	title: String
+	proposal_date: Date
+	text: String
+	requirement: String
+	result: String
+	vote_event: [VoteEvent!]! @declareRelationship
+}
+
+type Bill implements Motion @node {
+	organization: [Organization!]!
+		@relationship(type: "MOTION_IN", properties: "Relation", direction: OUT)
+	creators: [MotionProposer!]!
+		@relationship(type: "PROPOSED_BY", properties: "Relation", direction: OUT)
+	title: String
+	proposal_date: Date
+	text: String
+	requirement: String
+	result: String
+	vote_event: [VoteEvent!]!
+		@relationship(type: "VOTE_FOR", properties: "Relation", direction: IN)
+	classification: BillType!
+	nickname: String
+	acceptance_number: String
+	issue_number: Int
+	issue_year: Int
+	categories: [String!]
+	co_proposed_by: [Person!]!
+		@relationship(
+			type: "CO_PROPOSED_BY"
+			properties: "Relation"
+			direction: OUT
+		)
+	links: [Link!]!
+		@relationship(type: "HAVE", properties: "Relation", direction: OUT)
+}
+
+type VoteEvent @node {
+	vote: [Vote!]!
+		@relationship(type: "VOTE_IN", properties: "Relation", direction: IN)
+	organization: Organization!
+	motion: [Motion!]!
+		@relationship(type: "VOTE_FOR", properties: "Relation", direction: OUT)
+	start_date: Date
+	end_date: Date
+	result: String
+	count: Int
+}
+
+type Vote @node {
+	voteEvent: [VoteEvent!]!
+		@relationship(type: "VOTE_IN", properties: "Relation", direction: OUT)
+	voter: [Person!]!
+		@relationship(type: "VOTE", properties: "Relation", direction: IN)
+	option: String!
 }
 
 type Relation @relationshipProperties {
@@ -105,4 +174,10 @@ enum OrganizationType {
 	CABINET
 	POLITICAL_PARTY
 	PRIVATE_ORGANIZATION
+}
+
+enum BillType { # placeholder # TODO add & change enum
+	NORMAL_BILL
+	BUDGET_BILL
+	EMERGENCY_DECREE
 }
