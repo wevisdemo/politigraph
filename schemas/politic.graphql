@@ -86,6 +86,7 @@ type Post @node {
 
 union MotionProposer = Person | Organization
 interface Motion {
+	id: ID! @id
 	organization: [Organization!]! @declareRelationship
 	creators: [MotionProposer!]! @declareRelationship
 	title: String
@@ -97,6 +98,7 @@ interface Motion {
 }
 
 type Bill implements Motion @node {
+	id: ID! @id
 	organization: [Organization!]!
 		@relationship(type: "MOTION_IN", properties: "Relation", direction: OUT)
 	creators: [MotionProposer!]!
@@ -125,6 +127,7 @@ type Bill implements Motion @node {
 }
 
 type VoteEvent @node {
+	id: ID! @id
 	vote: [Vote!]!
 		@relationship(type: "VOTE_IN", properties: "Relation", direction: IN)
 	organization: Organization!
@@ -137,6 +140,7 @@ type VoteEvent @node {
 }
 
 type Vote @node {
+	id: ID! @id
 	voteEvent: [VoteEvent!]!
 		@relationship(type: "VOTE_IN", properties: "Relation", direction: OUT)
 	voter: [Person!]!
