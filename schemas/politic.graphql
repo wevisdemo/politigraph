@@ -91,6 +91,11 @@ type Membership @node {
 		@relationship(type: "IN", properties: "Relation", direction: OUT)
 	post: [Post!]!
 		@relationship(type: "AS", properties: "Relation", direction: OUT)
+	appointment_method: String
+	province: String
+	district_number: Int
+	partylist_number: Int
+	list_number: Int
 	start_date: Date
 	end_date: Date
 	links: [Link!]!
@@ -168,10 +173,6 @@ type Relation @relationshipProperties {
 
 type RelationWithPeriod @relationshipProperties {
 	id: ID! @id
-	appointment_method: String
-	province: String
-	district_number: Int
-	partylist_number: Int
 	start_date: Date
 	end_date: Date
 	created_at: DateTime! @timestamp(operations: [CREATE])
