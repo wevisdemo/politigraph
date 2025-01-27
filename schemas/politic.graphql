@@ -120,6 +120,7 @@ type Bill implements Motion @node {
 		@relationship(type: "MOTION_IN", properties: "Relation", direction: OUT)
 	creators: [MotionProposer!]!
 		@relationship(type: "PROPOSED_BY", properties: "Relation", direction: OUT)
+	people_signature_count: Int
 	title: String
 	proposal_date: Date
 	text: String
@@ -130,8 +131,8 @@ type Bill implements Motion @node {
 	classification: BillType!
 	nickname: String
 	acceptance_number: String
-	issue_number: Int
-	issue_year: Int
+	issue_number: String
+	issue_year: String
 	categories: [String!]
 	co_proposed_by: [Person!]!
 		@relationship(
