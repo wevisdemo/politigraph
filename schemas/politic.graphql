@@ -12,7 +12,8 @@ extend schema
 type Person @node {
 	id: ID! @id
 	prefix: String!
-	name: String!
+	firtname: String!
+	lastname: String!
 	email: String
 	gender: Gender
 	birth_date: Date
