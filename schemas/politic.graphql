@@ -151,6 +151,8 @@ type VoteEvent @node {
 	organization: Organization!
 	motion: [Motion!]!
 		@relationship(type: "VOTE_FOR", properties: "Relation", direction: OUT)
+	classification: EventType!
+	description: String
 	start_date: Date
 	end_date: Date
 	result: String
@@ -198,4 +200,17 @@ enum BillType { # placeholder # TODO add & change enum
 	NORMAL_BILL
 	BUDGET_BILL
 	EMERGENCY_DECREE
+}
+
+enum EventType {
+	HEARING
+	MP_1
+	MP_2
+	MP_3
+	SENATE_1
+	SENATE_2
+	SENATE_3
+	ENFORCED
+	ROYAL_ASSENT
+	OTHER
 }
