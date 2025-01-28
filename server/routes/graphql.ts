@@ -33,7 +33,14 @@ const schema = await new Neo4jGraphQL({
 	},
 }).getSchema();
 
-const armor = new ApolloArmor();
+const armor = new ApolloArmor({
+	blockFieldSuggestion: {
+		enabled: false,
+	},
+	costLimit: {
+		maxCost: 50000,
+	},
+});
 
 export default startServerAndCreateH3Handler(
 	new ApolloServer({
