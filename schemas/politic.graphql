@@ -52,6 +52,8 @@ type Organization @node {
 
 	motions: [Motion!]!
 		@relationship(type: "MOTION_IN", properties: "Relation", direction: IN)
+	events: [Event!]!
+		@relationship(type: "HAVE_EVENT", properties: "Relation", direction: OUT)
 
 	links: [Link!]!
 		@relationship(type: "HAVE", properties: "Relation", direction: OUT)
@@ -111,7 +113,6 @@ interface Motion {
 	text: String
 	requirement: String
 	result: String
-	vote_events: [VoteEvent!]! @declareRelationship
 }
 
 type Bill implements Motion @node {
@@ -126,8 +127,8 @@ type Bill implements Motion @node {
 	text: String
 	requirement: String
 	result: String
-	vote_events: [VoteEvent!]!
-		@relationship(type: "VOTE_FOR", properties: "Relation", direction: IN)
+	bill_events: [Event!]!
+		@relationship(type: "HAVE_EVENT", properties: "Relation", direction: OUT)
 	classification: BillType!
 	nickname: String
 	acceptance_number: String
@@ -144,15 +145,36 @@ type Bill implements Motion @node {
 		@relationship(type: "HAVE", properties: "Relation", direction: OUT)
 }
 
-type VoteEvent @node {
+interface Event {
+	organizations: [Organization!]! @declareRelationship
+	motions: [Motion!]! @declareRelationship
+	description: String
+	start_date: Date
+	end_date: Date
+}
+
+type BillEvent implements Event @node {
+	id: ID! @id
+	organizations: [Organization!]!
+		@relationship(type: "HAVE_EVENT", properties: "Relation", direction: IN)
+	motions: [Motion!]!
+		@relationship(type: "EVENT_IN", properties: "Relation", direction: OUT)
+	classification: BillEventType!
+	description: String
+	start_date: Date
+	end_date: Date
+	result: String
+}
+
+type VoteEvent implements Event @node {
 	id: ID! @id
 	votes: [Vote!]!
 		@relationship(type: "VOTE_IN", properties: "Relation", direction: IN)
-	organizations: Organization!
-		@relationship(type: "EVENT_IN", properties: "Relation", direction: OUT)
+	organizations: [Organization!]!
+		@relationship(type: "HAVE_EVENT", properties: "Relation", direction: IN)
 	motions: [Motion!]!
-		@relationship(type: "VOTE_FOR", properties: "Relation", direction: OUT)
-	classification: EventType!
+		@relationship(type: "EVENT_IN", properties: "Relation", direction: OUT)
+	classification: VoteEventType!
 	description: String
 	start_date: Date
 	end_date: Date
@@ -203,15 +225,18 @@ enum BillType { # placeholder # TODO add & change enum
 	EMERGENCY_DECREE
 }
 
-enum EventType {
+enum BillEventType {
 	HEARING
+	ENFORCED
+	ROYAL_ASSENT
+	OTHER
+}
+
+enum VoteEventType {
 	MP_1
 	MP_2
 	MP_3
 	SENATE_1
 	SENATE_2
 	SENATE_3
-	ENFORCED
-	ROYAL_ASSENT
-	OTHER
 }
