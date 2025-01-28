@@ -28,7 +28,7 @@ type Person @node {
 		@relationship(type: "HAVE", properties: "Relation", direction: OUT)
 
 	votes: [Vote!]!
-		@relationship(type: "VOTE", properties: "Relation", direction: OUT)
+		@relationship(type: "VOTED_BY", properties: "Relation", direction: IN)
 	proposed_motions: [Motion!]!
 		@relationship(type: "PROPOSED_BY", properties: "Relation", direction: IN)
 
@@ -52,9 +52,9 @@ type Organization @node {
 		@relationship(type: "IN", properties: "Relation", direction: IN)
 
 	motions: [Motion!]!
-		@relationship(type: "MOTION_IN", properties: "Relation", direction: IN)
+		@relationship(type: "PROPOSED_IN", properties: "Relation", direction: IN)
 	events: [Event!]!
-		@relationship(type: "HAVE_EVENT", properties: "Relation", direction: OUT)
+		@relationship(type: "HELD_EVENT", properties: "Relation", direction: OUT)
 
 	links: [Link!]!
 		@relationship(type: "HAVE", properties: "Relation", direction: OUT)
@@ -119,7 +119,7 @@ interface Motion {
 type Bill implements Motion @node {
 	id: ID! @id
 	organizations: [Organization!]!
-		@relationship(type: "MOTION_IN", properties: "Relation", direction: OUT)
+		@relationship(type: "PROPOSED_IN", properties: "Relation", direction: OUT)
 	creators: [MotionProposer!]!
 		@relationship(type: "PROPOSED_BY", properties: "Relation", direction: OUT)
 	people_signature_count: Int
@@ -129,7 +129,7 @@ type Bill implements Motion @node {
 	requirement: String
 	result: String
 	bill_events: [Event!]!
-		@relationship(type: "HAVE_EVENT", properties: "Relation", direction: OUT)
+		@relationship(type: "IN", properties: "Relation", direction: IN)
 	classification: BillType!
 	nickname: String
 	acceptance_number: String
@@ -157,9 +157,9 @@ interface Event {
 type BillEvent implements Event @node {
 	id: ID! @id
 	organizations: [Organization!]!
-		@relationship(type: "HAVE_EVENT", properties: "Relation", direction: IN)
+		@relationship(type: "HELD_EVENT", properties: "Relation", direction: IN)
 	motions: [Motion!]!
-		@relationship(type: "EVENT_IN", properties: "Relation", direction: OUT)
+		@relationship(type: "IN", properties: "Relation", direction: OUT)
 	classification: BillEventType!
 	description: String
 	start_date: Date
@@ -170,11 +170,11 @@ type BillEvent implements Event @node {
 type VoteEvent implements Event @node {
 	id: ID! @id
 	votes: [Vote!]!
-		@relationship(type: "VOTE_IN", properties: "Relation", direction: IN)
+		@relationship(type: "VOTED_IN", properties: "Relation", direction: IN)
 	organizations: [Organization!]!
-		@relationship(type: "HAVE_EVENT", properties: "Relation", direction: IN)
+		@relationship(type: "HELD_EVENT", properties: "Relation", direction: IN)
 	motions: [Motion!]!
-		@relationship(type: "EVENT_IN", properties: "Relation", direction: OUT)
+		@relationship(type: "IN", properties: "Relation", direction: OUT)
 	classification: VoteEventType!
 	description: String
 	start_date: Date
@@ -186,9 +186,9 @@ type VoteEvent implements Event @node {
 type Vote @node {
 	id: ID! @id
 	vote_events: [VoteEvent!]!
-		@relationship(type: "VOTE_IN", properties: "Relation", direction: OUT)
+		@relationship(type: "VOTED_IN", properties: "Relation", direction: OUT)
 	voters: [Person!]!
-		@relationship(type: "VOTE", properties: "Relation", direction: IN)
+		@relationship(type: "VOTED_BY", properties: "Relation", direction: OUT)
 	option: String!
 }
 
