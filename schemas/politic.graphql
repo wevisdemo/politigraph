@@ -17,7 +17,7 @@ type Person @node {
 	gender: Gender
 	birth_date: Date
 	educations: String
-	previousOccupations: String
+	previous_occupations: String
 	image: String
 	national_identity: String
 	memberships: [Membership!]!
@@ -161,7 +161,7 @@ type VoteEvent @node {
 
 type Vote @node {
 	id: ID! @id
-	voteEvent: [VoteEvent!]!
+	vote_event: [VoteEvent!]!
 		@relationship(type: "VOTE_IN", properties: "Relation", direction: OUT)
 	voter: [Person!]!
 		@relationship(type: "VOTE", properties: "Relation", direction: IN)
