@@ -12,6 +12,7 @@ services:
     environment:
       CERTBOT_EMAIL: team@wevis.info
     privileged: true
+
   nuxt:
     container_name: politigraph-nuxt
     image: wevisdemo/politigraph:latest
@@ -27,6 +28,9 @@ services:
       - betterauth:/app/.better-auth
     ports:
       - 3000:3000
+    labels:
+      - docker-volume-backup.stop-during-backup=true
+
   neo4j:
     extends:
       file: compose.yml
@@ -35,6 +39,8 @@ services:
     restart: always
     volumes:
       - neo4j:/data
+    labels:
+      - docker-volume-backup.stop-during-backup=true
 
   do-agent:
     image: digitalocean/do-agent:stable
@@ -43,6 +49,28 @@ services:
     volumes:
       - /proc:/host/proc:ro
       - /sys:/host/sys:ro
+
+  backup:
+    image: offen/docker-volume-backup:v2
+    container_name: backup
+    restart: always
+    privileged: true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/backup:/archive
+      - betterauth:/backup/betterauth:ro
+      - neo4j:/backup/neo4j:ro
+    environment:
+      BACKUP_CRON_EXPRESSION: 0 21 * * 5
+      BACKUP_COMPRESSION: zst
+      BACKUP_RETENTION_DAYS: 30
+      AWS_S3_BUCKET_NAME: puwv-backup
+      AWS_S3_PATH: wevis-politigraph
+      AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+      AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+      AWS_STORAGE_CLASS: STANDARD_IA
+    env_file:
+      - '.backup.env'
 
 volumes:
   betterauth:
