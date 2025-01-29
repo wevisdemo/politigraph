@@ -37,7 +37,7 @@ type Person @node {
 }
 
 type Organization @node {
-	id: ID! @id
+	id: ID!
 	name: String!
 	description: String
 	classification: OrganizationType!
