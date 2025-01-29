@@ -181,6 +181,7 @@ type VoteEvent implements Event @node {
 	end_date: Date
 	result: String
 	count: Int
+	msbis_id: Int
 }
 
 type Vote @node {
