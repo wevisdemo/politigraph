@@ -44,6 +44,7 @@ type Organization @node {
 	founding_date: Date
 	dissolution_date: Date
 	image: String
+	color: String
 	parents: [Organization!]!
 		@relationship(type: "UNDER", properties: "Relation", direction: OUT)
 	children: [Organization!]!
