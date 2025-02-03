@@ -72,8 +72,8 @@ type Link @node {
 
 type Post @node {
 	id: ID! @id
-	label: String!
-	role: String
+	label: String
+	role: String!
 	start_date: Date
 	end_date: Date
 	organizations: [Organization!]!
@@ -86,12 +86,8 @@ type Post @node {
 
 type Membership @node {
 	id: ID! @id
-	label: String!
-	role: String
 	members: [Person!]!
 		@relationship(type: "HELD", properties: "Relation", direction: IN)
-	organizations: [Organization!]!
-		@relationship(type: "IN", properties: "Relation", direction: OUT)
 	posts: [Post!]!
 		@relationship(type: "AS", properties: "Relation", direction: OUT)
 	appointment_method: String
