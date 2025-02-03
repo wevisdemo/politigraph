@@ -85,9 +85,10 @@ type Post @node {
 	updated_at: DateTime @timestamp(operations: [UPDATE])
 }
 
+union Member = Person | Organization
 type Membership @node {
 	id: ID! @id
-	members: [Person!]!
+	members: [Member!]!
 		@relationship(type: "HELD", properties: "Relation", direction: IN)
 	posts: [Post!]!
 		@relationship(type: "AS", properties: "Relation", direction: OUT)
