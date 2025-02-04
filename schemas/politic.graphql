@@ -51,6 +51,8 @@ type Organization @node {
 		@relationship(type: "UNDER", properties: "Relation", direction: IN)
 	posts: [Post!]!
 		@relationship(type: "IN", properties: "Relation", direction: IN)
+	memberships: [Membership!]!
+		@relationship(type: "HELD", properties: "Relation", direction: OUT)
 
 	motions: [Motion!]!
 		@relationship(type: "PROPOSED_IN", properties: "Relation", direction: IN)
