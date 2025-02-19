@@ -1,12 +1,14 @@
 <script setup lang="ts">
 const { getSession, signOut } = useAuthClient();
 const router = useRouter();
+const route = useRoute();
 const username = ref('');
 
 const signout = async () => {
 	await signOut({
 		fetchOptions: {
 			onSuccess: () => {
+				localStorage.setItem('isLogout', true);
 				router.push('/login'); // redirect to login page
 			},
 		},
@@ -19,7 +21,7 @@ onMounted(async () => {
 	if (session == null) {
 		router.push('/login');
 	} else {
-		router.push('/admin');
+		if (route.name == 'login') router.push('/admin');
 		username.value = session.user.name;
 	}
 });
@@ -28,15 +30,18 @@ onMounted(async () => {
 <template>
 	<div>
 		<div
-			class="bg-white !p-4 !border !border-[#C6C6C6] fixed top-0 w-full z-10 flex justify-between"
+			class="bg-white !p-4 !border !border-[#C6C6C6] w-[95%] sm:w-full z-10 flex justify-between !text-sm"
 		>
 			<p>WeVis <span class="!font-bold">Politigraph Admin</span></p>
 
-			<div class="flex gap-3 items-center" v-if="username != null">
-				<a href="#" class="!text-black underline">Voting</a>
+			<div class="flex gap-3 items-center" v-if="username != ''">
+				<a href="/changepassword" class="!text-black underline"
+					>Change password</a
+				>
+				<a href="/admin" class="!text-black underline">Voting</a>
 				<div class="flex gap-1 items-center">
 					<img src="../assets/avatar.svg" alt="avatar" class="cursor-pointer" />
-					<p>{{ username }}</p>
+					<p class="!text-sm !font-bold">{{ username }}</p>
 				</div>
 				<img
 					src="../assets/logout.svg"

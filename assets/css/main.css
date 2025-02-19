@@ -5,3 +5,8 @@
 .bx--data-table tbody {
 	background-color: #fff !important;
 }
+
+.bx--toast-notification--error {
+	width: 100%;
+	margin: 0;
+}
