@@ -21,29 +21,6 @@ const login = async () => {
 		},
 	);
 };
-
-onMounted(async () => {
-	// const { data, error } = await signUp.email(
-	// 	{
-	// 		email: 'poppap@wevis.info', // user email address
-	// 		password: 'test1234', // user password -> min 8 characters by default
-	// 		name: 'Poppap',
-	// 	},
-	// 	{
-	// 		onRequest: (ctx) => {
-	// 			//show loading
-	// 		},
-	// 		onSuccess: (ctx) => {
-	// 			console.log(ctx);
-	// 			//redirect to the dashboard or sign in page
-	// 		},
-	// 		onError: (ctx) => {
-	// 			// display the error message
-	// 			alert(ctx.error.message);
-	// 		},
-	// 	},
-	// );
-});
 </script>
 
 <template>
