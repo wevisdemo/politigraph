@@ -16,6 +16,18 @@ export default defineNuxtConfig({
 			baseUrl: 'http://localhost:3000',
 		},
 	},
+	app: {
+		head: {
+			title: 'Politigraph Admin',
+			link: [
+				{
+					rel: 'icon',
+					type: 'image/x-icon',
+					href: 'https://wevis.info/wp-content/uploads/2022/01/favicon.png',
+				},
+			],
+		},
+	},
 	watch: ['schemas/politic.graphql'],
 	vite: { plugins: [tailwindcss()] },
 	css: ['~/assets/css/main.css'],

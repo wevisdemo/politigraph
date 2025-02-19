@@ -1,2 +1,7 @@
-@import 'carbon-components/css/carbon-components.css';
 @import 'tailwindcss';
+@import 'carbon-components/css/carbon-components.css';
+
+.bx--data-table-header,
+.bx--data-table tbody {
+	background-color: #fff !important;
+}
