@@ -19,19 +19,16 @@ type Person @node {
 	birth_date: Date
 	educations: String
 	previous_occupations: String
-	image: String
+	image: String @customResolver(requires: "id")
 	national_identity: String
 	memberships: [Membership!]!
 		@relationship(type: "HELD", properties: "Relation", direction: OUT)
-
 	links: [Link!]!
 		@relationship(type: "HAVE", properties: "Relation", direction: OUT)
-
 	votes: [Vote!]!
 		@relationship(type: "VOTED_BY", properties: "Relation", direction: IN)
 	proposed_motions: [Motion!]!
 		@relationship(type: "PROPOSED_BY", properties: "Relation", direction: IN)
-
 	created_at: DateTime! @timestamp(operations: [CREATE])
 	updated_at: DateTime @timestamp(operations: [UPDATE])
 }
@@ -41,9 +38,10 @@ type Organization @node {
 	name: String!
 	description: String
 	classification: OrganizationType!
+	abbreviation: String @customResolver(requires: "classification")
 	founding_date: Date
 	dissolution_date: Date
-	image: String
+	image: String @customResolver(requires: "id classification")
 	color: String
 	parents: [Organization!]!
 		@relationship(type: "UNDER", properties: "Relation", direction: OUT)
@@ -58,7 +56,6 @@ type Organization @node {
 		@relationship(type: "PROPOSED_IN", properties: "Relation", direction: IN)
 	events: [Event!]!
 		@relationship(type: "HELD_EVENT", properties: "Relation", direction: OUT)
-
 	links: [Link!]!
 		@relationship(type: "HAVE", properties: "Relation", direction: OUT)
 	created_at: DateTime! @timestamp(operations: [CREATE])
@@ -99,7 +96,7 @@ type Membership @node {
 	district_number: Int
 	partylist_number: Int
 	list_number: Int
-	start_date: Date
+	start_date: Date!
 	end_date: Date
 	links: [Link!]!
 		@relationship(type: "HAVE", properties: "Relation", direction: OUT)

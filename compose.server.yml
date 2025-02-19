@@ -66,8 +66,6 @@ services:
       BACKUP_RETENTION_DAYS: 30
       AWS_S3_BUCKET_NAME: puwv-backup
       AWS_S3_PATH: wevis-politigraph
-      AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
-      AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
       AWS_STORAGE_CLASS: STANDARD_IA
     env_file:
       - '.backup.env'
