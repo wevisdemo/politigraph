@@ -8,6 +8,7 @@ const signout = async () => {
 	await signOut({
 		fetchOptions: {
 			onSuccess: () => {
+				username.value = '';
 				localStorage.setItem('isLogout', true);
 				router.push('/login'); // redirect to login page
 			},
