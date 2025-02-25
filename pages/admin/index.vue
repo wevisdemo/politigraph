@@ -13,6 +13,15 @@ const mockData = [
 		source: 'Link',
 		status: 'Published',
 	},
+	{
+		title: 'ร่างพระราชบัญญัติแก้ไขเพิ่มเติมประมวลกฎหมายแพ่งและพาณิชย์',
+		votingdate: '2023-12-21',
+		createdat: '2023-12-31',
+		assembly: 'สภาผู้แทนราษฎร-26',
+		result: 'ผ่าน',
+		source: 'Link',
+		status: 'Unpublished - Error',
+	},
 ];
 </script>
 
@@ -56,18 +65,27 @@ const mockData = [
 					</template>
 					<template #data>
 						<cv-data-table-row
-							v-for="row in mockData"
 							:id="row.name"
 							:key="row.name"
 							:value="row.name"
+							v-for="(row, i) in mockData"
 						>
-							<cv-data-table-cell>{{ row.title }}</cv-data-table-cell>
+							<cv-data-table-cell
+								><a :href="`/voting/${i + 1}`" class="!text-black underline">{{
+									row.title
+								}}</a></cv-data-table-cell
+							>
 							<cv-data-table-cell>{{ row.votingdate }}</cv-data-table-cell>
 							<cv-data-table-cell>{{ row.createdat }}</cv-data-table-cell>
 							<cv-data-table-cell>{{ row.assembly }}</cv-data-table-cell>
 							<cv-data-table-cell>{{ row.result }}</cv-data-table-cell>
 							<cv-data-table-cell>{{ row.source }}</cv-data-table-cell>
-							<cv-data-table-cell>{{ row.status }}</cv-data-table-cell>
+							<cv-data-table-cell
+								:class="{
+									'!text-[#DA1E28]': row.status == 'Unpublished - Error',
+								}"
+								>{{ row.status }}</cv-data-table-cell
+							>
 						</cv-data-table-row>
 					</template>
 				</cv-data-table>
