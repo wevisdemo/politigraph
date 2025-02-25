@@ -68,7 +68,7 @@ onMounted(async () => {
 
 <template>
 	<ClientOnly fallback-tag="span" fallback="Loading...">
-		<div class="h-dvh overflow-hidden">
+		<div class="h-dvh overflow-hidden !pt-[47px]">
 			<div class="flex px-0 h-full">
 				<div class="basis-3/3 lg:basis-2/3 parliament-bg"></div>
 				<div class="sm:basis-1/3 !p-7.5 !lg:pt-20 bg-white login-box relative">

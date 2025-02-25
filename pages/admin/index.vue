@@ -17,7 +17,7 @@ const mockData = [
 </script>
 
 <template>
-	<div class="!p-10 h-dvh !bg-[#F4F4F4]">
+	<div class="!p-10 h-dvh !bg-[#F4F4F4] !pt-[90px]">
 		<ClientOnly fallback-tag="span" fallback="Loading...">
 			<cv-breadcrumb noTrailingSlash>
 				<cv-breadcrumb-item class="text-[#0F62FE]">All Data</cv-breadcrumb-item>

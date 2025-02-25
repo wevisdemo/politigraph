@@ -3,6 +3,8 @@ const { getSession, signOut } = useAuthClient();
 const router = useRouter();
 const route = useRoute();
 const username = ref('');
+const email = ref('');
+const showSettings = ref(false);
 
 const signout = async () => {
 	await signOut({
@@ -24,34 +26,97 @@ onMounted(async () => {
 	} else {
 		if (route.name == 'login') router.push('/admin');
 		username.value = session.user.name;
+		email.value = session.user.email;
 	}
 });
 </script>
 
 <template>
 	<div>
-		<div
-			class="bg-white !p-4 !border !border-[#C6C6C6] w-[95%] sm:w-full z-10 flex justify-between !text-sm"
-		>
-			<p>WeVis <span class="!font-bold">Politigraph Admin</span></p>
+		<ClientOnly fallback-tag="span" fallback="Loading...">
+			<cv-header aria-label="Header">
+				<template v-slot:left-panels>
+					<cv-side-nav id="side-nav" rail fixed>
+						<cv-side-nav-items>
+							<cv-side-nav-link href="/admin" active> Voting </cv-side-nav-link>
+						</cv-side-nav-items>
+					</cv-side-nav>
+				</template>
 
-			<div class="flex gap-3 items-center" v-if="username != ''">
-				<a href="/changepassword" class="!text-black underline"
-					>Change password</a
-				>
-				<a href="/admin" class="!text-black underline">Voting</a>
-				<div class="flex gap-1 items-center">
-					<img src="../assets/avatar.svg" alt="avatar" class="cursor-pointer" />
-					<p class="!text-sm !font-bold">{{ username }}</p>
+				<div class="flex items-center">
+					<cv-header-menu-button
+						aria-label="Header menu"
+						aria-controls="side-nav"
+						v-if="username != ''"
+					/>
+
+					<cv-header-name href="javascript:void(0)" class="pointer-events-none"
+						><p class="!text-black">
+							WeVis <span class="!font-bold">Politigraph Admin</span>
+						</p></cv-header-name
+					>
 				</div>
-				<img
-					src="../assets/logout.svg"
-					alt="logout"
-					class="cursor-pointer"
-					@click="signout"
-				/>
-			</div>
-		</div>
+
+				<cv-overflow-menu flipMenu v-if="username != ''">
+					<template v-slot:trigger
+						><img src="../assets/avatar.svg" alt="avatar"
+					/></template>
+					<div class="!p-4">
+						<p class="!text-sm">{{ username }}</p>
+						<p class="!text-xs text-[#525252]">{{ email }}</p>
+					</div>
+
+					<cv-overflow-menu-item
+						value="Settings"
+						class="flex items-center"
+						@click="showSettings = true"
+						>Settings
+						<img
+							src="../assets/settings.svg"
+							alt="settings"
+							class="cursor-pointer"
+					/></cv-overflow-menu-item>
+					<cv-overflow-menu-item
+						value="item 3"
+						danger
+						class="flex items-center"
+						@click="signout"
+						>Log out
+						<img src="../assets/logout.svg" alt="logout" class="cursor-pointer"
+					/></cv-overflow-menu-item>
+				</cv-overflow-menu>
+			</cv-header>
+
+			<cv-modal
+				:visible="showSettings"
+				autoHideOff
+				primaryButtonDisabled
+				disableTeleport
+				@modal-hide-request="showSettings = false"
+				size="sm"
+			>
+				<template v-slot:title>Account Settings</template>
+				<template v-slot:content
+					><div class="!mb-6">
+						<p class="!font-bold">Name</p>
+						<p>{{ username }}</p>
+					</div>
+					<div class="!mb-6">
+						<p class="!font-bold">Email</p>
+						<p>{{ email }}</p>
+					</div>
+					<div class="!mb-6">
+						<p class="!font-bold">Role</p>
+						<p>Admin</p>
+					</div>
+					<hr class="border-[#C6C6C6]" />
+					<div class="!mt-6">
+						<p class="!font-bold !mb-1">Password</p>
+						<a href="/changepassword" class="!text-xs">Change Password</a>
+					</div></template
+				>
+			</cv-modal>
+		</ClientOnly>
 		<slot />
 	</div>
 </template>
