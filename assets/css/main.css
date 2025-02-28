@@ -66,3 +66,7 @@
 .bx--modal-content p {
 	font-size: 14px;
 }
+
+.bx--inline-notification {
+	max-width: 100%;
+}

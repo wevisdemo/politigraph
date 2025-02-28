@@ -10,6 +10,12 @@ const mockData = [
 		vote: 'เห็นด้วย',
 	},
 ];
+
+const route = useRoute();
+const isShowNotification = ref(true);
+const isShowNotificationError = ref(true);
+
+console.log(route);
 </script>
 
 <template>
@@ -26,6 +32,23 @@ const mockData = [
 			<h3 class="!font-normal !mb-12 !mt-4">
 				ร่างพระราชบัญญัติแก้ไขเพิ่มเติมประมวลกฎหมายแพ่งและพาณิชย์
 			</h3>
+
+			<cv-inline-notification
+				v-if="isShowNotification"
+				lowContrast
+				kind="warning"
+				title="This item is unpublished"
+				subTitle="It is not visible in public view."
+				@close="isShowNotification = false"
+			/>
+
+			<cv-inline-notification
+				v-if="route.params.id == 2 && isShowNotificationError"
+				lowContrast
+				kind="error"
+				title="Error: Data Validation Failed"
+				@close="isShowNotificationError = false"
+			/>
 
 			<div class="flex gap-8">
 				<div class="bg-white !p-4 basis-2/4">
