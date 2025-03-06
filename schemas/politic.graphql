@@ -187,6 +187,8 @@ type Vote @node {
 		@relationship(type: "VOTED_IN", properties: "Relation", direction: OUT)
 	voters: [Person!]!
 		@relationship(type: "VOTED_BY", properties: "Relation", direction: OUT)
+	voter_name: String!
+	voter_party: String!
 	option: String!
 }
 
