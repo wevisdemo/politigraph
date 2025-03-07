@@ -149,6 +149,7 @@ interface Event {
 	description: String
 	start_date: Date
 	end_date: Date
+	publish_status: PublishStatus!
 }
 
 type BillEvent implements Event @node {
@@ -161,6 +162,7 @@ type BillEvent implements Event @node {
 	description: String
 	start_date: Date
 	end_date: Date
+	publish_status: PublishStatus!
 	result: String
 }
 
@@ -176,8 +178,15 @@ type VoteEvent implements Event @node {
 	description: String
 	start_date: Date
 	end_date: Date
+	publish_status: PublishStatus!
+
 	result: String
 	count: Int
+	agree_count: Int
+	against_count: Int
+	abstained_count: Int
+	not_voted_count: Int
+
 	msbis_id: Int
 }
 
@@ -240,4 +249,10 @@ enum VoteEventType {
 	SENATE_1
 	SENATE_2
 	SENATE_3
+}
+
+enum PublishStatus {
+	PUBLISHED
+	UNPUBLISHED
+	ERROR
 }
