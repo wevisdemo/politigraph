@@ -181,7 +181,7 @@ type VoteEvent implements Event @node {
 	publish_status: PublishStatus!
 
 	result: String
-	count: Int
+
 	agree_count: Int
 	against_count: Int
 	abstained_count: Int
@@ -196,6 +196,7 @@ type Vote @node {
 		@relationship(type: "VOTED_IN", properties: "Relation", direction: OUT)
 	voters: [Person!]!
 		@relationship(type: "VOTED_BY", properties: "Relation", direction: OUT)
+	vote_order: Int!
 	voter_name: String!
 	voter_party: String!
 	option: String!
