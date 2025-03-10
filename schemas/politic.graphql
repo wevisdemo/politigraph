@@ -184,7 +184,7 @@ type VoteEvent implements Event @node {
 
 	agree_count: Int
 	against_count: Int
-	abstaine_count: Int
+	abstain_count: Int
 	novote_count: Int
 
 	msbis_id: Int
