@@ -197,9 +197,10 @@ type Vote @node {
 		@relationship(type: "VOTED_IN", properties: "Relation", direction: OUT)
 	voters: [Person!]!
 		@relationship(type: "VOTED_BY", properties: "Relation", direction: OUT)
-	vote_order: Int!
-	voter_name: String!
-	voter_party: String!
+	vote_order: String
+	badge_number: String
+	voter_name: String
+	voter_party: String
 	option: String!
 }
 
