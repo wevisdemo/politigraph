@@ -181,6 +181,7 @@ type VoteEvent implements Event @node {
 	publish_status: PublishStatus!
 
 	bill_title: String
+	title: String
 	result: String
 
 	agree_count: Int
