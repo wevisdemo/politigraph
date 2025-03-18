@@ -180,7 +180,6 @@ type VoteEvent implements Event @node {
 	end_date: Date
 	publish_status: PublishStatus!
 
-	bill_title: String
 	title: String
 	result: String
 
