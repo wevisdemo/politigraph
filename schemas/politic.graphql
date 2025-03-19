@@ -9,253 +9,784 @@ extend schema
 		]
 	)
 
+"""
+บุคคลที่เกี่ยวข้องทางการเมือง เช่น สมาชิกสภา สมาชิกพรรคการเมือง ฯลฯ
+
+อ้างอิงจาก https://www.popoloproject.com/specs/person.html
+"""
 type Person @node {
+	"""
+	ID ในรูปแบบชื่อเต็มที่เปลี่ยนช่องว่างเป็น "-"
+	"""
 	id: ID!
+	"""
+	คำนำหน้า
+	"""
 	prefix: String!
+	"""
+	ชื่อจริง
+	"""
 	firstname: String!
+	"""
+	นามสกุล
+	"""
 	lastname: String!
+	"""
+	อีเมล
+	"""
 	email: String
+	"""
+	เพศโดยกำเนิด
+	"""
 	gender: Gender
+	"""
+	วันเกิด
+	"""
 	birth_date: Date
+	"""
+	ประวัติการศึกษา
+	"""
 	educations: String
+	"""
+	ประวัติการทำงาน
+	"""
 	previous_occupations: String
+	"""
+	รูปภาพ
+	"""
 	image: String @customResolver(requires: "id")
+	"""
+	สัญชาติ
+	"""
 	national_identity: String
+	"""
+	การเป็นสมาชิกในองค์กร
+	"""
 	memberships: [Membership!]!
 		@relationship(type: "HELD", properties: "Relation", direction: OUT)
+	"""
+	เว็บไซต์ภายนอกที่เกี่ยวข้อง
+	"""
 	links: [Link!]!
 		@relationship(type: "HAVE", properties: "Relation", direction: OUT)
+	"""
+	การโหวตในมติ
+	"""
 	votes: [Vote!]!
 		@relationship(type: "VOTED_BY", properties: "Relation", direction: IN)
+	"""
+	กฏหมายหรือร่างกฏหมายที่เสนอในนามบุคคล
+	"""
 	proposed_motions: [Motion!]!
 		@relationship(type: "PROPOSED_BY", properties: "Relation", direction: IN)
+	"""
+	วันที่เพิ่มลงในฐานข้อมูล
+	"""
 	created_at: DateTime! @timestamp(operations: [CREATE])
+	"""
+	วันที่แก้ไขข้อมูลล่าสุด
+	"""
 	updated_at: DateTime @timestamp(operations: [UPDATE])
 }
 
+"""
+องค์กรที่เกี่ยวข้องทางการเมือง เช่น สส. สว. ครม. พรรคการเมือง ฯลฯ
+
+อ้างอิงจาก https://www.popoloproject.com/specs/organization.html
+"""
 type Organization @node {
+	"""
+	ID ที่มาจากชื่อองค์กร
+	"""
 	id: ID!
+	"""
+	ชื่อ
+	"""
 	name: String!
+	"""
+	คำอธิบาย
+	"""
 	description: String
+	"""
+	ประเภท
+	"""
 	classification: OrganizationType!
+	"""
+	ตัวย่อ
+	"""
 	abbreviation: String @customResolver(requires: "classification")
+	"""
+	วันที่ก่อตั้ง
+	"""
 	founding_date: Date
+	"""
+	วันที่ปิดตัวหรือหมดวาระ
+	"""
 	dissolution_date: Date
+	"""
+	โลโก้
+	"""
 	image: String @customResolver(requires: "id classification")
+	"""
+	สีในการแสดงผล
+	"""
 	color: String
+	"""
+	องค์กรที่อยู่เหนือกว่า
+	"""
 	parents: [Organization!]!
 		@relationship(type: "UNDER", properties: "Relation", direction: OUT)
+	"""
+	องค์กรย่อยที่อยู่ภายใต้
+	"""
 	children: [Organization!]!
 		@relationship(type: "UNDER", properties: "Relation", direction: IN)
+	"""
+	ตำแหน่งที่มีในองค์กร
+	"""
 	posts: [Post!]!
 		@relationship(type: "IN", properties: "Relation", direction: IN)
+	"""
+	การเป็นสมาชิกที่ไม่ได้มีตำแหน่ง
+	"""
 	memberships: [Membership!]!
 		@relationship(type: "HELD", properties: "Relation", direction: OUT)
-
+	"""
+	กฏหมายหรือร่างกฏหมายที่เสนอในนามองค์กร
+	"""
 	motions: [Motion!]!
 		@relationship(type: "PROPOSED_IN", properties: "Relation", direction: IN)
+	"""
+	กิจกรรมที่องค์กรนี้เกี่ยวข้อง
+	"""
 	events: [Event!]!
 		@relationship(type: "HELD_EVENT", properties: "Relation", direction: OUT)
+	"""
+	เว็บไซต์ภายนอกที่เกี่ยวข้อง
+	"""
 	links: [Link!]!
 		@relationship(type: "HAVE", properties: "Relation", direction: OUT)
+	"""
+	วันที่เพิ่มลงในฐานข้อมูล
+	"""
 	created_at: DateTime! @timestamp(operations: [CREATE])
+	"""
+	วันที่แก้ไขข้อมูลล่าสุด
+	"""
 	updated_at: DateTime @timestamp(operations: [UPDATE])
 }
 
-union LinkOwner = Person | Organization | Bill # Link for Person, Organization or Bill
+"""
+เจ้าของลิงก์ไปยังเว็บไซต์ภายนอกที่เกี่ยวข้อง สามารถเป็นบุคคล องค์กร หรือกฏหมาย
+"""
+union LinkOwner = Person | Organization | Bill
+
+"""
+ลิงก์ไปยังเว็บไซต์ภายนอกที่เกี่ยวข้อง
+"""
 type Link @node {
+	"""
+	URL
+	"""
 	url: String!
+	"""
+	คำอธิบาย
+	"""
 	note: String
+	"""
+	เว็บไซต์ภายเชื่อมโยงกับอะไรในฐานข้อมูล
+	"""
 	owners: [LinkOwner!]!
 		@relationship(type: "HAVE", properties: "Relation", direction: IN)
 }
 
+"""
+ตำแหน่งในองค์กร เช่น ประธานสภา หัวหน้าพรรค ฯลฯ
+
+อ้างอิงจาก https://www.popoloproject.com/specs/post.html
+"""
 type Post @node {
+	"""
+	ID แบบสุ่ม
+	"""
 	id: ID! @id
+	"""
+	ชื่อตำแหน่งแบบเต็ม (มีชื่อองกรณ์)
+	"""
 	label: String
+	"""
+	ชื่อตำแหน่งแบบสั้น
+	"""
 	role: String!
+	"""
+	วันที่เริ่ม
+	"""
 	start_date: Date
+	"""
+	วันที่สิ้นสุด
+	"""
 	end_date: Date
+	"""
+	องค์กรที่มีตำแหน่งนี้
+	"""
 	organizations: [Organization!]!
 		@relationship(type: "IN", properties: "Relation", direction: OUT)
+	"""
+	การเป็นสมาชิกในตำแหน่งนี้
+	"""
 	memberships: [Membership!]!
 		@relationship(type: "AS", properties: "Relation", direction: IN)
+	"""
+	วันที่เพิ่มลงในฐานข้อมูล
+	"""
 	created_at: DateTime! @timestamp(operations: [CREATE])
+	"""
+	วันที่แก้ไขข้อมูลล่าสุด
+	"""
 	updated_at: DateTime @timestamp(operations: [UPDATE])
 }
 
+"""
+สมาชิกขององค์กร อาจจะเป็น บุคคล หรือ องค์กร (เช่นพรรคร่วมรัฐบาล พรรคฝ่ายค้าย)
+"""
 union Member = Person | Organization
+
+"""
+การเป็นสมาชิก
+
+อ้างอิงจาก https://www.popoloproject.com/specs/membership.html
+"""
 type Membership @node {
+	"""
+	ID แบบสุ่ม
+	"""
 	id: ID! @id
+	"""
+	สมาชิก
+	"""
 	members: [Member!]!
 		@relationship(type: "HELD", properties: "Relation", direction: IN)
+	"""
+	ตำแหน่ง
+	"""
 	posts: [Post!]!
 		@relationship(type: "AS", properties: "Relation", direction: OUT)
+	"""
+	วิธีการจัดตั้ง (ในกรณีของ สว.)
+	"""
 	appointment_method: String
+	"""
+	จังหวัด (ในกรณีของ สส.เขต)
+	"""
 	province: String
+	"""
+	เลขที่เขตเลือกตั้ง (ในกรณีของ สส.เขต)
+	"""
 	district_number: Int
-	partylist_number: Int
+	"""
+	ลำดับในบัญชีรายชื่อ (ในกรณีของ สส.บัญชีรายชื่อ)
+	"""
 	list_number: Int
+	"""
+	วันที่เริ่ม
+	"""
 	start_date: Date!
+	"""
+	วันที่สิ้นสุด
+	"""
 	end_date: Date
+	"""
+	เว็บไซต์ภายนอกที่เกี่ยวข้อง
+	"""
 	links: [Link!]!
 		@relationship(type: "HAVE", properties: "Relation", direction: OUT)
 }
 
+"""
+ผู้เสนอร่างกฏหมาย เป็นบุคคลหรือองค์กร
+"""
 union MotionProposer = Person | Organization
+"""
+ญัตติ
+อ้างอิงจาก https://www.popoloproject.com/specs/motion.html
+"""
 interface Motion {
+	"""
+	องค์กรที่พิจารณาญัตติ
+	"""
 	organizations: [Organization!]! @declareRelationship
+	"""
+	ผู้เสนอ
+	"""
 	creators: [MotionProposer!]! @declareRelationship
+	"""
+	ชื่อ
+	"""
 	title: String
+	"""
+	วันที่รับเรื่องในระบบ LIS
+	"""
 	proposal_date: Date
+	"""
+	เนื้อหาของญัตติ
+	"""
 	text: String
+	"""
+	เงื่อนไขของการผ่านญัตติ
+	"""
 	requirement: String
+	"""
+	ผลลัพธ์ของการพิจารณาญัตติ
+	"""
 	result: String
 }
 
+"""
+กฏหมายหรือร่างกฏหมาย
+"""
 type Bill implements Motion @node {
+	"""
+	ID แบบสุ่ม
+	"""
 	id: ID! @id
+	"""
+	องค์กรที่มีส่วนเกี่ยวข้องในการพิจารณา เช่น สส. สว. ชุดใด
+	"""
 	organizations: [Organization!]!
 		@relationship(type: "PROPOSED_IN", properties: "Relation", direction: OUT)
+	"""
+	ผู้เสนอ
+	"""
 	creators: [MotionProposer!]!
 		@relationship(type: "PROPOSED_BY", properties: "Relation", direction: OUT)
+	"""
+	จำนวนรายชื่อของประชาชนที่สนับสนุน (ในกรณีที่ประชาชนเป็นคนเสนอ)
+	"""
 	people_signature_count: Int
+	"""
+	ชื่อทางการ
+	"""
 	title: String
+	"""
+	วันที่รับร่างเข้ากระบวนการ
+	"""
 	proposal_date: Date
+	"""
+	เนื้อหา
+	"""
 	text: String
+	"""
+	เงื่อนไขของการผ่านร่าง
+	"""
 	requirement: String
+	"""
+	ผลลัพธ์ของการพิจารณาร่าง
+	"""
 	result: String
+	"""
+	ขั้นตอนในประบวนการพิจารณากฏหมาย
+	"""
 	bill_events: [Event!]!
 		@relationship(type: "IN", properties: "Relation", direction: IN)
+	"""
+	ประเภท
+	"""
 	classification: BillType!
+	"""
+	ชื่อเล่นที่เป็นที่รู้จักโดยทั่วไป (ตั้งโดยทีมทำข้อมูล)
+	"""
 	nickname: String
+	"""
+	หมายเลขทะเบียนรับจากระบบ LIS
+	"""
 	acceptance_number: String
+	"""
+	เลขฉบับ (มีเมื่อร่างผ่าน)
+	"""
 	issue_number: String
+	"""
+	เลขปี (มีเมื่อร่างผ่าน)
+	"""
 	issue_year: String
+	"""
+	ติดแท็กเรื่องที่เกี่ยวข้อง
+	"""
 	categories: [String!]
+	"""
+	ผู้ร่วมเสนอ
+	"""
 	co_proposers: [Person!]!
 		@relationship(
 			type: "CO_PROPOSED_BY"
 			properties: "Relation"
 			direction: OUT
 		)
+	"""
+	เว็บไซต์ภายนอกที่เกี่ยวข้อง
+	"""
 	links: [Link!]!
 		@relationship(type: "HAVE", properties: "Relation", direction: OUT)
 }
 
+"""
+เหตุการที่เกี่ยวข้อง
+อ้างอิงจาก https://www.popoloproject.com/specs/event.html
+"""
 interface Event {
+	"""
+	องค์กรที่เกี่ยวข้อง
+	"""
 	organizations: [Organization!]! @declareRelationship
+	"""
+	กฏหมายที่เกี่ยวข้อง
+	"""
 	motions: [Motion!]! @declareRelationship
+	"""
+	คำอธิบาย
+	"""
 	description: String
+	"""
+	วันที่เริ่ม
+	"""
 	start_date: Date
+	"""
+	วันที่สิ้นสุด
+	"""
 	end_date: Date
+	"""
+	สถานะการเผยแพร่
+	"""
 	publish_status: PublishStatus!
 }
 
+"""
+ขั้นตอนในประบวนการพิจารณากฏหมาย
+"""
 type BillEvent implements Event @node {
+	"""
+	ID แบบสุ่ม
+	"""
 	id: ID! @id
+	"""
+	องค์กรที่เกี่ยวข้อง
+	"""
 	organizations: [Organization!]!
 		@relationship(type: "HELD_EVENT", properties: "Relation", direction: IN)
+	"""
+	กฏหมายที่เกี่ยวข้อง
+	"""
 	motions: [Motion!]!
 		@relationship(type: "IN", properties: "Relation", direction: OUT)
+	"""
+	เป็นขั้นตอนในของกระบวนการพิจารณากฏหมาย
+	"""
 	classification: BillEventType!
+	"""
+	คำอธิบายคร่าวๆ
+	"""
 	description: String
+	"""
+	วันที่เริ่มต้น
+	"""
 	start_date: Date
+	"""
+	วันที่สิ้นสุด
+	"""
 	end_date: Date
+	"""
+	สถานะการเผยแพร่
+	"""
 	publish_status: PublishStatus!
+	"""
+	ผลลัพธ์จากเหตุการ
+	"""
 	result: String
 }
 
+"""
+การลงมติ
+"""
 type VoteEvent implements Event @node {
+	"""
+	ID แบบสุ่ม
+	"""
 	id: ID! @id
+	"""
+	การลงคะแนนเสียงของผู้เข้าร่วมประชุม
+	"""
 	votes: [Vote!]!
 		@relationship(type: "VOTED_IN", properties: "Relation", direction: IN)
+	"""
+	องค์กรที่เกี่ยวข้อง
+	"""
 	organizations: [Organization!]!
 		@relationship(type: "HELD_EVENT", properties: "Relation", direction: IN)
+	"""
+	กฏหมายที่เกี่ยวข้อง
+	"""
 	motions: [Motion!]!
 		@relationship(type: "IN", properties: "Relation", direction: OUT)
+	"""
+	การลงมติอยู่ในขั้นตอนใดของกระบวนการพิจารณากฏหมายใด
+	"""
 	classification: VoteEventType!
+	"""
+	คำอธิบายคร่าวๆ
+	"""
 	description: String
+	"""
+	วันที่เริ่มต้น
+	"""
 	start_date: Date
+	"""
+	วันที่สิ้นสุด
+	"""
 	end_date: Date
+	"""
+	สถานะการเผยแพร่
+	"""
 	publish_status: PublishStatus!
-
+	"""
+	ชื่อวาระจาก MBIS
+	"""
 	title: String
+	"""
+	ผลการลงมติ
+	"""
 	result: String
-
+	"""
+	จำนวนผู้ที่เห็นด้วย (จากหัวเอกสารรายงานการประชุมของ MBIS)
+	"""
 	agree_count: Int
+	"""
+	จำนวนผู้ที่ไม่เห็นด้วย (จากหัวเอกสารรายงานการประชุมของ MBIS)
+	"""
 	disagree_count: Int
+	"""
+	จำนวนผู้ที่ไม่ลงคะแนน (จากหัวเอกสารรายงานการประชุมของ MBIS)
+	"""
 	abstain_count: Int
+	"""
+	จำนวนผู้ที่งดออกเสียง (จากหัวเอกสารรายงานการประชุมของ MBIS)
+	"""
 	novote_count: Int
-
+	"""
+	ID ใน URL ของ MBIS
+	"""
 	msbis_id: Int
 }
 
+"""
+การลงคะแนนเสียงในมติ
+
+อ้างอิงจาก https://www.popoloproject.com/specs/vote.html
+"""
 type Vote @node {
+	"""
+	ID แบบสุ่ม
+	"""
 	id: ID! @id
+	"""
+	มติที่ลงคะแนนเสียง
+	"""
 	vote_events: [VoteEvent!]!
 		@relationship(type: "VOTED_IN", properties: "Relation", direction: OUT)
+	"""
+	บุคคลที๋โหวต
+	"""
 	voters: [Person!]!
 		@relationship(type: "VOTED_BY", properties: "Relation", direction: OUT)
+	"""
+	ลำดับที่ (จากตารางในรายงานการประชุมของ MBIS)
+	"""
 	vote_order: String
+	"""
+	เลขที่บัตร (จากตารางในรายงานการประชุมของ MBIS)
+	"""
 	badge_number: String
+	"""
+	ชื่อ-สกุล (จากตารางในรายงานการประชุมของ MBIS)
+	"""
 	voter_name: String
+	"""
+	ชื่อสังกัด (จากตารางในรายงานการประชุมของ MBIS)
+	"""
 	voter_party: String
+	"""
+	ผลการลงคะแนน (จากตารางในรายงานการประชุมของ MBIS)
+	"""
 	option: String!
 }
 
+"""
+ความสัมพันธ์ทั่วไป
+"""
 type Relation @relationshipProperties {
+	"""
+	ID แบบสุ่ม
+	"""
 	id: ID! @id
+	"""
+	วันที่เพิ่มลงในฐานข้อมูล
+	"""
 	created_at: DateTime! @timestamp(operations: [CREATE])
+	"""
+	วันที่แก้ไขข้อมูลล่าสุด
+	"""
 	updated_at: DateTime @timestamp(operations: [UPDATE])
 }
 
+"""
+ความสัมพันธ์ที่มีช่วงเวลากำกับ
+"""
 type RelationWithPeriod @relationshipProperties {
+	"""
+	ID แบบสุ่ม
+	"""
 	id: ID! @id
+	"""
+	วันที่เริ่มต้น
+	"""
 	start_date: Date
+	"""
+	วันที่สิ้นสุด
+	"""
 	end_date: Date
+	"""
+	วันที่เพิ่มลงในฐานข้อมูล
+	"""
 	created_at: DateTime! @timestamp(operations: [CREATE])
+	"""
+	วันที่แก้ไขข้อมูลล่าสุด
+	"""
 	updated_at: DateTime @timestamp(operations: [UPDATE])
 }
 
+"""
+เพศโดยกำเนิด
+"""
 enum Gender {
+	"""
+	ชาย
+	"""
 	MALE
+	"""
+	หญิง
+	"""
 	FEMALE
 }
 
+"""
+ประเภทองค์กร
+"""
 enum OrganizationType {
+	"""
+	รัฐสภา
+	"""
 	PARLIAMENT
+	"""
+	สภาผู้แทนราษฎร (สส.)
+	"""
 	HOUSE_OF_REPRESENTATIVE
+	"""
+	วุฒิสภา (สว.)
+	"""
 	HOUSE_OF_SENATE
+	"""
+	คณะรัฐมนตรี (ครม.)
+	"""
 	CABINET
+	"""
+	พรรคการเมือง
+	"""
 	POLITICAL_PARTY
+	"""
+	หน่วยงานเอกชน
+	"""
 	PRIVATE_ORGANIZATION
 }
 
+"""
+ประเภทของกฏหมาย
+"""
 enum BillType { # placeholder # TODO add & change enum
+	"""
+	ทั่วไป
+	"""
 	NORMAL_BILL
+	"""
+	เกี่ยวข้องกับงบประมาณ
+	"""
 	BUDGET_BILL
+	"""
+	ประกาศฉุกเฉิน
+	"""
 	EMERGENCY_DECREE
 }
 
+"""
+ขั้นตอนในของกระบวนการพิจารณากฏหมาย
+"""
 enum BillEventType {
+	"""
+	รับฟังความคิดเห็น
+	"""
 	HEARING
+	"""
+	ประกาศใช้
+	"""
 	ENFORCED
+	"""
+	ได้รับการลงนาม
+	"""
 	ROYAL_ASSENT
+	"""
+	อื่นๆ
+	"""
 	OTHER
 }
 
 enum VoteEventType {
+	"""
+	สส. วาระที่ 1
+	"""
 	MP_1
+	"""
+	สส. วาระที่ 2
+	"""
 	MP_2
+	"""
+	สส. วาระที่ 3
+	"""
 	MP_3
+	"""
+	สว. วาระที่ 1
+	"""
 	SENATE_1
+	"""
+	สว. วาระที่ 2
+	"""
 	SENATE_2
+	"""
+	สว. วาระที่ 3
+	"""
 	SENATE_3
 }
 
+"""
+สถานะการเผยแพร่
+"""
 enum PublishStatus {
+	"""
+	เผยแพร่สู่สาธารณะ
+	"""
 	PUBLISHED
+	"""
+	ไม่เผยแพร่สู่สาธารณะ
+	"""
 	UNPUBLISHED
+	"""
+	มีข้อผิดพลาด ต้องการการตรวจสอบ
+	"""
 	ERROR
 }
