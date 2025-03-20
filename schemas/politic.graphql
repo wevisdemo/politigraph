@@ -355,14 +355,6 @@ interface Motion {
 	ผลลัพธ์ของการพิจารณาญัตติ
 	"""
 	result: String
-	"""
-	วันที่เพิ่มลงในฐานข้อมูล
-	"""
-	created_at: DateTime! @timestamp(operations: [CREATE])
-	"""
-	วันที่แก้ไขข้อมูลล่าสุด
-	"""
-	updated_at: DateTime @timestamp(operations: [UPDATE])
 }
 
 """
@@ -492,16 +484,7 @@ interface Event {
 	"""
 	เว็บไซต์ภายนอกที่เกี่ยวข้อง
 	"""
-	links: [Link!]!
-		@relationship(type: "HAVE", properties: "Relation", direction: OUT)
-	"""
-	วันที่เพิ่มลงในฐานข้อมูล
-	"""
-	created_at: DateTime! @timestamp(operations: [CREATE])
-	"""
-	วันที่แก้ไขข้อมูลล่าสุด
-	"""
-	updated_at: DateTime @timestamp(operations: [UPDATE])
+	links: [Link!]! @declareRelationship
 }
 
 """
