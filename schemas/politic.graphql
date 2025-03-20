@@ -179,7 +179,7 @@ type Organization @node {
 """
 เจ้าของลิงก์ไปยังเว็บไซต์ภายนอกที่เกี่ยวข้อง สามารถเป็นบุคคล องค์กร หรือกฏหมาย
 """
-union LinkOwner = Person | Organization | Bill | Event
+union LinkOwner = Person | Organization | Bill | BillEvent | VoteEvent
 
 """
 ลิงก์ไปยังเว็บไซต์ภายนอกที่เกี่ยวข้อง
