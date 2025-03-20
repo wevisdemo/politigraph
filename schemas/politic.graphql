@@ -198,6 +198,14 @@ type Link @node {
 	"""
 	owners: [LinkOwner!]!
 		@relationship(type: "HAVE", properties: "Relation", direction: IN)
+	"""
+	วันที่เพิ่มลงในฐานข้อมูล
+	"""
+	created_at: DateTime! @timestamp(operations: [CREATE])
+	"""
+	วันที่แก้ไขข้อมูลล่าสุด
+	"""
+	updated_at: DateTime @timestamp(operations: [UPDATE])
 }
 
 """
@@ -300,6 +308,14 @@ type Membership @node {
 	"""
 	links: [Link!]!
 		@relationship(type: "HAVE", properties: "Relation", direction: OUT)
+	"""
+	วันที่เพิ่มลงในฐานข้อมูล
+	"""
+	created_at: DateTime! @timestamp(operations: [CREATE])
+	"""
+	วันที่แก้ไขข้อมูลล่าสุด
+	"""
+	updated_at: DateTime @timestamp(operations: [UPDATE])
 }
 
 """
@@ -339,6 +355,14 @@ interface Motion {
 	ผลลัพธ์ของการพิจารณาญัตติ
 	"""
 	result: String
+	"""
+	วันที่เพิ่มลงในฐานข้อมูล
+	"""
+	created_at: DateTime! @timestamp(operations: [CREATE])
+	"""
+	วันที่แก้ไขข้อมูลล่าสุด
+	"""
+	updated_at: DateTime @timestamp(operations: [UPDATE])
 }
 
 """
@@ -426,6 +450,14 @@ type Bill implements Motion @node {
 	"""
 	links: [Link!]!
 		@relationship(type: "HAVE", properties: "Relation", direction: OUT)
+	"""
+	วันที่เพิ่มลงในฐานข้อมูล
+	"""
+	created_at: DateTime! @timestamp(operations: [CREATE])
+	"""
+	วันที่แก้ไขข้อมูลล่าสุด
+	"""
+	updated_at: DateTime @timestamp(operations: [UPDATE])
 }
 
 """
@@ -457,6 +489,14 @@ interface Event {
 	สถานะการเผยแพร่
 	"""
 	publish_status: PublishStatus!
+	"""
+	วันที่เพิ่มลงในฐานข้อมูล
+	"""
+	created_at: DateTime! @timestamp(operations: [CREATE])
+	"""
+	วันที่แก้ไขข้อมูลล่าสุด
+	"""
+	updated_at: DateTime @timestamp(operations: [UPDATE])
 }
 
 """
@@ -501,6 +541,14 @@ type BillEvent implements Event @node {
 	ผลลัพธ์จากเหตุการ
 	"""
 	result: String
+	"""
+	วันที่เพิ่มลงในฐานข้อมูล
+	"""
+	created_at: DateTime! @timestamp(operations: [CREATE])
+	"""
+	วันที่แก้ไขข้อมูลล่าสุด
+	"""
+	updated_at: DateTime @timestamp(operations: [UPDATE])
 }
 
 """
@@ -574,6 +622,14 @@ type VoteEvent implements Event @node {
 	ID ใน URL ของ MBIS
 	"""
 	msbis_id: Int
+	"""
+	วันที่เพิ่มลงในฐานข้อมูล
+	"""
+	created_at: DateTime! @timestamp(operations: [CREATE])
+	"""
+	วันที่แก้ไขข้อมูลล่าสุด
+	"""
+	updated_at: DateTime @timestamp(operations: [UPDATE])
 }
 
 """
@@ -616,6 +672,14 @@ type Vote @node {
 	ผลการลงคะแนน (จากตารางในรายงานการประชุมของ MBIS)
 	"""
 	option: String!
+	"""
+	วันที่เพิ่มลงในฐานข้อมูล
+	"""
+	created_at: DateTime! @timestamp(operations: [CREATE])
+	"""
+	วันที่แก้ไขข้อมูลล่าสุด
+	"""
+	updated_at: DateTime @timestamp(operations: [UPDATE])
 }
 
 """
