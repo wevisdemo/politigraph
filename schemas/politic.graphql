@@ -179,7 +179,7 @@ type Organization @node {
 """
 เจ้าของลิงก์ไปยังเว็บไซต์ภายนอกที่เกี่ยวข้อง สามารถเป็นบุคคล องค์กร หรือกฏหมาย
 """
-union LinkOwner = Person | Organization | Bill
+union LinkOwner = Person | Organization | Bill | Event
 
 """
 ลิงก์ไปยังเว็บไซต์ภายนอกที่เกี่ยวข้อง
@@ -490,6 +490,11 @@ interface Event {
 	"""
 	publish_status: PublishStatus!
 	"""
+	เว็บไซต์ภายนอกที่เกี่ยวข้อง
+	"""
+	links: [Link!]!
+		@relationship(type: "HAVE", properties: "Relation", direction: OUT)
+	"""
 	วันที่เพิ่มลงในฐานข้อมูล
 	"""
 	created_at: DateTime! @timestamp(operations: [CREATE])
@@ -541,6 +546,11 @@ type BillEvent implements Event @node {
 	ผลลัพธ์จากเหตุการ
 	"""
 	result: String
+	"""
+	เว็บไซต์ภายนอกที่เกี่ยวข้อง
+	"""
+	links: [Link!]!
+		@relationship(type: "HAVE", properties: "Relation", direction: OUT)
 	"""
 	วันที่เพิ่มลงในฐานข้อมูล
 	"""
@@ -622,6 +632,11 @@ type VoteEvent implements Event @node {
 	ID ใน URL ของ MBIS
 	"""
 	msbis_id: Int
+	"""
+	เว็บไซต์ภายนอกที่เกี่ยวข้อง
+	"""
+	links: [Link!]!
+		@relationship(type: "HAVE", properties: "Relation", direction: OUT)
 	"""
 	วันที่เพิ่มลงในฐานข้อมูล
 	"""
