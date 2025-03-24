@@ -31,6 +31,9 @@ const schema = await new Neo4jGraphQL({
 			deprecatedOptionsArgument: true,
 			directedArgument: true,
 			connectOrCreate: true,
+			typename_IN: true,
+			idAggregations: true,
+			deprecatedAggregateOperations: true,
 		},
 	},
 }).getSchema();
