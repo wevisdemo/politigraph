@@ -1,0 +1,79 @@
+"""
+บุคคลที่เกี่ยวข้องทางการเมือง เช่น สมาชิกสภา สมาชิกพรรคการเมือง ฯลฯ
+
+อ้างอิงจาก https://www.popoloproject.com/specs/person.html
+"""
+type Person @node {
+	"""
+	ID ในรูปแบบชื่อเต็มที่เปลี่ยนช่องว่างเป็น "-"
+	"""
+	id: ID!
+	"""
+	คำนำหน้า
+	"""
+	prefix: String!
+	"""
+	ชื่อจริง
+	"""
+	firstname: String!
+	"""
+	นามสกุล
+	"""
+	lastname: String!
+	"""
+	อีเมล
+	"""
+	email: String
+	"""
+	เพศโดยกำเนิด
+	"""
+	gender: Gender
+	"""
+	วันเกิด
+	"""
+	birth_date: Date
+	"""
+	ประวัติการศึกษา
+	"""
+	educations: String
+	"""
+	ประวัติการทำงาน
+	"""
+	previous_occupations: String
+	"""
+	รูปภาพ
+	"""
+	image: String @customResolver(requires: "id")
+	"""
+	สัญชาติ
+	"""
+	national_identity: String
+	"""
+	การเป็นสมาชิกในองค์กร
+	"""
+	memberships: [Membership!]!
+		@relationship(type: "HELD", properties: "Relation", direction: OUT)
+	"""
+	เว็บไซต์ภายนอกที่เกี่ยวข้อง
+	"""
+	links: [Link!]!
+		@relationship(type: "HAVE", properties: "Relation", direction: OUT)
+	"""
+	การโหวตในมติ
+	"""
+	votes: [Vote!]!
+		@relationship(type: "VOTED_BY", properties: "Relation", direction: IN)
+	"""
+	กฏหมายหรือร่างกฏหมายที่เสนอในนามบุคคล
+	"""
+	proposed_motions: [Motion!]!
+		@relationship(type: "PROPOSED_BY", properties: "Relation", direction: IN)
+	"""
+	วันที่เพิ่มลงในฐานข้อมูล
+	"""
+	created_at: DateTime! @timestamp(operations: [CREATE])
+	"""
+	วันที่แก้ไขข้อมูลล่าสุด
+	"""
+	updated_at: DateTime @timestamp(operations: [UPDATE])
+}

@@ -1,0 +1,17 @@
+"""
+ความสัมพันธ์ทั่วไป
+"""
+type Relation @relationshipProperties {
+	"""
+	ID แบบสุ่ม
+	"""
+	id: ID! @id
+	"""
+	วันที่เพิ่มลงในฐานข้อมูล
+	"""
+	created_at: DateTime! @timestamp(operations: [CREATE])
+	"""
+	วันที่แก้ไขข้อมูลล่าสุด
+	"""
+	updated_at: DateTime @timestamp(operations: [UPDATE])
+}

@@ -2,11 +2,10 @@ import { readFile } from 'fs/promises';
 import { parseGraphQLSDL } from '@graphql-tools/utils';
 
 export default defineEventHandler(async () => {
-	const typeDefs = await readFile('schemas/politic.graphql', {
-		encoding: 'utf-8',
-	});
-
-	const { definitions } = parseGraphQLSDL(undefined, typeDefs).document;
+	const { definitions } = parseGraphQLSDL(
+		undefined,
+		getGraphqlTypeDefs(),
+	).document;
 
 	const nodes = definitions
 		.filter((n) => n.kind === 'ObjectTypeDefinition')

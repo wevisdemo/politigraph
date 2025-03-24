@@ -1,0 +1,49 @@
+"""
+การลงคะแนนเสียงในมติ
+
+อ้างอิงจาก https://www.popoloproject.com/specs/vote.html
+"""
+type Vote @node {
+	"""
+	ID แบบสุ่ม
+	"""
+	id: ID! @id
+	"""
+	มติที่ลงคะแนนเสียง
+	"""
+	vote_events: [VoteEvent!]!
+		@relationship(type: "VOTED_IN", properties: "Relation", direction: OUT)
+	"""
+	บุคคลที๋โหวต
+	"""
+	voters: [Person!]!
+		@relationship(type: "VOTED_BY", properties: "Relation", direction: OUT)
+	"""
+	ลำดับที่ (จากตารางในรายงานการประชุมของ MSBIS)
+	"""
+	vote_order: String
+	"""
+	เลขที่บัตร (จากตารางในรายงานการประชุมของ MSBIS)
+	"""
+	badge_number: String
+	"""
+	ชื่อ-สกุล (จากตารางในรายงานการประชุมของ MSBIS)
+	"""
+	voter_name: String
+	"""
+	ชื่อสังกัด (จากตารางในรายงานการประชุมของ MSBIS)
+	"""
+	voter_party: String
+	"""
+	ผลการลงคะแนน (จากตารางในรายงานการประชุมของ MSBIS)
+	"""
+	option: String!
+	"""
+	วันที่เพิ่มลงในฐานข้อมูล
+	"""
+	created_at: DateTime! @timestamp(operations: [CREATE])
+	"""
+	วันที่แก้ไขข้อมูลล่าสุด
+	"""
+	updated_at: DateTime @timestamp(operations: [UPDATE])
+}

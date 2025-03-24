@@ -1,0 +1,34 @@
+"""
+ญัตติ
+อ้างอิงจาก https://www.popoloproject.com/specs/motion.html
+"""
+interface Motion {
+	"""
+	องค์กรที่พิจารณาญัตติ
+	"""
+	organizations: [Organization!]! @declareRelationship
+	"""
+	ผู้เสนอ
+	"""
+	creators: [MotionProposer!]! @declareRelationship
+	"""
+	ชื่อ
+	"""
+	title: String
+	"""
+	วันที่รับเรื่องในระบบ LIS
+	"""
+	proposal_date: Date
+	"""
+	เนื้อหาของญัตติ
+	"""
+	text: String
+	"""
+	เงื่อนไขของการผ่านญัตติ
+	"""
+	requirement: String
+	"""
+	ผลลัพธ์ของการพิจารณาญัตติ
+	"""
+	result: String
+}

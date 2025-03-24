@@ -1,0 +1,45 @@
+"""
+ตำแหน่งในองค์กร เช่น ประธานสภา หัวหน้าพรรค ฯลฯ
+
+อ้างอิงจาก https://www.popoloproject.com/specs/post.html
+"""
+type Post @node {
+	"""
+	ID แบบสุ่ม
+	"""
+	id: ID! @id
+	"""
+	ชื่อตำแหน่งแบบเต็ม (มีชื่อองกรณ์)
+	"""
+	label: String
+	"""
+	ชื่อตำแหน่งแบบสั้น
+	"""
+	role: String!
+	"""
+	วันที่เริ่ม
+	"""
+	start_date: Date
+	"""
+	วันที่สิ้นสุด
+	"""
+	end_date: Date
+	"""
+	องค์กรที่มีตำแหน่งนี้
+	"""
+	organizations: [Organization!]!
+		@relationship(type: "IN", properties: "Relation", direction: OUT)
+	"""
+	การเป็นสมาชิกในตำแหน่งนี้
+	"""
+	memberships: [Membership!]!
+		@relationship(type: "AS", properties: "Relation", direction: IN)
+	"""
+	วันที่เพิ่มลงในฐานข้อมูล
+	"""
+	created_at: DateTime! @timestamp(operations: [CREATE])
+	"""
+	วันที่แก้ไขข้อมูลล่าสุด
+	"""
+	updated_at: DateTime @timestamp(operations: [UPDATE])
+}

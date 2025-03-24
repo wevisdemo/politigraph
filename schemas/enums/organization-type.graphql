@@ -1,0 +1,29 @@
+"""
+ประเภทองค์กร
+"""
+enum OrganizationType {
+	"""
+	รัฐสภา
+	"""
+	PARLIAMENT
+	"""
+	สภาผู้แทนราษฎร (สส.)
+	"""
+	HOUSE_OF_REPRESENTATIVE
+	"""
+	วุฒิสภา (สว.)
+	"""
+	HOUSE_OF_SENATE
+	"""
+	คณะรัฐมนตรี (ครม.)
+	"""
+	CABINET
+	"""
+	พรรคการเมือง
+	"""
+	POLITICAL_PARTY
+	"""
+	หน่วยงานเอกชน
+	"""
+	PRIVATE_ORGANIZATION
+}

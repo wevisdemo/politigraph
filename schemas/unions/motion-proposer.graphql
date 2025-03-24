@@ -1,0 +1,4 @@
+"""
+ผู้เสนอร่างกฏหมาย เป็นบุคคลหรือองค์กร
+"""
+union MotionProposer = Person | Organization

@@ -1,0 +1,86 @@
+"""
+องค์กรที่เกี่ยวข้องทางการเมือง เช่น สส. สว. ครม. พรรคการเมือง ฯลฯ
+
+อ้างอิงจาก https://www.popoloproject.com/specs/organization.html
+"""
+type Organization @node {
+	"""
+	ID ที่มาจากชื่อองค์กร
+	"""
+	id: ID!
+	"""
+	ชื่อ
+	"""
+	name: String!
+	"""
+	คำอธิบาย
+	"""
+	description: String
+	"""
+	ประเภท
+	"""
+	classification: OrganizationType!
+	"""
+	ตัวย่อ
+	"""
+	abbreviation: String @customResolver(requires: "classification")
+	"""
+	วันที่ก่อตั้ง
+	"""
+	founding_date: Date
+	"""
+	วันที่ปิดตัวหรือหมดวาระ
+	"""
+	dissolution_date: Date
+	"""
+	โลโก้
+	"""
+	image: String @customResolver(requires: "id classification")
+	"""
+	สีในการแสดงผล
+	"""
+	color: String
+	"""
+	องค์กรที่อยู่เหนือกว่า
+	"""
+	parents: [Organization!]!
+		@relationship(type: "UNDER", properties: "Relation", direction: OUT)
+	"""
+	องค์กรย่อยที่อยู่ภายใต้
+	"""
+	children: [Organization!]!
+		@relationship(type: "UNDER", properties: "Relation", direction: IN)
+	"""
+	ตำแหน่งที่มีในองค์กร
+	"""
+	posts: [Post!]!
+		@relationship(type: "IN", properties: "Relation", direction: IN)
+	"""
+	การเป็นสมาชิกที่ไม่ได้มีตำแหน่ง
+	"""
+	memberships: [Membership!]!
+		@relationship(type: "HELD", properties: "Relation", direction: OUT)
+	"""
+	กฏหมายหรือร่างกฏหมายที่เสนอในนามองค์กร
+	"""
+	motions: [Motion!]!
+		@relationship(type: "PROPOSED_IN", properties: "Relation", direction: IN)
+	"""
+	กิจกรรมที่องค์กรนี้เกี่ยวข้อง
+	"""
+	events: [Event!]!
+		@relationship(type: "HELD_EVENT", properties: "Relation", direction: OUT)
+	"""
+	เว็บไซต์ภายนอกที่เกี่ยวข้อง
+	"""
+	links: [Link!]!
+		@relationship(type: "HAVE", properties: "Relation", direction: OUT)
+	"""
+	วันที่เพิ่มลงในฐานข้อมูล
+	"""
+	created_at: DateTime! @timestamp(operations: [CREATE])
+	"""
+	วันที่แก้ไขข้อมูลล่าสุด
+	"""
+	updated_at: DateTime @timestamp(operations: [UPDATE])
+}

@@ -1,0 +1,10 @@
+extend schema
+	@authentication(
+		operations: [
+			CREATE
+			UPDATE
+			DELETE
+			CREATE_RELATIONSHIP
+			DELETE_RELATIONSHIP
+		]
+	)

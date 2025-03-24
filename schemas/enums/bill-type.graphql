@@ -1,0 +1,17 @@
+"""
+ประเภทของกฏหมาย
+"""
+enum BillType { # placeholder # TODO add & change enum
+	"""
+	ทั่วไป
+	"""
+	NORMAL_BILL
+	"""
+	เกี่ยวข้องกับงบประมาณ
+	"""
+	BUDGET_BILL
+	"""
+	ประกาศฉุกเฉิน
+	"""
+	EMERGENCY_DECREE
+}

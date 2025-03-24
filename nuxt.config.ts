@@ -34,5 +34,5 @@ export default defineNuxtConfig({
 		},
 	},
 	vite: { plugins: [tailwindcss()] },
-	watch: ['schemas/politic.graphql'],
+	watch: ['schemas/**/*.graphql'],
 });

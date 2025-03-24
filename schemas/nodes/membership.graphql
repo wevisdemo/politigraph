@@ -1,0 +1,58 @@
+"""
+การเป็นสมาชิก
+
+อ้างอิงจาก https://www.popoloproject.com/specs/membership.html
+"""
+type Membership @node {
+	"""
+	ID แบบสุ่ม
+	"""
+	id: ID! @id
+	"""
+	สมาชิก
+	"""
+	members: [Member!]!
+		@relationship(type: "HELD", properties: "Relation", direction: IN)
+	"""
+	ตำแหน่ง
+	"""
+	posts: [Post!]!
+		@relationship(type: "AS", properties: "Relation", direction: OUT)
+	"""
+	วิธีการจัดตั้ง (ในกรณีของ สว.)
+	"""
+	appointment_method: String
+	"""
+	จังหวัด (ในกรณีของ สส.เขต)
+	"""
+	province: String
+	"""
+	เลขที่เขตเลือกตั้ง (ในกรณีของ สส.เขต)
+	"""
+	district_number: Int
+	"""
+	ลำดับในบัญชีรายชื่อ (ในกรณีของ สส.บัญชีรายชื่อ)
+	"""
+	list_number: Int
+	"""
+	วันที่เริ่ม
+	"""
+	start_date: Date!
+	"""
+	วันที่สิ้นสุด
+	"""
+	end_date: Date
+	"""
+	เว็บไซต์ภายนอกที่เกี่ยวข้อง
+	"""
+	links: [Link!]!
+		@relationship(type: "HAVE", properties: "Relation", direction: OUT)
+	"""
+	วันที่เพิ่มลงในฐานข้อมูล
+	"""
+	created_at: DateTime! @timestamp(operations: [CREATE])
+	"""
+	วันที่แก้ไขข้อมูลล่าสุด
+	"""
+	updated_at: DateTime @timestamp(operations: [UPDATE])
+}

@@ -1,0 +1,26 @@
+"""
+ลิงก์ไปยังเว็บไซต์ภายนอกที่เกี่ยวข้อง
+"""
+type Link @node {
+	"""
+	URL
+	"""
+	url: String!
+	"""
+	คำอธิบาย
+	"""
+	note: String
+	"""
+	เว็บไซต์ภายเชื่อมโยงกับอะไรในฐานข้อมูล
+	"""
+	owners: [LinkOwner!]!
+		@relationship(type: "HAVE", properties: "Relation", direction: IN)
+	"""
+	วันที่เพิ่มลงในฐานข้อมูล
+	"""
+	created_at: DateTime! @timestamp(operations: [CREATE])
+	"""
+	วันที่แก้ไขข้อมูลล่าสุด
+	"""
+	updated_at: DateTime @timestamp(operations: [UPDATE])
+}

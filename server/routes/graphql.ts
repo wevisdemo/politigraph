@@ -1,14 +1,10 @@
-import { readFile } from 'fs/promises';
 import { ApolloServer } from '@apollo/server';
 import { startServerAndCreateH3Handler } from '@as-integrations/h3';
 import { ApolloArmor } from '@escape.tech/graphql-armor';
 import { Neo4jGraphQL } from '@neo4j/graphql';
 import { resolvers } from '~/utils/graphql-resolvers';
+import { getGraphqlTypeDefs } from '~/utils/graphql-schema';
 import neo4j from 'neo4j-driver';
-
-const typeDefs = await readFile('schemas/politic.graphql', {
-	encoding: 'utf-8',
-});
 
 const driver = neo4j.driver(
 	`neo4j://${process.env.NEO4J_HOST ?? 'localhost'}:7687`,
@@ -16,7 +12,7 @@ const driver = neo4j.driver(
 );
 
 const schema = await new Neo4jGraphQL({
-	typeDefs,
+	typeDefs: getGraphqlTypeDefs(),
 	driver,
 	resolvers,
 	features: {

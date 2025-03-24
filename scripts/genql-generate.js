@@ -1,11 +1,9 @@
-import { readFile } from 'fs/promises';
 import { generate } from '@genql/cli';
 import { printSchemaWithDirectives } from '@graphql-tools/utils';
 import { Neo4jGraphQL } from '@neo4j/graphql';
+import { getGraphqlTypeDefs } from '../utils/graphql-schema.js';
 
-const typeDefs = await readFile('schemas/politic.graphql', {
-	encoding: 'utf-8',
-});
+const typeDefs = getGraphqlTypeDefs();
 
 const schema = await new Neo4jGraphQL({
 	typeDefs,

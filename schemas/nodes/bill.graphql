@@ -1,0 +1,94 @@
+"""
+กฏหมายหรือร่างกฏหมาย
+"""
+type Bill implements Motion @node {
+	"""
+	ID แบบสุ่ม
+	"""
+	id: ID! @id
+	"""
+	องค์กรที่มีส่วนเกี่ยวข้องในการพิจารณา เช่น สส. สว. ชุดใด
+	"""
+	organizations: [Organization!]!
+		@relationship(type: "PROPOSED_IN", properties: "Relation", direction: OUT)
+	"""
+	ผู้เสนอ
+	"""
+	creators: [MotionProposer!]!
+		@relationship(type: "PROPOSED_BY", properties: "Relation", direction: OUT)
+	"""
+	จำนวนรายชื่อของประชาชนที่สนับสนุน (ในกรณีที่ประชาชนเป็นคนเสนอ)
+	"""
+	people_signature_count: Int
+	"""
+	ชื่อทางการ
+	"""
+	title: String
+	"""
+	วันที่รับร่างเข้ากระบวนการ
+	"""
+	proposal_date: Date
+	"""
+	เนื้อหา
+	"""
+	text: String
+	"""
+	เงื่อนไขของการผ่านร่าง
+	"""
+	requirement: String
+	"""
+	ผลลัพธ์ของการพิจารณาร่าง
+	"""
+	result: String
+	"""
+	ขั้นตอนในประบวนการพิจารณากฏหมาย
+	"""
+	bill_events: [Event!]!
+		@relationship(type: "IN", properties: "Relation", direction: IN)
+	"""
+	ประเภท
+	"""
+	classification: BillType!
+	"""
+	ชื่อเล่นที่เป็นที่รู้จักโดยทั่วไป (ตั้งโดยทีมทำข้อมูล)
+	"""
+	nickname: String
+	"""
+	หมายเลขทะเบียนรับจากระบบ LIS
+	"""
+	acceptance_number: String
+	"""
+	เลขฉบับ (มีเมื่อร่างผ่าน)
+	"""
+	issue_number: String
+	"""
+	เลขปี (มีเมื่อร่างผ่าน)
+	"""
+	issue_year: String
+	"""
+	ติดแท็กเรื่องที่เกี่ยวข้อง
+	"""
+	categories: [String!]
+	"""
+	ผู้ร่วมเสนอ
+	"""
+	co_proposers: [Person!]!
+		@relationship(
+			type: "CO_PROPOSED_BY"
+			properties: "Relation"
+			direction: OUT
+		)
+	"""
+	เว็บไซต์ภายนอกที่เกี่ยวข้อง
+	"""
+	links: [Link!]!
+		@relationship(type: "HAVE", properties: "Relation", direction: OUT)
+	"""
+	วันที่เพิ่มลงในฐานข้อมูล
+	"""
+	created_at: DateTime! @timestamp(operations: [CREATE])
+	"""
+	วันที่แก้ไขข้อมูลล่าสุด
+	"""
+	updated_at: DateTime @timestamp(operations: [UPDATE])
+}

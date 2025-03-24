@@ -1,0 +1,34 @@
+"""
+เหตุการที่เกี่ยวข้อง
+อ้างอิงจาก https://www.popoloproject.com/specs/event.html
+"""
+interface Event {
+	"""
+	องค์กรที่เกี่ยวข้อง
+	"""
+	organizations: [Organization!]! @declareRelationship
+	"""
+	กฏหมายที่เกี่ยวข้อง
+	"""
+	motions: [Motion!]! @declareRelationship
+	"""
+	คำอธิบาย
+	"""
+	description: String
+	"""
+	วันที่เริ่ม
+	"""
+	start_date: Date
+	"""
+	วันที่สิ้นสุด
+	"""
+	end_date: Date
+	"""
+	สถานะการเผยแพร่
+	"""
+	publish_status: PublishStatus!
+	"""
+	เว็บไซต์ภายนอกที่เกี่ยวข้อง
+	"""
+	links: [Link!]! @declareRelationship
+}
