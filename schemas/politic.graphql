@@ -699,32 +699,6 @@ type Relation @relationshipProperties {
 }
 
 """
-ความสัมพันธ์ที่มีช่วงเวลากำกับ
-"""
-type RelationWithPeriod @relationshipProperties {
-	"""
-	ID แบบสุ่ม
-	"""
-	id: ID! @id
-	"""
-	วันที่เริ่มต้น
-	"""
-	start_date: Date
-	"""
-	วันที่สิ้นสุด
-	"""
-	end_date: Date
-	"""
-	วันที่เพิ่มลงในฐานข้อมูล
-	"""
-	created_at: DateTime! @timestamp(operations: [CREATE])
-	"""
-	วันที่แก้ไขข้อมูลล่าสุด
-	"""
-	updated_at: DateTime @timestamp(operations: [UPDATE])
-}
-
-"""
 เพศโดยกำเนิด
 """
 enum Gender {
