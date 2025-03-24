@@ -8,7 +8,6 @@
 			<ul>
 				<li>Purple Box = Node</li>
 				<li>Transparent box = Union / Interface</li>
-				<li>Yellow Box = Description</li>
 				<li>Solid Arrow = Relationship</li>
 				<li>Dashed Arrow = In union / Inherit from interface</li>
 			</ul>

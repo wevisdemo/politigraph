@@ -1,5 +1,5 @@
-import { readFile } from 'fs/promises';
 import { parseGraphQLSDL } from '@graphql-tools/utils';
+import { getGraphqlTypeDefs } from '~/utils/graphql-schema';
 
 export default defineEventHandler(async () => {
 	const { definitions } = parseGraphQLSDL(
@@ -51,42 +51,31 @@ export default defineEventHandler(async () => {
 		}));
 
 	return [
-		`---
-  config:
-    class:
-      hideEmptyMembersBox: true
----
-classDiagram`,
+		'flowchart',
 		// Node types
 		...nodes.flatMap(({ name, description, fields, interfaces }) => [
-			`class ${name}`,
-			createDescriptionNote(name, description),
+			createBoxNode(name, description),
 			...fields
 				.filter((f) => f.relationship?.direction === 'IN')
 				.map(
 					({ type, relationship }) =>
-						`${type.name} --> ${name} : ${relationship?.type}`,
+						`${type.name}-- ${relationship?.type} -->${name}`,
 				),
 			...interfaces.map(
-				(interfaceName) => `${name} ..|> ${interfaceName} : inherit`,
+				(interfaceName) => `${name}-. inherit .->${interfaceName}`,
 			),
 		]),
 		// Union types
 		...unions.flatMap(({ name, types, description }) => [
-			`class ${name}`,
-			createDescriptionNote(name, description),
-			`<<Union>> ${name}`,
+			createBoxNode(name, description, 'Union'),
 			`style ${name} fill:none`,
-			...types.map((type) => `${type} ..|> ${name} : is`),
+			...types.map((type) => `${type}-. is .->${name}`),
 		]),
 		// Interfaces types
 		...interfaces.flatMap(({ name, description }) => [
-			`class ${name}`,
-			`<<Interface>> ${name}`,
-			createDescriptionNote(name, description),
+			createBoxNode(name, description, 'Interface'),
 			`style ${name} fill:none`,
 		]),
-		'end',
 	].join('\n');
 });
 
@@ -115,6 +104,7 @@ function getArgumentValue(args: readonly unknown[], name: string): string {
 	return args.find((a) => a.name.value === name)?.value.value;
 }
 
-function createDescriptionNote(name: string, description?: string) {
-	return `note for ${name} "${description?.split('\n').at(0)?.split(' ').at(0)}"`;
+function createBoxNode(name: string, description?: string, type?: string) {
+	const shortDescription = description?.split('\n').at(0)?.split(' ').at(0);
+	return `${name}["${type ? `_${type}_ ` : ''}**${name}**\n${shortDescription}"]`;
 }
