@@ -2,20 +2,6 @@ import tailwindcss from '@tailwindcss/vite';
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
-	compatibilityDate: '2024-11-01',
-	devtools: { enabled: true },
-	nitro: {
-		esbuild: {
-			options: {
-				target: 'esnext',
-			},
-		},
-	},
-	runtimeConfig: {
-		public: {
-			baseUrl: 'http://localhost:3000',
-		},
-	},
 	app: {
 		head: {
 			title: 'Politigraph Admin',
@@ -28,7 +14,25 @@ export default defineNuxtConfig({
 			],
 		},
 	},
-	watch: ['schemas/politic.graphql'],
-	vite: { plugins: [tailwindcss()] },
+	compatibilityDate: '2024-11-01',
 	css: ['~/assets/css/main.css'],
+	devtools: { enabled: true },
+	nitro: {
+		esbuild: {
+			options: {
+				target: 'esnext',
+			},
+		},
+	},
+	routeRules: {
+		'/': { prerender: true },
+		'/schema-mermaid': { prerender: true },
+	},
+	runtimeConfig: {
+		public: {
+			baseUrl: 'http://localhost:3000',
+		},
+	},
+	vite: { plugins: [tailwindcss()] },
+	watch: ['schemas/politic.graphql'],
 });
