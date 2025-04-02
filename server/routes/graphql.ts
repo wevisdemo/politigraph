@@ -41,6 +41,9 @@ const armor = new ApolloArmor({
 	costLimit: {
 		maxCost: 50000,
 	},
+	maxDepth: {
+		enabled: false,
+	},
 });
 
 export default startServerAndCreateH3Handler(
