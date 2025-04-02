@@ -28,8 +28,6 @@ services:
       - betterauth:/app/.better-auth
     ports:
       - 3000:3000
-    labels:
-      - docker-volume-backup.stop-during-backup=true
 
   neo4j:
     extends:
