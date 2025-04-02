@@ -3,6 +3,8 @@ services:
     image: jonasal/nginx-certbot:5.4.0-alpine
     container_name: nginx
     restart: always
+    depends_on:
+      - nuxt
     volumes:
       - ./nginx.conf:/etc/nginx/user_conf.d/web.conf:ro
       - letsencrypt:/etc/letsencrypt
