@@ -1,4 +1,4 @@
-import type { Organization, Person } from '~/.genql';
+import type { Organization, Person, VoteEvent } from '~/.genql';
 
 export const resolvers = {
 	Person: {
@@ -21,5 +21,8 @@ export const resolvers = {
 			classification === 'POLITICAL_PARTY'
 				? `/images/parties/${id.replace('พรรค', '')}.webp`
 				: null,
+	},
+	VoteEvent: {
+		created_at: ({ created_at }: VoteEvent) => `${created_at}`,
 	},
 };

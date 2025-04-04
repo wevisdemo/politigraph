@@ -58,3 +58,10 @@ GraphQL required user account for **write** permission. To make an update to Gra
 ```
 
 Then you can include the token in `Authorization: Bearer <token>` headers of GraphQL request to get the write permission.
+
+### Tunneling to Production Politigraph
+
+```shell
+ssh -L 7687:localhost:7687 dev@politigraph
+ssh -L 7474:localhost:7474 dev@politigraph
+```
