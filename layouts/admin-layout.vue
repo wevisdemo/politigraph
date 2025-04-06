@@ -11,8 +11,8 @@ const signout = async () => {
 		fetchOptions: {
 			onSuccess: () => {
 				username.value = '';
-				localStorage.setItem('isLogout', true);
-				router.push('/login'); // redirect to login page
+				localStorage.setItem('isLogout', 'true');
+				router.push('/admin'); // redirect to login page
 			},
 		},
 	});
@@ -22,9 +22,9 @@ onMounted(async () => {
 	const { data: session, error } = await getSession();
 
 	if (session == null) {
-		router.push('/login');
+		router.push('/admin');
 	} else {
-		if (route.name == 'login') router.push('/admin');
+		if (route.name == 'admin') router.push('/admin/voting');
 		username.value = session.user.name;
 		email.value = session.user.email;
 	}
@@ -38,7 +38,9 @@ onMounted(async () => {
 				<template v-slot:left-panels>
 					<cv-side-nav id="side-nav" rail fixed>
 						<cv-side-nav-items>
-							<cv-side-nav-link href="/admin" active> Voting </cv-side-nav-link>
+							<cv-side-nav-link href="/admin/voting" active>
+								Voting
+							</cv-side-nav-link>
 						</cv-side-nav-items>
 					</cv-side-nav>
 				</template>
@@ -112,7 +114,9 @@ onMounted(async () => {
 					<hr class="border-[#C6C6C6]" />
 					<div class="!mt-6">
 						<p class="!font-bold !mb-1">Password</p>
-						<a href="/changepassword" class="!text-xs">Change Password</a>
+						<a href="/admin/change-password" class="!text-xs"
+							>Change Password</a
+						>
 					</div></template
 				>
 			</cv-modal>
