@@ -12,7 +12,7 @@ const logoutTime = ref('');
 const isShowErrorMsg = ref(false);
 const isShowLogoutMsg = ref(false);
 
-const { signIn, signUp } = useAuthClient();
+const { signIn } = useAuthClient();
 
 const login = async () => {
 	isErrorUsername.value = '';
@@ -27,7 +27,7 @@ const login = async () => {
 		return;
 	}
 
-	const { data, error } = await signIn.email(
+	await signIn.email(
 		{
 			email: email.value,
 			password: password.value,
@@ -35,14 +35,7 @@ const login = async () => {
 			rememberMe: false,
 		},
 		{
-			onRequest: (ctx) => {
-				//show loading
-			},
-			onSuccess: (ctx) => {
-				//redirect to the dashboard or sign in page
-			},
 			onError: (ctx) => {
-				// display the error message
 				isShowErrorMsg.value = true;
 				errorMsg.value = ctx.error.message;
 			},

@@ -41,24 +41,18 @@ const changepassword = async () => {
 		return;
 	}
 
-	const { data, error } = await changePassword(
+	await changePassword(
 		{
 			newPassword: newPassword.value,
 			currentPassword: currentPassword.value,
-			revokeOtherSessions: true, // revoke all other sessions the user is signed into
+			revokeOtherSessions: true,
 		},
 		{
-			onRequest: (ctx) => {
-				//show loading
-			},
-			onSuccess: async (ctx) => {
-				//redirect to the dashboard or sign in page
+			onSuccess: async () => {
 				isSuccessChangePassword.value = true;
 			},
-			onError: (ctx) => {
-				// display the error message
+			onError: () => {
 				isShowErrorMsg.value = true;
-				// errorMsg.value = ctx.error.message;
 				errorMsg.value = 'Double-check your current password and try again.';
 			},
 		},
@@ -69,8 +63,8 @@ const signout = async () => {
 	await signOut({
 		fetchOptions: {
 			onSuccess: () => {
-				localStorage.setItem('isLogout', true);
-				router.push('/login'); // redirect to login page
+				localStorage.setItem('isLogout', 'true');
+				router.push('/login');
 			},
 		},
 	});
