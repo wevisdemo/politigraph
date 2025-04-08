@@ -2,8 +2,8 @@ import { ApolloServer } from '@apollo/server';
 import { startServerAndCreateH3Handler } from '@as-integrations/h3';
 import { ApolloArmor } from '@escape.tech/graphql-armor';
 import { Neo4jGraphQL } from '@neo4j/graphql';
-import { resolvers } from '~/utils/graphql-resolvers';
-import { getGraphqlTypeDefs } from '~/utils/graphql-schema';
+import { resolvers } from '~/utils/graphql/custom-resolvers';
+import { getGraphqlTypeDefs } from '~/utils/graphql/schema';
 import neo4j from 'neo4j-driver';
 
 const driver = neo4j.driver(

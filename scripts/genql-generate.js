@@ -1,7 +1,7 @@
 import { generate } from '@genql/cli';
 import { printSchemaWithDirectives } from '@graphql-tools/utils';
 import { Neo4jGraphQL } from '@neo4j/graphql';
-import { getGraphqlTypeDefs } from '../utils/graphql-schema.js';
+import { getGraphqlTypeDefs } from '../utils/graphql/schema.js';
 
 const typeDefs = getGraphqlTypeDefs();
 

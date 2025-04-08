@@ -1,5 +1,5 @@
 import { parseGraphQLSDL } from '@graphql-tools/utils';
-import { getGraphqlTypeDefs } from '~/utils/graphql-schema';
+import { getGraphqlTypeDefs } from '~/utils/graphql/schema';
 
 export default defineEventHandler(async () => {
 	const { definitions } = parseGraphQLSDL(
