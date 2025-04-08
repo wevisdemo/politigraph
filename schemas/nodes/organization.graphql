@@ -25,6 +25,10 @@ type Organization @node {
 	"""
 	abbreviation: String @customResolver(requires: "classification")
 	"""
+	ชุดที่ / คณะที่ (สำหรับ สส. สว. ครม.)
+	"""
+	term: Int @customResolver(requires: "classification name")
+	"""
 	วันที่ก่อตั้ง
 	"""
 	founding_date: Date
@@ -35,7 +39,7 @@ type Organization @node {
 	"""
 	โลโก้
 	"""
-	image: String @customResolver(requires: "id classification")
+	image: String @customResolver(requires: "classification id")
 	"""
 	สีในการแสดงผล
 	"""

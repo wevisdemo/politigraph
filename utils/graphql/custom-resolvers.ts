@@ -1,4 +1,4 @@
-import type { Organization, Person, VoteEvent } from '~/.genql';
+import type { Organization, Person } from '~/.genql';
 
 export const resolvers = {
 	Person: {
@@ -17,12 +17,15 @@ export const resolvers = {
 					return null;
 			}
 		},
-		image: ({ id, classification }: Organization) =>
+		image: ({ classification, id }: Organization) =>
 			classification === 'POLITICAL_PARTY'
 				? `/images/parties/${id.replace('พรรค', '')}.webp`
 				: null,
-	},
-	VoteEvent: {
-		created_at: ({ created_at }: VoteEvent) => `${created_at}`,
+		term: ({ classification, name }: Organization) =>
+			['HOUSE_OF_REPRESENTATIVE', 'HOUSE_OF_SENATE', 'CABINET'].includes(
+				classification,
+			)
+				? name.split(' ').at(-1)
+				: null,
 	},
 };
