@@ -19,9 +19,9 @@ type Membership @node {
 	posts: [Post!]!
 		@relationship(type: "AS", properties: "Relation", direction: OUT)
 	"""
-	วิธีการจัดตั้ง (ในกรณีของ สว.)
+	ประเภทที่ถูกแบ่ง เช่น วิธีการจัดตั้งหรือกลุ่มอาชีพของ สว.
 	"""
-	appointment_method: String
+	label: String
 	"""
 	จังหวัด (ในกรณีของ สส.เขต)
 	"""
