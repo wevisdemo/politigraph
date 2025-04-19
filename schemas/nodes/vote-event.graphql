@@ -44,7 +44,7 @@ type VoteEvent implements Event @node {
 	"""
 	ชื่อวาระจาก MSBIS
 	"""
-	title: String
+	title: String!
 	"""
 	ผลการลงมติ
 	"""
