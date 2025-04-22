@@ -60,6 +60,11 @@ type Organization @node {
 	posts: [Post!]!
 		@relationship(type: "IN", properties: "Relation", direction: IN)
 	"""
+	การเป็นสมาชิกในองค์กรอื่น เช่น การเป็นพรรคฝ่ายรัฐบาล/ค้านในครม.
+	"""
+	memberships: [Membership!]!
+		@relationship(type: "HELD", properties: "Relation", direction: OUT)
+	"""
 	กฏหมายหรือร่างกฏหมายที่เสนอในนามองค์กร
 	"""
 	motions: [Motion!]!
