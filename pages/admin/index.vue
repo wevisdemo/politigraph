@@ -5,7 +5,7 @@ definePageMeta({
 
 const email = ref('');
 const password = ref('');
-const isErrorUsername = ref('');
+const isErrorEmail = ref('');
 const isErrorPassword = ref('');
 const errorMsg = ref('');
 const logoutTime = ref('');
@@ -15,12 +15,12 @@ const isShowLogoutMsg = ref(false);
 const { signIn } = useAuthClient();
 
 const login = async () => {
-	isErrorUsername.value = '';
+	isErrorEmail.value = '';
 	isErrorPassword.value = '';
 	isShowErrorMsg.value = false;
 
 	if (email.value == '') {
-		isErrorUsername.value = 'Please enter username';
+		isErrorEmail.value = 'Please enter email address';
 		return;
 	} else if (password.value == '') {
 		isErrorPassword.value = 'Please enter password';
@@ -79,12 +79,12 @@ onMounted(async () => {
 					<h1 class="!font-normal !mb-12">Log in</h1>
 					<cv-form @submit.prevent="login" class="flex flex-col gap-y-4">
 						<cv-text-input
-							label="Username"
+							label="Email"
 							placeholder="username@wevis.info"
 							v-model="email"
-							:invalid-message="isErrorUsername"
+							:invalid-message="isErrorEmail"
 						>
-							<template v-if="isErrorUsername" v-slot:invalid-message />
+							<template v-if="isErrorEmail" v-slot:invalid-message />
 						</cv-text-input>
 						<cv-text-input
 							v-model="password"
