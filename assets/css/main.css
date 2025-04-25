@@ -70,3 +70,14 @@
 .bx--inline-notification {
 	max-width: 100%;
 }
+
+.bg-tag-icon {
+	background-color: #0e6027;
+}
+.bg-tag-background {
+	background-color: #a7f0ba;
+}
+
+.text-body-01 {
+	font-size: 14px;
+}
