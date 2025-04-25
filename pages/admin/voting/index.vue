@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { graphqlClient } from '~/utils/graphql/client';
 import dayjs from 'dayjs';
 import { ref } from 'vue';
 

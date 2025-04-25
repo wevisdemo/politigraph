@@ -91,6 +91,7 @@ const getRowClass = (row: Vote): string => {
 			<cv-breadcrumb-item class="text-[#0F62FE]">{{
 				voteEvent?.title
 			}}</cv-breadcrumb-item>
+
 			<cv-breadcrumb-item>Votes</cv-breadcrumb-item>
 		</cv-breadcrumb>
 

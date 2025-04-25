@@ -3,10 +3,14 @@
 import Save16 from '@carbon/icons-vue/es/save/16';
 //@ts-ignore
 import ViewOff16 from '@carbon/icons-vue/es/view--off/16';
-import type { VoteEventUpdateInput } from '~/.genql';
+import type {
+	UpdateVoteEventsMutationResponse,
+	VoteEvent,
+	VoteEventUpdateInput,
+} from '~/.genql';
 import { graphqlClient } from '~/utils/graphql/client';
+import type { organization } from 'better-auth/plugins';
 
-const { getSession } = useAuthClient();
 definePageMeta({
 	layout: 'admin-layout',
 });
@@ -16,8 +20,35 @@ const route = useRoute();
 const isShowNotification = ref(true);
 const isShowNotificationError = ref(true);
 
-const isFormDirty = ref(false);
-const voteEventFormInput = ref<VoteEventUpdateInput>({});
+interface VoteEventFormInput {
+	title: string;
+	start_date: string;
+	result: string | null;
+	description: string | null;
+
+	disagree_count: number;
+	agree_count: number;
+	abstain_count: number;
+	novote_count: number;
+	organizations: string[];
+	links: { url: string; note: string | null }[];
+}
+
+const defaultValue = {
+	title: '',
+	start_date: '',
+	result: null,
+	description: null,
+
+	disagree_count: 0,
+	agree_count: 0,
+	abstain_count: 0,
+	novote_count: 0,
+	organizations: [],
+	links: [],
+};
+const voteEventFormInput = ref<VoteEventFormInput>(defaultValue);
+const voteEventFormInputDefault = ref<VoteEventFormInput>(defaultValue);
 
 const paginationData = ref({
 	page: 1,
@@ -25,7 +56,7 @@ const paginationData = ref({
 });
 const totalCount = ref(0);
 
-const { data: VoteEventData } = useAsyncData(
+const { data: VoteEventData } = await useAsyncData(
 	'VoteEventData',
 	async () => {
 		const { voteEvents } = await graphqlClient.query({
@@ -45,6 +76,15 @@ const { data: VoteEventData } = useAsyncData(
 
 				publish_status: true,
 				classification: true,
+				organizations: {
+					id: true,
+					name: true,
+				},
+				links: {
+					note: true,
+					url: true,
+				},
+
 				disagree_count: true,
 				agree_count: true,
 				abstain_count: true,
@@ -53,17 +93,26 @@ const { data: VoteEventData } = useAsyncData(
 		});
 		if (voteEvents.length > 0) {
 			const event = voteEvents[0];
-			voteEventFormInput.value = {
+			console.log(voteEvents[0]);
+			const organizations = event.organizations.map((d) => d.id);
+
+			const data = {
 				title: event.title,
 				start_date: event.start_date,
 				result: event.result,
 				description: event.description,
 
-				disagree_count: event.disagree_count,
-				agree_count: event.agree_count,
-				abstain_count: event.abstain_count,
-				novote_count: event.novote_count,
+				disagree_count: event.disagree_count ?? 0,
+				agree_count: event.agree_count ?? 0,
+				abstain_count: event.abstain_count ?? 0,
+				novote_count: event.novote_count ?? 0,
+				organizations: organizations,
+				links: event.links,
 			};
+			console.log(data);
+
+			voteEventFormInput.value = data;
+			voteEventFormInputDefault.value = data;
 
 			// isFormDirty.value = false;
 		}
@@ -72,7 +121,14 @@ const { data: VoteEventData } = useAsyncData(
 	{ watch: [paginationData.value], server: false },
 );
 
-const { data: VoteList } = useAsyncData(
+const isFormDirty = computed(() => {
+	return (
+		JSON.stringify(voteEventFormInput.value) !==
+		JSON.stringify(voteEventFormInputDefault.value)
+	);
+});
+
+const { data: VoteList } = await useAsyncData(
 	'VoteList',
 	async () => {
 		const { votes } = await graphqlClient.query({
@@ -107,7 +163,7 @@ const { data: VoteList } = useAsyncData(
 	{ watch: [paginationData.value], server: false },
 );
 
-const { data: OrganizationList } = useAsyncData(
+const { data: OrganizationList } = await useAsyncData(
 	'OrganizationList',
 	async () => {
 		const { organizations } = await graphqlClient.query({
@@ -122,7 +178,7 @@ const { data: OrganizationList } = useAsyncData(
 				classification: true,
 			},
 		});
-		return organizations;
+		return organizations ?? [];
 	},
 	{ watch: [paginationData.value], server: false },
 );
@@ -134,44 +190,43 @@ const handlePageChange = (page: number) => {
 const handlePageSizeChange = (pageSize: number) => {
 	paginationData.value.pageSize = pageSize;
 };
-
-const handleChangeInput = () => {
-	isFormDirty.value = true;
-};
 </script>
 
-<!-- query Organizations($where: OrganizationWhere) {
-  organizations(where: $where) {
-		id
-    name
-    classification
-  }
-} -->
-
-<!-- 
-เอาไว้ edit votes ว่าตรงกับในระบบมั้ย
-query People($limit: Int) {
-  people(limit: $limit) {
-    firstname
-    lastname
-  }
-}
+<!-- organization 
+ disconnect - อันที่เคยเลือกแต่ไม่เลือกแล้ว
+ connect - อันที่ไม่เคยเลือก แต่เลือกเพิ่มมาใหม่
+// organizations: [
+// 	{
+// 		connect: {
+// 				where: {
+// 					node: {
+// 						// id_IN: ["xx"]
+// 					}
+// 				}
+// 			},
+// 		disconnect: [
+// 			{
+// 				where: {
+// 					node: {
+// 						// id_IN: ["xx"]
+// 					}
+// 				}
+// 			}
+// 		]
+// 	}
+// ]
 -->
 
 <!-- 
+	การ update link 
+	- เช็ค link ทั้งหมด ว่าเปลี่ยนมั้ย
+	if เปลี่ยน
+	- ให้ลบ link เก่า ทั้งหมด 
+	- แล้ว เพิ่ม link url ใหม่
+	else 
+	- ไม่ทำอะไรนะ
 
-query Votes($limit: Int) {
-  votes(limit: $limit) {
-    voter_name
-    voter_party
-    voters {
-      firstname
-      lastname
-    }
-    option
-  }
-}
-	-->
+-->
 <template>
 	<div class="!p-10 min-h-dvh !bg-[#F4F4F4] !pt-[90px]">
 		<cv-breadcrumb noTrailingSlash>
@@ -206,7 +261,64 @@ query Votes($limit: Int) {
 											id_EQ: route.params.id as string,
 										},
 										update: {
-											...voteEventFormInput,
+											title: voteEventFormInput.title,
+											start_date: voteEventFormInput.start_date,
+											result: voteEventFormInput.result,
+											description: voteEventFormInput.description,
+
+											disagree_count: Number(voteEventFormInput.disagree_count),
+											agree_count: Number(voteEventFormInput.agree_count),
+											abstain_count: Number(voteEventFormInput.abstain_count),
+											novote_count: Number(voteEventFormInput.novote_count),
+											organizations: [
+												{
+													connect: [
+														{
+															where: {
+																node: {
+																	id_IN: null,
+																},
+															},
+														},
+													],
+													disconnect: [
+														{
+															where: {
+																node: {
+																	id_IN: null,
+																},
+															},
+														},
+													],
+												},
+											],
+											links: [
+												{
+													delete: [
+														{
+															where: {
+																node: {
+																	url_IN: ['x'],
+																},
+															},
+														},
+													],
+													create: [
+														{
+															node: {
+																note: null,
+																url: 'a',
+															},
+														},
+														{
+															node: {
+																note: null,
+																url: 'b',
+															},
+														},
+													],
+												},
+											],
 										},
 									},
 									voteEvents: {
@@ -262,55 +374,43 @@ query Votes($limit: Int) {
 							label="Title"
 							placeholder=""
 							v-model="voteEventFormInput.title"
-							@change="handleChangeInput"
 						/>
-						<div>{{ voteEventFormInput.title }} {{ isFormDirty }}</div>
 					</div>
-
 					<div class="!mb-3">
 						<cv-text-input
 							label="Nickname"
 							placeholder=""
 							modelValue="no-field-in-database"
-							@change="handleChangeInput"
 						>
 						</cv-text-input>
 					</div>
-
 					<div class="!mb-3">
 						<cv-date-picker
 							dateLabel="Start Date"
 							invalidMessage=""
 							v-model="voteEventFormInput.start_date"
-							@change="handleChangeInput"
 						>
 						</cv-date-picker>
 					</div>
 
-					<div class="!mb-3">
+					<div class="!mb-3" v-if="OrganizationList">
 						<cv-multi-select
 							title="Involving Assembly(MultiSelect) query ทั้งหมด "
 							placeholder=""
 							:options="
-								OrganizationList && OrganizationList.length > 0
-									? OrganizationList.map((d) => ({
-											label: d.name,
-											value: d.id,
-										}))
-									: []
+								OrganizationList.map((d) => ({
+									label: d.name,
+									value: d.id,
+								}))
 							"
 							v-model="voteEventFormInput.organizations"
-							@change="handleChangeInput"
 						/>
 					</div>
+					<div>{{ voteEventFormInput.organizations }}</div>
 
 					<div class="!mb-3">
-						<cv-select
-							label="Result"
-							v-model="voteEventFormInput.result"
-							@change="handleChangeInput"
-						>
-							<cv-select-option value="`null`">ไม่รู้ผล</cv-select-option>
+						<cv-select label="Result" v-model="voteEventFormInput.result">
+							<cv-select-option :value="null"></cv-select-option>
 							<cv-select-option value="ผ่าน">ผ่าน</cv-select-option>
 							<cv-select-option value="ไม่ผ่าน">ไม่ผ่าน</cv-select-option>
 						</cv-select>
@@ -335,25 +435,31 @@ query Votes($limit: Int) {
 							label="Description"
 							placeholder=""
 							v-model="voteEventFormInput.description"
-							@change="handleChangeInput"
 						/>
-					</div>
-
-					<div class="!mb-3">
-						<cv-text-input label="Source URL" placeholder=""> </cv-text-input>
 					</div>
 
 					<p class="!font-bold !mb-3">Related Link</p>
 
-					<div class="grid grid-cols-2 gap-2">
-						<div class="!mb-3">
-							<cv-text-input label="Document Note" placeholder="">
-							</cv-text-input>
-						</div>
+					<div class="">
+						<div v-for="(row, i) in voteEventFormInput.links">
+							<div>{{ `Document ${i + 1}` }}</div>
+							<div class="!mb-3">
+								<cv-text-input
+									label="Document Note"
+									placeholder=""
+									v-model="row.note"
+								>
+								</cv-text-input>
+							</div>
 
-						<div class="!mb-3">
-							<cv-text-input label="Document URL" placeholder="">
-							</cv-text-input>
+							<div class="!mb-3">
+								<cv-text-input
+									label="Document URL"
+									placeholder=""
+									v-model="row.url"
+								>
+								</cv-text-input>
+							</div>
 						</div>
 					</div>
 
@@ -363,6 +469,7 @@ query Votes($limit: Int) {
 						>
 					</div>
 				</form>
+				<div>{{ voteEventFormInput.links }}</div>
 			</div>
 
 			<div class="bg-white basis-2/4">

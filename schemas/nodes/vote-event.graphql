@@ -58,6 +58,10 @@ type VoteEvent implements Event
 	"""
 	title: String!
 	"""
+	ชื่อเล่นสำหรับคนทั่วไป
+	"""
+	nickname: String
+	"""
 	ผลการลงมติ
 	"""
 	result: String
