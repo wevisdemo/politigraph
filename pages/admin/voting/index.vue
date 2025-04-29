@@ -11,9 +11,8 @@ const paginationData = ref({
 	page: 1,
 	pageSize: 10,
 });
-const totalCount = ref(0);
 
-const {} = useAsyncData(
+const { data: totalCount } = await useAsyncData(
 	'voteEventsConnection',
 	async () => {
 		const { voteEventsConnection } = await graphqlClient.query({
@@ -25,14 +24,18 @@ const {} = useAsyncData(
 				},
 			},
 		});
-		totalCount.value = voteEventsConnection.aggregate.count.nodes;
 		return voteEventsConnection.aggregate.count.nodes;
 	},
 	{ server: false },
 );
 
+const numberOfPage = computed(() =>
+	totalCount.value
+		? Math.ceil(totalCount.value / paginationData.value.pageSize)
+		: 1,
+);
 // useAsyncData
-const { data: voteEventList } = useAsyncData(
+const { data: voteEventList } = await useAsyncData(
 	'voteEvents',
 	async () => {
 		const { voteEvents } = await graphqlClient.query({
@@ -155,14 +158,16 @@ const handlePageSizeChange = (pageSize: number) => {
 					</cv-data-table-row>
 				</template>
 			</cv-data-table>
-			<ui-pagination
-				:page="paginationData.page"
-				:page-size="paginationData.pageSize"
-				:total-count="totalCount"
-				:number-of-page="Math.ceil(totalCount / paginationData.pageSize)"
-				@on-page-change="handlePageChange"
-				@on-page-size-change="handlePageSizeChange"
-			/>
+			<template v-if="totalCount">
+				<ui-pagination
+					:page="paginationData.page"
+					:page-size="paginationData.pageSize"
+					:total-count="totalCount ?? 0"
+					:number-of-page="numberOfPage"
+					@on-page-change="handlePageChange"
+					@on-page-size-change="handlePageSizeChange"
+				/>
+			</template>
 		</div>
 	</div>
 </template>

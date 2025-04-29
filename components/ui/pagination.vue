@@ -1,9 +1,6 @@
 <script setup lang="ts">
 //@ts-ignore
-import CaretLeft16 from '@carbon/icons-vue/es/caret--left/16';
-//@ts-ignore
-import CaretRight16 from '@carbon/icons-vue/es/caret--right/16';
-import { ref } from 'vue';
+import { CaretLeft16, CaretRight16 } from '@carbon/icons-vue';
 
 const props = defineProps({
 	page: {
@@ -25,13 +22,8 @@ const props = defineProps({
 });
 const emit = defineEmits(['onPageChange', 'onPageSizeChange']);
 
-const pageList = ref<Number[]>([]);
-
-watch(
-	() => [props.page, props.pageSize, props.totalCount],
-	() => {
-		pageList.value = Array.from(Array(props.numberOfPage + 1).keys()).splice(1);
-	},
+const pageList = computed(() =>
+	Array.from(Array(props.numberOfPage + 1).keys()).splice(1),
 );
 
 const pageSizeList = [10, 20, 30, 40, 50];
