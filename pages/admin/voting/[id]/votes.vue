@@ -42,6 +42,14 @@ const { data: voteEvent, refresh } = useAsyncData(
 				id: true,
 				title: true,
 				publish_status: true,
+				links: {
+					__args: {
+						where: {
+							note_EQ: 'ใบประมวลผลการลงมติ',
+						},
+					},
+					url: true,
+				},
 				votes: {
 					id: true,
 					vote_order: true,
@@ -271,6 +279,11 @@ const onSaveChanges = async () => {
 		refresh();
 	}
 };
+
+const goToOriginal = () => {
+	const url = voteEvent.value?.links[0]?.url;
+	window.open(url, '_blank');
+};
 </script>
 
 <template>
@@ -290,7 +303,7 @@ const onSaveChanges = async () => {
 				<h3 class="!font-normal">Votes - {{ voteEvent?.title }}</h3>
 			</div>
 			<div class="flex gap-2 h-fit item-start">
-				<cv-button :icon="DocumentView" kind="tertiary">
+				<cv-button :icon="DocumentView" kind="tertiary" @click="goToOriginal">
 					View Original
 				</cv-button>
 				<cv-button :icon="Save" @click="onSaveChanges">
