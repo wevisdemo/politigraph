@@ -1,4 +1,6 @@
 <script setup lang="ts">
+//@ts-ignore
+import { Edit16 } from '@carbon/icons-vue';
 import { UiPagination } from '#components';
 import { graphqlClient } from '~/utils/graphql/client';
 
@@ -87,10 +89,16 @@ const handlePageChange = (page: number) => {
 const handlePageSizeChange = (pageSize: number) => {
 	paginationData.value.pageSize = pageSize;
 };
+const router = useRouter();
 </script>
 
 <template>
-	<cv-data-table title="Votes" helperText="">
+	<cv-data-table class="bg-white" title="Votes" helperText="">
+		<template #actions>
+			<cv-button kind="ghost" :icon="Edit16" @click="() => router.push('votes')"
+				>Edit</cv-button
+			>
+		</template>
 		<template #headings>
 			<cv-data-table-heading
 				id="sb-title"

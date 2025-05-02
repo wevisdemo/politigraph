@@ -1,9 +1,15 @@
 <script setup lang="ts">
+//@ts-ignore
 import Add from '@carbon/icons-vue/es/add/16';
+//@ts-ignore
 import DocumentView from '@carbon/icons-vue/es/document--view/16';
+//@ts-ignore
 import Download from '@carbon/icons-vue/es/download/16';
+//@ts-ignore
 import Save from '@carbon/icons-vue/es/save/16';
+//@ts-ignore
 import TrashCan from '@carbon/icons-vue/es/trash-can/16';
+//@ts-ignore
 import WarningFilled16 from '@carbon/icons-vue/es/warning--filled/16';
 import type { Vote } from '~/.genql';
 import { graphqlClient } from '~/utils/graphql/client';

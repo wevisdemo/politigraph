@@ -1,6 +1,6 @@
 <script setup lang="ts">
 //@ts-ignore
-import { Save16, View16, ViewOff16 } from '@carbon/icons-vue';
+import { Save16, TrashCan16, View16, ViewOff16 } from '@carbon/icons-vue';
 import { useForm } from '@tanstack/vue-form';
 import { VotesCollection } from '#components';
 import { graphqlClient } from '~/utils/graphql/client';
@@ -43,6 +43,9 @@ const { data: VoteEventData } = await useAsyncData(
 				links: {
 					note: true,
 					url: true,
+					__args: {
+						sort: [{ note: 'ASC' }],
+					},
 				},
 
 				disagree_count: true,
@@ -260,7 +263,7 @@ const { data: OrganizationList } = await useAsyncData(
 					>
 				</div>
 			</div>
-			<cv-inline-notification
+			<!-- <cv-inline-notification
 				v-if="isShowNotification"
 				lowContrast
 				kind="warning"
@@ -275,7 +278,7 @@ const { data: OrganizationList } = await useAsyncData(
 				kind="error"
 				title="Error: Data Validation Failed"
 				@close="isShowNotificationError = false"
-			/>
+			/> -->
 
 			<div class="flex gap-8">
 				<div class="bg-white !p-4 basis-2/4">
@@ -312,10 +315,12 @@ const { data: OrganizationList } = await useAsyncData(
 							<voteEventFormInput.Field name="start_date">
 								<template v-slot="{ field }">
 									<cv-date-picker
+										kind="single"
 										dateLabel="Start Date"
 										:name="field.name"
 										:modelValue="field.state.value"
 										@update:modelValue="field.handleChange"
+										:calOptions="{ dateFormat: 'Y-m-d' }"
 									/>
 								</template>
 							</voteEventFormInput.Field>
@@ -326,7 +331,7 @@ const { data: OrganizationList } = await useAsyncData(
 								<template v-slot="{ field }">
 									<cv-multi-select
 										title="Involving Assembly(MultiSelect) query ทั้งหมด "
-										placeholder=""
+										:label="field.state.value?.join(', ')"
 										:options="
 											OrganizationList.map((d) => ({
 												label: d.name,
@@ -382,15 +387,30 @@ const { data: OrganizationList } = await useAsyncData(
 								</template>
 							</voteEventFormInput.Field>
 						</div>
-
-						<p class="!font-bold !mb-3">Related Link</p>
-
+						<div class="!mb-3">
+							<p class="!font-bold !mb-2">Related Link</p>
+							<div class="opacity-50">
+								สำหรับช่อง Document Note ให้ใส่ชนิดเอกสาร เช่น
+								"ใบประมวลผลการลงมติ" หรือ
+								"ระบบฐานข้อมูลรายงานและบันทึกการประชุม"
+							</div>
+						</div>
 						<voteEventFormInput.Field name="links">
 							<template v-slot="{ field, state }">
 								<div v-for="(_, i) of field.state.value">
 									<voteEventFormInput.Field :key="i" :name="`links[${i}].note`">
 										<template v-slot="{ field: subField, state }">
-											<div>{{ `Document ${i + 1}` }}</div>
+											<div class="flex flex-row justify-between">
+												<div>{{ `Document ${i + 1}` }}</div>
+												<div>
+													<cv-button
+														@click="field.removeValue(i)"
+														kind="danger--ghost"
+														:icon="TrashCan16"
+														>Delete</cv-button
+													>
+												</div>
+											</div>
 											<div class="!mb-3">
 												<cv-text-input
 													label="Document Note"
@@ -427,11 +447,10 @@ const { data: OrganizationList } = await useAsyncData(
 							</template>
 						</voteEventFormInput.Field>
 					</form>
-					<!-- <div>{{ voteEventFormInput. }}</div> -->
 				</div>
 
 				<div class="bg-white basis-2/4">
-					<div class="!p-4 flex flex-col gap-2">
+					<div class="!p-4 flex flex-col gap-2 !mb-3">
 						<h4>Vote Summary (Original)</h4>
 						<div class="text-body-01 !mb-6">
 							ข้อมูลสรุปผลคะแนนที่ OCR จากหัวเอกสารบันทึกผลการลงมติ
@@ -500,9 +519,6 @@ const { data: OrganizationList } = await useAsyncData(
 			</div>
 		</form>
 	</div>
-	<!-- <pre v-if="voteEventFormInput">{{
-		JSON.stringify(voteEventFormInput, undefined, 2)
-	}}</pre> -->
 </template>
 
 <style scoped></style>
