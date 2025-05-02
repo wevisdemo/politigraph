@@ -71,7 +71,7 @@ const defaultValues = reactive({
 	organizations: computed(() =>
 		VoteEventData?.value?.organizations.map((d) => d.id),
 	),
-	links: computed(() => VoteEventData?.value?.links),
+	links: computed(() => VoteEventData?.value?.links || []),
 	publish_status: computed(() => VoteEventData?.value?.publish_status),
 });
 
@@ -95,6 +95,10 @@ const voteEventFormInput = useForm({
 				defaultValues.organizations,
 			);
 		}
+
+		const linkDelete: string[] = defaultValues.links.map((d) => d.url);
+		const linkCreate: { node: { note: string; url: string } }[] =
+			value.links.map((d) => ({ node: { note: d.note ?? '', url: d.url } }));
 
 		const { updateVoteEvents } = await graphqlClient.mutation({
 			updateVoteEvents: {
@@ -135,33 +139,20 @@ const voteEventFormInput = useForm({
 								],
 							},
 						],
-						// links: [
-						// 	{
-						// 		delete: [
-						// 			{
-						// 				where: {
-						// 					node: {
-						// 						url_IN: ['x'],
-						// 					},
-						// 				},
-						// 			},
-						// 		],
-						// 		create: [
-						// 			{
-						// 				node: {
-						// 					note: null,
-						// 					url: 'a',
-						// 				},
-						// 			},
-						// 			{
-						// 				node: {
-						// 					note: null,
-						// 					url: 'b',
-						// 				},
-						// 			},
-						// 		],
-						// 	},
-						// ],
+						links: [
+							{
+								delete: [
+									{
+										where: {
+											node: {
+												url_IN: linkDelete,
+											},
+										},
+									},
+								],
+								create: linkCreate,
+							},
+						],
 					},
 				},
 				voteEvents: {
@@ -169,7 +160,7 @@ const voteEventFormInput = useForm({
 				},
 			},
 		});
-		console.log(updateVoteEvents);
+		refreshNuxtData(['VoteEventData']);
 	},
 });
 
@@ -240,9 +231,29 @@ const { data: OrganizationList } = await useAsyncData(
 						:kind="isPublish ? 'tertiary' : 'primary'"
 						@click="
 							async () => {
-								// const { data: session, error } = await getSession();
-								// if (session !== null && session.user.email)
-								// 	getPostToken(session.user.email, 'worawit2025');
+								const { updateVoteEvents } = await graphqlClient.mutation({
+									updateVoteEvents: {
+										__args: {
+											where: {
+												id_EQ: route.params.id as string,
+											},
+											update: {
+												publish_status:
+													defaultValues.publish_status !== 'PUBLISHED'
+														? 'PUBLISHED'
+														: 'UNPUBLISHED',
+											},
+										},
+										voteEvents: {
+											publish_status: true,
+										},
+									},
+								});
+								console.log(updateVoteEvents);
+
+								if (updateVoteEvents.voteEvents) {
+									refreshNuxtData(['VoteEventData']);
+								}
 							}
 						"
 						>{{ isPublish ? 'Unpublished' : 'Published' }}</cv-button
@@ -384,8 +395,8 @@ const { data: OrganizationList } = await useAsyncData(
 												<cv-text-input
 													label="Document Note"
 													placeholder=""
-													:modelValue="field.state.value"
-													@update:modelValue="field.handleChange"
+													:modelValue="subField.state.value"
+													@update:modelValue="subField.handleChange"
 												>
 												</cv-text-input>
 											</div>
@@ -397,22 +408,24 @@ const { data: OrganizationList } = await useAsyncData(
 												<cv-text-input
 													label="Document URL"
 													placeholder=""
-													:modelValue="field.state.value"
-													@update:modelValue="field.handleChange"
+													:modelValue="subField.state.value"
+													@update:modelValue="subField.handleChange"
 												>
 												</cv-text-input>
 											</div>
 										</template>
 									</voteEventFormInput.Field>
 								</div>
+								<div class="!mb-3">
+									<cv-button
+										default="Add Another Item"
+										kind="tertiary"
+										@click="() => field.pushValue({ note: '', url: '' })"
+										>Add Another Item</cv-button
+									>
+								</div>
 							</template>
 						</voteEventFormInput.Field>
-
-						<div class="!mb-3">
-							<cv-button default="Add Another Item" kind="tertiary"
-								>Add Another Item</cv-button
-							>
-						</div>
 					</form>
 					<!-- <div>{{ voteEventFormInput. }}</div> -->
 				</div>
