@@ -78,6 +78,13 @@ const { data: voteEvent, refresh } = useAsyncData(
 
 const peopleOptions = ref<{ value: string; label: string }[]>([]);
 
+const getVoterOptions = (optionName: string | null, available: boolean) => {
+	if (optionName && !available) {
+		return [{ value: optionName, label: optionName }, ...peopleOptions.value];
+	}
+	return peopleOptions.value;
+};
+
 const { data: people } = useAsyncData(
 	'peopleConnection',
 	async () => {
@@ -455,7 +462,7 @@ const goToOriginal = () => {
 										:label="row.voter_name"
 										v-model="row.voter_name"
 										:options="
-											peopleOptions && peopleOptions.length ? peopleOptions : []
+											getVoterOptions(row.voter_name, row.voters.length > 0)
 										"
 										item-value-key="value"
 										item-text-key="label"
