@@ -138,12 +138,16 @@ const selectedRows = ref([]);
 const editedRows = ref<Set<string>>(new Set());
 const editedCells = ref<Set<string>>(new Set());
 
-const isEdited = (id: string) => {
+const isRowEdited = (id: string) => {
 	return editedRows.value.has(id);
 };
 
+const isCellEdited = (rowId: string, cellId: string) => {
+	return editedCells.value.has(`${rowId}-${cellId}`);
+};
+
 const getRowClass = (row: Vote): string => {
-	if (isEdited(row.id)) {
+	if (isRowEdited(row.id)) {
 		return '!bg-[#FCF4D6]';
 	}
 	if (row.voters.length == 0) {
@@ -214,9 +218,20 @@ const markAsEdited = (rowId: string, cellKey: EditableVoteFields) => {
 	}
 };
 
-const onOptionChange = (rowId: string, cellId: EditableVoteFields) => {
+const onOptionChange = (row: Vote, cellId: EditableVoteFields) => {
 	nextTick(() => {
-		markAsEdited(rowId, cellId);
+		// if (!row.option && cellId == 'option') {
+		// 	const original = originalVotesMap.value[row.id];
+		// 	if (original.option) {
+		// 		row.option = original.option;
+		// 	}
+		// } else if (!row.voter_name && cellId == 'voter_name') {
+		// 	const original = originalVotesMap.value[row.id];
+		// 	if (original.voter_name) {
+		// 		row.voter_name = original.voter_name;
+		// 	}
+		// }
+		markAsEdited(row.id, cellId);
 	});
 };
 
@@ -431,7 +446,7 @@ const goToOriginal = () => {
 									getRowClass(row as Vote),
 									{
 										'!text-[#DA1E28]':
-											row.voters.length === 0 && !isEdited(row.id),
+											row.voters.length === 0 && !isRowEdited(row.id),
 									},
 								]"
 							>
@@ -444,13 +459,15 @@ const goToOriginal = () => {
 										"
 										item-value-key="value"
 										item-text-key="label"
-										@change="onOptionChange(row.id, 'voter_name')"
+										autoFilter
+										autoHighlight
+										@change="onOptionChange(row as Vote, 'voter_name')"
 									/>
 								</div>
 								<div v-else class="flex items-center gap-2 !pl-[16px]">
 									{{ row.voter_name }}
 									<cv-tooltip
-										v-if="row.voters.length === 0 && !isEdited(row.id)"
+										v-if="row.voters.length === 0 && !isRowEdited(row.id)"
 										:direction="
 											i === filteredVotes.length - 1 ? 'top' : 'bottom'
 										"
@@ -459,6 +476,18 @@ const goToOriginal = () => {
 										<WarningFilled16
 											class="inline-block"
 											style="fill: #da1e28"
+										/>
+									</cv-tooltip>
+									<cv-tooltip
+										v-if="isCellEdited(row.id, 'voter_name')"
+										:direction="
+											i === filteredVotes.length - 1 ? 'top' : 'bottom'
+										"
+										tip="Unsaved change"
+									>
+										<WarningFilled16
+											class="inline-block"
+											style="fill: #ff8300"
 										/>
 									</cv-tooltip>
 								</div>
@@ -488,11 +517,25 @@ const goToOriginal = () => {
 										item-value-key="value"
 										item-text-key="label"
 										v-show="isActiveEditing(i, 4)"
-										@change="onOptionChange(row.id, 'option')"
+										autoFilter
+										autoHighlight
+										@change="onOptionChange(row as Vote, 'option')"
 									/>
 								</div>
 								<div v-else class="!pl-[16px] w-1/5">
 									{{ row.option }}
+									<cv-tooltip
+										v-if="isCellEdited(row.id, 'option')"
+										:direction="
+											i === filteredVotes.length - 1 ? 'top' : 'bottom'
+										"
+										tip="Unsaved change"
+									>
+										<WarningFilled16
+											class="inline-block"
+											style="fill: #ff8300"
+										/>
+									</cv-tooltip>
 								</div>
 							</cv-data-table-cell>
 						</cv-data-table-row>
