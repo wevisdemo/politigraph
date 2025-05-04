@@ -26,6 +26,8 @@ const onSearch = (event: string) => {
 };
 
 const isShowNotificationError = ref(false);
+const isShowNotificationSaveChange = ref(false);
+const rowChange = ref(0);
 const originalVotesMap = ref<Record<string, Partial<Vote>>>({});
 
 const { data: voteEvent, refresh } = useAsyncData(
@@ -239,18 +241,6 @@ const markAsEdited = (rowId: string, cellKey: EditableVoteFields) => {
 
 const onOptionChange = (row: Vote, cellId: EditableVoteFields) => {
 	nextTick(() => {
-		// if (!row.option && cellId == 'option') {
-		// 	const original = originalVotesMap.value[row.id];
-		// 	if (original.option) {
-		// 		row.option = original.option;
-		// 	}
-		// } else if (!row.voter_name && cellId == 'voter_name') {
-		// 	const original = originalVotesMap.value[row.id];
-		// 	if (original.voter_name) {
-		// 		row.voter_name = original.voter_name;
-		// 	}
-		// }
-
 		console.log('mask as edited', row.id, cellId);
 		markAsEdited(row.id, cellId);
 	});
@@ -275,8 +265,6 @@ const onSaveChanges = async () => {
 	const rowsToPatch = allVotes.filter(
 		(vote) => editedRows.value.has(vote.id) || !existingIds.has(vote.id),
 	);
-
-	console.log('rowsToPatch:', rowsToPatch);
 
 	if (!rowsToPatch.length) return;
 
@@ -378,6 +366,12 @@ const onSaveChanges = async () => {
 	editedCells.value.clear();
 	startEditing(null, null);
 	refresh();
+
+	rowChange.value = rowsToPatch.length;
+	isShowNotificationSaveChange.value = true;
+	setTimeout(() => {
+		isShowNotificationSaveChange.value = false;
+	}, 5000);
 };
 
 const goToOriginal = () => {
@@ -416,7 +410,7 @@ const addNewRow = () => {
 </script>
 
 <template>
-	<div class="!p-10 min-h-dvh !bg-[#F4F4F4] !pt-[90px]">
+	<div class="!p-10 min-h-dvh !bg-[#F4F4F4] !pt-[90px] relative">
 		<cv-breadcrumb noTrailingSlash>
 			<cv-breadcrumb-item class="text-[#0F62FE]">All Data</cv-breadcrumb-item>
 			<cv-breadcrumb-item class="text-[#0F62FE]">Voting</cv-breadcrumb-item>
@@ -426,6 +420,15 @@ const addNewRow = () => {
 
 			<cv-breadcrumb-item>Votes</cv-breadcrumb-item>
 		</cv-breadcrumb>
+
+		<cv-toast-notification
+			v-if="isShowNotificationSaveChange"
+			kind="success"
+			title="Changes Saved"
+			:subTitle="`Changes to ${rowChange} rows have been saved.`"
+			@close="isShowNotificationSaveChange = false"
+			class="z-50 absolute right-[4px] top-[60px]"
+		/>
 
 		<div class="flex flex-row gap-4 justify-between !mb-12 !mt-4">
 			<div class="flex items-center">
@@ -447,8 +450,7 @@ const addNewRow = () => {
 			kind="error"
 			title="Error: Data Validation Failed"
 			@close="isShowNotificationError = false"
-		>
-		</cv-inline-notification>
+		/>
 
 		<div class="bg-white !p-4 flex flex-col">
 			<div class="!p-[16px]">
