@@ -64,14 +64,20 @@ const { data: voteEvent, refresh } = useAsyncData(
 			},
 		});
 		isShowNotificationError.value = voteEvents[0].publish_status === 'ERROR';
-		console.log(voteEvents[0]);
+		// console.log(voteEvents[0]);
 		originalVotesMap.value = {};
 		voteEvents[0]?.votes?.forEach((vote) => {
 			const { voters, ...rest } = vote;
 			originalVotesMap.value[vote.id] = { ...rest };
 		});
 
-		return voteEvents[0];
+		const votes = voteEvents[0].votes.sort((a, b) => {
+			return Number(a.vote_order) - Number(b.vote_order);
+		});
+
+		const voteEvent = voteEvents[0];
+		voteEvent.votes = votes;
+		return voteEvent;
 	},
 	{ server: false },
 );
@@ -126,18 +132,17 @@ const filteredVotes = computed(() => {
 		return [];
 	}
 
-	return voteEvent.value.votes
-		.filter((vote) => {
-			const query = searchQuery.value.toLowerCase();
-			return (
-				vote.voter_name?.toLowerCase().includes(query) ||
-				vote.voter_party?.toLowerCase().includes(query) ||
-				vote.badge_number?.toString().includes(query)
-			);
-		})
-		.sort((a, b) => {
-			return Number(a.vote_order) - Number(b.vote_order);
-		});
+	return voteEvent.value.votes.filter((vote) => {
+		const query = searchQuery.value.toLowerCase();
+		return (
+			vote.voter_name?.toLowerCase().includes(query) ||
+			vote.voter_party?.toLowerCase().includes(query) ||
+			vote.badge_number?.toString().includes(query)
+		);
+	});
+	// .sort((a, b) => {
+	// 	return Number(a.vote_order) - Number(b.vote_order);
+	// });
 });
 
 const selectedRows = ref([]);
@@ -149,11 +154,18 @@ const isRowEdited = (id: string) => {
 	return editedRows.value.has(id);
 };
 
+const isNewRow = (id: string) => {
+	return !originalVotesMap.value[id];
+};
+
 const isCellEdited = (rowId: string, cellId: string) => {
 	return editedCells.value.has(`${rowId}-${cellId}`);
 };
 
 const getRowClass = (row: Vote): string => {
+	if (isNewRow(row.id)) {
+		return '';
+	}
 	if (isRowEdited(row.id)) {
 		return '!bg-[#FCF4D6]';
 	}
@@ -238,73 +250,168 @@ const onOptionChange = (row: Vote, cellId: EditableVoteFields) => {
 		// 		row.voter_name = original.voter_name;
 		// 	}
 		// }
+
+		console.log('mask as edited', row.id, cellId);
 		markAsEdited(row.id, cellId);
 	});
 };
 
 const onSaveChanges = async () => {
-	const rowsToPatch = voteEvent.value?.votes.filter((vote) =>
-		editedRows.value.has(vote.id),
+	const allVotes = voteEvent.value?.votes ?? [];
+	const allIds = allVotes.map((v) => v.id);
+
+	const { votes: existingVotes } = await graphqlClient.query({
+		votes: {
+			__args: {
+				where: {
+					id_IN: allIds,
+				},
+			},
+			id: true,
+		},
+	});
+	const existingIds = new Set(existingVotes.map((v) => v.id));
+
+	const rowsToPatch = allVotes.filter(
+		(vote) => editedRows.value.has(vote.id) || !existingIds.has(vote.id),
 	);
 
-	console.log(rowsToPatch);
+	console.log('rowsToPatch:', rowsToPatch);
 
-	if (rowsToPatch?.length) {
-		await Promise.all(
-			rowsToPatch.map((vote) =>
-				graphqlClient.mutation({
-					updateVotes: {
-						__args: {
-							where: {
-								id_EQ: vote.id as string,
-							},
-							update: {
-								vote_order_SET: vote.vote_order,
-								badge_number_SET: vote.badge_number,
-								voter_name_SET: vote.voter_name,
-								voter_party_SET: vote.voter_party,
-								option_SET: vote.option,
-								voters: [
-									{
-										disconnect: [
-											{
-												where: {
-													node: {
-														id_IN: vote.voters.map((v) => v.id),
-													},
-												},
-											},
-										],
-										connect: [
-											{
-												where: {
-													node: {
-														id_EQ: vote.voter_name?.replaceAll(/\s+/g, '-'),
-													},
-												},
-											},
-										],
-									},
-								],
-							},
+	if (!rowsToPatch.length) return;
+
+	const mutationPromises = rowsToPatch.map((vote) => {
+		const voterId = vote.voter_name?.replaceAll(/\s+/g, '-');
+
+		if (existingIds.has(vote.id)) {
+			// Update
+			return graphqlClient.mutation({
+				updateVotes: {
+					__args: {
+						where: {
+							id_EQ: vote.id,
 						},
-						votes: {
-							id: true,
+						update: {
+							vote_order_SET: vote.vote_order,
+							badge_number_SET: vote.badge_number,
+							voter_name_SET: vote.voter_name,
+							voter_party_SET: vote.voter_party,
+							option_SET: vote.option,
+							voters: [
+								{
+									disconnect: [
+										{
+											where: {
+												node: {
+													id_IN: vote.voters.map((v) => v.id),
+												},
+											},
+										},
+									],
+									connect: [
+										{
+											where: {
+												node: {
+													id_EQ: voterId,
+												},
+											},
+										},
+									],
+								},
+							],
 						},
 					},
-				}),
-			),
-		);
-		editedRows.value.clear();
-		editedCells.value.clear();
-		startEditing(null, null);
-		refresh();
-	}
+					votes: {
+						id: true,
+					},
+				},
+			});
+		} else {
+			// Create
+			return graphqlClient.mutation({
+				createVotes: {
+					__args: {
+						input: [
+							{
+								vote_order: vote.vote_order,
+								badge_number: vote.badge_number,
+								voter_name: vote.voter_name,
+								voter_party: vote.voter_party,
+								option: vote.option,
+								voters: {
+									connect: [
+										{
+											where: {
+												node: {
+													id_EQ: voterId,
+												},
+											},
+										},
+									],
+								},
+								vote_events: {
+									connect: [
+										{
+											where: {
+												node: {
+													id_EQ: voteEvent.value?.id,
+												},
+											},
+										},
+									],
+								},
+							},
+						],
+					},
+					votes: {
+						id: true,
+					},
+				},
+			});
+		}
+	});
+
+	await Promise.all(mutationPromises);
+
+	// reset state
+	editedRows.value.clear();
+	editedCells.value.clear();
+	startEditing(null, null);
+	refresh();
 };
 
 const goToOriginal = () => {
 	const url = voteEvent.value?.links[0]?.url;
 	window.open(url, '_blank');
+};
+
+const addNewRow = () => {
+	const newRow: Pick<
+		Vote,
+		| 'id'
+		| 'vote_order'
+		| 'badge_number'
+		| 'voter_name'
+		| 'voter_party'
+		| 'option'
+		| 'voters'
+	> = {
+		id: crypto.randomUUID(),
+		vote_order: '',
+		badge_number: '',
+		voter_name: '',
+		voter_party: '',
+		option: '',
+		voters: [],
+	};
+	if (voteEvent.value && voteEvent.value.votes) {
+		voteEvent.value.votes = [...voteEvent.value.votes, newRow];
+		console.log(voteEvent);
+		nextTick(() => {
+			const lastRowEl = document.querySelector('[data-last-row]');
+			lastRowEl?.scrollIntoView({ behavior: 'smooth' });
+		});
+	}
 };
 </script>
 
@@ -372,7 +479,9 @@ const goToOriginal = () => {
 					class="!text-black disabled:!text-gray-400"
 					@click=""
 				/>
-				<cv-button :icon="Add" kind="secondary"> Add Vote </cv-button>
+				<cv-button :icon="Add" kind="secondary" @click="addNewRow">
+					Add Vote
+				</cv-button>
 			</div>
 
 			<div>
@@ -414,12 +523,13 @@ const goToOriginal = () => {
 							class="!pl-[16px] w-1/5"
 						/>
 					</template>
-					<template #data>
+					<template #data class="table">
 						<cv-data-table-row
 							v-for="(row, i) in filteredVotes"
 							:id="row.id"
 							:key="row.id"
 							:value="row.id"
+							:data-last-row="i === filteredVotes.length - 1 ? true : null"
 						>
 							<!-- <cv-data-table-cell selection :class="getRowClass(row as Vote)" /> -->
 							<cv-data-table-cell
@@ -428,6 +538,7 @@ const goToOriginal = () => {
 								:class="getRowClass(row as Vote)"
 							>
 								<cv-text-input
+									placeholder="Enter Order No."
 									v-model="row.vote_order"
 									type="text"
 									style="background: transparent; border: none"
@@ -440,6 +551,7 @@ const goToOriginal = () => {
 								:class="getRowClass(row as Vote)"
 							>
 								<cv-text-input
+									placeholder="Enter ID	 No."
 									v-model="row.badge_number"
 									type="text"
 									style="background: transparent; border: none"
@@ -453,13 +565,19 @@ const goToOriginal = () => {
 									getRowClass(row as Vote),
 									{
 										'!text-[#DA1E28]':
-											row.voters.length === 0 && !isRowEdited(row.id),
+											row.voters.length === 0 &&
+											!isRowEdited(row.id) &&
+											!isNewRow(row.id),
 									},
 								]"
 							>
 								<div v-if="isActiveEditing(i, 2)">
 									<cv-combo-box
-										:label="row.voter_name"
+										:label="
+											row.voter_name && row.voter_name?.length > 0
+												? row.voter_name
+												: 'Select voter name'
+										"
 										v-model="row.voter_name"
 										:options="
 											getVoterOptions(row.voter_name, row.voters.length > 0)
@@ -472,9 +590,16 @@ const goToOriginal = () => {
 									/>
 								</div>
 								<div v-else class="flex items-center gap-2 !pl-[16px]">
-									{{ row.voter_name }}
+									<p v-if="row.voter_name && row.voter_name?.length > 0">
+										{{ row.voter_name }}
+									</p>
+									<p v-else class="text-[#707070]">Select voter name</p>
 									<cv-tooltip
-										v-if="row.voters.length === 0 && !isRowEdited(row.id)"
+										v-if="
+											row.voters.length === 0 &&
+											!isRowEdited(row.id) &&
+											!isNewRow(row.id)
+										"
 										:direction="
 											i === filteredVotes.length - 1 ? 'top' : 'bottom'
 										"
@@ -505,6 +630,7 @@ const goToOriginal = () => {
 								:class="getRowClass(row as Vote)"
 							>
 								<cv-text-input
+									placeholder="Enter Party"
 									v-model="row.voter_party"
 									type="text"
 									style="background: transparent; border: none"
@@ -518,7 +644,11 @@ const goToOriginal = () => {
 							>
 								<div v-if="isActiveEditing(i, 4)">
 									<cv-combo-box
-										:label="row.option"
+										:label="
+											row.option && row.option.length > 0
+												? row.option
+												: 'Chose...'
+										"
 										v-model="row.option"
 										:options="optionOptions"
 										item-value-key="value"
@@ -529,8 +659,11 @@ const goToOriginal = () => {
 										@change="onOptionChange(row as Vote, 'option')"
 									/>
 								</div>
-								<div v-else class="!pl-[16px] w-1/5">
-									{{ row.option }}
+								<div v-else class="flex items-center gap-2 !pl-[16px]">
+									<p v-if="row.option && row.option.length > 0">
+										{{ row.option }}
+									</p>
+									<p v-else class="text-[#707070]">Chose...</p>
 									<cv-tooltip
 										v-if="isCellEdited(row.id, 'option')"
 										:direction="
