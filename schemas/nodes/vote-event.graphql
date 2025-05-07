@@ -66,6 +66,10 @@ type VoteEvent implements Event
 	"""
 	result: String
 	"""
+	เงื่อนไขในการผ่านมติ
+	"""
+	pass_condition: String
+	"""
 	จำนวนผู้ที่เห็นด้วย (จากหัวเอกสารรายงานการประชุมของ MSBIS)
 	"""
 	agree_count: Int
