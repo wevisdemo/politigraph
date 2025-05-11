@@ -8,8 +8,6 @@ import Download from '@carbon/icons-vue/es/download/16';
 //@ts-ignore
 import Save from '@carbon/icons-vue/es/save/16';
 //@ts-ignore
-import TrashCan from '@carbon/icons-vue/es/trash-can/16';
-//@ts-ignore
 import WarningFilled16 from '@carbon/icons-vue/es/warning--filled/16';
 import type { Vote } from '~/.genql';
 import { graphqlClient } from '~/utils/graphql/client';
@@ -26,7 +24,11 @@ const onSearch = (event: string) => {
 };
 
 const isShowNotificationError = ref(false);
-const isShowNotificationSaveChange = ref(false);
+const isShowNotification = ref(false);
+const titleNotification = ref({
+	title: '',
+	subtitle: '',
+});
 const rowChange = ref(0);
 const originalVotesMap = ref<Record<string, Partial<Vote>>>({});
 
@@ -86,9 +88,12 @@ const { data: voteEvent, refresh } = useAsyncData(
 
 const peopleOptions = ref<{ value: string; label: string }[]>([]);
 
-const getVoterOptions = (optionName: string | null, available: boolean) => {
-	if (optionName && !available) {
-		return [{ value: optionName, label: optionName }, ...peopleOptions.value];
+const getVoterOptions = (id: string) => {
+	const original = originalVotesMap.value[id];
+	const currentName = original.voter_name;
+	const available = original.voters ? original.voters.length > 0 : 0;
+	if (currentName && !available) {
+		return [{ value: currentName, label: currentName }, ...peopleOptions.value];
 	}
 	return peopleOptions.value;
 };
@@ -142,12 +147,7 @@ const filteredVotes = computed(() => {
 			vote.badge_number?.toString().includes(query)
 		);
 	});
-	// .sort((a, b) => {
-	// 	return Number(a.vote_order) - Number(b.vote_order);
-	// });
 });
-
-const selectedRows = ref([]);
 
 const editedRows = ref<Set<string>>(new Set());
 const editedCells = ref<Set<string>>(new Set());
@@ -248,19 +248,7 @@ const onOptionChange = (row: Vote, cellId: EditableVoteFields) => {
 
 const onSaveChanges = async () => {
 	const allVotes = voteEvent.value?.votes ?? [];
-	const allIds = allVotes.map((v) => v.id);
-
-	const { votes: existingVotes } = await graphqlClient.query({
-		votes: {
-			__args: {
-				where: {
-					id_IN: allIds,
-				},
-			},
-			id: true,
-		},
-	});
-	const existingIds = new Set(existingVotes.map((v) => v.id));
+	const existingIds = new Set(Object.keys(originalVotesMap.value));
 
 	const rowsToPatch = allVotes.filter(
 		(vote) => editedRows.value.has(vote.id) || !existingIds.has(vote.id),
@@ -368,9 +356,11 @@ const onSaveChanges = async () => {
 	refresh();
 
 	rowChange.value = rowsToPatch.length;
-	isShowNotificationSaveChange.value = true;
+	titleNotification.value.title = 'Changes Saved';
+	titleNotification.value.subtitle = `Changes to ${rowChange} rows have been saved.`;
+	isShowNotification.value = true;
 	setTimeout(() => {
-		isShowNotificationSaveChange.value = false;
+		isShowNotification.value = false;
 	}, 5000);
 };
 
@@ -407,6 +397,49 @@ const addNewRow = () => {
 		});
 	}
 };
+
+const selectedRows = ref<string[]>([]);
+const onSelectRow = (ids: string[]) => {
+	selectedRows.value = ids;
+};
+
+const onDelete = async (row: Vote) => {
+	try {
+		await graphqlClient.mutation({
+			deleteVotes: {
+				__args: {
+					where: { id_EQ: row.id },
+				},
+				nodesDeleted: true,
+			},
+		});
+	} catch (error) {
+		console.error('Delete failed', error);
+	}
+};
+
+const deleteSelected = async () => {
+	const toDelete =
+		voteEvent.value?.votes.filter((vote) =>
+			selectedRows.value.includes(vote.id),
+		) || [];
+
+	await Promise.all(toDelete.map((row) => onDelete(row as Vote)));
+
+	await refresh();
+	editedRows.value.clear();
+	editedCells.value.clear();
+	startEditing(null, null);
+
+	const rowDelete = toDelete.length;
+	titleNotification.value.title = 'Row Deleted';
+	titleNotification.value.subtitle = `${rowDelete} vote record has been removed from the table.`;
+	isShowNotification.value = true;
+	setTimeout(() => {
+		isShowNotification.value = false;
+	}, 3000);
+	selectedRows.value = [];
+};
 </script>
 
 <template>
@@ -421,13 +454,15 @@ const addNewRow = () => {
 			<cv-breadcrumb-item>Votes</cv-breadcrumb-item>
 		</cv-breadcrumb>
 
+		<p>Selected: {{ selectedRows }}</p>
+
 		<cv-toast-notification
-			v-if="isShowNotificationSaveChange"
+			v-if="isShowNotification"
 			kind="success"
-			title="Changes Saved"
-			:subTitle="`Changes to ${rowChange} rows have been saved.`"
-			@close="isShowNotificationSaveChange = false"
-			class="z-50 absolute right-[4px] top-[60px]"
+			:title="`${titleNotification.title}`"
+			:subTitle="`${titleNotification.subtitle}`"
+			@close="isShowNotification = false"
+			class="z-50 fixed right-[4px] top-[60px]"
 		/>
 
 		<div class="flex flex-row gap-4 justify-between !mb-12 !mt-4">
@@ -458,232 +493,204 @@ const addNewRow = () => {
 			</div>
 		</div>
 
-		<div>
-			<div class="bg-white flex items-center justify-end">
-				<cv-search
-					v-model="searchQuery"
-					label="Search"
-					placeholder="ค้นหาด้วย ชื่อ-นามสกุล ชื่อสังกัด เลขที่บัตร"
-					@input="onSearch"
-					light
-				/>
-				<cv-button
-					:icon="Download"
-					kind="ghost"
-					hasIconOnly
-					class="!text-black"
-				/>
-				<cv-button
-					:icon="TrashCan"
-					kind="ghost"
-					hasIconOnly
-					:disabled="selectedRows.length === 0"
-					class="!text-black disabled:!text-gray-400"
-					@click=""
-				/>
-				<cv-button :icon="Add" kind="secondary" @click="addNewRow">
-					Add Vote
-				</cv-button>
-			</div>
-
-			<div>
-				<cv-data-table
-					v-model:rows-selected="selectedRows"
-					:selection="true"
-					class="w-full table-fixed"
-				>
-					<template #headings>
-						<!-- <cv-data-table-heading selection class="w-12"/> -->
-						<cv-data-table-heading
-							id="sb-number"
-							heading="ลำดับที่"
-							sortable
-							class="!pl-[16px] w-1/5"
-						/>
-						<cv-data-table-heading
-							id="sb-badge-number"
-							heading="เลขที่บัตร"
-							sortable
-							class="!pl-[16px] w-1/5"
-						/>
-						<cv-data-table-heading
-							id="sb-politician"
-							heading="ชื่อ-สกุล"
-							sortable
-							class="!pl-[16px] w-1/5"
-						/>
-						<cv-data-table-heading
-							id="sb-party"
-							heading="ชื่อสังกัด"
-							sortable
-							class="!pl-[16px] w-1/5"
-						/>
-						<cv-data-table-heading
-							id="sb-vote"
-							heading="ผลการลงคะแนน"
-							sortable
-							class="!pl-[16px] w-1/5"
-						/>
-					</template>
-					<template #data class="table">
-						<cv-data-table-row
-							v-for="(row, i) in filteredVotes"
-							:id="row.id"
-							:key="row.id"
-							:value="row.id"
-							:data-last-row="i === filteredVotes.length - 1 ? true : null"
+		<div class="bg-white">
+			<cv-data-table
+				:rows="filteredVotes"
+				v-model:selectedRows="selectedRows"
+				@update:rows-selected="onSelectRow"
+				useBatchActions
+				class="w-full table-fixed"
+				@search="onSearch"
+			>
+				<template #actions>
+					<cv-button
+						:icon="Download"
+						kind="ghost"
+						hasIconOnly
+						class="!text-black"
+					/>
+					<cv-button :icon="Add" kind="secondary" @click="addNewRow">
+						Add Vote
+					</cv-button>
+				</template>
+				<template #batch-actions>
+					<cv-button kind="danger--ghost" @click="deleteSelected">
+						Delete
+					</cv-button>
+				</template>
+				<template #headings>
+					<cv-data-table-heading
+						id="sb-number"
+						heading="ลำดับที่"
+						sortable
+						class="!pl-[16px] w-1/5"
+					/>
+					<cv-data-table-heading
+						id="sb-badge-number"
+						heading="เลขที่บัตร"
+						sortable
+						class="!pl-[16px] w-1/5"
+					/>
+					<cv-data-table-heading
+						id="sb-politician"
+						heading="ชื่อ-สกุล"
+						sortable
+						class="!pl-[16px] w-1/5"
+					/>
+					<cv-data-table-heading
+						id="sb-party"
+						heading="ชื่อสังกัด"
+						sortable
+						class="!pl-[16px] w-1/5"
+					/>
+					<cv-data-table-heading
+						id="sb-vote"
+						heading="ผลการลงคะแนน"
+						sortable
+						class="!pl-[16px] w-1/5"
+					/>
+				</template>
+				<template #data class="table">
+					<cv-data-table-row
+						v-for="(row, i) in filteredVotes"
+						:key="row.id"
+						:value="row.id"
+						:data-last-row="i === filteredVotes.length - 1 ? true : null"
+						@class="getRowClass(row as Vote)"
+					>
+						<cv-data-table-cell
+							:key="row.id + '-' + 'vote_order'"
+							@click="startEditing(i, 0)"
 						>
-							<!-- <cv-data-table-cell selection :class="getRowClass(row as Vote)" /> -->
-							<cv-data-table-cell
-								:key="row.id + '-' + 'vote_order'"
-								@click="startEditing(i, 0)"
-								:class="getRowClass(row as Vote)"
-							>
-								<cv-text-input
-									placeholder="Enter Order No."
-									v-model="row.vote_order"
-									type="text"
-									style="background: transparent; border: none"
-									@change="markAsEdited(row.id, 'vote_order')"
+							<cv-text-input
+								placeholder="Enter Order No."
+								v-model="row.vote_order"
+								type="text"
+								style="background: transparent; border: none"
+								@change="markAsEdited(row.id, 'vote_order')"
+							/>
+						</cv-data-table-cell>
+						<cv-data-table-cell
+							:key="row.id + '-' + 'badge_number'"
+							@click="startEditing(i, 1)"
+						>
+							<cv-text-input
+								placeholder="Enter ID	 No."
+								v-model="row.badge_number"
+								type="text"
+								style="background: transparent; border: none"
+								@change="markAsEdited(row.id, 'badge_number')"
+							/>
+						</cv-data-table-cell>
+						<cv-data-table-cell
+							:key="row.id + '-' + 'voter_name'"
+							@click="startEditing(i, 2)"
+							:class="[
+								{
+									'!text-[#DA1E28]':
+										row.voters.length === 0 &&
+										!isRowEdited(row.id) &&
+										!isNewRow(row.id),
+								},
+							]"
+						>
+							<div v-if="isActiveEditing(i, 2)">
+								<cv-combo-box
+									:label="
+										row.voter_name && row.voter_name?.length > 0
+											? row.voter_name
+											: 'Select voter name'
+									"
+									v-model="row.voter_name"
+									:options="getVoterOptions(row.id)"
+									item-value-key="value"
+									item-text-key="label"
+									autoFilter
+									autoHighlight
+									@change="onOptionChange(row as Vote, 'voter_name')"
 								/>
-							</cv-data-table-cell>
-							<cv-data-table-cell
-								:key="row.id + '-' + 'badge_number'"
-								@click="startEditing(i, 1)"
-								:class="getRowClass(row as Vote)"
-							>
-								<cv-text-input
-									placeholder="Enter ID	 No."
-									v-model="row.badge_number"
-									type="text"
-									style="background: transparent; border: none"
-									@change="markAsEdited(row.id, 'badge_number')"
+							</div>
+							<div v-else class="flex items-center gap-2 !pl-[16px]">
+								<p v-if="row.voter_name && row.voter_name?.length > 0">
+									{{ row.voter_name }}
+								</p>
+								<p v-else class="text-[#707070]">Select voter name</p>
+								<cv-tooltip
+									v-if="
+										row.voters.length === 0 &&
+										!isRowEdited(row.id) &&
+										!isNewRow(row.id)
+									"
+									:direction="i === filteredVotes.length - 1 ? 'top' : 'bottom'"
+									tip="Invalid name. Select a voter from the list."
+								>
+									<WarningFilled16 class="inline-block" style="fill: #da1e28" />
+								</cv-tooltip>
+								<cv-tooltip
+									v-if="isCellEdited(row.id, 'voter_name')"
+									:direction="i === filteredVotes.length - 1 ? 'top' : 'bottom'"
+									tip="Unsaved change"
+								>
+									<WarningFilled16 class="inline-block" style="fill: #ff8300" />
+								</cv-tooltip>
+							</div>
+						</cv-data-table-cell>
+						<cv-data-table-cell
+							:key="row.id + '-' + 'voter_party'"
+							@click="startEditing(i, 3)"
+						>
+							<cv-text-input
+								placeholder="Enter Party"
+								v-model="row.voter_party"
+								type="text"
+								style="background: transparent; border: none"
+								@change="markAsEdited(row.id, 'voter_party')"
+							/>
+						</cv-data-table-cell>
+						<cv-data-table-cell
+							:key="row.id + '-' + 'option'"
+							@click="startEditing(i, 4)"
+						>
+							<div v-if="isActiveEditing(i, 4)">
+								<cv-combo-box
+									:label="
+										row.option && row.option.length > 0
+											? row.option
+											: 'Chose...'
+									"
+									v-model="row.option"
+									:options="optionOptions"
+									item-value-key="value"
+									item-text-key="label"
+									v-show="isActiveEditing(i, 4)"
+									autoFilter
+									autoHighlight
+									@change="onOptionChange(row as Vote, 'option')"
 								/>
-							</cv-data-table-cell>
-							<cv-data-table-cell
-								:key="row.id + '-' + 'voter_name'"
-								@click="startEditing(i, 2)"
-								:class="[
-									getRowClass(row as Vote),
-									{
-										'!text-[#DA1E28]':
-											row.voters.length === 0 &&
-											!isRowEdited(row.id) &&
-											!isNewRow(row.id),
-									},
-								]"
-							>
-								<div v-if="isActiveEditing(i, 2)">
-									<cv-combo-box
-										:label="
-											row.voter_name && row.voter_name?.length > 0
-												? row.voter_name
-												: 'Select voter name'
-										"
-										v-model="row.voter_name"
-										:options="
-											getVoterOptions(row.voter_name, row.voters.length > 0)
-										"
-										item-value-key="value"
-										item-text-key="label"
-										autoFilter
-										autoHighlight
-										@change="onOptionChange(row as Vote, 'voter_name')"
-									/>
-								</div>
-								<div v-else class="flex items-center gap-2 !pl-[16px]">
-									<p v-if="row.voter_name && row.voter_name?.length > 0">
-										{{ row.voter_name }}
-									</p>
-									<p v-else class="text-[#707070]">Select voter name</p>
-									<cv-tooltip
-										v-if="
-											row.voters.length === 0 &&
-											!isRowEdited(row.id) &&
-											!isNewRow(row.id)
-										"
-										:direction="
-											i === filteredVotes.length - 1 ? 'top' : 'bottom'
-										"
-										tip="Invalid name. Select a voter from the list."
-									>
-										<WarningFilled16
-											class="inline-block"
-											style="fill: #da1e28"
-										/>
-									</cv-tooltip>
-									<cv-tooltip
-										v-if="isCellEdited(row.id, 'voter_name')"
-										:direction="
-											i === filteredVotes.length - 1 ? 'top' : 'bottom'
-										"
-										tip="Unsaved change"
-									>
-										<WarningFilled16
-											class="inline-block"
-											style="fill: #ff8300"
-										/>
-									</cv-tooltip>
-								</div>
-							</cv-data-table-cell>
-							<cv-data-table-cell
-								:key="row.id + '-' + 'voter_party'"
-								@click="startEditing(i, 3)"
-								:class="getRowClass(row as Vote)"
-							>
-								<cv-text-input
-									placeholder="Enter Party"
-									v-model="row.voter_party"
-									type="text"
-									style="background: transparent; border: none"
-									@change="markAsEdited(row.id, 'voter_party')"
-								/>
-							</cv-data-table-cell>
-							<cv-data-table-cell
-								:key="row.id + '-' + 'option'"
-								:class="getRowClass(row as Vote)"
-								@click="startEditing(i, 4)"
-							>
-								<div v-if="isActiveEditing(i, 4)">
-									<cv-combo-box
-										:label="
-											row.option && row.option.length > 0
-												? row.option
-												: 'Chose...'
-										"
-										v-model="row.option"
-										:options="optionOptions"
-										item-value-key="value"
-										item-text-key="label"
-										v-show="isActiveEditing(i, 4)"
-										autoFilter
-										autoHighlight
-										@change="onOptionChange(row as Vote, 'option')"
-									/>
-								</div>
-								<div v-else class="flex items-center gap-2 !pl-[16px]">
-									<p v-if="row.option && row.option.length > 0">
-										{{ row.option }}
-									</p>
-									<p v-else class="text-[#707070]">Chose...</p>
-									<cv-tooltip
-										v-if="isCellEdited(row.id, 'option')"
-										:direction="
-											i === filteredVotes.length - 1 ? 'top' : 'bottom'
-										"
-										tip="Unsaved change"
-									>
-										<WarningFilled16
-											class="inline-block"
-											style="fill: #ff8300"
-										/>
-									</cv-tooltip>
-								</div>
-							</cv-data-table-cell>
-						</cv-data-table-row>
-					</template>
-				</cv-data-table>
-			</div>
+							</div>
+							<div v-else class="flex items-center gap-2 !pl-[16px]">
+								<p v-if="row.option && row.option.length > 0">
+									{{ row.option }}
+								</p>
+								<p v-else class="text-[#707070]">Chose...</p>
+								<cv-tooltip
+									v-if="isCellEdited(row.id, 'option')"
+									:direction="i === filteredVotes.length - 1 ? 'top' : 'bottom'"
+									tip="Unsaved change"
+								>
+									<WarningFilled16 class="inline-block" style="fill: #ff8300" />
+								</cv-tooltip>
+							</div>
+						</cv-data-table-cell>
+					</cv-data-table-row>
+				</template>
+			</cv-data-table>
 		</div>
 	</div>
 </template>
+
+<style scoped>
+::v-deep(.bx--table-toolbar) {
+	background-color: white !important;
+}
+</style>
