@@ -11,6 +11,7 @@ import Save from '@carbon/icons-vue/es/save/16';
 import WarningFilled16 from '@carbon/icons-vue/es/warning--filled/16';
 import type { Vote } from '~/.genql';
 import { graphqlClient } from '~/utils/graphql/client';
+import { csvFormat } from 'd3-dsv';
 
 definePageMeta({
 	layout: 'admin-layout',
@@ -88,10 +89,9 @@ const { data: voteEvent, refresh } = useAsyncData(
 
 const peopleOptions = ref<{ value: string; label: string }[]>([]);
 
-const getVoterOptions = (id: string) => {
+const getVoterOptions = (id: string, available: boolean) => {
 	const original = originalVotesMap.value[id];
 	const currentName = original.voter_name;
-	const available = original.voters ? original.voters.length > 0 : 0;
 	if (currentName && !available) {
 		return [{ value: currentName, label: currentName }, ...peopleOptions.value];
 	}
@@ -241,7 +241,7 @@ const markAsEdited = (rowId: string, cellKey: EditableVoteFields) => {
 
 const onOptionChange = (row: Vote, cellId: EditableVoteFields) => {
 	nextTick(() => {
-		console.log('mask as edited', row.id, cellId);
+		// console.log('mask as edited', row.id, cellId);
 		markAsEdited(row.id, cellId);
 	});
 };
@@ -390,7 +390,7 @@ const addNewRow = () => {
 	};
 	if (voteEvent.value && voteEvent.value.votes) {
 		voteEvent.value.votes = [...voteEvent.value.votes, newRow];
-		console.log(voteEvent);
+		// console.log(voteEvent);
 		nextTick(() => {
 			const lastRowEl = document.querySelector('[data-last-row]');
 			lastRowEl?.scrollIntoView({ behavior: 'smooth' });
@@ -440,6 +440,43 @@ const deleteSelected = async () => {
 	}, 3000);
 	selectedRows.value = [];
 };
+
+const downloadCSV = () => {
+	const votesData = Object.values(originalVotesMap.value).sort((a, b) => {
+		return Number(a.vote_order) - Number(b.vote_order);
+	});
+
+	const headers = [
+		{ key: 'vote_order', label: 'ลำดับ' },
+		{ key: 'badge_number', label: 'เลขที่บัตร' },
+		{ key: 'voter_name', label: 'ชื่อ-สกุล' },
+		{ key: 'voter_party', label: 'พรรค' },
+		{ key: 'option', label: 'ผลลงคะแนน' },
+	];
+
+	const csvData = votesData.map((row) => {
+		const obj: Record<string, string> = {};
+		headers.forEach(({ key, label }) => {
+			obj[label] = row[key as keyof Vote] ?? '';
+		});
+		return obj;
+	});
+
+	const csv = csvFormat(
+		csvData,
+		headers.map((h) => h.label),
+	);
+	const BOM = '\uFEFF';
+	const blob = new Blob([BOM + csv], { type: 'text/csv;charset=utf-8;' });
+
+	const url = URL.createObjectURL(blob);
+	const link = document.createElement('a');
+	link.setAttribute('href', url);
+	link.setAttribute('download', 'votes.csv');
+	document.body.appendChild(link);
+	link.click();
+	document.body.removeChild(link);
+};
 </script>
 
 <template>
@@ -453,8 +490,6 @@ const deleteSelected = async () => {
 
 			<cv-breadcrumb-item>Votes</cv-breadcrumb-item>
 		</cv-breadcrumb>
-
-		<p>Selected: {{ selectedRows }}</p>
 
 		<cv-toast-notification
 			v-if="isShowNotification"
@@ -508,6 +543,7 @@ const deleteSelected = async () => {
 						kind="ghost"
 						hasIconOnly
 						class="!text-black"
+						@click="downloadCSV"
 					/>
 					<cv-button :icon="Add" kind="secondary" @click="addNewRow">
 						Add Vote
@@ -602,7 +638,7 @@ const deleteSelected = async () => {
 											: 'Select voter name'
 									"
 									v-model="row.voter_name"
-									:options="getVoterOptions(row.id)"
+									:options="getVoterOptions(row.id, row.voters.length > 0)"
 									item-value-key="value"
 									item-text-key="label"
 									autoFilter
