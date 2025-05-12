@@ -254,110 +254,120 @@ const onSaveChanges = async () => {
 		(vote) => editedRows.value.has(vote.id) || !existingIds.has(vote.id),
 	);
 
-	if (!rowsToPatch.length) return;
+	console.log(rowsToPatch, toDeleteIds.value);
 
-	const mutationPromises = rowsToPatch.map((vote) => {
-		const voterId = vote.voter_name?.replaceAll(/\s+/g, '-');
+	if (!rowsToPatch.length && !toDeleteIds.value.size) return;
 
-		if (existingIds.has(vote.id)) {
-			// Update
-			return graphqlClient.mutation({
-				updateVotes: {
-					__args: {
-						where: {
-							id_EQ: vote.id,
+	if (rowsToPatch.length) {
+		const mutationPromises = rowsToPatch.map((vote) => {
+			const voterId = vote.voter_name?.replaceAll(/\s+/g, '-');
+
+			if (existingIds.has(vote.id)) {
+				// Update
+				return graphqlClient.mutation({
+					updateVotes: {
+						__args: {
+							where: {
+								id_EQ: vote.id,
+							},
+							update: {
+								vote_order_SET: vote.vote_order,
+								badge_number_SET: vote.badge_number,
+								voter_name_SET: vote.voter_name,
+								voter_party_SET: vote.voter_party,
+								option_SET: vote.option,
+								voters: [
+									{
+										disconnect: [
+											{
+												where: {
+													node: {
+														id_IN: vote.voters.map((v) => v.id),
+													},
+												},
+											},
+										],
+										connect: [
+											{
+												where: {
+													node: {
+														id_EQ: voterId,
+													},
+												},
+											},
+										],
+									},
+								],
+							},
 						},
-						update: {
-							vote_order_SET: vote.vote_order,
-							badge_number_SET: vote.badge_number,
-							voter_name_SET: vote.voter_name,
-							voter_party_SET: vote.voter_party,
-							option_SET: vote.option,
-							voters: [
+						votes: {
+							id: true,
+						},
+					},
+				});
+			} else {
+				// Create
+				return graphqlClient.mutation({
+					createVotes: {
+						__args: {
+							input: [
 								{
-									disconnect: [
-										{
-											where: {
-												node: {
-													id_IN: vote.voters.map((v) => v.id),
+									vote_order: vote.vote_order,
+									badge_number: vote.badge_number,
+									voter_name: vote.voter_name,
+									voter_party: vote.voter_party,
+									option: vote.option,
+									voters: {
+										connect: [
+											{
+												where: {
+													node: {
+														id_EQ: voterId,
+													},
 												},
 											},
-										},
-									],
-									connect: [
-										{
-											where: {
-												node: {
-													id_EQ: voterId,
+										],
+									},
+									vote_events: {
+										connect: [
+											{
+												where: {
+													node: {
+														id_EQ: voteEvent.value?.id,
+													},
 												},
 											},
-										},
-									],
+										],
+									},
 								},
 							],
 						},
+						votes: {
+							id: true,
+						},
 					},
-					votes: {
-						id: true,
-					},
-				},
-			});
-		} else {
-			// Create
-			return graphqlClient.mutation({
-				createVotes: {
-					__args: {
-						input: [
-							{
-								vote_order: vote.vote_order,
-								badge_number: vote.badge_number,
-								voter_name: vote.voter_name,
-								voter_party: vote.voter_party,
-								option: vote.option,
-								voters: {
-									connect: [
-										{
-											where: {
-												node: {
-													id_EQ: voterId,
-												},
-											},
-										},
-									],
-								},
-								vote_events: {
-									connect: [
-										{
-											where: {
-												node: {
-													id_EQ: voteEvent.value?.id,
-												},
-											},
-										},
-									],
-								},
-							},
-						],
-					},
-					votes: {
-						id: true,
-					},
-				},
-			});
-		}
-	});
+				});
+			}
+		});
 
-	await Promise.all(mutationPromises);
+		await Promise.all(mutationPromises);
+	}
+
+	if (toDeleteIds.value.size) {
+		await Promise.all(Array.from(toDeleteIds.value).map((id) => onDelete(id)));
+	}
+
+	rowChange.value = rowsToPatch.length + toDeleteIds.value.size;
+	titleNotification.value.title = 'Changes Saved';
+	titleNotification.value.subtitle = `Changes to ${rowChange.value} rows have been saved.`;
 
 	// reset state
 	editedRows.value.clear();
 	editedCells.value.clear();
+	toDeleteIds.value.clear();
 	startEditing(null, null);
-	refresh();
+	await refresh();
 
-	rowChange.value = rowsToPatch.length;
-	titleNotification.value.title = 'Changes Saved';
-	titleNotification.value.subtitle = `Changes to ${rowChange} rows have been saved.`;
 	isShowNotification.value = true;
 	setTimeout(() => {
 		isShowNotification.value = false;
@@ -402,13 +412,14 @@ const selectedRows = ref<string[]>([]);
 const onSelectRow = (ids: string[]) => {
 	selectedRows.value = ids;
 };
+const toDeleteIds = ref<Set<string>>(new Set());
 
-const onDelete = async (row: Vote) => {
+const onDelete = async (id: string) => {
 	try {
 		await graphqlClient.mutation({
 			deleteVotes: {
 				__args: {
-					where: { id_EQ: row.id },
+					where: { id_EQ: id },
 				},
 				nodesDeleted: true,
 			},
@@ -419,26 +430,23 @@ const onDelete = async (row: Vote) => {
 };
 
 const deleteSelected = async () => {
-	const toDelete =
-		voteEvent.value?.votes.filter((vote) =>
-			selectedRows.value.includes(vote.id),
-		) || [];
+	if (!voteEvent.value) return;
+	selectedRows.value.forEach((id) => toDeleteIds.value.add(id));
 
-	await Promise.all(toDelete.map((row) => onDelete(row as Vote)));
+	const votesFilter =
+		voteEvent.value?.votes.filter((vote) => !toDeleteIds.value.has(vote.id)) ||
+		[];
+	voteEvent.value.votes = votesFilter;
 
-	await refresh();
-	editedRows.value.clear();
-	editedCells.value.clear();
-	startEditing(null, null);
+	selectedRows.value = [];
 
-	const rowDelete = toDelete.length;
+	const rowDelete = toDeleteIds.value.size;
 	titleNotification.value.title = 'Row Deleted';
 	titleNotification.value.subtitle = `${rowDelete} vote record has been removed from the table.`;
 	isShowNotification.value = true;
 	setTimeout(() => {
 		isShowNotification.value = false;
 	}, 3000);
-	selectedRows.value = [];
 };
 
 const downloadCSV = () => {
