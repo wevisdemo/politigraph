@@ -31,7 +31,7 @@ const login = async () => {
 		{
 			email: email.value,
 			password: password.value,
-			callbackURL: '/admin/voting',
+			callbackURL: '/admin/vote-events',
 			rememberMe: false,
 		},
 		{

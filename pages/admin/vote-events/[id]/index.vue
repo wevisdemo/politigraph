@@ -33,7 +33,6 @@ const { data: VoteEventData } = await useAsyncData(
 				start_date: true,
 				result: true,
 				description: true,
-
 				publish_status: true,
 				classification: true,
 				organizations: {
@@ -47,7 +46,6 @@ const { data: VoteEventData } = await useAsyncData(
 						sort: [{ note: 'ASC' }],
 					},
 				},
-
 				disagree_count: true,
 				agree_count: true,
 				abstain_count: true,
@@ -85,7 +83,6 @@ const isPublish = computed(
 const voteEventFormInput = useForm({
 	defaultValues,
 	onSubmit: async ({ value }) => {
-		// Do something with form data
 		let organizationDisconnect: string[] = [],
 			organizationsConnect: string[] = [];
 		if (defaultValues.organizations && value.organizations) {
@@ -103,7 +100,7 @@ const voteEventFormInput = useForm({
 		const linkCreate: { node: { note: string; url: string } }[] =
 			value.links.map((d) => ({ node: { note: d.note ?? '', url: d.url } }));
 
-		const { updateVoteEvents } = await graphqlClient.mutation({
+		await graphqlClient.mutation({
 			updateVoteEvents: {
 				__args: {
 					where: {
@@ -187,11 +184,13 @@ const { data: OrganizationList } = await useAsyncData(
 	{ server: false },
 );
 </script>
+
 <template>
 	<div class="!p-10 min-h-dvh !bg-[#F4F4F4] !pt-[90px]">
 		<cv-breadcrumb noTrailingSlash>
-			<cv-breadcrumb-item class="text-[#0F62FE]">All Data</cv-breadcrumb-item>
-			<cv-breadcrumb-item class="text-[#0F62FE]">Voting</cv-breadcrumb-item>
+			<cv-breadcrumb-item class="text-[#0F62FE]"
+				><a href="./">Vote Events</a></cv-breadcrumb-item
+			>
 			<cv-breadcrumb-item>{{
 				voteEventFormInput.getFieldValue('title')
 			}}</cv-breadcrumb-item>
@@ -205,18 +204,20 @@ const { data: OrganizationList } = await useAsyncData(
 				}
 			"
 		>
-			<div class="flex flex-row justify-between">
-				<div class="basis-1/2 flex flex-row items-center gap-6">
-					<h3 class="!font-normal !mb-12 !mt-4">
+			<div
+				class="flex flex-col md:flex-row flex-wrap justify-end items-end md:items-center gap-4 !my-6"
+			>
+				<div class="flex-1 flex flex-row gap-4 items-center">
+					<h2 class="md:min-w-xl">
 						{{ voteEventFormInput.getFieldValue('title') }}
-					</h3>
+					</h2>
 					<div>
 						<ui-publish-status-tag
 							:status="voteEventFormInput.getFieldValue('publish_status') || ''"
 						/>
 					</div>
 				</div>
-				<div class="flex justify-between items-center gap-4">
+				<div class="flex gap-2">
 					<voteEventFormInput.Subscribe>
 						<template v-slot="{ canSubmit }">
 							<cv-button
@@ -231,7 +232,7 @@ const { data: OrganizationList } = await useAsyncData(
 					<cv-button
 						default="Unpublished"
 						:icon="isPublish ? ViewOff16 : View16"
-						:kind="isPublish ? 'tertiary' : 'primary'"
+						kind="tertiary"
 						@click="
 							async () => {
 								const { updateVoteEvents } = await graphqlClient.mutation({
@@ -252,7 +253,6 @@ const { data: OrganizationList } = await useAsyncData(
 										},
 									},
 								});
-								console.log(updateVoteEvents);
 
 								if (updateVoteEvents.voteEvents) {
 									refreshNuxtData(['VoteEventData']);
@@ -280,11 +280,11 @@ const { data: OrganizationList } = await useAsyncData(
 				@close="isShowNotificationError = false"
 			/> -->
 
-			<div class="flex gap-8">
+			<div class="flex flex-col md:flex-row gap-8">
 				<div class="bg-white !p-4 basis-2/4">
 					<form class="flex flex-col gap-6" @submit.prevent="() => {}">
 						<div class="flex justify-between items-center">
-							<h4>Voting Details</h4>
+							<h4>Vote Events Details</h4>
 						</div>
 						<div class="!mb-3">
 							<voteEventFormInput.Field name="title">
@@ -330,7 +330,7 @@ const { data: OrganizationList } = await useAsyncData(
 							<voteEventFormInput.Field name="organizations">
 								<template v-slot="{ field }">
 									<cv-multi-select
-										title="Involving Assembly(MultiSelect) query ทั้งหมด "
+										title="Involving Assemblies"
 										:label="field.state.value?.join(', ')"
 										:options="
 											OrganizationList.map((d) => ({
@@ -388,20 +388,19 @@ const { data: OrganizationList } = await useAsyncData(
 							</voteEventFormInput.Field>
 						</div>
 						<div class="!mb-3">
-							<p class="!font-bold !mb-2">Related Link</p>
+							<p class="!font-bold !mb-2">Related Links</p>
 							<div class="opacity-50">
-								สำหรับช่อง Document Note ให้ใส่ชนิดเอกสาร เช่น
-								"ใบประมวลผลการลงมติ" หรือ
+								สำหรับช่อง Notes ให้ใส่ชนิดเอกสาร เช่น "ใบประมวลผลการลงมติ" หรือ
 								"ระบบฐานข้อมูลรายงานและบันทึกการประชุม"
 							</div>
 						</div>
 						<voteEventFormInput.Field name="links">
-							<template v-slot="{ field, state }">
+							<template v-slot="{ field }">
 								<div v-for="(_, i) of field.state.value">
 									<voteEventFormInput.Field :key="i" :name="`links[${i}].note`">
-										<template v-slot="{ field: subField, state }">
+										<template v-slot="{ field: subField }">
 											<div class="flex flex-row justify-between">
-												<div>{{ `Document ${i + 1}` }}</div>
+												<h6>{{ `Link ${i + 1}` }}</h6>
 												<div>
 													<cv-button
 														@click="field.removeValue(i)"
@@ -413,7 +412,7 @@ const { data: OrganizationList } = await useAsyncData(
 											</div>
 											<div class="!mb-3">
 												<cv-text-input
-													label="Document Note"
+													label="Notes"
 													placeholder=""
 													:modelValue="subField.state.value"
 													@update:modelValue="subField.handleChange"
@@ -423,10 +422,10 @@ const { data: OrganizationList } = await useAsyncData(
 										</template>
 									</voteEventFormInput.Field>
 									<voteEventFormInput.Field :key="i" :name="`links[${i}].url`">
-										<template v-slot="{ field: subField, state }">
+										<template v-slot="{ field: subField }">
 											<div class="!mb-3">
 												<cv-text-input
-													label="Document URL"
+													label="URL"
 													placeholder=""
 													:modelValue="subField.state.value"
 													@update:modelValue="subField.handleChange"
@@ -441,7 +440,7 @@ const { data: OrganizationList } = await useAsyncData(
 										default="Add Another Item"
 										kind="tertiary"
 										@click="() => field.pushValue({ note: '', url: '' })"
-										>Add Another Item</cv-button
+										>Add a link</cv-button
 									>
 								</div>
 							</template>

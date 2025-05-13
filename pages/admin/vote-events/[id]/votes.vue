@@ -490,20 +490,20 @@ const downloadCSV = () => {
 <template>
 	<div class="!p-10 min-h-dvh !bg-[#F4F4F4] !pt-[90px] relative">
 		<cv-breadcrumb noTrailingSlash>
-			<cv-breadcrumb-item class="text-[#0F62FE]">All Data</cv-breadcrumb-item>
-			<cv-breadcrumb-item class="text-[#0F62FE]">Voting</cv-breadcrumb-item>
-			<cv-breadcrumb-item class="text-[#0F62FE]">{{
-				voteEvent?.title
-			}}</cv-breadcrumb-item>
-
+			<cv-breadcrumb-item class="text-[#0F62FE]"
+				><a href="../">Vote Events</a></cv-breadcrumb-item
+			>
+			<cv-breadcrumb-item class="text-[#0F62FE]"
+				><a href="./">{{ voteEvent?.title }}</a></cv-breadcrumb-item
+			>
 			<cv-breadcrumb-item>Votes</cv-breadcrumb-item>
 		</cv-breadcrumb>
 
 		<cv-toast-notification
 			v-if="isShowNotification"
 			kind="success"
-			:title="`${titleNotification.title}`"
-			:subTitle="`${titleNotification.subtitle}`"
+			:title="titleNotification.title"
+			:subTitle="titleNotification.subtitle"
 			@close="isShowNotification = false"
 			class="z-50 fixed right-[4px] top-[60px]"
 		/>

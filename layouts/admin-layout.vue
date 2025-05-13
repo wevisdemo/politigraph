@@ -24,7 +24,7 @@ onMounted(async () => {
 	if (session == null) {
 		router.push('/admin');
 	} else {
-		if (route.name == 'admin') router.push('/admin/voting');
+		if (route.name == 'admin') router.push('/admin/vote-events');
 		username.value = session.user.name;
 		email.value = session.user.email;
 	}
@@ -38,8 +38,8 @@ onMounted(async () => {
 				<template v-slot:left-panels>
 					<cv-side-nav id="side-nav" rail fixed>
 						<cv-side-nav-items>
-							<cv-side-nav-link href="/admin/voting" active>
-								Voting
+							<cv-side-nav-link href="/admin/vote-events" active>
+								Vote Events
 							</cv-side-nav-link>
 						</cv-side-nav-items>
 					</cv-side-nav>
@@ -52,7 +52,7 @@ onMounted(async () => {
 						v-if="username != ''"
 					/>
 
-					<cv-header-name href="javascript:void(0)" class="pointer-events-none"
+					<cv-header-name href="/admin"
 						><p class="!text-black">
 							WeVis <span class="!font-bold">Politigraph Admin</span>
 						</p></cv-header-name

@@ -95,20 +95,18 @@ const router = useRouter();
 <template>
 	<cv-data-table class="bg-white" title="Votes" helperText="">
 		<template #actions>
-			<cv-button kind="ghost" :icon="Edit16" @click="() => router.push('votes')"
+			<cv-button
+				kind="ghost"
+				:icon="Edit16"
+				@click="() => router.push(`${voteEventId}/votes`)"
 				>Edit</cv-button
 			>
 		</template>
 		<template #headings>
-			<cv-data-table-heading
-				id="sb-title"
-				heading="#"
-				sortable
-				order="ascending"
-			/>
-			<cv-data-table-heading id="sb-politician" heading="Politician" sortable />
-			<cv-data-table-heading id="sb-party" heading="Party" sortable />
-			<cv-data-table-heading id="sb-vote" heading="Vote" sortable />
+			<cv-data-table-heading id="sb-title" heading="#" />
+			<cv-data-table-heading id="sb-politician" heading="Politician" />
+			<cv-data-table-heading id="sb-party" heading="Party" />
+			<cv-data-table-heading id="sb-vote" heading="Vote" />
 		</template>
 		<div>voter_name ถ้าไม่ match voters ให้ใส่ชื้อสีแดง</div>
 		<template #data>
