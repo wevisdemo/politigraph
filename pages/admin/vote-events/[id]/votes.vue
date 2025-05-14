@@ -510,7 +510,13 @@ const downloadCSV = () => {
 			class="z-50 fixed right-[4px] top-[60px]"
 		/>
 
-		<div class="flex flex-row gap-4 justify-between !mb-12 !mt-4">
+		<cv-skeleton-text
+			v-if="!voteEvent"
+			class="!my-6"
+			heading
+			:line-count="2"
+		></cv-skeleton-text>
+		<div v-else class="flex flex-row gap-4 justify-between !mb-12 !mt-4">
 			<div class="flex items-center">
 				<h3 class="!font-normal">Votes - {{ voteEvent?.title }}</h3>
 			</div>
@@ -532,14 +538,16 @@ const downloadCSV = () => {
 			@close="isShowNotificationError = false"
 		/>
 
-		<div class="bg-white !p-4 flex flex-col">
-			<div class="!p-[16px]">
-				<h4>Votes</h4>
-			</div>
-		</div>
-
 		<div class="bg-white">
+			<cv-data-table-skeleton
+				v-if="!voteEvent"
+				title="Votes"
+				helperText="การลงมติรายบุคคล"
+			></cv-data-table-skeleton>
 			<cv-data-table
+				v-else
+				title="Votes"
+				helperText="การลงมติรายบุคคล"
 				:rows="filteredVotes"
 				v-model:selectedRows="selectedRows"
 				@update:rows-selected="onSelectRow"

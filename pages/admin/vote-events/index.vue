@@ -14,33 +14,10 @@ const paginationData = ref({
 	pageSize: 10,
 });
 
-const { data: totalCount } = await useAsyncData(
-	'voteEventsConnection',
-	async () => {
-		const { voteEventsConnection } = await graphqlClient.query({
-			voteEventsConnection: {
-				aggregate: {
-					count: {
-						nodes: true,
-					},
-				},
-			},
-		});
-		return voteEventsConnection.aggregate.count.nodes;
-	},
-	{ server: false },
-);
-
-const numberOfPage = computed(() =>
-	totalCount.value
-		? Math.ceil(totalCount.value / paginationData.value.pageSize)
-		: 1,
-);
-
-const { data: voteEventList } = await useAsyncData(
+const { data } = await useAsyncData(
 	'voteEvents',
 	async () => {
-		const { voteEvents } = await graphqlClient.query({
+		const { voteEvents, voteEventsConnection } = await graphqlClient.query({
 			voteEvents: {
 				__args: {
 					sort: [{ start_date: 'DESC' }],
@@ -75,12 +52,21 @@ const { data: voteEventList } = await useAsyncData(
 				},
 			},
 		});
-		return voteEvents;
+		return {
+			voteEvents,
+			totalCount: voteEventsConnection.aggregate.count.nodes,
+		};
 	},
 	{
 		watch: [paginationData.value],
 		server: false,
 	},
+);
+
+const numberOfPage = computed(() =>
+	data.value?.totalCount
+		? Math.ceil(data.value.totalCount / paginationData.value.pageSize)
+		: 1,
 );
 
 const handlePageChange = (page: number) => {
@@ -97,9 +83,13 @@ const handlePageSizeChange = (pageSize: number) => {
 		<cv-breadcrumb noTrailingSlash>
 			<cv-breadcrumb-item>Vote Events</cv-breadcrumb-item>
 		</cv-breadcrumb>
-
 		<h1 class="!font-normal !mb-12 !mt-4">Vote Events</h1>
-		<div>
+		<cv-data-table-skeleton
+			v-if="!data"
+			title="Vote Events"
+			helperText="การลงมติทั้งหมด"
+		></cv-data-table-skeleton>
+		<div v-else>
 			<cv-data-table title="Vote Events" helperText="การลงมติทั้งหมด">
 				<template #headings>
 					<cv-data-table-heading
@@ -120,7 +110,7 @@ const handlePageSizeChange = (pageSize: number) => {
 						:id="row.id"
 						:key="row.id"
 						:value="row.id"
-						v-for="row in voteEventList"
+						v-for="row in data.voteEvents"
 					>
 						<cv-data-table-cell
 							><a
@@ -162,16 +152,14 @@ const handlePageSizeChange = (pageSize: number) => {
 					</cv-data-table-row>
 				</template>
 			</cv-data-table>
-			<template v-if="totalCount">
-				<ui-pagination
-					:page="paginationData.page"
-					:page-size="paginationData.pageSize"
-					:total-count="totalCount ?? 0"
-					:number-of-page="numberOfPage"
-					@on-page-change="handlePageChange"
-					@on-page-size-change="handlePageSizeChange"
-				/>
-			</template>
+			<ui-pagination
+				:page="paginationData.page"
+				:page-size="paginationData.pageSize"
+				:total-count="data.totalCount ?? 0"
+				:number-of-page="numberOfPage"
+				@on-page-change="handlePageChange"
+				@on-page-size-change="handlePageSizeChange"
+			/>
 		</div>
 	</div>
 </template>

@@ -60,24 +60,18 @@ onMounted(async () => {
 </script>
 
 <template>
-	<ClientOnly fallback-tag="span" fallback="Loading...">
-		<div class="h-dvh overflow-hidden !pt-[47px]">
-			<div class="flex px-0 h-full">
-				<div class="basis-3/3 lg:basis-2/3 parliament-bg"></div>
-				<div class="sm:basis-1/3 !p-7.5 !lg:pt-20 bg-white login-box relative">
-					<cv-toast-notification
-						kind="success"
-						title="Logged Out"
-						subTitle="You have been successfully logged out."
-						:caption="logoutTime"
-						@close="isShowLogoutMsg = false"
-						v-if="isShowLogoutMsg"
-						class="absolute right-0 top-0 z-10"
-					>
-					</cv-toast-notification>
-
-					<h1 class="!font-normal !mb-12">Log in</h1>
-					<cv-form @submit.prevent="login" class="flex flex-col gap-y-4">
+	<div class="h-dvh overflow-hidden !pt-[47px]">
+		<div class="flex px-0 h-full">
+			<div class="basis-3/3 lg:basis-2/3 parliament-bg"></div>
+			<div class="sm:basis-1/3 !p-7.5 !lg:pt-20 bg-white login-box relative">
+				<h1 class="!font-normal !mb-12">Log in</h1>
+				<cv-form @submit.prevent="login" class="flex flex-col gap-y-4">
+					<template v-if="isValidatingSession">
+						<cv-text-input-skeleton />
+						<cv-text-input-skeleton />
+						<cv-button-skeleton />
+					</template>
+					<template v-else>
 						<cv-text-input
 							label="Email"
 							placeholder="username@wevis.info"
@@ -100,20 +94,31 @@ onMounted(async () => {
 						</cv-text-input>
 
 						<cv-button class="w-full !max-w-full">Log in</cv-button>
-
-						<cv-toast-notification
-							kind="error"
-							title="Error"
-							:subTitle="errorMsg"
-							@close="isShowErrorMsg = false"
-							v-if="isShowErrorMsg"
-						>
-						</cv-toast-notification>
-					</cv-form>
-				</div>
+					</template>
+				</cv-form>
 			</div>
 		</div>
-	</ClientOnly>
+	</div>
+
+	<cv-toast-notification
+		kind="error"
+		title="Error"
+		:subTitle="errorMsg"
+		@close="isShowErrorMsg = false"
+		v-if="isShowErrorMsg"
+	>
+	</cv-toast-notification>
+
+	<cv-toast-notification
+		v-if="isShowLogoutMsg"
+		kind="success"
+		title="Logged Out"
+		subTitle="You have been successfully logged out."
+		:caption="logoutTime"
+		@close="isShowLogoutMsg = false"
+		class="absolute right-0 top-0 z-10"
+	>
+	</cv-toast-notification>
 </template>
 
 <style scoped>

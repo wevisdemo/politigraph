@@ -15,8 +15,8 @@ const route = useRoute();
 const isShowNotification = ref(true);
 const isShowNotificationError = ref(true);
 
-const { data: VoteEventData } = await useAsyncData(
-	'VoteEventData',
+const { data: voteEventData } = await useAsyncData(
+	'voteEventData',
 	async () => {
 		const { voteEvents } = await graphqlClient.query({
 			voteEvents: {
@@ -58,22 +58,22 @@ const { data: VoteEventData } = await useAsyncData(
 );
 
 const defaultValues = reactive({
-	title: computed(() => VoteEventData?.value?.title),
-	nickname: computed(() => VoteEventData?.value?.nickname),
-	start_date: computed(() => VoteEventData?.value?.start_date),
-	result: computed(() => VoteEventData?.value?.result),
-	description: computed(() => VoteEventData?.value?.description),
+	title: computed(() => voteEventData?.value?.title),
+	nickname: computed(() => voteEventData?.value?.nickname),
+	start_date: computed(() => voteEventData?.value?.start_date),
+	result: computed(() => voteEventData?.value?.result),
+	description: computed(() => voteEventData?.value?.description),
 
-	agree_count: computed(() => VoteEventData?.value?.agree_count ?? 0),
-	abstain_count: computed(() => VoteEventData?.value?.abstain_count ?? 0),
-	novote_count: computed(() => VoteEventData?.value?.novote_count ?? 0),
-	disagree_count: computed(() => VoteEventData?.value?.disagree_count ?? 0),
+	agree_count: computed(() => voteEventData?.value?.agree_count ?? 0),
+	abstain_count: computed(() => voteEventData?.value?.abstain_count ?? 0),
+	novote_count: computed(() => voteEventData?.value?.novote_count ?? 0),
+	disagree_count: computed(() => voteEventData?.value?.disagree_count ?? 0),
 
 	organizations: computed(() =>
-		VoteEventData?.value?.organizations.map((d) => d.id),
+		voteEventData?.value?.organizations.map((d) => d.id),
 	),
-	links: computed(() => VoteEventData?.value?.links || []),
-	publish_status: computed(() => VoteEventData?.value?.publish_status),
+	links: computed(() => voteEventData?.value?.links || []),
+	publish_status: computed(() => voteEventData?.value?.publish_status),
 });
 
 const isPublish = computed(
@@ -160,7 +160,7 @@ const voteEventFormInput = useForm({
 				},
 			},
 		});
-		refreshNuxtData(['VoteEventData']);
+		refreshNuxtData(['voteEventData']);
 	},
 });
 
@@ -204,7 +204,14 @@ const { data: OrganizationList } = await useAsyncData(
 				}
 			"
 		>
+			<cv-skeleton-text
+				v-if="!voteEventData"
+				class="!my-6"
+				heading
+				:line-count="2"
+			></cv-skeleton-text>
 			<div
+				v-else
 				class="flex flex-col md:flex-row flex-wrap justify-end items-end md:items-center gap-4 !my-6"
 			>
 				<div class="flex-1 flex flex-row gap-4 items-center">
@@ -255,7 +262,7 @@ const { data: OrganizationList } = await useAsyncData(
 								});
 
 								if (updateVoteEvents.voteEvents) {
-									refreshNuxtData(['VoteEventData']);
+									refreshNuxtData(['voteEventData']);
 								}
 							}
 						"
@@ -282,11 +289,15 @@ const { data: OrganizationList } = await useAsyncData(
 
 			<div class="flex flex-col md:flex-row gap-8">
 				<div class="bg-white !p-4 basis-2/4">
-					<form class="flex flex-col gap-6" @submit.prevent="() => {}">
-						<div class="flex justify-between items-center">
-							<h4>Vote Events Details</h4>
-						</div>
-						<div class="!mb-3">
+					<div class="flex flex-col gap-6">
+						<h4>Vote Events Details</h4>
+						<template v-if="!voteEventData">
+							<cv-number-input-skeleton
+								v-for="i in 9"
+								:key="i"
+							></cv-number-input-skeleton>
+						</template>
+						<template v-else>
 							<voteEventFormInput.Field name="title">
 								<template v-slot="{ field }">
 									<cv-text-input
@@ -298,8 +309,6 @@ const { data: OrganizationList } = await useAsyncData(
 									/>
 								</template>
 							</voteEventFormInput.Field>
-						</div>
-						<div class="!mb-3">
 							<voteEventFormInput.Field name="nickname">
 								<template v-slot="{ field }">
 									<cv-text-input
@@ -310,8 +319,6 @@ const { data: OrganizationList } = await useAsyncData(
 									/>
 								</template>
 							</voteEventFormInput.Field>
-						</div>
-						<div class="!mb-3">
 							<voteEventFormInput.Field name="start_date">
 								<template v-slot="{ field }">
 									<cv-date-picker
@@ -324,14 +331,22 @@ const { data: OrganizationList } = await useAsyncData(
 									/>
 								</template>
 							</voteEventFormInput.Field>
-						</div>
-
-						<div class="!mb-3" v-if="OrganizationList">
-							<voteEventFormInput.Field name="organizations">
+							<voteEventFormInput.Field
+								v-if="OrganizationList"
+								name="organizations"
+							>
 								<template v-slot="{ field }">
 									<cv-multi-select
 										title="Involving Assemblies"
-										:label="field.state.value?.join(', ')"
+										:label="
+											field.state.value
+												?.map(
+													(id) =>
+														OrganizationList?.find((org) => org.id === id)
+															?.name,
+												)
+												.join(', ')
+										"
 										:options="
 											OrganizationList.map((d) => ({
 												label: d.name,
@@ -343,9 +358,6 @@ const { data: OrganizationList } = await useAsyncData(
 									/>
 								</template>
 							</voteEventFormInput.Field>
-						</div>
-
-						<div class="!mb-3">
 							<voteEventFormInput.Field name="result">
 								<template v-slot="{ field }">
 									<cv-select
@@ -359,23 +371,6 @@ const { data: OrganizationList } = await useAsyncData(
 									</cv-select>
 								</template>
 							</voteEventFormInput.Field>
-						</div>
-						<!-- <div class="!mb-3">
-						<cv-select label="Winning Condition">
-							<cv-select-option
-								disabled
-								selected
-								hidden
-								value="placeholder-item"
-								>Choose an option</cv-select-option
-							>
-							<cv-select-option value="ได้เสียงข้างมากในที่ประชุม"
-								>ได้เสียงข้างมากในที่ประชุม</cv-select-option
-							>
-						</cv-select>
-					</div> -->
-
-						<div class="!mb-3">
 							<voteEventFormInput.Field name="description">
 								<template v-slot="{ field }">
 									<cv-text-area
@@ -386,22 +381,26 @@ const { data: OrganizationList } = await useAsyncData(
 									/>
 								</template>
 							</voteEventFormInput.Field>
-						</div>
-						<div class="!mb-3">
-							<p class="!font-bold !mb-2">Related Links</p>
-							<div class="opacity-50">
-								สำหรับช่อง Notes ให้ใส่ชนิดเอกสาร เช่น "ใบประมวลผลการลงมติ" หรือ
-								"ระบบฐานข้อมูลรายงานและบันทึกการประชุม"
+							<div>
+								<p class="!font-bold">Related Links</p>
+								<div class="opacity-50">
+									สำหรับช่อง Notes ให้ใส่ชนิดเอกสาร เช่น "ใบประมวลผลการลงมติ"
+									หรือ "ระบบฐานข้อมูลรายงานและบันทึกการประชุม"
+								</div>
 							</div>
-						</div>
-						<voteEventFormInput.Field name="links">
-							<template v-slot="{ field }">
-								<div v-for="(_, i) of field.state.value">
-									<voteEventFormInput.Field :key="i" :name="`links[${i}].note`">
-										<template v-slot="{ field: subField }">
-											<div class="flex flex-row justify-between">
-												<h6>{{ `Link ${i + 1}` }}</h6>
-												<div>
+							<voteEventFormInput.Field name="links">
+								<template v-slot="{ field }">
+									<div
+										v-for="(_, i) of field.state.value"
+										class="flex flex-col gap-3"
+									>
+										<voteEventFormInput.Field
+											:key="i"
+											:name="`links[${i}].note`"
+										>
+											<template v-slot="{ field: subField }">
+												<div class="flex flex-row justify-between">
+													<h6>{{ `Link ${i + 1}` }}</h6>
 													<cv-button
 														@click="field.removeValue(i)"
 														kind="danger--ghost"
@@ -409,8 +408,6 @@ const { data: OrganizationList } = await useAsyncData(
 														>Delete</cv-button
 													>
 												</div>
-											</div>
-											<div class="!mb-3">
 												<cv-text-input
 													label="Notes"
 													placeholder=""
@@ -418,12 +415,13 @@ const { data: OrganizationList } = await useAsyncData(
 													@update:modelValue="subField.handleChange"
 												>
 												</cv-text-input>
-											</div>
-										</template>
-									</voteEventFormInput.Field>
-									<voteEventFormInput.Field :key="i" :name="`links[${i}].url`">
-										<template v-slot="{ field: subField }">
-											<div class="!mb-3">
+											</template>
+										</voteEventFormInput.Field>
+										<voteEventFormInput.Field
+											:key="i"
+											:name="`links[${i}].url`"
+										>
+											<template v-slot="{ field: subField }">
 												<cv-text-input
 													label="URL"
 													placeholder=""
@@ -431,32 +429,37 @@ const { data: OrganizationList } = await useAsyncData(
 													@update:modelValue="subField.handleChange"
 												>
 												</cv-text-input>
-											</div>
-										</template>
-									</voteEventFormInput.Field>
-								</div>
-								<div class="!mb-3">
+											</template>
+										</voteEventFormInput.Field>
+									</div>
 									<cv-button
 										default="Add Another Item"
 										kind="tertiary"
 										@click="() => field.pushValue({ note: '', url: '' })"
 										>Add a link</cv-button
 									>
-								</div>
-							</template>
-						</voteEventFormInput.Field>
-					</form>
+								</template>
+							</voteEventFormInput.Field>
+						</template>
+					</div>
 				</div>
 
 				<div class="bg-white basis-2/4">
 					<div class="!p-4 flex flex-col gap-2 !mb-3">
 						<h4>Vote Summary (Original)</h4>
-						<div class="text-body-01 !mb-6">
+						<p class="text-body-01">
 							ข้อมูลสรุปผลคะแนนที่ OCR จากหัวเอกสารบันทึกผลการลงมติ
 							โดยระบบจะใช้ผลคะแนนนี้ในการตรวจสอบข้อมูลการลงมติ (Votes)
 							ว่าถูกต้องตรงกันหรือไม่
+						</p>
+						<div v-if="!voteEventData" class="grid grid-cols-2 gap-2">
+							<cv-button-skeleton
+								v-for="i in 4"
+								:key="i"
+								size="field"
+							></cv-button-skeleton>
 						</div>
-						<div class="grid grid-cols-2 gap-x-12 gap-y-4">
+						<div v-else class="grid grid-cols-2 gap-x-12 gap-y-4">
 							<div class="flex flex-row items-center gap-4">
 								<div class="basis-1/2">เห็นด้วย</div>
 								<voteEventFormInput.Field name="agree_count">
@@ -511,9 +514,7 @@ const { data: OrganizationList } = await useAsyncData(
 							</div>
 						</div>
 					</div>
-					<template v-if="VoteEventData">
-						<VotesCollection :vote-event-id="VoteEventData?.id" />
-					</template>
+					<VotesCollection :vote-event-id="voteEventData?.id" />
 				</div>
 			</div>
 		</form>
