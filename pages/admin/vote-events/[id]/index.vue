@@ -189,7 +189,7 @@ const { data: OrganizationList } = await useAsyncData(
 	<div class="!p-10 min-h-dvh !bg-[#F4F4F4] !pt-[90px]">
 		<cv-breadcrumb noTrailingSlash>
 			<cv-breadcrumb-item class="text-[#0F62FE]"
-				><a href="./">Vote Events</a></cv-breadcrumb-item
+				><a href="/admin/vote-events">Vote Events</a></cv-breadcrumb-item
 			>
 			<cv-breadcrumb-item>{{
 				voteEventFormInput.getFieldValue('title')
