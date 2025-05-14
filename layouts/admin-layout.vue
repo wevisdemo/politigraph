@@ -23,7 +23,7 @@ const signout = async () => {
 </script>
 
 <template>
-	<div>
+	<ClientOnly>
 		<cv-header aria-label="Header">
 			<template v-slot:left-panels>
 				<cv-side-nav id="side-nav" rail fixed>
@@ -108,6 +108,6 @@ const signout = async () => {
 				</div></template
 			>
 		</cv-modal>
-		<slot />
-	</div>
+	</ClientOnly>
+	<slot />
 </template>
