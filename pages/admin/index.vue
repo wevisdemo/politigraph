@@ -116,7 +116,7 @@ onMounted(async () => {
 		subTitle="You have been successfully logged out."
 		:caption="logoutTime"
 		@close="isShowLogoutMsg = false"
-		class="absolute right-0 top-0 z-10"
+		class="absolute right-0 bottom-0 z-10"
 	>
 	</cv-toast-notification>
 </template>
