@@ -11,7 +11,7 @@ definePageMeta({
 
 const paginationData = ref({
 	page: 1,
-	pageSize: 10,
+	pageSize: 50,
 });
 
 const { data } = await useAsyncData(
@@ -76,6 +76,8 @@ const handlePageChange = (page: number) => {
 const handlePageSizeChange = (pageSize: number) => {
 	paginationData.value.pageSize = pageSize;
 };
+
+const router = useRouter();
 </script>
 
 <template>
@@ -119,14 +121,10 @@ const handlePageSizeChange = (pageSize: number) => {
 						:key="row.id"
 						:value="row.id"
 						v-for="row in data.voteEvents"
+						@click="() => router.push(`./vote-events/${row.id}`)"
+						class="cursor-pointer"
 					>
-						<cv-data-table-cell
-							><a
-								:href="`./vote-events/${row.id}`"
-								class="!text-black hover:underline text-ellipsis"
-								>{{ row.title }}</a
-							></cv-data-table-cell
-						>
+						<cv-data-table-cell>{{ row.title }} ></cv-data-table-cell>
 						<cv-data-table-cell class="min-w-32 text-nowrap">{{
 							row.start_date
 						}}</cv-data-table-cell>
@@ -141,7 +139,13 @@ const handlePageSizeChange = (pageSize: number) => {
 						<cv-data-table-cell>{{ row.result }}</cv-data-table-cell>
 						<cv-data-table-cell>
 							<div class="flex flex-row gap-1">
-								<a v-for="({ url, note }, i) in row.links" :key="i" :href="url">
+								<a
+									v-for="({ url, note }, i) in row.links"
+									:key="i"
+									:href="url"
+									target="_blank"
+									@click.stop
+								>
 									<cv-icon-button
 										kind="ghost"
 										:icon="
