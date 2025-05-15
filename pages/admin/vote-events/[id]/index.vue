@@ -287,7 +287,7 @@ const { data: OrganizationList } = await useAsyncData(
 				@close="isShowNotificationError = false"
 			/> -->
 
-			<div class="flex flex-col md:flex-row gap-8">
+			<div class="flex flex-col md:flex-row gap-8 items-start">
 				<div class="bg-white !p-4 basis-2/4">
 					<div class="flex flex-col gap-6">
 						<h4>Vote Events Details</h4>

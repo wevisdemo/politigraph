@@ -26,6 +26,10 @@
 	background-color: #ffffff;
 }
 
+.bx--data-table-content {
+	overflow-y: hidden;
+}
+
 .bx--toast-notification--error {
 	width: 100%;
 	margin: 0;

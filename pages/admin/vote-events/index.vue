@@ -81,11 +81,11 @@ const router = useRouter();
 </script>
 
 <template>
-	<div class="!p-10 h-dvh !bg-[#F4F4F4] !pt-[90px]">
+	<div class="!p-10 !bg-[#F4F4F4] !pt-[90px]">
 		<cv-breadcrumb noTrailingSlash>
 			<cv-breadcrumb-item>Vote Events</cv-breadcrumb-item>
 		</cv-breadcrumb>
-		<h1 class="!font-normal !mb-12 !mt-4">Vote Events</h1>
+		<h1 class="!font-normal !mb-8 !mt-4">Vote Events</h1>
 		<cv-data-table-skeleton
 			v-if="!data"
 			title="Vote Events"
@@ -124,18 +124,20 @@ const router = useRouter();
 						@click="() => router.push(`./vote-events/${row.id}`)"
 						class="cursor-pointer"
 					>
-						<cv-data-table-cell>{{ row.title }} ></cv-data-table-cell>
-						<cv-data-table-cell class="min-w-32 text-nowrap">{{
+						<cv-data-table-cell>{{ row.title }}</cv-data-table-cell>
+						<cv-data-table-cell class="text-nowrap">{{
 							row.start_date
 						}}</cv-data-table-cell>
-						<cv-data-table-cell class="min-w-32 text-nowrap">{{
+						<cv-data-table-cell class="text-nowrap">{{
 							dayjs(row.created_at).format('YYYY-MM-DD')
 						}}</cv-data-table-cell>
-						<cv-data-table-cell>{{
-							row.organizations
-								.map((o) => `${o.abbreviation} ชุดที่ ${o.term}`)
-								.join(', ')
-						}}</cv-data-table-cell>
+						<cv-data-table-cell>
+							<div class="flex flex-col justify-evenly">
+								<span v-for="org in row.organizations"
+									>{{ org.abbreviation }} ชุดที่ {{ org.term }}</span
+								>
+							</div>
+						</cv-data-table-cell>
 						<cv-data-table-cell>{{ row.result }}</cv-data-table-cell>
 						<cv-data-table-cell>
 							<div class="flex flex-row gap-1">
