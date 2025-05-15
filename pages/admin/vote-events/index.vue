@@ -96,10 +96,18 @@ const handlePageSizeChange = (pageSize: number) => {
 						id="sb-title"
 						heading="Title"
 						order="ascending"
-						class="w-3xl"
+						class="w-2xl"
 					/>
-					<cv-data-table-heading id="sb-votingdate" heading="Voting Date" />
-					<cv-data-table-heading id="sb-createdat" heading="Created At" />
+					<cv-data-table-heading
+						id="sb-votingdate"
+						heading="Voting Date"
+						class="text-center"
+					/>
+					<cv-data-table-heading
+						id="sb-createdat"
+						heading="Created At"
+						class="text-center"
+					/>
 					<cv-data-table-heading id="sb-assembly" heading="Assemblies" />
 					<cv-data-table-heading id="sb-result" heading="Result" />
 					<cv-data-table-heading id="sb-link" heading="Links" />
@@ -119,8 +127,10 @@ const handlePageSizeChange = (pageSize: number) => {
 								>{{ row.title }}</a
 							></cv-data-table-cell
 						>
-						<cv-data-table-cell>{{ row.start_date }}</cv-data-table-cell>
-						<cv-data-table-cell>{{
+						<cv-data-table-cell class="min-w-32 text-nowrap">{{
+							row.start_date
+						}}</cv-data-table-cell>
+						<cv-data-table-cell class="min-w-32 text-nowrap">{{
 							dayjs(row.created_at).format('YYYY-MM-DD')
 						}}</cv-data-table-cell>
 						<cv-data-table-cell>{{
