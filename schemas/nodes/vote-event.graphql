@@ -36,7 +36,7 @@ type VoteEvent implements Event
 	"""
 	การลงมติอยู่ในขั้นตอนใดของกระบวนการพิจารณากฏหมายใด
 	"""
-	classification: VoteEventType!
+	classification: VoteEventType
 	"""
 	คำอธิบายคร่าวๆ
 	"""
