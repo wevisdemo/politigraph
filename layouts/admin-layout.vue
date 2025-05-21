@@ -1,4 +1,12 @@
 <script setup lang="ts">
+import {
+	ApiKey16,
+	Logout16,
+	UserAvatar24,
+	UserSettings16,
+	//@ts-ignore
+} from '@carbon/icons-vue';
+
 const { signOut } = useAuthClientWithRouteGuard((user) => {
 	username.value = user.name;
 	email.value = user.email;
@@ -34,51 +42,48 @@ const signout = async () => {
 					</cv-side-nav-items>
 				</cv-side-nav>
 			</template>
-
 			<div class="flex items-center">
 				<cv-header-menu-button
 					aria-label="Header menu"
 					aria-controls="side-nav"
 					v-show="username"
 				/>
-
 				<cv-header-name href="/admin"
 					><p class="!text-black">
 						WeVis <span class="!font-bold">Politigraph Admin</span>
 					</p></cv-header-name
 				>
 			</div>
-
 			<cv-overflow-menu flipMenu v-if="username">
-				<template v-slot:trigger
-					><img src="../assets/avatar.svg" alt=""
-				/></template>
+				<template v-slot:trigger><UserAvatar24 /></template>
 				<div class="!p-4">
 					<p class="!text-sm">{{ username }}</p>
+
 					<p class="!text-xs text-[#525252]">{{ email }}</p>
 				</div>
-
+				<a href="/admin/api-keys">
+					<cv-overflow-menu-item
+						value="API Keys"
+						class="flex items-center"
+						@click="() => {}"
+						>API Keys <ApiKey16 />
+					</cv-overflow-menu-item>
+				</a>
 				<cv-overflow-menu-item
 					value="Settings"
 					class="flex items-center"
 					@click="showSettings = true"
-					>Settings
-					<img
-						src="../assets/settings.svg"
-						alt="settings"
-						class="cursor-pointer"
+					>Settings <UserSettings16
 				/></cv-overflow-menu-item>
 				<cv-overflow-menu-item
 					value="item 3"
 					danger
 					class="flex items-center"
 					@click="signout"
-					>Log out
-					<img src="../assets/logout.svg" alt="logout" class="cursor-pointer"
+					>Log out <Logout16
 				/></cv-overflow-menu-item>
 			</cv-overflow-menu>
 		</cv-header>
-
 		<cv-modal
 			:visible="showSettings"
 			autoHideOff

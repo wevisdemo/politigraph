@@ -13,7 +13,7 @@
 
 Main routes of the web application:
 
-- `/` landing page for public
+- `/` A landing page for public
 - `/admin` admin panel for managing politigraph data (required an account)
 - `/graphql` GraphQL endpoint and playground for querying and updating data.
 
@@ -75,16 +75,7 @@ You need to create an account first to login to the admin panel, by making a POS
 
 ### GraphQL API authentication
 
-GraphQL required user account for **write** permission. To make an update to GraphQL outside the Politigraph website, make a POST request to `/auth/sign-in/stateless` with the body to get the token.
-
-```json
-{
-	"email": "*****",
-	"password": "*****"
-}
-```
-
-Then you can include the token in `Authorization: Bearer <token>` headers of GraphQL request to get the write permission.
+GraphQL required user account for **write** permission. To make an update to GraphQL outside the Politigraph website, you need to create an API key by logging in into the Admin Panel (/admin) > Profile Menu > API Keys. Then add `x-api-key: KEY_VALUE` to the header when making a request.
 
 ### Tunneling to Neo4j on production server
 

@@ -1,4 +1,5 @@
 import type { User } from 'better-auth';
+import { apiKeyClient } from 'better-auth/client/plugins';
 import { createAuthClient } from 'better-auth/vue';
 
 export const isValidatingSession = ref(true);
@@ -8,6 +9,7 @@ export function useAuthClient() {
 
 	return createAuthClient({
 		baseURL: `${config.public.baseUrl}/auth`,
+		plugins: [apiKeyClient()],
 	});
 }
 

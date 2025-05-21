@@ -73,82 +73,65 @@ const signout = async () => {
 
 <template>
 	<div class="bg-[#F4F4F4] h-dvh">
-		<ClientOnly fallback-tag="span" fallback="Loading...">
-			<div
-				class="absolute top-20 inset-x-0 bg-white !p-7.5 max-w-[544px] w-full !mx-auto"
-			>
-				<template v-if="!isSuccessChangePassword">
-					<h1 class="!font-normal !mb-12">Change Password</h1>
-					<cv-form
-						@submit.prevent="changepassword"
-						class="flex flex-col gap-y-4"
+		<div
+			class="absolute top-20 inset-x-0 bg-white !p-7.5 max-w-[544px] w-full !mx-auto"
+		>
+			<template v-if="!isSuccessChangePassword">
+				<h1 class="!font-normal !mb-12">Change Password</h1>
+				<cv-form @submit.prevent="changepassword" class="flex flex-col gap-y-4">
+					<cv-text-input
+						v-model="currentPassword"
+						type="password"
+						label="Current Password"
+						placeholder="Password"
+						autocomplete="password"
+						:invalid-message="isErrorPassword"
 					>
-						<cv-text-input
-							v-model="currentPassword"
-							type="password"
-							label="Current Password"
-							placeholder="Password"
-							autocomplete="password"
-							:invalid-message="isErrorPassword"
-						>
-							<template v-if="isErrorPassword" v-slot:invalid-message />
-						</cv-text-input>
-
-						<cv-text-input
-							v-model="newPassword"
-							type="password"
-							label="New Password"
-							placeholder="Password"
-							autocomplete="password"
-							:invalid-message="isErrorNewPassword"
-							helperText="Your new password must be at least 8 characters long."
-						>
-							<template v-if="isErrorNewPassword" v-slot:invalid-message />
-						</cv-text-input>
-
-						<cv-text-input
-							v-model="confirmNewPassword"
-							type="password"
-							label="Confirm New Password"
-							placeholder="Password"
-							autocomplete="password"
-							:invalid-message="isErrorConfirmNewPassword"
-						>
-							<template
-								v-if="isErrorConfirmNewPassword"
-								v-slot:invalid-message
-							/>
-						</cv-text-input>
-
-						<cv-toast-notification
-							kind="error"
-							title="Incorrect Password"
-							:subTitle="errorMsg"
-							@close="isShowErrorMsg = false"
-							v-if="isShowErrorMsg"
-						>
-						</cv-toast-notification>
-
-						<cv-button class="w-full !max-w-full">Change Password</cv-button>
-					</cv-form>
-				</template>
-				<template v-else
-					><h1 class="!font-normal">You're all set!</h1>
-					<p class="!my-12">
-						Your password has been updated successfully. You can now sign in
-						with your new password.
-					</p>
-
-					<cv-button
-						class="w-full !max-w-full"
-						kind="secondary"
-						@click="signout"
-						>Go to Sign In</cv-button
+						<template v-if="isErrorPassword" v-slot:invalid-message />
+					</cv-text-input>
+					<cv-text-input
+						v-model="newPassword"
+						type="password"
+						label="New Password"
+						placeholder="Password"
+						autocomplete="password"
+						:invalid-message="isErrorNewPassword"
+						helperText="Your new password must be at least 8 characters long."
 					>
-				</template>
-			</div>
-		</ClientOnly>
+						<template v-if="isErrorNewPassword" v-slot:invalid-message />
+					</cv-text-input>
+					<cv-text-input
+						v-model="confirmNewPassword"
+						type="password"
+						label="Confirm New Password"
+						placeholder="Password"
+						autocomplete="password"
+						:invalid-message="isErrorConfirmNewPassword"
+					>
+						<template v-if="isErrorConfirmNewPassword" v-slot:invalid-message />
+					</cv-text-input>
+					<cv-toast-notification
+						kind="error"
+						title="Incorrect Password"
+						:subTitle="errorMsg"
+						@close="isShowErrorMsg = false"
+						v-if="isShowErrorMsg"
+					>
+					</cv-toast-notification>
+					<cv-button class="w-full !max-w-full">Change Password</cv-button>
+				</cv-form>
+			</template>
+			<template v-else
+				><h1 class="!font-normal">You're all set!</h1>
+
+				<p class="!my-12">
+					Your password has been updated successfully. You can now sign in with
+					your new password.
+				</p>
+				<cv-button class="w-full !max-w-full" kind="secondary" @click="signout"
+					>Go to Sign In</cv-button
+				>
+			</template>
+		</div>
 	</div>
 </template>
-
-<style scoped></style>

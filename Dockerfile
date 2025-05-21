@@ -17,7 +17,7 @@ RUN mkdir .better-auth
 
 COPY --from=prerelease /app/.output .
 COPY entrypoint.sh .
-COPY migrations .
+COPY better-auth_migrations .
 COPY schemas ./schemas
 COPY tsconfig.json .
 COPY utils/auth.ts .

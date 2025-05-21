@@ -11,7 +11,7 @@
 		"postinstall": "nuxt prepare",
 		"format": "prettier --write --ignore-unknown --ignore-path .gitignore .",
 		"genql": "node scripts/genql-generate.js",
-		"auth:generate": "npx @better-auth/cli generate --output migrations",
+		"auth:generate": "npx @better-auth/cli generate",
 		"auth:migrate": "npx @better-auth/cli migrate --y"
 	},
 	"lint-staged": {
@@ -27,7 +27,7 @@
 		"@mermaid-js/layout-elk": "^0.1.7",
 		"@neo4j/graphql": "^6.5.2",
 		"@tanstack/vue-form": "^1.8.0",
-		"better-auth": "^1.0.22",
+		"better-auth": "^1.2.8",
 		"better-sqlite3": "^11.7.0",
 		"dayjs": "^1.11.13",
 		"eslint": "^9.25.1",
@@ -40,7 +40,7 @@
 		"vue-router": "latest"
 	},
 	"devDependencies": {
-		"@better-auth/cli": "^1.0.22",
+		"@better-auth/cli": "^1.2.8",
 		"@commitlint/cli": "^19.6.0",
 		"@commitlint/config-conventional": "^19.6.0",
 		"@genql/cli": "^6.3.3",
