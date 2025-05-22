@@ -218,12 +218,14 @@ const { data: OrganizationList } = await useAsyncData(
 					<h2 class="md:min-w-xl">
 						{{ voteEventFormInput.getFieldValue('title') }}
 					</h2>
+
 					<div>
 						<ui-publish-status-tag
 							:status="voteEventFormInput.getFieldValue('publish_status') || ''"
 						/>
 					</div>
 				</div>
+
 				<div class="flex gap-2">
 					<voteEventFormInput.Subscribe>
 						<template v-slot="{ canSubmit }">
@@ -286,11 +288,14 @@ const { data: OrganizationList } = await useAsyncData(
 				title="Error: Data Validation Failed"
 				@close="isShowNotificationError = false"
 			/> -->
-
 			<div class="flex flex-col md:flex-row gap-8 items-start">
 				<div class="bg-white !p-4 basis-2/4">
 					<div class="flex flex-col gap-6">
-						<h4>Vote Events Details</h4>
+						<div class="flex flex-col gap-1">
+							<h4>Vote Events Details</h4>
+
+							<p class="!text-xs opacity-70">ID: {{ voteEventData?.id }}</p>
+						</div>
 						<template v-if="!voteEventData">
 							<cv-number-input-skeleton
 								v-for="i in 9"
@@ -375,6 +380,7 @@ const { data: OrganizationList } = await useAsyncData(
 								<template v-slot="{ field }">
 									<cv-text-area
 										label="Description"
+										class="!min-h-48"
 										placeholder=""
 										:modelValue="field.state.value"
 										@update:modelValue="field.handleChange"
@@ -383,6 +389,7 @@ const { data: OrganizationList } = await useAsyncData(
 							</voteEventFormInput.Field>
 							<div>
 								<p class="!font-bold">Related Links</p>
+
 								<div class="opacity-50">
 									สำหรับช่อง Notes ให้ใส่ชนิดเอกสาร เช่น "ใบประมวลผลการลงมติ"
 									หรือ "ระบบฐานข้อมูลรายงานและบันทึกการประชุม"
@@ -447,11 +454,13 @@ const { data: OrganizationList } = await useAsyncData(
 				<div class="bg-white basis-2/4">
 					<div class="!p-4 flex flex-col gap-2 !mb-3">
 						<h4>Vote Summary (Original)</h4>
+
 						<p class="text-body-01">
 							ข้อมูลสรุปผลคะแนนที่ OCR จากหัวเอกสารบันทึกผลการลงมติ
 							โดยระบบจะใช้ผลคะแนนนี้ในการตรวจสอบข้อมูลการลงมติ (Votes)
 							ว่าถูกต้องตรงกันหรือไม่
 						</p>
+
 						<div v-if="!voteEventData" class="grid grid-cols-2 gap-2">
 							<cv-button-skeleton
 								v-for="i in 4"
@@ -459,6 +468,7 @@ const { data: OrganizationList } = await useAsyncData(
 								size="field"
 							></cv-button-skeleton>
 						</div>
+
 						<div v-else class="grid grid-cols-2 gap-x-12 gap-y-4">
 							<div class="flex flex-row items-center gap-4">
 								<div class="basis-1/2">เห็นด้วย</div>
@@ -473,6 +483,7 @@ const { data: OrganizationList } = await useAsyncData(
 									</template>
 								</voteEventFormInput.Field>
 							</div>
+
 							<div class="flex flex-row items-center gap-4">
 								<div class="basis-1/2">ไม่เห็นด้วย</div>
 								<voteEventFormInput.Field name="disagree_count">
@@ -486,6 +497,7 @@ const { data: OrganizationList } = await useAsyncData(
 									</template>
 								</voteEventFormInput.Field>
 							</div>
+
 							<div class="flex flex-row items-center gap-4">
 								<div class="basis-1/2">งดออกเสียง</div>
 								<voteEventFormInput.Field name="abstain_count">
@@ -499,6 +511,7 @@ const { data: OrganizationList } = await useAsyncData(
 									</template>
 								</voteEventFormInput.Field>
 							</div>
+
 							<div class="flex flex-row items-center gap-4">
 								<div class="basis-1/2">ไ่ม่ลงคะแนน</div>
 								<voteEventFormInput.Field name="novote_count">
