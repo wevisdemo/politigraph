@@ -48,7 +48,6 @@ const Form = useForm({
 				<cv-data-table title="API Keys"
 					><template #headings
 						><cv-data-table-heading heading="Name" />
-						<cv-data-table-heading heading="Last Used On" />
 						<cv-data-table-heading heading="Created On" /><cv-data-table-heading
 							heading="Actions"
 					/></template>
@@ -61,8 +60,6 @@ const Form = useForm({
 							:value="key.id"
 						>
 							<cv-data-table-cell> {{ key.name }} </cv-data-table-cell
-							><cv-data-table-cell>
-								{{ key.lastRequest?.toLocaleDateString() }} </cv-data-table-cell
 							><cv-data-table-cell>
 								{{ key.createdAt.toLocaleDateString() }} </cv-data-table-cell
 							><cv-data-table-cell>
