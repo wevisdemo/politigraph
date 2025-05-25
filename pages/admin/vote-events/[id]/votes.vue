@@ -91,7 +91,7 @@ const peopleOptions = ref<{ value: string; label: string }[]>([]);
 
 const getVoterOptions = (id: string, available: boolean) => {
 	const original = originalVotesMap.value[id];
-	const currentName = original.voter_name;
+	const currentName = original?.voter_name;
 	if (currentName && !available) {
 		return [{ value: currentName, label: currentName }, ...peopleOptions.value];
 	}
@@ -127,11 +127,11 @@ const { data: people } = useAsyncData(
 );
 
 const optionOptions = [
-	{ value: 'เห็นด้วย', label: 'เห็นด้วย' },
-	{ value: 'ไม่เห็นด้วย', label: 'ไม่เห็นด้วย' },
-	{ value: 'งดออกเสียง', label: 'งดออกเสียง' },
-	{ value: 'ไม่ลงคะแนน', label: 'ไม่ลงคะแนน' },
-	{ value: 'ลา / ขาดลงมติ', label: 'ลา / ขาดลงมติ' },
+	'เห็นด้วย',
+	'ไม่เห็นด้วย',
+	'งดออกเสียง',
+	'ไม่ลงคะแนน',
+	'ลา / ขาดลงมติ',
 ];
 
 const filteredVotes = computed(() => {
@@ -169,10 +169,10 @@ const getRowClass = (row: Vote): string => {
 		return '';
 	}
 	if (isRowEdited(row.id)) {
-		return '!bg-[#FCF4D6]';
+		return '[&>td]:bg-[#FCF4D6]!';
 	}
 	if (row.voters.length == 0) {
-		return '!bg-[#FFF1F1]';
+		return '[&>td]:bg-[#FFF1F1]!';
 	}
 	return '';
 };
@@ -576,31 +576,26 @@ const downloadCSV = () => {
 					<cv-data-table-heading
 						id="sb-number"
 						heading="ลำดับที่"
-						sortable
 						class="!pl-[16px] w-1/5"
 					/>
 					<cv-data-table-heading
 						id="sb-badge-number"
 						heading="เลขที่บัตร"
-						sortable
 						class="!pl-[16px] w-1/5"
 					/>
 					<cv-data-table-heading
 						id="sb-politician"
 						heading="ชื่อ-สกุล"
-						sortable
 						class="!pl-[16px] w-1/5"
 					/>
 					<cv-data-table-heading
 						id="sb-party"
 						heading="ชื่อสังกัด"
-						sortable
 						class="!pl-[16px] w-1/5"
 					/>
 					<cv-data-table-heading
 						id="sb-vote"
 						heading="ผลการลงคะแนน"
-						sortable
 						class="!pl-[16px] w-1/5"
 					/>
 				</template>
@@ -610,7 +605,7 @@ const downloadCSV = () => {
 						:key="row.id"
 						:value="row.id"
 						:data-last-row="i === filteredVotes.length - 1 ? true : null"
-						@class="getRowClass(row as Vote)"
+						:class="getRowClass(row as Vote)"
 					>
 						<cv-data-table-cell
 							:key="row.id + '-' + 'vote_order'"
@@ -643,7 +638,7 @@ const downloadCSV = () => {
 								{
 									'!text-[#DA1E28]':
 										row.voters.length === 0 &&
-										!isRowEdited(row.id) &&
+										!isCellEdited(row.id, 'voter_name') &&
 										!isNewRow(row.id),
 								},
 							]"
@@ -662,6 +657,7 @@ const downloadCSV = () => {
 									autoFilter
 									autoHighlight
 									@change="onOptionChange(row as Vote, 'voter_name')"
+									:direction="i >= filteredVotes.length - 5 ? 'top' : ''"
 								/>
 							</div>
 							<div v-else class="flex items-center gap-2 !pl-[16px]">
@@ -672,7 +668,7 @@ const downloadCSV = () => {
 								<cv-tooltip
 									v-if="
 										row.voters.length === 0 &&
-										!isRowEdited(row.id) &&
+										!isCellEdited(row.id, 'voter_name') &&
 										!isNewRow(row.id)
 									"
 									:direction="i === filteredVotes.length - 1 ? 'top' : 'bottom'"
@@ -706,21 +702,20 @@ const downloadCSV = () => {
 							@click="startEditing(i, 4)"
 						>
 							<div v-if="isActiveEditing(i, 4)">
-								<cv-combo-box
-									:label="
-										row.option && row.option.length > 0
-											? row.option
-											: 'Chose...'
-									"
+								<cv-dropdown
 									v-model="row.option"
-									:options="optionOptions"
-									item-value-key="value"
-									item-text-key="label"
-									v-show="isActiveEditing(i, 4)"
-									autoFilter
-									autoHighlight
 									@change="onOptionChange(row as Vote, 'option')"
-								/>
+									:up="i >= filteredVotes.length - 5 ? true : false"
+									light
+								>
+									<cv-dropdown-item
+										:key="`${item}`"
+										v-for="item in optionOptions"
+										:value="`${item}`"
+									>
+										{{ item }}
+									</cv-dropdown-item>
+								</cv-dropdown>
 							</div>
 							<div v-else class="flex items-center gap-2 !pl-[16px]">
 								<p v-if="row.option && row.option.length > 0">
