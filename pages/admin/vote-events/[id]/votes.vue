@@ -246,132 +246,145 @@ const onOptionChange = (row: Vote, cellId: EditableVoteFields) => {
 	});
 };
 
+const isSaving = ref(false);
+
 const onSaveChanges = async () => {
-	const allVotes = voteEvent.value?.votes ?? [];
-	const existingIds = new Set(Object.keys(originalVotesMap.value));
+	if (isSaving.value) return;
+	isSaving.value = true;
 
-	const rowsToPatch = allVotes.filter(
-		(vote) => editedRows.value.has(vote.id) || !existingIds.has(vote.id),
-	);
+	try {
+		const allVotes = voteEvent.value?.votes ?? [];
+		const existingIds = new Set(Object.keys(originalVotesMap.value));
 
-	console.log(rowsToPatch, toDeleteIds.value);
+		const rowsToPatch = allVotes.filter(
+			(vote) => editedRows.value.has(vote.id) || !existingIds.has(vote.id),
+		);
 
-	if (!rowsToPatch.length && !toDeleteIds.value.size) return;
+		console.log(rowsToPatch, toDeleteIds.value);
 
-	if (rowsToPatch.length) {
-		const mutationPromises = rowsToPatch.map((vote) => {
-			const voterId = vote.voter_name?.replaceAll(/\s+/g, '-');
+		if (!rowsToPatch.length && !toDeleteIds.value.size) return;
 
-			if (existingIds.has(vote.id)) {
-				// Update
-				return graphqlClient.mutation({
-					updateVotes: {
-						__args: {
-							where: {
-								id_EQ: vote.id,
+		if (rowsToPatch.length) {
+			const mutationPromises = rowsToPatch.map((vote) => {
+				const voterId = vote.voter_name?.replaceAll(/\s+/g, '-');
+
+				if (existingIds.has(vote.id)) {
+					// Update
+					return graphqlClient.mutation({
+						updateVotes: {
+							__args: {
+								where: {
+									id_EQ: vote.id,
+								},
+								update: {
+									vote_order_SET: vote.vote_order,
+									badge_number_SET: vote.badge_number,
+									voter_name_SET: vote.voter_name,
+									voter_party_SET: vote.voter_party,
+									option_SET: vote.option,
+									voters: [
+										{
+											disconnect: [
+												{
+													where: {
+														node: {
+															id_IN: vote.voters.map((v) => v.id),
+														},
+													},
+												},
+											],
+											connect: [
+												{
+													where: {
+														node: {
+															id_EQ: voterId,
+														},
+													},
+												},
+											],
+										},
+									],
+								},
 							},
-							update: {
-								vote_order_SET: vote.vote_order,
-								badge_number_SET: vote.badge_number,
-								voter_name_SET: vote.voter_name,
-								voter_party_SET: vote.voter_party,
-								option_SET: vote.option,
-								voters: [
+							votes: {
+								id: true,
+							},
+						},
+					});
+				} else {
+					// Create
+					return graphqlClient.mutation({
+						createVotes: {
+							__args: {
+								input: [
 									{
-										disconnect: [
-											{
-												where: {
-													node: {
-														id_IN: vote.voters.map((v) => v.id),
+										vote_order: vote.vote_order,
+										badge_number: vote.badge_number,
+										voter_name: vote.voter_name,
+										voter_party: vote.voter_party,
+										option: vote.option,
+										voters: {
+											connect: [
+												{
+													where: {
+														node: {
+															id_EQ: voterId,
+														},
 													},
 												},
-											},
-										],
-										connect: [
-											{
-												where: {
-													node: {
-														id_EQ: voterId,
+											],
+										},
+										vote_events: {
+											connect: [
+												{
+													where: {
+														node: {
+															id_EQ: voteEvent.value?.id,
+														},
 													},
 												},
-											},
-										],
+											],
+										},
 									},
 								],
 							},
+							votes: {
+								id: true,
+							},
 						},
-						votes: {
-							id: true,
-						},
-					},
-				});
-			} else {
-				// Create
-				return graphqlClient.mutation({
-					createVotes: {
-						__args: {
-							input: [
-								{
-									vote_order: vote.vote_order,
-									badge_number: vote.badge_number,
-									voter_name: vote.voter_name,
-									voter_party: vote.voter_party,
-									option: vote.option,
-									voters: {
-										connect: [
-											{
-												where: {
-													node: {
-														id_EQ: voterId,
-													},
-												},
-											},
-										],
-									},
-									vote_events: {
-										connect: [
-											{
-												where: {
-													node: {
-														id_EQ: voteEvent.value?.id,
-													},
-												},
-											},
-										],
-									},
-								},
-							],
-						},
-						votes: {
-							id: true,
-						},
-					},
-				});
-			}
-		});
+					});
+				}
+			});
 
-		await Promise.all(mutationPromises);
+			await Promise.all(mutationPromises);
+		}
+
+		if (toDeleteIds.value.size) {
+			await Promise.all(
+				Array.from(toDeleteIds.value).map((id) => onDelete(id)),
+			);
+		}
+
+		rowChange.value = rowsToPatch.length + toDeleteIds.value.size;
+		titleNotification.value.title = 'Changes Saved';
+		titleNotification.value.subtitle = `Changes to ${rowChange.value} rows have been saved.`;
+
+		// reset state
+		editedRows.value.clear();
+		editedCells.value.clear();
+		toDeleteIds.value.clear();
+		startEditing(null, null);
+		await refresh();
+
+		isShowNotification.value = true;
+		setTimeout(() => {
+			isShowNotification.value = false;
+		}, 5000);
+	} catch (error) {
+		console.error('Error saving changes:', error);
+	} finally {
+		isSaving.value = false;
 	}
-
-	if (toDeleteIds.value.size) {
-		await Promise.all(Array.from(toDeleteIds.value).map((id) => onDelete(id)));
-	}
-
-	rowChange.value = rowsToPatch.length + toDeleteIds.value.size;
-	titleNotification.value.title = 'Changes Saved';
-	titleNotification.value.subtitle = `Changes to ${rowChange.value} rows have been saved.`;
-
-	// reset state
-	editedRows.value.clear();
-	editedCells.value.clear();
-	toDeleteIds.value.clear();
-	startEditing(null, null);
-	await refresh();
-
-	isShowNotification.value = true;
-	setTimeout(() => {
-		isShowNotification.value = false;
-	}, 5000);
 };
 
 const goToOriginal = () => {
@@ -524,7 +537,7 @@ const downloadCSV = () => {
 				<cv-button :icon="DocumentView" kind="tertiary" @click="goToOriginal">
 					View Original
 				</cv-button>
-				<cv-button :icon="Save" @click="onSaveChanges">
+				<cv-button :icon="Save" @click="onSaveChanges" :disabled="isSaving">
 					Save Changes
 				</cv-button>
 			</div>
