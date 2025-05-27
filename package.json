@@ -31,6 +31,7 @@
 		"better-sqlite3": "^11.7.0",
 		"dayjs": "^1.11.13",
 		"eslint": "^9.25.1",
+		"fastest-levenshtein": "^1.0.16",
 		"graphql-ws": "^5.16.2",
 		"mermaid": "^11.5.0",
 		"neo4j-driver": "^5.27.0",

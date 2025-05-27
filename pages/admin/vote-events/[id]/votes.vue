@@ -10,6 +10,7 @@ import {
 import type { Vote } from '~/.genql';
 import { graphqlClient } from '~/utils/graphql/client';
 import { csvFormat } from 'd3-dsv';
+import { closest } from 'fastest-levenshtein';
 
 definePageMeta({
 	layout: 'admin-layout',
@@ -99,7 +100,8 @@ const { data: peopleOptions } = await useAsyncData(
 		});
 
 		return result.people.map((person) => ({
-			value: `${person.firstname} ${person.lastname}`,
+			value: person.id,
+			name: `${person.firstname} ${person.lastname}`,
 			label: `${person.firstname} ${person.lastname}`,
 		}));
 	},
@@ -107,14 +109,26 @@ const { data: peopleOptions } = await useAsyncData(
 );
 
 const getVoterOptions = (id: string, available: boolean) => {
-	const original = originalVotesMap.value[id];
-	const currentName = original?.voter_name;
-	if (currentName && !available) {
+	if (!peopleOptions.value) return [];
+
+	const original = originalVotesMap.value[id]?.voter_name;
+
+	if (original && !available) {
+		const closestName = closest(
+			original,
+			peopleOptions.value.map((p) => p.label),
+		);
+		const suggestion = peopleOptions.value.find(
+			(p) => p.label === closestName,
+		)!;
+
 		return [
-			{ value: currentName, label: currentName },
-			...(peopleOptions.value ?? []),
+			{ value: '', name: original, label: `${original}--(Original)` },
+			{ ...suggestion, label: `${suggestion.label}--(Suggestion)` },
+			...peopleOptions.value.filter((p) => p.value !== suggestion.value),
 		];
 	}
+
 	return peopleOptions.value;
 };
 
@@ -245,15 +259,13 @@ const onSaveChanges = async () => {
 			(vote) => editedRows.value.has(vote.id) || !existingIds.has(vote.id),
 		);
 
-		console.log(rowsToPatch, toDeleteIds.value);
-
 		if (!rowsToPatch.length && !toDeleteIds.value.size) return;
 
 		if (rowsToPatch.length) {
 			const mutationPromises = rowsToPatch.map((vote) => {
-				const voterId = vote.voter_name?.replaceAll(/\s+/g, '-');
+				const voterId = vote.voter_name;
 
-				if (existingIds.has(vote.id)) {
+				if (voterId && existingIds.has(vote.id)) {
 					// Update
 					return graphqlClient.mutation({
 						updateVotes: {
@@ -574,11 +586,11 @@ const downloadCSV = () => {
 					</cv-button>
 				</template>
 				<template #headings>
-					<cv-data-table-heading id="sb-number" heading="ลำดับที่" />
-					<cv-data-table-heading id="sb-badge-number" heading="เลขที่บัตร" />
-					<cv-data-table-heading id="sb-politician" heading="ชื่อ-สกุล" />
-					<cv-data-table-heading id="sb-party" heading="ชื่อสังกัด" />
-					<cv-data-table-heading id="sb-vote" heading="ผลการลงคะแนน" />
+					<cv-data-table-heading heading="ลำดับที่" />
+					<cv-data-table-heading heading="เลขที่บัตร" />
+					<cv-data-table-heading heading="ชื่อ-สกุล" class="min-w-[30%]" />
+					<cv-data-table-heading heading="ชื่อสังกัด" />
+					<cv-data-table-heading heading="ผลการลงคะแนน" />
 				</template>
 				<template #data class="table">
 					<cv-data-table-row
@@ -626,11 +638,7 @@ const downloadCSV = () => {
 						>
 							<div v-if="isActiveEditing(i, 2)">
 								<cv-combo-box
-									:label="
-										row.voter_name && row.voter_name?.length > 0
-											? row.voter_name
-											: 'Select voter name'
-									"
+									:label="row.voter_name ?? 'Select voter name'"
 									v-model="row.voter_name"
 									:options="getVoterOptions(row.id, row.voters.length > 0)"
 									item-value-key="value"
@@ -638,14 +646,21 @@ const downloadCSV = () => {
 									autoFilter
 									autoHighlight
 									@change="onOptionChange(row as Vote, 'voter_name')"
-									:direction="i >= filteredVotes.length - 5 ? 'top' : ''"
 								/>
 							</div>
 							<div v-else class="flex items-center gap-2 !pl-[16px]">
-								<p v-if="row.voter_name && row.voter_name?.length > 0">
-									{{ row.voter_name }}
+								<p
+									:class="{
+										'text-[#707070]': !row.voter_name,
+									}"
+								>
+									{{
+										peopleOptions?.find((p) => p.value === row.voter_name)
+											?.name ||
+										row.voter_name ||
+										'Select voter name'
+									}}
 								</p>
-								<p v-else class="text-[#707070]">Select voter name</p>
 								<cv-tooltip
 									v-if="
 										row.voters.length === 0 &&
@@ -725,6 +740,6 @@ const downloadCSV = () => {
 }
 
 table tr th {
-	@apply !pl-[32px] w-1/5;
+	@apply !pl-[32px];
 }
 </style>
