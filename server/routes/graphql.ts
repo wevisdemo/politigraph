@@ -50,6 +50,7 @@ export default startServerAndCreateH3Handler(
 	new ApolloServer({
 		schema,
 		...armor.protect(),
+		allowBatchedHttpRequests: true,
 	}),
 	{
 		context: async ({ event: { headers } }) => {
