@@ -191,9 +191,12 @@ const { data: OrganizationList } = await useAsyncData(
 			<cv-breadcrumb-item class="text-[#0F62FE]"
 				><a href="/admin/vote-events">Vote Events</a></cv-breadcrumb-item
 			>
-			<cv-breadcrumb-item>{{
-				voteEventFormInput.getFieldValue('title')
-			}}</cv-breadcrumb-item>
+			<cv-breadcrumb-item
+				><span
+					class="max-w-sm text-ellipsis whitespace-nowrap overflow-hidden"
+					>{{ voteEventFormInput.getFieldValue('title') }}</span
+				></cv-breadcrumb-item
+			>
 		</cv-breadcrumb>
 		<form
 			@submit="
@@ -221,7 +224,7 @@ const { data: OrganizationList } = await useAsyncData(
 
 					<div>
 						<ui-publish-status-tag
-							:status="voteEventFormInput.getFieldValue('publish_status') || ''"
+							:status="voteEventFormInput.getFieldValue('publish_status')"
 						/>
 					</div>
 				</div>

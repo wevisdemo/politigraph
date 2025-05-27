@@ -1,14 +1,12 @@
 <script setup lang="ts">
-//@ts-ignore
-import Add from '@carbon/icons-vue/es/add/16';
-//@ts-ignore
-import DocumentView from '@carbon/icons-vue/es/document--view/16';
-//@ts-ignore
-import Download from '@carbon/icons-vue/es/download/16';
-//@ts-ignore
-import Save from '@carbon/icons-vue/es/save/16';
-//@ts-ignore
-import WarningFilled16 from '@carbon/icons-vue/es/warning--filled/16';
+import {
+	Add16,
+	DocumentView16,
+	Download16,
+	Save16,
+	WarningFilled16,
+	//@ts-ignore
+} from '@carbon/icons-vue';
 import type { Vote } from '~/.genql';
 import { graphqlClient } from '~/utils/graphql/client';
 import { csvFormat } from 'd3-dsv';
@@ -69,7 +67,6 @@ const { data: voteEvent, refresh } = useAsyncData(
 			},
 		});
 		isShowNotificationError.value = voteEvents[0].publish_status === 'ERROR';
-		// console.log(voteEvents[0]);
 		originalVotesMap.value = {};
 		voteEvents[0]?.votes?.forEach((vote) => {
 			const { voters, ...rest } = vote;
@@ -87,18 +84,7 @@ const { data: voteEvent, refresh } = useAsyncData(
 	{ server: false },
 );
 
-const peopleOptions = ref<{ value: string; label: string }[]>([]);
-
-const getVoterOptions = (id: string, available: boolean) => {
-	const original = originalVotesMap.value[id];
-	const currentName = original?.voter_name;
-	if (currentName && !available) {
-		return [{ value: currentName, label: currentName }, ...peopleOptions.value];
-	}
-	return peopleOptions.value;
-};
-
-const { data: people } = useAsyncData(
+const { data: peopleOptions } = await useAsyncData(
 	'peopleConnection',
 	async () => {
 		const result = await graphqlClient.query({
@@ -112,19 +98,25 @@ const { data: people } = useAsyncData(
 			},
 		});
 
-		const peopleData = result.people ?? [];
-
-		if (peopleData.length > 0) {
-			peopleOptions.value = peopleData.map((person) => ({
-				value: `${person.firstname} ${person.lastname}`,
-				label: `${person.firstname} ${person.lastname}`,
-			}));
-		}
-
-		return peopleData;
+		return result.people.map((person) => ({
+			value: `${person.firstname} ${person.lastname}`,
+			label: `${person.firstname} ${person.lastname}`,
+		}));
 	},
 	{ server: false },
 );
+
+const getVoterOptions = (id: string, available: boolean) => {
+	const original = originalVotesMap.value[id];
+	const currentName = original?.voter_name;
+	if (currentName && !available) {
+		return [
+			{ value: currentName, label: currentName },
+			...(peopleOptions.value ?? []),
+		];
+	}
+	return peopleOptions.value;
+};
 
 const optionOptions = [
 	'เห็นด้วย',
@@ -177,10 +169,6 @@ const getRowClass = (row: Vote): string => {
 	return '';
 };
 
-const getCellClass = (row: Vote, columnId: number): string => {
-	return editedCells.value.has(`${row.id}-${columnId}`) ? 'highlight-cell' : '';
-};
-
 const activeEditingCell = ref<{
 	rowId: number | null;
 	columnId: number | null;
@@ -230,7 +218,7 @@ const markAsEdited = (rowId: string, cellKey: EditableVoteFields) => {
 				'voter_name',
 				'voter_party',
 				'option',
-			] as EditableVoteFields[]
+			] as const
 		).some((key) => current[key] !== original[key]);
 
 		if (!isStillEdited) {
@@ -240,10 +228,7 @@ const markAsEdited = (rowId: string, cellKey: EditableVoteFields) => {
 };
 
 const onOptionChange = (row: Vote, cellId: EditableVoteFields) => {
-	nextTick(() => {
-		// console.log('mask as edited', row.id, cellId);
-		markAsEdited(row.id, cellId);
-	});
+	nextTick(() => markAsEdited(row.id, cellId));
 };
 
 const isSaving = ref(false);
@@ -387,11 +372,6 @@ const onSaveChanges = async () => {
 	}
 };
 
-const goToOriginal = () => {
-	const url = voteEvent.value?.links[0]?.url;
-	window.open(url, '_blank');
-};
-
 const addNewRow = () => {
 	const newRow: Pick<
 		Vote,
@@ -413,7 +393,6 @@ const addNewRow = () => {
 	};
 	if (voteEvent.value && voteEvent.value.votes) {
 		voteEvent.value.votes = [...voteEvent.value.votes, newRow];
-		// console.log(voteEvent);
 		nextTick(() => {
 			const lastRowEl = document.querySelector('[data-last-row]');
 			lastRowEl?.scrollIntoView({ behavior: 'smooth' });
@@ -463,9 +442,9 @@ const deleteSelected = async () => {
 };
 
 const downloadCSV = () => {
-	const votesData = Object.values(originalVotesMap.value).sort((a, b) => {
-		return Number(a.vote_order) - Number(b.vote_order);
-	});
+	const votesData = Object.values(originalVotesMap.value).sort(
+		(a, b) => Number(a.vote_order) - Number(b.vote_order),
+	);
 
 	const headers = [
 		{ key: 'vote_order', label: 'ลำดับ' },
@@ -493,7 +472,7 @@ const downloadCSV = () => {
 	const url = URL.createObjectURL(blob);
 	const link = document.createElement('a');
 	link.setAttribute('href', url);
-	link.setAttribute('download', 'votes.csv');
+	link.setAttribute('download', `${voteEvent.value?.title}.csv`);
 	document.body.appendChild(link);
 	link.click();
 	document.body.removeChild(link);
@@ -507,9 +486,11 @@ const downloadCSV = () => {
 				><a href="/admin/vote-events">Vote Events</a></cv-breadcrumb-item
 			>
 			<cv-breadcrumb-item class="text-[#0F62FE]"
-				><a :href="`/admin/vote-events/${voteEvent?.id}`">{{
-					voteEvent?.title
-				}}</a></cv-breadcrumb-item
+				><a
+					:href="`/admin/vote-events/${voteEvent?.id}`"
+					class="max-w-sm text-ellipsis whitespace-nowrap overflow-hidden"
+					>{{ voteEvent?.title }}</a
+				></cv-breadcrumb-item
 			>
 			<cv-breadcrumb-item>Votes</cv-breadcrumb-item>
 		</cv-breadcrumb>
@@ -529,15 +510,22 @@ const downloadCSV = () => {
 			heading
 			:line-count="2"
 		></cv-skeleton-text>
-		<div v-else class="flex flex-row gap-4 justify-between !mb-12 !mt-4">
-			<div class="flex items-center">
-				<h3 class="!font-normal">Votes - {{ voteEvent?.title }}</h3>
-			</div>
-			<div class="flex gap-2 h-fit item-start">
-				<cv-button :icon="DocumentView" kind="tertiary" @click="goToOriginal">
-					View Original
-				</cv-button>
-				<cv-button :icon="Save" @click="onSaveChanges" :disabled="isSaving">
+		<div
+			v-else
+			class="flex flex-col lg:flex-row gap-4 items-start !mb-12 !mt-4"
+		>
+			<h2 class="!font-normal flex-1">Votes - {{ voteEvent?.title }}</h2>
+			<div class="flex gap-2 self-end">
+				<a
+					:href="voteEvent?.links[0]?.url"
+					target="_blank"
+					rel="noopener noreferrer"
+				>
+					<cv-button :icon="DocumentView16" kind="tertiary">
+						View Original
+					</cv-button>
+				</a>
+				<cv-button :icon="Save16" @click="onSaveChanges" :disabled="isSaving">
 					Save Changes
 				</cv-button>
 			</div>
@@ -570,13 +558,13 @@ const downloadCSV = () => {
 			>
 				<template #actions>
 					<cv-button
-						:icon="Download"
+						:icon="Download16"
 						kind="ghost"
 						hasIconOnly
 						class="!text-black"
 						@click="downloadCSV"
 					/>
-					<cv-button :icon="Add" kind="secondary" @click="addNewRow">
+					<cv-button :icon="Add16" kind="secondary" @click="addNewRow">
 						Add Vote
 					</cv-button>
 				</template>
@@ -586,31 +574,11 @@ const downloadCSV = () => {
 					</cv-button>
 				</template>
 				<template #headings>
-					<cv-data-table-heading
-						id="sb-number"
-						heading="ลำดับที่"
-						class="!pl-[16px] w-1/5"
-					/>
-					<cv-data-table-heading
-						id="sb-badge-number"
-						heading="เลขที่บัตร"
-						class="!pl-[16px] w-1/5"
-					/>
-					<cv-data-table-heading
-						id="sb-politician"
-						heading="ชื่อ-สกุล"
-						class="!pl-[16px] w-1/5"
-					/>
-					<cv-data-table-heading
-						id="sb-party"
-						heading="ชื่อสังกัด"
-						class="!pl-[16px] w-1/5"
-					/>
-					<cv-data-table-heading
-						id="sb-vote"
-						heading="ผลการลงคะแนน"
-						class="!pl-[16px] w-1/5"
-					/>
+					<cv-data-table-heading id="sb-number" heading="ลำดับที่" />
+					<cv-data-table-heading id="sb-badge-number" heading="เลขที่บัตร" />
+					<cv-data-table-heading id="sb-politician" heading="ชื่อ-สกุล" />
+					<cv-data-table-heading id="sb-party" heading="ชื่อสังกัด" />
+					<cv-data-table-heading id="sb-vote" heading="ผลการลงคะแนน" />
 				</template>
 				<template #data class="table">
 					<cv-data-table-row
@@ -637,7 +605,7 @@ const downloadCSV = () => {
 							@click="startEditing(i, 1)"
 						>
 							<cv-text-input
-								placeholder="Enter ID	 No."
+								placeholder="Enter ID No."
 								v-model="row.badge_number"
 								type="text"
 								style="background: transparent; border: none"
@@ -754,5 +722,9 @@ const downloadCSV = () => {
 <style scoped>
 ::v-deep(.bx--table-toolbar) {
 	background-color: white !important;
+}
+
+table tr th {
+	@apply !pl-[32px] w-1/5;
 }
 </style>

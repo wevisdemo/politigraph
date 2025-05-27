@@ -1,15 +1,12 @@
 <script setup lang="ts">
 import type { PublishStatus } from '~/.genql';
 
-const props = defineProps({
-	status: {
-		type: String,
-		required: true,
-	},
-});
+const props = defineProps<{
+	status?: PublishStatus;
+}>();
 
-const getPublishTitle = (status: PublishStatus) => {
-	switch (status) {
+const label = computed(() => {
+	switch (props.status) {
 		case 'PUBLISHED':
 			return 'Published';
 		case 'UNPUBLISHED':
@@ -19,7 +16,7 @@ const getPublishTitle = (status: PublishStatus) => {
 		default:
 			return '';
 	}
-};
+});
 
 const isPublish = computed(() => {
 	return props.status === 'PUBLISHED';
@@ -34,7 +31,7 @@ const isPublish = computed(() => {
 			:class="`rounded-full size-4 ${isPublish ? 'bg-tag-icon-publish' : 'bg-tag-icon'}`"
 		/>
 		<div class="text-[12px] !capitalize">
-			{{ getPublishTitle(status as PublishStatus) }}
+			{{ label }}
 		</div>
 	</div>
 </template>
