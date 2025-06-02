@@ -71,6 +71,10 @@
 	max-width: 100%;
 }
 
+.bx--number__input-wrapper input {
+	padding-right: 5rem !important;
+}
+
 .bg-tag-icon-publish {
 	background-color: #0e6027;
 }
