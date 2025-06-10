@@ -2,7 +2,6 @@
 //@ts-ignore
 import { Save16, TrashCan16, View16, ViewOff16 } from '@carbon/icons-vue';
 import { useForm } from '@tanstack/vue-form';
-import { VotesCollection } from '#components';
 import { graphqlClient } from '~/utils/graphql/client';
 import { diff } from 'radash';
 
@@ -223,7 +222,7 @@ const { data: OrganizationList } = await useAsyncData(
 					</h2>
 
 					<div>
-						<ui-publish-status-tag
+						<UiPublishStatusTag
 							:status="voteEventFormInput.getFieldValue('publish_status')"
 						/>
 					</div>
@@ -530,7 +529,7 @@ const { data: OrganizationList } = await useAsyncData(
 							</div>
 						</div>
 					</div>
-					<VotesCollection :vote-event-id="voteEventData?.id" />
+					<VoteEventCollection :vote-event-id="voteEventData?.id" />
 				</div>
 			</div>
 		</form>

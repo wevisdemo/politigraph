@@ -11,7 +11,7 @@
 				<li>Solid Arrow = Relationship</li>
 				<li>Dashed Arrow = In union / Inherit from interface</li>
 			</ul>
-			<schema-diagram />
+			<SchemaDiagram />
 		</div>
 	</cv-tile>
 </template>

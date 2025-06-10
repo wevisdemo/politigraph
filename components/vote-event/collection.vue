@@ -1,7 +1,6 @@
 <script setup lang="ts">
 //@ts-ignore
 import { Edit16 } from '@carbon/icons-vue';
-import { UiPagination } from '#components';
 import { graphqlClient } from '~/utils/graphql/client';
 
 const props = defineProps<{
