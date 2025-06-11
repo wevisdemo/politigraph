@@ -108,7 +108,7 @@ const getRowClass = (row: Vote): string => {
 	if (isRowEdited(row.id)) {
 		return '[&>td]:bg-[#FCF4D6]!';
 	}
-	if (row.voters.length == 0) {
+	if (row.voters.length === 0 || !props.voteOptions.includes(row.option)) {
 		return '[&>td]:bg-[#FFF1F1]!';
 	}
 	return '';
@@ -419,10 +419,18 @@ const downloadCSV = () => {
 								</cv-dropdown-item>
 							</cv-dropdown>
 						</div>
-						<div v-else class="flex items-center gap-2 !pl-[16px]">
-							<p v-if="row.option && row.option.length > 0">
-								{{ row.option }}
-							</p>
+						<div v-else class="flex items-center !pl-[16px]">
+							<div v-if="row.option" class="flex flex-row gap-2 items-center">
+								<p>{{ row.option }}</p>
+								<cv-tooltip
+									v-if="!voteOptions.includes(row.option)"
+									:direction="i === filteredVotes.length - 1 ? 'top' : 'bottom'"
+									alignment="end"
+									tip="Unexpected value"
+								>
+									<WarningFilled16 class="inline-block" style="fill: #da1e28" />
+								</cv-tooltip>
+							</div>
 							<p v-else class="text-[#707070]">Chose...</p>
 							<cv-tooltip
 								v-if="isCellEdited(row.id, 'option')"
