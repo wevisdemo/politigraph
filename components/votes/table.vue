@@ -22,6 +22,7 @@ type VoteEventProp = Pick<VoteEvent, 'id' | 'title' | 'publish_status'> & {
 const props = defineProps<{
 	voteEvent: VoteEventProp | null;
 	originalVotesMap: Record<string, Partial<Vote>>;
+	voteOptions: string[];
 	peopleOptions:
 		| {
 				value: string;
@@ -72,14 +73,6 @@ const getVoterOptions = (id: string, available: boolean) => {
 
 	return props.peopleOptions;
 };
-
-const voteOptions = [
-	'เห็นด้วย',
-	'ไม่เห็นด้วย',
-	'งดออกเสียง',
-	'ไม่ลงคะแนน',
-	'ลา / ขาดลงมติ',
-];
 
 const filteredVotes = computed(() => {
 	if (!props.voteEvent?.votes || !Array.isArray(props.voteEvent.votes)) {

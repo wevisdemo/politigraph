@@ -8,6 +8,14 @@ definePageMeta({
 	layout: 'admin-layout',
 });
 
+const voteOptions = [
+	'เห็นด้วย',
+	'ไม่เห็นด้วย',
+	'งดออกเสียง',
+	'ไม่ลงคะแนน',
+	'ลา / ขาดลงมติ',
+];
+
 const route = useRoute();
 
 const isShowNotificationError = ref(false);
@@ -18,6 +26,17 @@ const titleNotification = ref({
 });
 const rowChange = ref(0);
 const originalVotesMap = ref<Record<string, Partial<Vote>>>({});
+const originalCount = reactive<
+	Record<
+		'agree_count' | 'disagree_count' | 'novote_count' | 'abstain_count',
+		number | null
+	>
+>({
+	agree_count: null,
+	disagree_count: null,
+	novote_count: null,
+	abstain_count: null,
+});
 
 const editedRows = ref<Set<string>>(new Set());
 const editedCells = ref<Set<string>>(new Set());
@@ -31,7 +50,9 @@ const activeEditingCell = ref<{
 const { data: voteEvent, refresh } = useAsyncData(
 	'voteEventsConnection',
 	async () => {
-		const { voteEvents } = await graphqlClient.query({
+		const {
+			voteEvents: [voteEvent],
+		} = await graphqlClient.query({
 			voteEvents: {
 				__args: {
 					limit: 1,
@@ -42,6 +63,10 @@ const { data: voteEvent, refresh } = useAsyncData(
 				id: true,
 				title: true,
 				publish_status: true,
+				agree_count: true,
+				disagree_count: true,
+				novote_count: true,
+				abstain_count: true,
 				links: {
 					__args: {
 						where: {
@@ -63,19 +88,21 @@ const { data: voteEvent, refresh } = useAsyncData(
 				},
 			},
 		});
-		isShowNotificationError.value = voteEvents[0].publish_status === 'ERROR';
+		isShowNotificationError.value = voteEvent.publish_status === 'ERROR';
+
+		originalCount.agree_count = voteEvent.agree_count;
+		originalCount.disagree_count = voteEvent.disagree_count;
+		originalCount.novote_count = voteEvent.novote_count;
+		originalCount.abstain_count = voteEvent.abstain_count;
 		originalVotesMap.value = {};
-		voteEvents[0]?.votes?.forEach((vote) => {
+
+		voteEvent.votes.sort((a, b) => Number(a.vote_order) - Number(b.vote_order));
+
+		voteEvent.votes?.forEach((vote) => {
 			const { voters, ...rest } = vote;
 			originalVotesMap.value[vote.id] = { ...rest };
 		});
 
-		const votes = voteEvents[0].votes.sort((a, b) => {
-			return Number(a.vote_order) - Number(b.vote_order);
-		});
-
-		const voteEvent = voteEvents[0];
-		voteEvent.votes = votes;
 		return voteEvent;
 	},
 	{ server: false },
@@ -107,10 +134,19 @@ const { data: peopleOptions } = await useAsyncData(
 const isSaving = ref(false);
 
 async function onSaveChanges() {
-	if (isSaving.value) return;
+	if (isSaving.value || !voteEvent.value) return;
 	isSaving.value = true;
 
 	try {
+		const summaryCountKeyChanges = Object.entries(originalCount)
+			.filter(
+				([key, value]) =>
+					voteEvent.value &&
+					key in voteEvent.value &&
+					value !== voteEvent.value[key as keyof typeof originalCount],
+			)
+			.map(([key]) => key as keyof typeof originalCount);
+
 		const allVotes = voteEvent.value?.votes ?? [];
 		const existingIds = new Set(Object.keys(originalVotesMap.value));
 
@@ -118,7 +154,32 @@ async function onSaveChanges() {
 			(vote) => editedRows.value.has(vote.id) || !existingIds.has(vote.id),
 		);
 
-		if (!rowsToPatch.length && !toDeleteIds.value.size) return;
+		if (
+			summaryCountKeyChanges.length +
+				rowsToPatch.length +
+				toDeleteIds.value.size ===
+			0
+		)
+			return;
+
+		if (summaryCountKeyChanges.length) {
+			await graphqlClient.mutation({
+				updateVoteEvents: {
+					__args: {
+						where: {
+							id_EQ: voteEvent.value.id,
+						},
+						update: Object.fromEntries(
+							summaryCountKeyChanges.map((key) => [
+								`${key}_SET`,
+								voteEvent.value![key],
+							]),
+						),
+					},
+					__scalar: true,
+				},
+			});
+		}
 
 		if (rowsToPatch.length) {
 			const mutationPromises = rowsToPatch.map((vote) => {
@@ -232,7 +293,9 @@ async function onSaveChanges() {
 
 		rowChange.value = rowsToPatch.length + toDeleteIds.value.size;
 		titleNotification.value.title = 'Changes Saved';
-		titleNotification.value.subtitle = `Changes to ${rowChange.value} rows have been saved.`;
+		titleNotification.value.subtitle = rowChange.value
+			? `Changes to ${rowChange.value} rows have been saved.`
+			: '';
 
 		// reset state
 		editedRows.value.clear();
@@ -322,15 +385,20 @@ function showRowDeleteNotification(count: number) {
 			@close="isShowNotificationError = false"
 		/>
 
-		<VotesTable
-			:voteEvent
-			:originalVotesMap
-			:peopleOptions
-			v-model:activeEditingCell="activeEditingCell"
-			v-model:editedCells="editedCells"
-			v-model:editedRows="editedRows"
-			v-model:toDeleteIds="toDeleteIds"
-			@deleted="showRowDeleteNotification"
-		/>
+		<div class="flex flex-col-reverse md:flex-row gap-4 items-start relative">
+			<VotesTable
+				class="flex-1"
+				:voteEvent
+				:originalVotesMap
+				:peopleOptions
+				:voteOptions
+				v-model:activeEditingCell="activeEditingCell"
+				v-model:editedCells="editedCells"
+				v-model:editedRows="editedRows"
+				v-model:toDeleteIds="toDeleteIds"
+				@deleted="showRowDeleteNotification"
+			/>
+			<VotesSummary class="max-w-xs sticky top-16" :voteOptions :voteEvent />
+		</div>
 	</div>
 </template>
