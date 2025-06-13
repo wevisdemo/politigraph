@@ -1,6 +1,12 @@
 <script setup lang="ts">
-//@ts-ignore
-import { Save16, TrashCan16, View16, ViewOff16 } from '@carbon/icons-vue';
+import {
+	DocumentView16,
+	Save16,
+	TrashCan16,
+	View16,
+	ViewOff16,
+	//@ts-ignore
+} from '@carbon/icons-vue';
 import { useForm } from '@tanstack/vue-form';
 import { graphqlClient } from '~/utils/graphql/client';
 import { validateVotes } from '~/utils/votes/validator';
@@ -213,6 +219,14 @@ const errors = computed(() =>
 		: [],
 );
 
+const openOriginalDocument = computed(() => {
+	const link = voteEventData.value?.links.find(
+		(link) => link.note === 'ใบประมวลผลการลงมติ',
+	)?.url;
+
+	return link ? () => window.open(link, '_blank') : undefined;
+});
+
 async function togglePublishStatus() {
 	const { updateVoteEvents } = await graphqlClient.mutation({
 		updateVoteEvents: {
@@ -291,6 +305,22 @@ function openSuccessToastNotification() {
 				</div>
 
 				<div class="flex gap-2">
+					<cv-button
+						v-if="openOriginalDocument"
+						:icon="DocumentView16"
+						kind="tertiary"
+						@click="openOriginalDocument"
+					>
+						View Original
+					</cv-button>
+					<cv-button
+						default="Unpublished"
+						:icon="isPublish ? ViewOff16 : View16"
+						kind="tertiary"
+						@click="togglePublishStatus"
+						:disabled="errors.length"
+						>{{ isPublish ? 'Unpublished' : 'Published' }}</cv-button
+					>
 					<voteEventFormInput.Subscribe>
 						<template v-slot="{ canSubmit }">
 							<cv-button
@@ -303,14 +333,6 @@ function openSuccessToastNotification() {
 							>
 						</template>
 					</voteEventFormInput.Subscribe>
-					<cv-button
-						default="Unpublished"
-						:icon="isPublish ? ViewOff16 : View16"
-						kind="tertiary"
-						@click="togglePublishStatus"
-						:disabled="errors.length"
-						>{{ isPublish ? 'Unpublished' : 'Published' }}</cv-button
-					>
 				</div>
 			</div>
 
