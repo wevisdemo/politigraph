@@ -159,19 +159,31 @@ async function onSaveChanges() {
 		)
 			return;
 
-		if (summaryCountKeyChanges.length) {
+		if (
+			summaryCountKeyChanges.length ||
+			(voteEvent.value.publish_status === 'ERROR' && !errors.value.length) ||
+			(voteEvent.value.publish_status === 'UNPUBLISHED' && errors.value.length)
+		) {
 			await graphqlClient.mutation({
 				updateVoteEvents: {
 					__args: {
 						where: {
 							id_EQ: voteEvent.value.id,
 						},
-						update: Object.fromEntries(
-							summaryCountKeyChanges.map((key) => [
-								`${key}_SET`,
-								voteEvent.value![key],
-							]),
-						),
+						update: {
+							publish_status:
+								voteEvent.value.publish_status === 'PUBLISHED'
+									? 'PUBLISHED'
+									: errors.value.length > 0
+										? 'ERROR'
+										: 'UNPUBLISHED',
+							...Object.fromEntries(
+								summaryCountKeyChanges.map((key) => [
+									key,
+									voteEvent.value![key],
+								]),
+							),
+						},
 					},
 					__scalar: true,
 				},
@@ -366,6 +378,7 @@ function scrollToRow(id: string) {
 			<h2 class="!font-normal flex-1">Votes - {{ voteEvent?.title }}</h2>
 			<div class="flex gap-2 self-end">
 				<a
+					v-if="voteEvent?.links.length"
 					:href="voteEvent?.links[0]?.url"
 					target="_blank"
 					rel="noopener noreferrer"

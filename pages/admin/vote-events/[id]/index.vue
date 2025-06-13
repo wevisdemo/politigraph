@@ -14,8 +14,7 @@ const route = useRoute();
 
 const isShowSuccessNotification = ref(false);
 
-const { data: voteEventData } = await useAsyncData(
-	'voteEventData',
+const { data: voteEventData, refresh: refreshVoteEvent } = await useAsyncData(
 	async () => {
 		const { voteEvents } = await graphqlClient.query({
 			voteEvents: {
@@ -89,7 +88,7 @@ const defaultValues = reactive({
 });
 
 const isPublish = computed(
-	() => voteEventFormInput.getFieldValue('publish_status') === 'PUBLISHED',
+	() => voteEventData.value?.publish_status === 'PUBLISHED',
 );
 
 const voteEventFormInput = useForm({
@@ -124,11 +123,16 @@ const voteEventFormInput = useForm({
 						start_date: value.start_date,
 						result: value.result,
 						description: value.description,
-
 						disagree_count: Number(value.disagree_count),
 						agree_count: Number(value.agree_count),
 						abstain_count: Number(value.abstain_count),
 						novote_count: Number(value.novote_count),
+						publish_status:
+							value.publish_status === 'PUBLISHED'
+								? 'PUBLISHED'
+								: errors.value.length > 0
+									? 'ERROR'
+									: 'UNPUBLISHED',
 						organizations: [
 							{
 								connect: [
@@ -174,7 +178,7 @@ const voteEventFormInput = useForm({
 		});
 
 		openSuccessToastNotification();
-		refreshNuxtData(['voteEventData']);
+		refreshVoteEvent();
 	},
 });
 
@@ -198,8 +202,15 @@ const { data: OrganizationList } = await useAsyncData(
 	{ server: false },
 );
 
+const voteEventFormStore = voteEventFormInput.useStore();
+
 const errors = computed(() =>
-	voteEventData.value ? validateVotes(voteEventData.value) : [],
+	voteEventData.value && voteEventFormStore.value
+		? validateVotes({
+				...voteEventFormStore.value.values,
+				votes: voteEventData.value?.votes,
+			})
+		: [],
 );
 
 async function togglePublishStatus() {
@@ -224,7 +235,7 @@ async function togglePublishStatus() {
 
 	if (updateVoteEvents.voteEvents) {
 		openSuccessToastNotification();
-		refreshNuxtData(['voteEventData']);
+		refreshVoteEvent();
 	}
 }
 
@@ -247,7 +258,7 @@ function openSuccessToastNotification() {
 			<cv-breadcrumb-item
 				><span
 					class="max-w-sm text-ellipsis whitespace-nowrap overflow-hidden"
-					>{{ voteEventFormInput.getFieldValue('title') }}</span
+					>{{ voteEventData?.title }}</span
 				></cv-breadcrumb-item
 			>
 		</cv-breadcrumb>
@@ -256,7 +267,6 @@ function openSuccessToastNotification() {
 				(e: any) => {
 					e.preventDefault();
 					e.stopPropagation();
-					voteEventFormInput.handleSubmit();
 				}
 			"
 		>
@@ -272,13 +282,11 @@ function openSuccessToastNotification() {
 			>
 				<div class="flex-1 flex flex-row gap-4 items-center">
 					<h2 class="md:min-w-xl">
-						{{ voteEventFormInput.getFieldValue('title') }}
+						{{ voteEventData.title }}
 					</h2>
 
 					<div>
-						<UiPublishStatusTag
-							:status="voteEventFormInput.getFieldValue('publish_status')"
-						/>
+						<UiPublishStatusTag :status="voteEventData.publish_status" />
 					</div>
 				</div>
 
@@ -290,6 +298,7 @@ function openSuccessToastNotification() {
 								:icon="Save16"
 								:disabled="!canSubmit"
 								type="submit"
+								@click="voteEventFormInput.handleSubmit"
 								>Save Changes</cv-button
 							>
 						</template>
@@ -299,6 +308,7 @@ function openSuccessToastNotification() {
 						:icon="isPublish ? ViewOff16 : View16"
 						kind="tertiary"
 						@click="togglePublishStatus"
+						:disabled="errors.length"
 						>{{ isPublish ? 'Unpublished' : 'Published' }}</cv-button
 					>
 				</div>
