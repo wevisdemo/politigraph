@@ -59,6 +59,8 @@ const { data: voteEventData } = await useAsyncData(
 					badge_number: true,
 					voters: {
 						id: true,
+						firstname: true,
+						lastname: true,
 					},
 				},
 			},
@@ -554,7 +556,10 @@ async function togglePublishStatus() {
 							</div>
 						</div>
 					</div>
-					<VoteEventCollection :vote-event-id="voteEventData?.id" />
+					<VoteEventCollection
+						:vote-event-id="voteEventData?.id"
+						:votes="voteEventData?.votes"
+					/>
 				</div>
 			</div>
 		</form>

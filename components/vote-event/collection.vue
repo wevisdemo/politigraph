@@ -1,91 +1,51 @@
 <script setup lang="ts">
 //@ts-ignore
 import { Edit16 } from '@carbon/icons-vue';
-import { graphqlClient } from '~/utils/graphql/client';
+import type { Person, Vote } from '~/.genql';
 
 const props = defineProps<{
 	voteEventId?: string;
+	votes?: (Pick<
+		Vote,
+		| 'id'
+		| 'vote_order'
+		| 'voter_name'
+		| 'voter_party'
+		| 'option'
+		| 'badge_number'
+	> & {
+		voters: Pick<Person, 'id' | 'firstname' | 'lastname'>[];
+	})[];
 }>();
 
-const paginationData = ref({
+const paginationData = reactive({
 	page: 1,
 	pageSize: 10,
 });
 
-const { data } = await useAsyncData(
-	'votes',
-	async () => {
-		if (!props.voteEventId) return null;
-
-		const { votesConnection, votes } = await graphqlClient.query({
-			votesConnection: {
-				__args: {
-					where: {
-						vote_events_ALL: {
-							id_EQ: props.voteEventId as string,
-						},
-					},
-				},
-				aggregate: {
-					count: {
-						nodes: true,
-					},
-				},
-			},
-			votes: {
-				__args: {
-					limit: paginationData.value.pageSize,
-					offset:
-						(paginationData.value.page - 1) * paginationData.value.pageSize,
-					where: {
-						vote_events_ALL: {
-							id_EQ: props.voteEventId as string,
-						},
-					},
-					sort: [
-						{
-							vote_order: 'ASC',
-						},
-					],
-				},
-				id: true,
-				voter_name: true,
-				voter_party: true,
-				voters: {
-					firstname: true,
-					lastname: true,
-				},
-				badge_number: true,
-				option: true,
-			},
-		});
-		return {
-			totalCount: votesConnection.aggregate.count.nodes,
-			votes,
-		};
-	},
-	{ server: false, watch: [props] },
-);
-
 const numberOfPage = computed(() =>
-	data.value?.totalCount
-		? Math.ceil(data.value.totalCount / paginationData.value.pageSize)
+	props.votes?.length
+		? Math.ceil(props.votes.length / paginationData.pageSize)
 		: 1,
 );
 
+const firstRowIndexOfPage = computed(
+	() => (paginationData.page - 1) * paginationData.pageSize,
+);
+
 const handlePageChange = (page: number) => {
-	paginationData.value.page = page;
+	paginationData.page = page;
 };
 
 const handlePageSizeChange = (pageSize: number) => {
-	paginationData.value.pageSize = pageSize;
+	paginationData.pageSize = pageSize;
 };
 const router = useRouter();
 </script>
 
 <template>
 	<cv-data-table-skeleton
-		v-if="!data?.votes"
+		v-if="!votes"
 		class="bg-white"
 		title="Votes"
 		helperText="การลงมติรายคน"
@@ -109,13 +69,22 @@ const router = useRouter();
 			<div>voter_name ถ้าไม่ match voters ให้ใส่ชื้อสีแดง</div>
 			<template #data>
 				<cv-data-table-row
-					v-for="(row, i) in data.votes"
+					v-for="(row, i) in votes.slice(
+						firstRowIndexOfPage,
+						firstRowIndexOfPage + paginationData.pageSize,
+					)"
 					:id="row.id"
 					:key="row.id"
 					:value="row.id"
 				>
-					<cv-data-table-cell>{{ i + 1 }}</cv-data-table-cell>
-					<cv-data-table-cell>{{ row.voter_name }}</cv-data-table-cell>
+					<cv-data-table-cell>{{
+						firstRowIndexOfPage + i + 1
+					}}</cv-data-table-cell>
+					<cv-data-table-cell>{{
+						row.voters.length
+							? `${row.voters[0].firstname} ${row.voters[0].lastname}`
+							: row.voter_name
+					}}</cv-data-table-cell>
 					<cv-data-table-cell>{{ row.voter_party }}</cv-data-table-cell>
 					<cv-data-table-cell>{{ row.option }}</cv-data-table-cell>
 				</cv-data-table-row>
@@ -124,7 +93,7 @@ const router = useRouter();
 		<UiPagination
 			:page="paginationData.page"
 			:page-size="paginationData.pageSize"
-			:total-count="data.totalCount ?? 0"
+			:total-count="votes.length"
 			:number-of-page="numberOfPage"
 			@on-page-change="handlePageChange"
 			@on-page-size-change="handlePageSizeChange"

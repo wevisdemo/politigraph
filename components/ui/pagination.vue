@@ -84,14 +84,14 @@ const handlePageChange = (value: number) => {
 				</div>
 
 				<cv-icon-button
-					label="prev"
+					label="Previous"
 					kind="secondary"
 					:icon="CaretLeft16"
 					:disabled="page <= 1"
 					@click="handlePageChange(page - 1)"
 				/>
 				<cv-icon-button
-					label="next"
+					label="Next"
 					kind="secondary"
 					:icon="CaretRight16"
 					:disabled="page >= numberOfPage"
