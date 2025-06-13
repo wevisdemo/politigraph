@@ -12,8 +12,7 @@ definePageMeta({
 
 const route = useRoute();
 
-const isShowNotification = ref(true);
-const isShowNotificationError = ref(true);
+const isShowSuccessNotification = ref(false);
 
 const { data: voteEventData } = await useAsyncData(
 	'voteEventData',
@@ -173,6 +172,8 @@ const voteEventFormInput = useForm({
 				},
 			},
 		});
+
+		openSuccessToastNotification();
 		refreshNuxtData(['voteEventData']);
 	},
 });
@@ -222,8 +223,18 @@ async function togglePublishStatus() {
 	});
 
 	if (updateVoteEvents.voteEvents) {
+		openSuccessToastNotification();
 		refreshNuxtData(['voteEventData']);
 	}
+}
+
+function openSuccessToastNotification() {
+	isShowSuccessNotification.value = false;
+	isShowSuccessNotification.value = true;
+
+	setTimeout(() => {
+		isShowSuccessNotification.value = false;
+	}, 5000);
 }
 </script>
 
@@ -293,6 +304,15 @@ async function togglePublishStatus() {
 				</div>
 			</div>
 
+			<cv-inline-notification
+				v-if="voteEventData?.publish_status !== 'PUBLISHED'"
+				lowContrast
+				kind="warning"
+				title="This item is unpublished"
+				subTitle="It is not visible in public view."
+				hideCloseButton
+			/>
+
 			<VotesErrorNotifications
 				:errors
 				:getActionLabel="() => 'Review'"
@@ -301,23 +321,7 @@ async function togglePublishStatus() {
 				"
 			/>
 
-			<!-- <cv-inline-notification
-				v-if="isShowNotification"
-				lowContrast
-				kind="warning"
-				title="This item is unpublished"
-				subTitle="It is not visible in public view."
-				@close="isShowNotification = false"
-			/>
-
-			<cv-inline-notification
-				v-if="route.params.id && isShowNotificationError"
-				lowContrast
-				kind="error"
-				title="Error: Data Validation Failed"
-				@close="isShowNotificationError = false"
-			/> -->
-			<div class="flex flex-col md:flex-row gap-8 items-start">
+			<div class="flex flex-col md:flex-row gap-8 items-start !mt-4">
 				<div class="bg-white !p-4 basis-2/4">
 					<div class="flex flex-col gap-6">
 						<div class="flex flex-col gap-1">
@@ -564,6 +568,12 @@ async function togglePublishStatus() {
 			</div>
 		</form>
 	</div>
-</template>
 
-<style scoped></style>
+	<cv-toast-notification
+		v-if="isShowSuccessNotification"
+		kind="success"
+		title="ข้อมูลถูกบันทึกเรียบร้อย"
+		@close="isShowSuccessNotification = false"
+		class="z-50 fixed right-[4px] top-[60px]"
+	/>
+</template>
