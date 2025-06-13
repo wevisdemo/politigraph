@@ -161,7 +161,8 @@ const router = useRouter();
 						</cv-data-table-cell>
 						<cv-data-table-cell
 							:class="{
-								'!text-[#DA1E28]': row.publish_status == 'ERROR',
+								'!text-[#DA1E28]': row.publish_status === 'ERROR',
+								'!text-[#158236]': row.publish_status === 'PUBLISHED',
 							}"
 							>{{ row.publish_status }}</cv-data-table-cell
 						>
