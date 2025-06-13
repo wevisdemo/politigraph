@@ -3,18 +3,11 @@
 import { DocumentView16, Save16 } from '@carbon/icons-vue';
 import type { Vote } from '~/.genql';
 import { graphqlClient } from '~/utils/graphql/client';
+import { validateVotes } from '~/utils/votes/validator';
 
 definePageMeta({
 	layout: 'admin-layout',
 });
-
-const voteOptions = [
-	'เห็นด้วย',
-	'ไม่เห็นด้วย',
-	'งดออกเสียง',
-	'ไม่ลงคะแนน',
-	'ลา / ขาดลงมติ',
-];
 
 const route = useRoute();
 
@@ -41,6 +34,10 @@ const originalCount = reactive<
 const editedRows = ref<Set<string>>(new Set());
 const editedCells = ref<Set<string>>(new Set());
 const toDeleteIds = ref<Set<string>>(new Set());
+
+const errors = computed(() =>
+	voteEvent.value ? validateVotes(voteEvent.value) : [],
+);
 
 const activeEditingCell = ref<{
 	rowId: number | null;
@@ -323,6 +320,12 @@ function showRowDeleteNotification(count: number) {
 		isShowNotification.value = false;
 	}, 3000);
 }
+
+function scrollToRow(id: string) {
+	document
+		.querySelector(`[data-value="${id}"]`)
+		?.scrollIntoView({ behavior: 'smooth' });
+}
 </script>
 
 <template>
@@ -377,12 +380,15 @@ function showRowDeleteNotification(count: number) {
 			</div>
 		</div>
 
-		<cv-inline-notification
-			v-if="route.params.id && isShowNotificationError"
-			lowContrast
-			kind="error"
-			title="Error: Data Validation Failed"
-			@close="isShowNotificationError = false"
+		<VotesErrorNotifications
+			:errors
+			:getActionLabel="
+				(type, ids) =>
+					type === 'COUNT_MISMATCHED'
+						? undefined
+						: `Go to the first issue at row ${(voteEvent?.votes.findIndex((v) => v.id === ids[0]) as number) + 1}`
+			"
+			@action="({ ids }) => ids.length && scrollToRow(ids[0])"
 		/>
 
 		<div class="flex flex-col-reverse md:flex-row gap-4 items-start relative">
@@ -391,14 +397,14 @@ function showRowDeleteNotification(count: number) {
 				:voteEvent
 				:originalVotesMap
 				:peopleOptions
-				:voteOptions
+				:errors
 				v-model:activeEditingCell="activeEditingCell"
 				v-model:editedCells="editedCells"
 				v-model:editedRows="editedRows"
 				v-model:toDeleteIds="toDeleteIds"
 				@deleted="showRowDeleteNotification"
 			/>
-			<VotesSummary class="max-w-xs sticky top-16" :voteOptions :voteEvent />
+			<VotesSummary class="max-w-xs sticky top-16" :voteEvent />
 		</div>
 	</div>
 </template>

@@ -3,6 +3,7 @@
 import { Save16, TrashCan16, View16, ViewOff16 } from '@carbon/icons-vue';
 import { useForm } from '@tanstack/vue-form';
 import { graphqlClient } from '~/utils/graphql/client';
+import { validateVotes } from '~/utils/votes/validator';
 import { diff } from 'radash';
 
 definePageMeta({
@@ -49,6 +50,17 @@ const { data: voteEventData } = await useAsyncData(
 				agree_count: true,
 				abstain_count: true,
 				novote_count: true,
+				votes: {
+					id: true,
+					vote_order: true,
+					voter_name: true,
+					voter_party: true,
+					option: true,
+					badge_number: true,
+					voters: {
+						id: true,
+					},
+				},
 			},
 		});
 		return voteEvents[0];
@@ -182,6 +194,35 @@ const { data: OrganizationList } = await useAsyncData(
 	},
 	{ server: false },
 );
+
+const errors = computed(() =>
+	voteEventData.value ? validateVotes(voteEventData.value) : [],
+);
+
+async function togglePublishStatus() {
+	const { updateVoteEvents } = await graphqlClient.mutation({
+		updateVoteEvents: {
+			__args: {
+				where: {
+					id_EQ: route.params.id as string,
+				},
+				update: {
+					publish_status:
+						defaultValues.publish_status !== 'PUBLISHED'
+							? 'PUBLISHED'
+							: 'UNPUBLISHED',
+				},
+			},
+			voteEvents: {
+				publish_status: true,
+			},
+		},
+	});
+
+	if (updateVoteEvents.voteEvents) {
+		refreshNuxtData(['voteEventData']);
+	}
+}
 </script>
 
 <template>
@@ -244,36 +285,20 @@ const { data: OrganizationList } = await useAsyncData(
 						default="Unpublished"
 						:icon="isPublish ? ViewOff16 : View16"
 						kind="tertiary"
-						@click="
-							async () => {
-								const { updateVoteEvents } = await graphqlClient.mutation({
-									updateVoteEvents: {
-										__args: {
-											where: {
-												id_EQ: route.params.id as string,
-											},
-											update: {
-												publish_status:
-													defaultValues.publish_status !== 'PUBLISHED'
-														? 'PUBLISHED'
-														: 'UNPUBLISHED',
-											},
-										},
-										voteEvents: {
-											publish_status: true,
-										},
-									},
-								});
-
-								if (updateVoteEvents.voteEvents) {
-									refreshNuxtData(['voteEventData']);
-								}
-							}
-						"
+						@click="togglePublishStatus"
 						>{{ isPublish ? 'Unpublished' : 'Published' }}</cv-button
 					>
 				</div>
 			</div>
+
+			<VotesErrorNotifications
+				:errors
+				:getActionLabel="() => 'Review'"
+				@action="
+					() => $router.push(`/admin/vote-events/${voteEventData?.id}/votes`)
+				"
+			/>
+
 			<!-- <cv-inline-notification
 				v-if="isShowNotification"
 				lowContrast

@@ -2,6 +2,8 @@
 //@ts-ignore
 import { Add16, Download16, WarningFilled16 } from '@carbon/icons-vue';
 import type { Person, Vote, VoteEvent } from '~/.genql';
+import { standardVoteOptions } from '~/constants/votes';
+import type { VoteError } from '~/utils/votes/validator';
 import { csvFormat } from 'd3-dsv';
 import { closest } from 'fastest-levenshtein';
 
@@ -22,7 +24,6 @@ type VoteEventProp = Pick<VoteEvent, 'id' | 'title' | 'publish_status'> & {
 const props = defineProps<{
 	voteEvent: VoteEventProp | null;
 	originalVotesMap: Record<string, Partial<Vote>>;
-	voteOptions: string[];
 	peopleOptions:
 		| {
 				value: string;
@@ -30,6 +31,7 @@ const props = defineProps<{
 				label: string;
 		  }[]
 		| null;
+	errors: VoteError[];
 }>();
 
 const activeEditingCell = defineModel<{
@@ -89,13 +91,7 @@ const filteredVotes = computed(() => {
 	});
 });
 
-const isRowEdited = (id: string) => {
-	return editedRows.value.has(id);
-};
-
-const isNewRow = (id: string) => {
-	return !props.originalVotesMap[id];
-};
+const isNewRow = (id: string) => !props.originalVotesMap[id];
 
 const isCellEdited = (rowId: string, cellId: string) => {
 	return editedCells.value.has(`${rowId}-${cellId}`);
@@ -105,10 +101,10 @@ const getRowClass = (row: Vote): string => {
 	if (isNewRow(row.id)) {
 		return '';
 	}
-	if (isRowEdited(row.id)) {
+	if (editedRows.value.has(row.id)) {
 		return '[&>td]:bg-[#FCF4D6]!';
 	}
-	if (row.voters.length === 0 || !props.voteOptions.includes(row.option)) {
+	if (props.errors.some((e) => e.id === row.id)) {
 		return '[&>td]:bg-[#FFF1F1]!';
 	}
 	return '';
@@ -305,6 +301,7 @@ const downloadCSV = () => {
 					:value="row.id"
 					:data-last-row="i === filteredVotes.length - 1 ? true : null"
 					:class="getRowClass(row as Vote)"
+					class="scroll-m-12"
 				>
 					<cv-data-table-cell
 						:key="row.id + '-' + 'vote_order'"
@@ -412,7 +409,7 @@ const downloadCSV = () => {
 							>
 								<cv-dropdown-item
 									:key="`${item}`"
-									v-for="item in voteOptions"
+									v-for="item in standardVoteOptions"
 									:value="`${item}`"
 								>
 									{{ item }}
@@ -423,7 +420,7 @@ const downloadCSV = () => {
 							<div v-if="row.option" class="flex flex-row gap-2 items-center">
 								<p>{{ row.option }}</p>
 								<cv-tooltip
-									v-if="!voteOptions.includes(row.option)"
+									v-if="!standardVoteOptions.includes(row.option)"
 									:direction="i === filteredVotes.length - 1 ? 'top' : 'bottom'"
 									alignment="end"
 									tip="Unexpected value"

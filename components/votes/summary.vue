@@ -2,6 +2,7 @@
 //@ts-ignore
 import { CheckmarkFilled16, WarningFilled16 } from '@carbon/icons-vue';
 import type { Vote, VoteEvent } from '~/.genql';
+import { standardVoteOptions, voteCountKeyMap } from '~/constants/votes';
 
 type VoteEventProp = Pick<
 	VoteEvent,
@@ -16,18 +17,10 @@ type VoteEventProp = Pick<
 
 const props = defineProps<{
 	voteEvent: VoteEventProp | null;
-	voteOptions: string[];
 }>();
 
-const voteCountKeyMap = new Map<string, keyof VoteEventProp>([
-	['เห็นด้วย', 'agree_count'],
-	['ไม่เห็นด้วย', 'disagree_count'],
-	['งดออกเสียง', 'abstain_count'],
-	['ไม่ลงคะแนน', 'novote_count'],
-]);
-
 const options = computed(() => [
-	...props.voteOptions.map((option) => ({
+	...standardVoteOptions.map((option) => ({
 		option,
 		headingCountKey: voteCountKeyMap.get(option),
 		tableCount: props.voteEvent?.votes.filter((v) => v.option === option)
@@ -37,7 +30,7 @@ const options = computed(() => [
 		option: 'อื่นๆ',
 		headingCountKey: undefined,
 		tableCount: props.voteEvent?.votes.filter(
-			(v) => !props.voteOptions.includes(v.option),
+			(v) => !standardVoteOptions.includes(v.option),
 		).length,
 	},
 ]);
@@ -65,7 +58,7 @@ const options = computed(() => [
 					<cv-number-input
 						v-else-if="headingCountKey"
 						class="!pr-2 !min-w-0"
-						:modelValue="voteEvent[headingCountKey]"
+						:modelValue="voteEvent[headingCountKey] ?? 0"
 						@update:modelValue="
 							(value: string) => {
 								// @ts-ignore
@@ -79,7 +72,7 @@ const options = computed(() => [
 					<span class="flex-1">{{ tableCount }}</span>
 					<template v-if="voteEvent && headingCountKey">
 						<CheckmarkFilled16
-							v-if="tableCount === voteEvent[headingCountKey]"
+							v-if="tableCount === (voteEvent[headingCountKey] ?? 0)"
 							class="text-green-600"
 						/>
 						<WarningFilled16 v-else class="text-red-600" />
