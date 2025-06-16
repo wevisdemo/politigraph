@@ -578,7 +578,7 @@ function openSuccessToastNotification() {
 							</div>
 
 							<div class="flex flex-row items-center gap-4">
-								<div class="basis-1/2">ไ่ม่ลงคะแนน</div>
+								<div class="basis-1/2">ไม่ลงคะแนนเสียง</div>
 								<voteEventFormInput.Field name="novote_count">
 									<template v-slot="{ field }">
 										<cv-number-input
