@@ -1,9 +1,6 @@
-import type { Organization, Person } from '~/.genql';
+import type { Organization } from '~/.genql';
 
 export const resolvers = {
-	Person: {
-		image: ({ id }: Person) => `/images/politicians/${id}.webp`,
-	},
 	Organization: {
 		abbreviation: ({ classification }: Organization) => {
 			switch (classification) {
@@ -17,10 +14,6 @@ export const resolvers = {
 					return null;
 			}
 		},
-		image: ({ classification, id }: Organization) =>
-			classification === 'POLITICAL_PARTY'
-				? `/images/parties/${id.replace('พรรค', '')}.webp`
-				: null,
 		term: ({ classification, name }: Organization) =>
 			['HOUSE_OF_REPRESENTATIVE', 'HOUSE_OF_SENATE', 'CABINET'].includes(
 				classification,

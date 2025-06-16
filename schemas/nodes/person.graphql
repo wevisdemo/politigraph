@@ -43,7 +43,7 @@ type Person @node {
 	"""
 	รูปภาพ
 	"""
-	image: String @customResolver(requires: "id")
+	image: String
 	"""
 	สัญชาติ
 	"""

@@ -39,7 +39,7 @@ type Organization @node {
 	"""
 	โลโก้
 	"""
-	image: String @customResolver(requires: "classification id")
+	image: String
 	"""
 	สีในการแสดงผล
 	"""
