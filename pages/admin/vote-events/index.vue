@@ -9,6 +9,10 @@ definePageMeta({
 	layout: 'admin-layout',
 });
 
+useHead({
+	title: 'Vote Events | Politigraph Admin',
+});
+
 const paginationData = ref({
 	page: 1,
 	pageSize: 50,

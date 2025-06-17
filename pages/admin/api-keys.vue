@@ -7,6 +7,10 @@ definePageMeta({
 	layout: 'admin-layout',
 });
 
+useHead({
+	title: 'API Keys | Politigraph Admin',
+});
+
 const { apiKey } = useAuthClient();
 const createdKey = ref('');
 

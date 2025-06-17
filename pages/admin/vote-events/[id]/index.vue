@@ -74,6 +74,10 @@ const { data: voteEventData, refresh: refreshVoteEvent } = await useAsyncData(
 	{ server: false },
 );
 
+useHead({
+	title: `${voteEventData.value?.title || 'Vote Event'} | Politigraph Admin`,
+});
+
 const defaultValues = reactive({
 	title: computed(() => voteEventData?.value?.title),
 	nickname: computed(() => voteEventData?.value?.nickname),

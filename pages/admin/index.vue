@@ -3,6 +3,10 @@ definePageMeta({
 	layout: 'admin-layout',
 });
 
+useHead({
+	title: 'Politigraph Admin',
+});
+
 const email = ref('');
 const password = ref('');
 const isErrorEmail = ref('');

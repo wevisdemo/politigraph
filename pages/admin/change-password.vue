@@ -3,6 +3,10 @@ definePageMeta({
 	layout: 'admin-layout',
 });
 
+useHead({
+	title: 'Change Password | Politigraph Admin',
+});
+
 const { changePassword, signOut } = useAuthClient();
 const router = useRouter();
 

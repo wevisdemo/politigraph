@@ -4,7 +4,7 @@ import tailwindcss from '@tailwindcss/vite';
 export default defineNuxtConfig({
 	app: {
 		head: {
-			title: 'Politigraph Admin',
+			title: 'Politigraph - Civic-initiated open API for Thai political data',
 			link: [
 				{
 					rel: 'icon',

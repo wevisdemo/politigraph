@@ -105,6 +105,10 @@ const { data: voteEvent, refresh } = useAsyncData(
 	{ server: false },
 );
 
+useHead({
+	title: `Votes - ${voteEvent.value?.title || 'Vote Event'} | Politigraph Admin`,
+});
+
 const { data: peopleOptions } = await useAsyncData(
 	'peopleConnection',
 	async () => {
