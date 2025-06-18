@@ -9,15 +9,23 @@ definePageMeta({
 	layout: 'admin-layout',
 });
 
+type EditableVoteFields =
+	| 'vote_order'
+	| 'badge_number'
+	| 'voter_name'
+	| 'voter_party'
+	| 'option';
+
 const route = useRoute();
 
+const isSaving = ref(false);
+const isShowBatchNameCorrectionModal = ref(false);
 const isShowNotificationError = ref(false);
 const isShowNotification = ref(false);
 const titleNotification = ref({
 	title: '',
 	subtitle: '',
 });
-const rowChange = ref(0);
 const originalVotesMap = ref<Record<string, Partial<Vote>>>({});
 const originalCount = reactive<
 	Record<
@@ -132,7 +140,38 @@ const { data: peopleOptions } = await useAsyncData(
 	{ server: false },
 );
 
-const isSaving = ref(false);
+const markVoteAsEdited = (rowId: string, cellKey: EditableVoteFields) => {
+	const current = voteEvent.value?.votes.find((v) => v.id === rowId);
+	const original = originalVotesMap.value[rowId];
+
+	if (!current || !original) return;
+
+	const currentValue = current[cellKey];
+	const originalValue = original[cellKey];
+
+	const cellId = `${rowId}-${cellKey}`;
+
+	if (currentValue !== originalValue) {
+		editedRows.value.add(rowId);
+		editedCells.value.add(cellId);
+	} else {
+		editedCells.value.delete(cellId);
+
+		const isStillEdited = (
+			[
+				'vote_order',
+				'badge_number',
+				'voter_name',
+				'voter_party',
+				'option',
+			] as const
+		).some((key) => current[key] !== original[key]);
+
+		if (!isStillEdited) {
+			editedRows.value.delete(rowId);
+		}
+	}
+};
 
 async function onSaveChanges() {
 	if (isSaving.value || !voteEvent.value) return;
@@ -175,7 +214,7 @@ async function onSaveChanges() {
 							id_EQ: voteEvent.value.id,
 						},
 						update: {
-							publish_status:
+							publish_status_SET:
 								voteEvent.value.publish_status === 'PUBLISHED'
 									? 'PUBLISHED'
 									: errors.value.length > 0
@@ -183,7 +222,7 @@ async function onSaveChanges() {
 										: 'UNPUBLISHED',
 							...Object.fromEntries(
 								summaryCountKeyChanges.map((key) => [
-									key,
+									`${key}_SET`,
 									voteEvent.value![key],
 								]),
 							),
@@ -304,10 +343,10 @@ async function onSaveChanges() {
 			}
 		}
 
-		rowChange.value = rowsToPatch.length + toDeleteIds.value.size;
+		const rowChange = rowsToPatch.length + toDeleteIds.value.size;
 		titleNotification.value.title = 'Changes Saved';
-		titleNotification.value.subtitle = rowChange.value
-			? `Changes to ${rowChange.value} rows have been saved.`
+		titleNotification.value.subtitle = rowChange
+			? `Changes to ${rowChange} rows have been saved.`
 			: '';
 
 		// reset state
@@ -403,9 +442,19 @@ function scrollToRow(id: string) {
 				(type, ids) =>
 					type === 'COUNT_MISMATCHED'
 						? undefined
-						: `Go to the first issue at row ${(voteEvent?.votes.findIndex((v) => v.id === ids[0]) as number) + 1}`
+						: type === 'INVALID_VOTER_NAME'
+							? 'Review names'
+							: `Go to the first issue at row ${(voteEvent?.votes.findIndex((v) => v.id === ids[0]) as number) + 1}`
 			"
-			@action="({ ids }) => ids.length && scrollToRow(ids[0])"
+			@action="
+				({ type, ids }) => {
+					if (type === 'INVALID_VOTER_NAME') {
+						isShowBatchNameCorrectionModal = true;
+					} else if (ids.length > 0) {
+						scrollToRow(ids[0]);
+					}
+				}
+			"
 		/>
 
 		<div class="flex flex-col-reverse md:flex-row gap-4 items-start relative">
@@ -415,13 +464,34 @@ function scrollToRow(id: string) {
 				:originalVotesMap
 				:peopleOptions
 				:errors
+				:editedCells
+				:editedRows
 				v-model:activeEditingCell="activeEditingCell"
-				v-model:editedCells="editedCells"
-				v-model:editedRows="editedRows"
 				v-model:toDeleteIds="toDeleteIds"
+				@edited="(rowCellId) => markVoteAsEdited(...rowCellId)"
 				@deleted="showRowDeleteNotification"
 			/>
 			<VotesSummary class="max-w-xs sticky top-16" :voteEvent />
 		</div>
 	</div>
+
+	<VotesBatchNameCorrectionModal
+		v-if="voteEvent && peopleOptions"
+		:visible="isShowBatchNameCorrectionModal"
+		:votes="voteEvent.votes.filter((v) => v.voters.length === 0)"
+		:peopleOptions
+		@submit="
+			(values) => {
+				values.forEach(({ voteId, voterId }) => {
+					const vote = voteEvent?.votes.find((v) => v.id === voteId);
+					if (vote) {
+						vote.voter_name = voterId;
+						markVoteAsEdited(voteId, 'voter_name');
+					}
+				});
+				isShowBatchNameCorrectionModal = false;
+			}
+		"
+		@cancel="isShowBatchNameCorrectionModal = false"
+	/>
 </template>

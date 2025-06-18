@@ -7,6 +7,13 @@ import type { VoteError } from '~/utils/votes/validator';
 import { csvFormat } from 'd3-dsv';
 import { closest } from 'fastest-levenshtein';
 
+type EditableVoteFields =
+	| 'vote_order'
+	| 'badge_number'
+	| 'voter_name'
+	| 'voter_party'
+	| 'option';
+
 type VoteEventProp = Pick<VoteEvent, 'id' | 'title' | 'publish_status'> & {
 	votes: (Pick<
 		Vote,
@@ -31,6 +38,8 @@ const props = defineProps<{
 				label: string;
 		  }[]
 		| null;
+	editedRows: Set<string>;
+	editedCells: Set<string>;
 	errors: VoteError[];
 }>();
 
@@ -38,12 +47,11 @@ const activeEditingCell = defineModel<{
 	rowId: number | null;
 	columnId: number | null;
 }>('activeEditingCell', { required: true });
-const editedRows = defineModel<Set<string>>('editedRows', { required: true });
-const editedCells = defineModel<Set<string>>('editedCells', { required: true });
 const toDeleteIds = defineModel<Set<string>>('toDeleteIds', { required: true });
 
-const event = defineEmits<{
+const emit = defineEmits<{
 	(e: 'deleted', count: number): void;
+	(e: 'edited', rowColumnId: [string, EditableVoteFields]): void;
 }>();
 
 const searchQuery = ref('');
@@ -83,10 +91,12 @@ const filteredVotes = computed(() => {
 
 	return props.voteEvent.votes.filter((vote) => {
 		const query = searchQuery.value.toLowerCase();
+
 		return (
-			vote.voter_name?.toLowerCase().includes(query) ||
-			vote.voter_party?.toLowerCase().includes(query) ||
-			vote.badge_number?.toString().includes(query)
+			!toDeleteIds.value.has(vote.id) &&
+			(vote.voter_name?.toLowerCase().includes(query) ||
+				vote.voter_party?.toLowerCase().includes(query) ||
+				vote.badge_number?.toString().includes(query))
 		);
 	});
 });
@@ -94,14 +104,14 @@ const filteredVotes = computed(() => {
 const isNewRow = (id: string) => !props.originalVotesMap[id];
 
 const isCellEdited = (rowId: string, cellId: string) => {
-	return editedCells.value.has(`${rowId}-${cellId}`);
+	return props.editedCells.has(`${rowId}-${cellId}`);
 };
 
 const getRowClass = (row: Vote): string => {
 	if (isNewRow(row.id)) {
 		return '';
 	}
-	if (editedRows.value.has(row.id)) {
+	if (props.editedRows.has(row.id)) {
 		return '[&>td]:bg-[#FCF4D6]!';
 	}
 	if (props.errors.some((e) => e.id === row.id)) {
@@ -123,48 +133,8 @@ const isActiveEditing = computed(() => {
 	};
 });
 
-type EditableVoteFields =
-	| 'vote_order'
-	| 'badge_number'
-	| 'voter_name'
-	| 'voter_party'
-	| 'option';
-
-const markAsEdited = (rowId: string, cellKey: EditableVoteFields) => {
-	const current = props.voteEvent?.votes.find((v) => v.id === rowId);
-	const original = props.originalVotesMap[rowId];
-
-	if (!current || !original) return;
-
-	const currentValue = current[cellKey];
-	const originalValue = original[cellKey];
-
-	const cellId = `${rowId}-${cellKey}`;
-
-	if (currentValue !== originalValue) {
-		editedRows.value.add(rowId);
-		editedCells.value.add(cellId);
-	} else {
-		editedCells.value.delete(cellId);
-
-		const isStillEdited = (
-			[
-				'vote_order',
-				'badge_number',
-				'voter_name',
-				'voter_party',
-				'option',
-			] as const
-		).some((key) => current[key] !== original[key]);
-
-		if (!isStillEdited) {
-			editedRows.value.delete(rowId);
-		}
-	}
-};
-
-const onOptionChange = (row: Vote, cellId: EditableVoteFields) => {
-	nextTick(() => markAsEdited(row.id, cellId));
+const onOptionChange = (row: Vote, cellKey: EditableVoteFields) => {
+	nextTick(() => emit('edited', [row.id, cellKey]));
 };
 
 const addNewRow = () => {
@@ -204,14 +174,9 @@ const deleteSelected = async () => {
 	if (!props.voteEvent) return;
 	selectedRows.value.forEach((id) => toDeleteIds.value.add(id));
 
-	const votesFilter =
-		props.voteEvent?.votes.filter((vote) => !toDeleteIds.value.has(vote.id)) ||
-		[];
-	props.voteEvent.votes = votesFilter;
-
 	selectedRows.value = [];
 
-	event('deleted', toDeleteIds.value.size);
+	emit('deleted', toDeleteIds.value.size);
 };
 
 const downloadCSV = () => {
@@ -312,7 +277,7 @@ const downloadCSV = () => {
 							v-model="row.vote_order"
 							type="text"
 							style="background: transparent; border: none"
-							@change="markAsEdited(row.id, 'vote_order')"
+							@change="emit('edited', [row.id, 'vote_order'])"
 						/>
 					</cv-data-table-cell>
 					<cv-data-table-cell
@@ -324,7 +289,7 @@ const downloadCSV = () => {
 							v-model="row.badge_number"
 							type="text"
 							style="background: transparent; border: none"
-							@change="markAsEdited(row.id, 'badge_number')"
+							@change="emit('edited', [row.id, 'badge_number'])"
 						/>
 					</cv-data-table-cell>
 					<cv-data-table-cell
@@ -393,7 +358,7 @@ const downloadCSV = () => {
 							v-model="row.voter_party"
 							type="text"
 							style="background: transparent; border: none"
-							@change="markAsEdited(row.id, 'voter_party')"
+							@change="emit('edited', [row.id, 'voter_party'])"
 						/>
 					</cv-data-table-cell>
 					<cv-data-table-cell
