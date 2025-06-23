@@ -24,7 +24,7 @@ const { data } = await useAsyncData(
 		const { voteEvents, voteEventsConnection } = await graphqlClient.query({
 			voteEvents: {
 				__args: {
-					sort: [{ start_date: 'DESC' }],
+					sort: [{ start_date: 'DESC' }, { created_at: 'DESC' }],
 					limit: paginationData.value.pageSize,
 					offset:
 						(paginationData.value.page - 1) * paginationData.value.pageSize,
