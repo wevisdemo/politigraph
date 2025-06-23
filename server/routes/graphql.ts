@@ -11,7 +11,7 @@ const driver = neo4j.driver(
 	neo4j.auth.basic(process.env.NEO4J_USERNAME!, process.env.NEO4J_PASSWORD!),
 );
 
-const schema = await new Neo4jGraphQL({
+const neo4jgraphql = new Neo4jGraphQL({
 	typeDefs: getGraphqlTypeDefs(),
 	driver,
 	resolvers,
@@ -32,7 +32,12 @@ const schema = await new Neo4jGraphQL({
 			deprecatedAggregateOperations: true,
 		},
 	},
-}).getSchema();
+});
+
+const schema = await neo4jgraphql.getSchema();
+
+await neo4jgraphql.checkNeo4jCompat();
+await neo4jgraphql.assertIndexesAndConstraints();
 
 const armor = new ApolloArmor({
 	blockFieldSuggestion: {
