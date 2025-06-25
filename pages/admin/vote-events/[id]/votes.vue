@@ -368,6 +368,31 @@ async function onSaveChanges() {
 	}
 }
 
+async function togglePublishStatus() {
+	const { updateVoteEvents } = await graphqlClient.mutation({
+		updateVoteEvents: {
+			__args: {
+				where: {
+					id_EQ: route.params.id as string,
+				},
+				update: {
+					publish_status:
+						voteEvent.value?.publish_status !== 'PUBLISHED'
+							? 'PUBLISHED'
+							: 'UNPUBLISHED',
+				},
+			},
+			voteEvents: {
+				publish_status: true,
+			},
+		},
+	});
+
+	if (updateVoteEvents.voteEvents) {
+		refresh();
+	}
+}
+
 function showRowDeleteNotification(count: number) {
 	titleNotification.value.title = 'Row Deleted';
 	titleNotification.value.subtitle = `${count} vote record has been removed from the table.`;
@@ -409,33 +434,15 @@ function scrollToRow(id: string) {
 			class="z-50 fixed right-[4px] top-[60px]"
 		/>
 
-		<cv-skeleton-text
-			v-if="!voteEvent"
-			class="!my-6"
-			heading
-			:line-count="2"
-		></cv-skeleton-text>
-		<div
-			v-else
-			class="flex flex-col lg:flex-row gap-4 items-start !mb-12 !mt-4"
-		>
-			<h2 class="!font-normal flex-1">Votes - {{ voteEvent?.title }}</h2>
-			<div class="flex gap-2 self-end">
-				<a
-					v-if="voteEvent?.links.length"
-					:href="voteEvent?.links[0]?.url"
-					target="_blank"
-					rel="noopener noreferrer"
-				>
-					<cv-button :icon="DocumentView16" kind="tertiary">
-						View Original
-					</cv-button>
-				</a>
-				<cv-button :icon="Save16" @click="onSaveChanges" :disabled="isSaving">
-					Save Changes
-				</cv-button>
-			</div>
-		</div>
+		<VoteEventHeader
+			:title="voteEvent ? `Votes - ${voteEvent.title}` : undefined"
+			:publish-status="voteEvent?.publish_status"
+			:original-document-url="voteEvent?.links[0]?.url"
+			:is-publishing-disabled="!!voteValidationResult?.errors.length"
+			:is-save-disabled="isSaving"
+			@toggle-publish-status="togglePublishStatus"
+			@save="onSaveChanges"
+		/>
 
 		<VotesErrorNotifications
 			v-if="voteValidationResult"

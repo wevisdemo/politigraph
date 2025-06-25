@@ -1,12 +1,6 @@
 <script setup lang="ts">
-import {
-	DocumentView16,
-	Save16,
-	TrashCan16,
-	View16,
-	ViewOff16,
-	//@ts-ignore
-} from '@carbon/icons-vue';
+//@ts-ignore
+import { TrashCan16 } from '@carbon/icons-vue';
 import { useForm } from '@tanstack/vue-form';
 import { graphqlClient } from '~/utils/graphql/client';
 import { validateVotes } from '~/utils/votes/validator';
@@ -223,14 +217,6 @@ const voteValidationResult = computed(
 		}),
 );
 
-const openOriginalDocument = computed(() => {
-	const link = voteEventData.value?.links.find(
-		(link) => link.note === 'ใบประมวลผลการลงมติ',
-	)?.url;
-
-	return link ? () => window.open(link, '_blank') : undefined;
-});
-
 async function togglePublishStatus() {
 	const { updateVoteEvents } = await graphqlClient.mutation({
 		updateVoteEvents: {
@@ -280,85 +266,43 @@ function openSuccessToastNotification() {
 				></cv-breadcrumb-item
 			>
 		</cv-breadcrumb>
+
+		<voteEventFormInput.Subscribe>
+			<template v-slot="{ canSubmit }">
+				<VoteEventHeader
+					:title="voteEventData?.title"
+					:publish-status="voteEventData?.publish_status"
+					:original-document-url="
+						voteEventData?.links.find(
+							(link) => link.note === 'ใบประมวลผลการลงมติ',
+						)?.url
+					"
+					:is-publishing-disabled="!!voteValidationResult?.errors.length"
+					:is-save-disabled="!canSubmit"
+					@toggle-publish-status="togglePublishStatus"
+					@save="voteEventFormInput.handleSubmit"
+				/>
+			</template>
+		</voteEventFormInput.Subscribe>
+
+		<VotesErrorNotifications
+			v-if="voteValidationResult"
+			:errors="voteValidationResult.errors"
+			:warnings="voteValidationResult.warnings"
+			:getActionLabel="() => 'Review'"
+			@action="
+				() => $router.push(`/admin/vote-events/${voteEventData?.id}/votes`)
+			"
+		/>
+
 		<form
 			@submit="
-				(e: any) => {
+				(e) => {
 					e.preventDefault();
 					e.stopPropagation();
 				}
 			"
 		>
-			<cv-skeleton-text
-				v-if="!voteEventData"
-				class="!my-6"
-				heading
-				:line-count="2"
-			></cv-skeleton-text>
-			<div
-				v-else
-				class="flex flex-col md:flex-row flex-wrap justify-end items-end md:items-center gap-4 !my-6"
-			>
-				<div class="flex-1 flex flex-row gap-4 items-center">
-					<h2 class="md:min-w-xl">
-						{{ voteEventData.title }}
-					</h2>
-
-					<div>
-						<UiPublishStatusTag :status="voteEventData.publish_status" />
-					</div>
-				</div>
-
-				<div class="flex gap-2">
-					<cv-button
-						v-if="openOriginalDocument"
-						:icon="DocumentView16"
-						kind="tertiary"
-						@click="openOriginalDocument"
-					>
-						View Original
-					</cv-button>
-					<cv-button
-						default="Unpublished"
-						:icon="isPublish ? ViewOff16 : View16"
-						kind="tertiary"
-						@click="togglePublishStatus"
-						:disabled="voteValidationResult?.errors.length"
-						>{{ isPublish ? 'Unpublished' : 'Published' }}</cv-button
-					>
-					<voteEventFormInput.Subscribe>
-						<template v-slot="{ canSubmit }">
-							<cv-button
-								default="Save Changes"
-								:icon="Save16"
-								:disabled="!canSubmit"
-								type="submit"
-								@click="voteEventFormInput.handleSubmit"
-								>Save Changes</cv-button
-							>
-						</template>
-					</voteEventFormInput.Subscribe>
-				</div>
-			</div>
-
-			<cv-inline-notification
-				v-if="voteEventData?.publish_status !== 'PUBLISHED'"
-				lowContrast
-				kind="warning"
-				title="This item is unpublished"
-				subTitle="It is not visible in public view."
-				hideCloseButton
-			/>
-
-			<VotesErrorNotifications
-				v-if="voteValidationResult"
-				:errors="voteValidationResult.errors"
-				:warnings="voteValidationResult.warnings"
-				:getActionLabel="() => 'Review'"
-				@action="
-					() => $router.push(`/admin/vote-events/${voteEventData?.id}/votes`)
-				"
-			/>
-
 			<div class="flex flex-col md:flex-row gap-8 items-start !mt-4">
 				<div class="bg-white !p-4 basis-2/4">
 					<div class="flex flex-col gap-6">
