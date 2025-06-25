@@ -1,15 +1,15 @@
 import type { Vote, VoteEvent } from '~/.genql';
 import { standardVoteOptions, voteCountKeyMap } from '~/constants/votes';
 
-export type VoteErrorType =
+export type VoteIssueType =
 	| 'COUNT_MISMATCHED'
 	| 'DUPLICATED'
 	| 'INVALID_OPTION'
 	| 'INVALID_VOTER_NAME'
 	| 'MISSING_INFORMATION';
 
-export interface VoteError {
-	type: VoteErrorType;
+export interface VoteIssue {
+	type: VoteIssueType;
 	id?: string;
 }
 
@@ -31,8 +31,9 @@ export function validateVotes({
 	> & {
 		voters: unknown[];
 	})[];
-}): VoteError[] {
-	const errors: VoteError[] = [];
+}) {
+	const errors: VoteIssue[] = [];
+	const warnings: VoteIssue[] = [];
 
 	if (
 		voteCountKeyMap
@@ -50,11 +51,11 @@ export function validateVotes({
 
 	votes.forEach((vote, i) => {
 		if (!vote.id || !vote.vote_order || !vote.badge_number) {
-			errors.push({ type: 'MISSING_INFORMATION', id: vote.id });
+			warnings.push({ type: 'MISSING_INFORMATION', id: vote.id });
 		}
 
 		if (vote.voters.length === 0) {
-			errors.push({ type: 'INVALID_VOTER_NAME', id: vote.id });
+			warnings.push({ type: 'INVALID_VOTER_NAME', id: vote.id });
 		}
 
 		if (!standardVoteOptions.includes(vote.option)) {
@@ -76,7 +77,7 @@ export function validateVotes({
 			if (voteWithDuplicatedVoters.length > 0) {
 				errors.push(
 					...voteWithDuplicatedVoters.map((dupVote) => ({
-						type: 'DUPLICATED' as VoteErrorType,
+						type: 'DUPLICATED' as VoteIssueType,
 						id: dupVote.id,
 					})),
 				);
@@ -84,5 +85,5 @@ export function validateVotes({
 		}
 	});
 
-	return errors;
+	return { errors, warnings };
 }

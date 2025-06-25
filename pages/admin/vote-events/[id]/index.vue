@@ -137,12 +137,11 @@ const voteEventFormInput = useForm({
 						agree_count: Number(value.agree_count),
 						abstain_count: Number(value.abstain_count),
 						novote_count: Number(value.novote_count),
-						publish_status:
-							value.publish_status === 'PUBLISHED'
+						publish_status: voteValidationResult.value?.errors.length
+							? 'ERROR'
+							: value.publish_status === 'PUBLISHED'
 								? 'PUBLISHED'
-								: errors.value.length > 0
-									? 'ERROR'
-									: 'UNPUBLISHED',
+								: 'UNPUBLISHED',
 						organizations: [
 							{
 								connect: [
@@ -214,13 +213,14 @@ const { data: OrganizationList } = await useAsyncData(
 
 const voteEventFormStore = voteEventFormInput.useStore();
 
-const errors = computed(() =>
-	voteEventData.value && voteEventFormStore.value
-		? validateVotes({
-				...voteEventFormStore.value.values,
-				votes: voteEventData.value?.votes,
-			})
-		: [],
+const voteValidationResult = computed(
+	() =>
+		voteEventData.value &&
+		voteEventFormStore.value &&
+		validateVotes({
+			...voteEventFormStore.value.values,
+			votes: voteEventData.value?.votes,
+		}),
 );
 
 const openOriginalDocument = computed(() => {
@@ -322,7 +322,7 @@ function openSuccessToastNotification() {
 						:icon="isPublish ? ViewOff16 : View16"
 						kind="tertiary"
 						@click="togglePublishStatus"
-						:disabled="errors.length"
+						:disabled="voteValidationResult?.errors.length"
 						>{{ isPublish ? 'Unpublished' : 'Published' }}</cv-button
 					>
 					<voteEventFormInput.Subscribe>
@@ -350,7 +350,9 @@ function openSuccessToastNotification() {
 			/>
 
 			<VotesErrorNotifications
-				:errors
+				v-if="voteValidationResult"
+				:errors="voteValidationResult.errors"
+				:warnings="voteValidationResult.warnings"
 				:getActionLabel="() => 'Review'"
 				@action="
 					() => $router.push(`/admin/vote-events/${voteEventData?.id}/votes`)

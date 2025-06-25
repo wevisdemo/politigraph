@@ -1,35 +1,42 @@
 <script lang="ts" setup>
-import type { VoteError, VoteErrorType } from '~/utils/votes/validator';
+import type { VoteIssue, VoteIssueType } from '~/utils/votes/validator';
 import { group } from 'radash';
 
 const props = defineProps<{
-	errors: VoteError[];
-	getActionLabel: (type: VoteErrorType, ids: string[]) => string | undefined;
+	errors: VoteIssue[];
+	warnings: VoteIssue[];
+	getActionLabel: (type: VoteIssueType, ids: string[]) => string | undefined;
 }>();
 
 defineEmits<{
-	(e: 'action', payload: { type: VoteErrorType; ids: string[] }): void;
+	(e: 'action', payload: { type: VoteIssueType; ids: string[] }): void;
 }>();
 
-const errorGroups = computed(() =>
-	Object.entries(group(props.errors, (e) => e.type)).map(([type, records]) => {
+const issueGroups = computed(() => [
+	...groupResult(props.errors, 'error'),
+	...groupResult(props.warnings, 'warning'),
+]);
+
+function groupResult(issues: VoteIssue[], kind: string) {
+	return Object.entries(group(issues, (e) => e.type)).map(([type, records]) => {
 		const ids = records
 			.map((record) => record.id)
 			.filter((id) => id !== undefined);
 
 		return {
-			type: type as VoteErrorType,
-			title: getErrorTitle(type as VoteErrorType),
+			kind,
+			type: type as VoteIssueType,
+			title: getErrorTitle(type as VoteIssueType),
 			subTitle:
 				type === 'COUNT_MISMATCHED'
 					? 'the vote summary from document heading is differ from the table.'
 					: `${ids.length} records`,
 			ids,
 		};
-	}),
-);
+	});
+}
 
-function getErrorTitle(type: VoteErrorType): string {
+function getErrorTitle(type: VoteIssueType): string {
 	switch (type) {
 		case 'COUNT_MISMATCHED':
 			return 'Vote Count Mismatch';
@@ -49,10 +56,10 @@ function getErrorTitle(type: VoteErrorType): string {
 	<div class="flex flex-col">
 		<cv-inline-notification
 			class="mt-0! mb-2! !pr-2"
-			v-for="{ type, title, subTitle, ids } in errorGroups"
+			v-for="{ kind, type, title, subTitle, ids } in issueGroups"
 			lowContrast
-			kind="error"
 			hideCloseButton
+			:kind
 			:title
 			:subTitle
 			:actionLabel="getActionLabel(type, ids)"

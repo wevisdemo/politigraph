@@ -3,7 +3,7 @@
 import { Add16, Download16, WarningFilled16 } from '@carbon/icons-vue';
 import type { Person, Vote, VoteEvent } from '~/.genql';
 import { standardVoteOptions } from '~/constants/votes';
-import type { VoteError } from '~/utils/votes/validator';
+import type { VoteIssue } from '~/utils/votes/validator';
 import { csvFormat } from 'd3-dsv';
 import { closest } from 'fastest-levenshtein';
 
@@ -40,7 +40,7 @@ const props = defineProps<{
 		| null;
 	editedRows: Set<string>;
 	editedCells: Set<string>;
-	errors: VoteError[];
+	errors: VoteIssue[];
 }>();
 
 const activeEditingCell = defineModel<{

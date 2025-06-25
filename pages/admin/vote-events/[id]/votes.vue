@@ -43,8 +43,8 @@ const editedRows = ref<Set<string>>(new Set());
 const editedCells = ref<Set<string>>(new Set());
 const toDeleteIds = ref<Set<string>>(new Set());
 
-const errors = computed(() =>
-	voteEvent.value ? validateVotes(voteEvent.value) : [],
+const voteValidationResult = computed(
+	() => voteEvent.value && validateVotes(voteEvent.value),
 );
 
 const activeEditingCell = ref<{
@@ -204,8 +204,10 @@ async function onSaveChanges() {
 
 		if (
 			summaryCountKeyChanges.length ||
-			(voteEvent.value.publish_status === 'ERROR' && !errors.value.length) ||
-			(voteEvent.value.publish_status === 'UNPUBLISHED' && errors.value.length)
+			(voteEvent.value.publish_status === 'ERROR' &&
+				!voteValidationResult.value?.errors.length) ||
+			(voteEvent.value.publish_status === 'UNPUBLISHED' &&
+				voteValidationResult.value?.errors.length)
 		) {
 			await graphqlClient.mutation({
 				updateVoteEvents: {
@@ -214,12 +216,11 @@ async function onSaveChanges() {
 							id_EQ: voteEvent.value.id,
 						},
 						update: {
-							publish_status_SET:
-								voteEvent.value.publish_status === 'PUBLISHED'
+							publish_status_SET: voteValidationResult.value?.errors.length
+								? 'ERROR'
+								: voteEvent.value.publish_status === 'PUBLISHED'
 									? 'PUBLISHED'
-									: errors.value.length > 0
-										? 'ERROR'
-										: 'UNPUBLISHED',
+									: 'UNPUBLISHED',
 							...Object.fromEntries(
 								summaryCountKeyChanges.map((key) => [
 									`${key}_SET`,
@@ -437,7 +438,9 @@ function scrollToRow(id: string) {
 		</div>
 
 		<VotesErrorNotifications
-			:errors
+			v-if="voteValidationResult"
+			:errors="voteValidationResult.errors"
+			:warnings="voteValidationResult.warnings"
 			:getActionLabel="
 				(type, ids) =>
 					type === 'COUNT_MISMATCHED'
@@ -463,7 +466,7 @@ function scrollToRow(id: string) {
 				:voteEvent
 				:originalVotesMap
 				:peopleOptions
-				:errors
+				:errors="voteValidationResult?.errors ?? []"
 				:editedCells
 				:editedRows
 				v-model:activeEditingCell="activeEditingCell"
