@@ -29,7 +29,7 @@ export function validateVotes({
 		| 'voter_name'
 		| 'voter_party'
 	> & {
-		voters: unknown[];
+		voters: { id: string }[];
 	})[];
 }) {
 	const errors: VoteIssue[] = [];
@@ -62,26 +62,19 @@ export function validateVotes({
 			errors.push({ type: 'INVALID_OPTION', id: vote.id });
 		}
 
-		if (i < votes.length - 1) {
-			const voteWithDuplicatedVoters = votes
-				.slice(i + 1)
-				.filter(
-					(otherVote) =>
-						otherVote.voter_name === vote.voter_name &&
-						errors.some(
-							(error) =>
-								error.type === 'DUPLICATED' && error.id !== otherVote.id,
-						),
-				);
-
-			if (voteWithDuplicatedVoters.length > 0) {
-				errors.push(
-					...voteWithDuplicatedVoters.map((dupVote) => ({
-						type: 'DUPLICATED' as VoteIssueType,
-						id: dupVote.id,
-					})),
-				);
-			}
+		if (
+			votes.some(
+				(otherVote) =>
+					otherVote.id !== vote.id &&
+					(vote.voters[0]?.id ?? vote.voter_name) ===
+						(otherVote.voters[0]?.id ?? otherVote.voter_name),
+			)
+		) {
+			console.log(vote.id);
+			errors.push({
+				type: 'DUPLICATED',
+				id: vote.id,
+			});
 		}
 	});
 

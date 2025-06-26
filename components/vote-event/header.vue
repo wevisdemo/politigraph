@@ -19,12 +19,6 @@ const props = defineProps<{
 defineEmits(['togglePublishStatus', 'save']);
 
 const isPublished = computed(() => props.publishStatus === 'PUBLISHED');
-
-const openOriginalDocument = computed(() =>
-	props.originalDocumentUrl
-		? () => window.open(props.originalDocumentUrl, '_blank')
-		: undefined,
-);
 </script>
 
 <template>
