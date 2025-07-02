@@ -3,7 +3,10 @@ import { startServerAndCreateH3Handler } from '@as-integrations/h3';
 import { ApolloArmor } from '@escape.tech/graphql-armor';
 import { Neo4jGraphQL } from '@neo4j/graphql';
 import { resolvers } from '~/utils/graphql/custom-resolvers';
-import { getGraphqlTypeDefs } from '~/utils/graphql/schema';
+import {
+	getGraphqlCreateIndexQueries,
+	getGraphqlTypeDefs,
+} from '~/utils/graphql/schema';
 import neo4j from 'neo4j-driver';
 
 const driver = neo4j.driver(
@@ -38,6 +41,8 @@ const schema = await neo4jgraphql.getSchema();
 
 await neo4jgraphql.checkNeo4jCompat();
 await neo4jgraphql.assertIndexesAndConstraints();
+
+await createNeo4jIndexes();
 
 const armor = new ApolloArmor({
 	blockFieldSuggestion: {
@@ -75,3 +80,21 @@ export default startServerAndCreateH3Handler(
 		},
 	},
 );
+
+async function createNeo4jIndexes() {
+	const queries = getGraphqlCreateIndexQueries();
+	const session = driver.session();
+	const tx = await session.beginTransaction();
+
+	let createdIndexes = 0;
+
+	for (const query of queries) {
+		const result = await tx.run(query);
+		createdIndexes += result.summary.counters.updates().indexesAdded;
+	}
+
+	await tx.commit();
+	await session.close();
+
+	console.info(`[Neo4j] ${createdIndexes}/${queries.length} indexes created`);
+}
