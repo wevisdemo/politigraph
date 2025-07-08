@@ -1,17 +1,18 @@
 <template>
-	<cv-tile>
-		<div class="flex flex-col gap-2">
-			<h1>Politigraph - Under Construction</h1>
-			<cv-link href="/graphql">Enter GraphQL Sandbox</cv-link>
+	<div class="flex flex-col gap-3 justify-center items-center min-h-dvh">
+		<h1>[Politigraph]</h1>
+		<p>A civic-initiated open API for Thai political data (WIP)</p>
 
-			<h2>Schema Diagram</h2>
-			<ul>
-				<li>Purple Box = Node</li>
-				<li>Transparent box = Union / Interface</li>
-				<li>Solid Arrow = Relationship</li>
-				<li>Dashed Arrow = In union / Inherit from interface</li>
-			</ul>
-			<SchemaDiagram />
+		<div class="flex flex-row gap-2">
+			<a href="/docs">
+				<cv-button>View Docs</cv-button>
+			</a>
+			<a href="/graphql">
+				<cv-button kind="tertiary">Open GraphQL Playground</cv-button>
+			</a>
+			<a href="/admin">
+				<cv-button kind="ghost">Login to Admin Panel</cv-button>
+			</a>
 		</div>
-	</cv-tile>
+	</div>
 </template>

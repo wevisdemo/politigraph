@@ -25,5 +25,9 @@ useSeoMeta({
 </script>
 
 <template>
-	<ContentRenderer v-if="data" :value="data" class="flex flex-col gap-4" />
+	<ContentRenderer
+		v-if="data"
+		:value="data"
+		class="h-full flex flex-col gap-4"
+	/>
 </template>

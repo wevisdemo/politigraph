@@ -1,7 +1,11 @@
 import { parseGraphQLSDL } from '@graphql-tools/utils';
 import { getGraphqlTypeDefs } from '~/utils/graphql/schema';
 
-export default defineEventHandler(async () => {
+export default defineEventHandler(parseSimpleGraphSchema);
+
+export type GraphSchema = ReturnType<typeof parseSimpleGraphSchema>;
+
+function parseSimpleGraphSchema() {
 	const { definitions } = parseGraphQLSDL(
 		undefined,
 		getGraphqlTypeDefs(),
@@ -50,34 +54,12 @@ export default defineEventHandler(async () => {
 			description: d.description?.value,
 		}));
 
-	return [
-		'flowchart',
-		// Node types
-		...nodes.flatMap(({ name, description, fields, interfaces }) => [
-			createBoxNode(name, description),
-			...fields
-				.filter((f) => f.relationship?.direction === 'IN')
-				.map(
-					({ type, relationship }) =>
-						`${type.name}-- ${relationship?.type} -->${name}`,
-				),
-			...interfaces.map(
-				(interfaceName) => `${name}-. inherit .->${interfaceName}`,
-			),
-		]),
-		// Union types
-		...unions.flatMap(({ name, types, description }) => [
-			createBoxNode(name, description, 'Union'),
-			`style ${name} fill:none`,
-			...types.map((type) => `${type}-. is .->${name}`),
-		]),
-		// Interfaces types
-		...interfaces.flatMap(({ name, description }) => [
-			createBoxNode(name, description, 'Interface'),
-			`style ${name} fill:none`,
-		]),
-	].join('\n');
-});
+	return {
+		nodes,
+		unions,
+		interfaces,
+	};
+}
 
 function extractFieldType(obj: unknown, isRequired = false, hasMany = false) {
 	if (obj && typeof obj === 'object') {
@@ -102,9 +84,4 @@ function extractFieldType(obj: unknown, isRequired = false, hasMany = false) {
 function getArgumentValue(args: readonly unknown[], name: string): string {
 	/* @ts-expect-error */
 	return args.find((a) => a.name.value === name)?.value.value;
-}
-
-function createBoxNode(name: string, description?: string, type?: string) {
-	const shortDescription = description?.split('\n').at(0)?.split(' ').at(0);
-	return `${name}["${type ? `_${type}_ ` : ''}**${name}**\n${shortDescription}"]`;
 }

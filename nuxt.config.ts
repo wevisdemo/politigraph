@@ -25,10 +25,11 @@ export default defineNuxtConfig({
 				target: 'esnext',
 			},
 		},
-	},
-	routeRules: {
-		'/': { prerender: true },
-		'/schema-mermaid': { prerender: true },
+		prerender: {
+			crawlLinks: true,
+			routes: ['/', '/schema.json'],
+			ignore: ['/admin', '/auth', '/graphql'],
+		},
 	},
 	runtimeConfig: {
 		public: {
