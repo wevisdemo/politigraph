@@ -2,6 +2,8 @@ import { initGraphqlNeo4j } from '~/utils/graphql/neo4j';
 import { getGraphqlCreateIndexQueries } from '~/utils/graphql/schema';
 
 export default defineNitroPlugin(async () => {
+	if (import.meta.dev) return;
+
 	if (!process.env.NEO4J_USERNAME || !process.env.NEO4J_PASSWORD) {
 		console.info('[Neo4j] Credential env not found, skipping setup');
 		return;
