@@ -42,8 +42,8 @@ const Form = useForm({
 </script>
 
 <template>
-	<div class="mt-12 p-3 flex justify-center">
-		<div class="max-w-2xl w-full mx-auto">
+	<div class="mt-12 flex justify-center p-3">
+		<div class="mx-auto w-full max-w-2xl">
 			<cv-data-table-skeleton
 				v-if="status === 'pending'"
 				title="API Keys"
@@ -93,7 +93,7 @@ const Form = useForm({
 				</p>
 
 				<form
-					class="flex flex-row gap-2 items-end"
+					class="flex flex-row items-end gap-2"
 					@submit.prevent.stop="Form.handleSubmit"
 				>
 					<Form.Field name="name">

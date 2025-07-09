@@ -85,11 +85,11 @@ const router = useRouter();
 </script>
 
 <template>
-	<div class="p-10 bg-[#F4F4F4] pt-[90px]">
+	<div class="bg-[#F4F4F4] p-10 pt-[90px]">
 		<cv-breadcrumb noTrailingSlash>
 			<cv-breadcrumb-item>Vote Events</cv-breadcrumb-item>
 		</cv-breadcrumb>
-		<h1 class="font-normal mb-8 mt-4">Vote Events</h1>
+		<h1 class="mt-4 mb-8 font-normal">Vote Events</h1>
 		<cv-data-table-skeleton
 			v-if="!data"
 			title="Vote Events"

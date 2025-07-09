@@ -37,7 +37,7 @@ const options = computed(() => [
 </script>
 
 <template>
-	<div class="bg-white flex flex-col p-4 gap-4">
+	<div class="flex flex-col gap-4 bg-white p-4">
 		<h4>Vote Summary</h4>
 		<p class="text-sm">
 			ข้อมูลสรุปผลคะแนนที่ OCR จากหัวเอกสารบันทึกผลการลงมติ
@@ -57,7 +57,7 @@ const options = computed(() => [
 					<cv-skeleton-text v-if="!voteEvent" heading />
 					<cv-number-input
 						v-else-if="headingCountKey"
-						class="pr-2 min-w-0"
+						class="min-w-0 pr-2"
 						:modelValue="voteEvent[headingCountKey] ?? 0"
 						@update:modelValue="
 							(value: string) => {

@@ -108,7 +108,7 @@ const signout = async () => {
 				</div>
 				<hr class="border-[#C6C6C6]" />
 				<div class="mt-6">
-					<p class="font-bold mb-1">Password</p>
+					<p class="mb-1 font-bold">Password</p>
 					<a href="/admin/change-password" class="text-xs">Change Password</a>
 				</div></template
 			>

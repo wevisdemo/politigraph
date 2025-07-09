@@ -76,12 +76,12 @@ const signout = async () => {
 </script>
 
 <template>
-	<div class="bg-[#F4F4F4] h-dvh">
+	<div class="h-dvh bg-[#F4F4F4]">
 		<div
-			class="absolute top-20 inset-x-0 bg-white p-7.5 max-w-[544px] w-full mx-auto"
+			class="absolute inset-x-0 top-20 mx-auto w-full max-w-[544px] bg-white p-7.5"
 		>
 			<template v-if="!isSuccessChangePassword">
-				<h1 class="font-normal mb-12">Change Password</h1>
+				<h1 class="mb-12 font-normal">Change Password</h1>
 				<cv-form @submit.prevent="changepassword" class="flex flex-col gap-y-4">
 					<cv-text-input
 						v-model="currentPassword"

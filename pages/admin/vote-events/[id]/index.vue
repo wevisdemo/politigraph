@@ -254,14 +254,14 @@ function openSuccessToastNotification() {
 </script>
 
 <template>
-	<div class="p-10 min-h-dvh bg-[#F4F4F4] pt-[90px]">
+	<div class="min-h-dvh bg-[#F4F4F4] p-10 pt-[90px]">
 		<cv-breadcrumb noTrailingSlash>
 			<cv-breadcrumb-item class="text-[#0F62FE]"
 				><a href="/admin/vote-events">Vote Events</a></cv-breadcrumb-item
 			>
 			<cv-breadcrumb-item
 				><span
-					class="max-w-sm text-ellipsis whitespace-nowrap overflow-hidden"
+					class="max-w-sm overflow-hidden text-ellipsis whitespace-nowrap"
 					>{{ voteEventData?.title }}</span
 				></cv-breadcrumb-item
 			>
@@ -303,8 +303,8 @@ function openSuccessToastNotification() {
 				}
 			"
 		>
-			<div class="flex flex-col md:flex-row gap-8 items-start mt-4">
-				<div class="bg-white p-4 basis-2/4">
+			<div class="mt-4 flex flex-col items-start gap-8 md:flex-row">
+				<div class="basis-2/4 bg-white p-4">
 					<div class="flex flex-col gap-6">
 						<div class="flex flex-col gap-1">
 							<h4>Vote Events Details</h4>
@@ -466,8 +466,8 @@ function openSuccessToastNotification() {
 					</div>
 				</div>
 
-				<div class="bg-white basis-2/4">
-					<div class="p-4 flex flex-col gap-2 mb-3">
+				<div class="basis-2/4 bg-white">
+					<div class="mb-3 flex flex-col gap-2 p-4">
 						<h4>Vote Summary (Original)</h4>
 
 						<p class="text-body-01">
@@ -556,6 +556,6 @@ function openSuccessToastNotification() {
 		kind="success"
 		title="ข้อมูลถูกบันทึกเรียบร้อย"
 		@close="isShowSuccessNotification = false"
-		class="z-50 fixed right-[4px] top-[60px]"
+		class="fixed top-[60px] right-[4px] z-50"
 	/>
 </template>

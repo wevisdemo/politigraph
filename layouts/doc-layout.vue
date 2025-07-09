@@ -7,13 +7,13 @@ const { data } = await useAsyncData('docs-navigation', () =>
 </script>
 
 <template>
-	<div class="flex flex-row min-h-dvh">
+	<div class="flex min-h-dvh flex-row">
 		<div
-			class="flex flex-col border-r border-gray-300 bg-gray-100 w-72 p-6 gap-4"
+			class="flex w-72 flex-col gap-4 border-r border-gray-300 bg-gray-100 p-6"
 		>
 			<a href="/">&lt; Back</a>
 			<h1 class="text-2xl"><span class="font-bold">Politigraph</span> Docs</h1>
-			<ul class="flex flex-col gap-3 list-disc list-inside">
+			<ul class="flex list-inside list-disc flex-col gap-3">
 				<li v-for="{ path, title } in data?.[0].children" :key="path">
 					<span v-if="path === route.path">{{ title }}</span>
 					<a v-else :href="path">{{ title }}</a>
@@ -21,7 +21,7 @@ const { data } = await useAsyncData('docs-navigation', () =>
 			</ul>
 		</div>
 		<div class="flex flex-1 px-6 py-16">
-			<div class="w-full max-w-screen-md mx-auto">
+			<div class="mx-auto w-full max-w-screen-md">
 				<slot />
 			</div>
 		</div>

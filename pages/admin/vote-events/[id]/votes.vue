@@ -410,7 +410,7 @@ function scrollToRow(id: string) {
 </script>
 
 <template>
-	<div class="p-10 min-h-dvh bg-[#F4F4F4] pt-[90px] relative">
+	<div class="relative min-h-dvh bg-[#F4F4F4] p-10 pt-[90px]">
 		<cv-breadcrumb noTrailingSlash>
 			<cv-breadcrumb-item class="text-[#0F62FE]"
 				><a href="/admin/vote-events">Vote Events</a></cv-breadcrumb-item
@@ -418,7 +418,7 @@ function scrollToRow(id: string) {
 			<cv-breadcrumb-item class="text-[#0F62FE]"
 				><a
 					:href="`/admin/vote-events/${voteEvent?.id}`"
-					class="max-w-sm text-ellipsis whitespace-nowrap overflow-hidden"
+					class="max-w-sm overflow-hidden text-ellipsis whitespace-nowrap"
 					>{{ voteEvent?.title }}</a
 				></cv-breadcrumb-item
 			>
@@ -431,7 +431,7 @@ function scrollToRow(id: string) {
 			:title="titleNotification.title"
 			:subTitle="titleNotification.subtitle"
 			@close="isShowNotification = false"
-			class="z-50 fixed right-[4px] top-[60px]"
+			class="fixed top-[60px] right-[4px] z-50"
 		/>
 
 		<VoteEventHeader
@@ -467,7 +467,7 @@ function scrollToRow(id: string) {
 			"
 		/>
 
-		<div class="flex flex-col-reverse md:flex-row gap-4 items-start relative">
+		<div class="relative flex flex-col-reverse items-start gap-4 md:flex-row">
 			<VotesTable
 				class="flex-1"
 				:voteEvent
@@ -481,7 +481,7 @@ function scrollToRow(id: string) {
 				@edited="(rowCellId) => markVoteAsEdited(...rowCellId)"
 				@deleted="showRowDeleteNotification"
 			/>
-			<VotesSummary class="max-w-xs sticky top-16" :voteEvent />
+			<VotesSummary class="sticky top-16 max-w-xs" :voteEvent />
 		</div>
 	</div>
 

@@ -1,5 +1,5 @@
 <template>
-	<div class="flex flex-col gap-3 justify-center items-center min-h-dvh">
+	<div class="flex min-h-dvh flex-col items-center justify-center gap-3">
 		<h1>[Politigraph]</h1>
 		<p>A civic-initiated open API for Thai political data (WIP)</p>
 

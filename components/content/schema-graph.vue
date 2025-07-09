@@ -196,11 +196,11 @@ function isGraphicActive(item: GraphEntity | Edge) {
 
 <template>
 	<div
-		class="bg-gray-100 flex flex-row justify-end"
+		class="flex flex-row justify-end bg-gray-100"
 		:class="
 			isMaximized
 				? 'fixed inset-0'
-				: 'relative h-128 rounded-lg border-gray-200 border'
+				: 'relative h-128 rounded-lg border border-gray-200'
 		"
 	>
 		<ClientOnly>
@@ -233,11 +233,11 @@ function isGraphicActive(item: GraphEntity | Edge) {
 			@click="toggleMaximize"
 		/>
 		<div
-			class="absolute left-2 bottom-2 flex flex-col gap-1 text-xs text-gray-700"
+			class="absolute bottom-2 left-2 flex flex-col gap-1 text-xs text-gray-700"
 		>
 			<div class="flex flex-row gap-1">
 				<div
-					class="size-4 border rounded"
+					class="size-4 rounded border"
 					:style="{
 						'border-color': GraphicColor.Foreground,
 						'background-color': GraphicColor.Foreground,
@@ -247,22 +247,22 @@ function isGraphicActive(item: GraphEntity | Edge) {
 			</div>
 			<div class="flex flex-row gap-1">
 				<div
-					class="size-4 border rounded"
+					class="size-4 rounded border"
 					:style="{ 'border-color': GraphicColor.Foreground }"
 				></div>
 				Interface
 			</div>
 			<div class="flex flex-row gap-1">
 				<div
-					class="size-4 border border-dashed rounded"
+					class="size-4 rounded border border-dashed"
 					:style="{ 'border-color': GraphicColor.Foreground }"
 				></div>
 				Union
 			</div>
 		</div>
 		<div
-			class="bg-gray-800 text-white overflow-y-scroll flex flex-col gap-4"
-			:class="isMaximized ? 'w-128 p-6' : 'rounded-r-lg w-84 p-3'"
+			class="flex flex-col gap-4 overflow-y-scroll bg-gray-800 text-white"
+			:class="isMaximized ? 'w-128 p-6' : 'w-84 rounded-r-lg p-3'"
 		>
 			<template v-if="activeEntity">
 				<div class="flex flex-row items-center gap-1">
@@ -281,13 +281,13 @@ function isGraphicActive(item: GraphEntity | Edge) {
 						v-if="
 							'interfaces' in activeEntity && activeEntity.interfaces.length
 						"
-						class="text-sm italic text-gray-400"
+						class="text-sm text-gray-400 italic"
 					>
 						extends
 						<button
 							v-for="type in activeEntity.interfaces"
 							:key="type"
-							class="text-blue-400 cursor-pointer"
+							class="cursor-pointer text-blue-400"
 							@click="selectedNodes = [type]"
 						>
 							{{ type }}
@@ -316,11 +316,11 @@ function isGraphicActive(item: GraphEntity | Edge) {
 				</div>
 				<ul
 					v-if="'types' in activeEntity"
-					class="flex flex-col gap-2 list-disc ml-3"
+					class="ml-3 flex list-disc flex-col gap-2"
 				>
 					<li v-for="type in activeEntity.types" :key="type">
 						<button
-							class="text-blue-400 cursor-pointer"
+							class="cursor-pointer text-blue-400"
 							@click="selectedNodes = [type]"
 						>
 							{{ type }}
@@ -337,7 +337,7 @@ function isGraphicActive(item: GraphEntity | Edge) {
 						>:
 						<button
 							v-if="graph.nodes[type.name]"
-							class="text-blue-400 cursor-pointer"
+							class="cursor-pointer text-blue-400"
 							@click="selectedNodes = [type.name]"
 						>
 							{{ type.name }}</button
@@ -348,7 +348,7 @@ function isGraphicActive(item: GraphEntity | Edge) {
 					</li>
 				</ul>
 			</template>
-			<p v-else class="m-auto italic text-sm text-gray-400 text-center">
+			<p v-else class="m-auto text-center text-sm text-gray-400 italic">
 				Select any entity to see more details
 			</p>
 		</div>

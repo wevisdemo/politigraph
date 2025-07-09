@@ -30,9 +30,9 @@ const isPublished = computed(() => props.publishStatus === 'PUBLISHED');
 	></cv-skeleton-text>
 	<div
 		v-else
-		class="flex flex-col md:flex-row flex-wrap justify-end items-end md:items-center gap-4 my-6"
+		class="my-6 flex flex-col flex-wrap items-end justify-end gap-4 md:flex-row md:items-center"
 	>
-		<div class="flex-1 flex flex-row gap-4 items-center">
+		<div class="flex flex-1 flex-row items-center gap-4">
 			<h2 class="md:min-w-xl">
 				{{ title }}
 			</h2>

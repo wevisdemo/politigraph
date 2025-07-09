@@ -33,14 +33,14 @@ const isPublish = computed(() => {
 
 <template>
 	<div
-		class="flex flex-row gap-2 rounded-full w-fit p-2 items-center border"
+		class="flex w-fit flex-row items-center gap-2 rounded-full border p-2"
 		:style="{
 			backgroundColor: variation.background,
 			color: variation.foreground,
 		}"
 	>
 		<div
-			class="rounded-full size-4"
+			class="size-4 rounded-full"
 			:style="{ backgroundColor: variation.foreground }"
 		/>
 		<div class="text-[12px] capitalize">

@@ -382,7 +382,7 @@ const downloadCSV = () => {
 							</cv-dropdown>
 						</div>
 						<div v-else class="flex items-center pl-[16px]">
-							<div v-if="row.option" class="flex flex-row gap-2 items-center">
+							<div v-if="row.option" class="flex flex-row items-center gap-2">
 								<p>{{ row.option }}</p>
 								<cv-tooltip
 									v-if="!standardVoteOptions.includes(row.option)"

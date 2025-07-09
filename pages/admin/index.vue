@@ -65,10 +65,10 @@ onMounted(async () => {
 
 <template>
 	<div class="h-dvh overflow-hidden pt-[47px]">
-		<div class="flex px-0 h-full">
-			<div class="basis-3/3 lg:basis-2/3 parliament-bg"></div>
-			<div class="sm:basis-1/3 p-7.5 lg:pt-20 bg-white login-box relative">
-				<h1 class="font-normal mb-12">Log in</h1>
+		<div class="flex h-full px-0">
+			<div class="parliament-bg basis-3/3 lg:basis-2/3"></div>
+			<div class="login-box relative bg-white p-7.5 sm:basis-1/3 lg:pt-20">
+				<h1 class="mb-12 font-normal">Log in</h1>
 				<cv-form @submit.prevent="login" class="flex flex-col gap-y-4">
 					<template v-if="isValidatingSession">
 						<cv-text-input-skeleton />
