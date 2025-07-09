@@ -28,6 +28,6 @@ useSeoMeta({
 	<ContentRenderer
 		v-if="data"
 		:value="data"
-		class="h-full flex flex-col gap-4"
+		class="h-full flex flex-col gap-6"
 	/>
 </template>

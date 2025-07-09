@@ -4,6 +4,7 @@ import { getGraphqlTypeDefs } from '~/utils/graphql/schema';
 export default defineEventHandler(parseSimpleGraphSchema);
 
 export type GraphSchema = ReturnType<typeof parseSimpleGraphSchema>;
+export type GraphEntity = GraphSchema[keyof GraphSchema][number];
 
 function parseSimpleGraphSchema() {
 	const { definitions } = parseGraphQLSDL(
