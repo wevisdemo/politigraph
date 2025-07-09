@@ -64,11 +64,11 @@ onMounted(async () => {
 </script>
 
 <template>
-	<div class="h-dvh overflow-hidden !pt-[47px]">
+	<div class="h-dvh overflow-hidden pt-[47px]">
 		<div class="flex px-0 h-full">
 			<div class="basis-3/3 lg:basis-2/3 parliament-bg"></div>
-			<div class="sm:basis-1/3 !p-7.5 !lg:pt-20 bg-white login-box relative">
-				<h1 class="!font-normal !mb-12">Log in</h1>
+			<div class="sm:basis-1/3 p-7.5 lg:pt-20 bg-white login-box relative">
+				<h1 class="font-normal mb-12">Log in</h1>
 				<cv-form @submit.prevent="login" class="flex flex-col gap-y-4">
 					<template v-if="isValidatingSession">
 						<cv-text-input-skeleton />
@@ -97,7 +97,7 @@ onMounted(async () => {
 							<template v-if="isErrorPassword" v-slot:invalid-message />
 						</cv-text-input>
 
-						<cv-button class="w-full !max-w-full">Log in</cv-button>
+						<cv-button class="w-full max-w-full">Log in</cv-button>
 					</template>
 				</cv-form>
 			</div>

@@ -200,7 +200,7 @@ function isGraphicActive(item: GraphEntity | Edge) {
 		:class="
 			isMaximized
 				? 'fixed inset-0'
-				: 'relative h-128 rounded-lg border-gray-200! border!'
+				: 'relative h-128 rounded-lg border-gray-200 border'
 		"
 	>
 		<ClientOnly>
@@ -224,7 +224,7 @@ function isGraphicActive(item: GraphEntity | Edge) {
 			</v-network-graph>
 		</ClientOnly>
 		<cv-icon-button
-			class="absolute! top-0 left-0"
+			class="absolute top-0 left-0"
 			size="small"
 			kind="ghost"
 			tipAlignment="start"
@@ -233,11 +233,11 @@ function isGraphicActive(item: GraphEntity | Edge) {
 			@click="toggleMaximize"
 		/>
 		<div
-			class="absolute left-2 bottom-2 flex flex-col gap-1 text-xs! text-gray-700"
+			class="absolute left-2 bottom-2 flex flex-col gap-1 text-xs text-gray-700"
 		>
 			<div class="flex flex-row gap-1">
 				<div
-					class="size-4 border! rounded"
+					class="size-4 border rounded"
 					:style="{
 						'border-color': GraphicColor.Foreground,
 						'background-color': GraphicColor.Foreground,
@@ -247,14 +247,14 @@ function isGraphicActive(item: GraphEntity | Edge) {
 			</div>
 			<div class="flex flex-row gap-1">
 				<div
-					class="size-4 border! rounded"
+					class="size-4 border rounded"
 					:style="{ 'border-color': GraphicColor.Foreground }"
 				></div>
 				Interface
 			</div>
 			<div class="flex flex-row gap-1">
 				<div
-					class="size-4 border! border-dashed rounded"
+					class="size-4 border border-dashed rounded"
 					:style="{ 'border-color': GraphicColor.Foreground }"
 				></div>
 				Union
@@ -262,7 +262,7 @@ function isGraphicActive(item: GraphEntity | Edge) {
 		</div>
 		<div
 			class="bg-gray-800 text-white overflow-y-scroll flex flex-col gap-4"
-			:class="isMaximized ? 'w-128 p-6!' : 'rounded-r-lg w-84 p-3!'"
+			:class="isMaximized ? 'w-128 p-6' : 'rounded-r-lg w-84 p-3'"
 		>
 			<template v-if="activeEntity">
 				<div class="flex flex-row items-center gap-1">
@@ -275,13 +275,13 @@ function isGraphicActive(item: GraphEntity | Edge) {
 									? 'Union'
 									: 'Interface'
 						"
-						class="m-0!"
+						class="m-0"
 					/>
 					<span
 						v-if="
 							'interfaces' in activeEntity && activeEntity.interfaces.length
 						"
-						class="text-sm! italic! text-gray-400"
+						class="text-sm italic text-gray-400"
 					>
 						extends
 						<button
@@ -296,7 +296,7 @@ function isGraphicActive(item: GraphEntity | Edge) {
 				</div>
 				<div>
 					<h3>{{ activeEntity.name }}</h3>
-					<p class="text-sm!">
+					<p class="text-sm">
 						<template
 							v-for="chunk in activeEntity.description?.split(' ')"
 							:key="chunk"
@@ -306,7 +306,7 @@ function isGraphicActive(item: GraphEntity | Edge) {
 								:href="chunk"
 								target="_blank"
 								rel="noopener noreferrer"
-								class="!text-blue-400"
+								class="text-blue-400"
 								>{{ chunk }}</a
 							>
 							<template v-else>{{ chunk }}</template>
@@ -316,7 +316,7 @@ function isGraphicActive(item: GraphEntity | Edge) {
 				</div>
 				<ul
 					v-if="'types' in activeEntity"
-					class="flex flex-col gap-2 list-disc! ml-3!"
+					class="flex flex-col gap-2 list-disc ml-3"
 				>
 					<li v-for="type in activeEntity.types" :key="type">
 						<button
@@ -331,9 +331,9 @@ function isGraphicActive(item: GraphEntity | Edge) {
 					<li
 						v-for="{ name, description, type } in activeEntity.fields"
 						:key="name"
-						class="leading-relaxed!"
+						class="leading-relaxed"
 					>
-						<span class="font-bold!">{{ name }}</span
+						<span class="font-bold">{{ name }}</span
 						>:
 						<button
 							v-if="graph.nodes[type.name]"
@@ -344,11 +344,11 @@ function isGraphicActive(item: GraphEntity | Edge) {
 						><template v-else>{{ type.name }}</template
 						>{{ type.hasMany ? '[]' : '' }}{{ type.isRequired ? '!' : '' }}
 						<br />
-						<span class="text-sm! text-gray-400">{{ description }}</span>
+						<span class="text-sm text-gray-400">{{ description }}</span>
 					</li>
 				</ul>
 			</template>
-			<p class="m-auto! italic! text-sm! text-gray-400 text-center" v-else>
+			<p v-else class="m-auto italic text-sm text-gray-400 text-center">
 				Select any entity to see more details
 			</p>
 		</div>

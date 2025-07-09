@@ -112,10 +112,10 @@ const getRowClass = (row: Vote): string => {
 		return '';
 	}
 	if (props.editedRows.has(row.id)) {
-		return '[&>td]:bg-[#FCF4D6]!';
+		return '[&>td]:bg-[#FCF4D6]';
 	}
 	if (props.errors.some((e) => e.id === row.id)) {
-		return '[&>td]:bg-[#FFF1F1]!';
+		return '[&>td]:bg-[#FFF1F1]';
 	}
 	return '';
 };
@@ -240,7 +240,7 @@ const downloadCSV = () => {
 					:icon="Download16"
 					kind="ghost"
 					hasIconOnly
-					class="!text-black"
+					class="text-black"
 					@click="downloadCSV"
 				/>
 				<cv-button :icon="Add16" kind="secondary" @click="addNewRow">
@@ -297,7 +297,7 @@ const downloadCSV = () => {
 						@click="startEditing(i, 2)"
 						:class="[
 							{
-								'!text-[#DA1E28]':
+								'text-[#DA1E28]':
 									row.voters.length === 0 &&
 									!isCellEdited(row.id, 'voter_name') &&
 									!isNewRow(row.id),
@@ -316,7 +316,7 @@ const downloadCSV = () => {
 								@change="onOptionChange(row as Vote, 'voter_name')"
 							/>
 						</div>
-						<div v-else class="flex items-center gap-2 !pl-[16px]">
+						<div v-else class="flex items-center gap-2 pl-[16px]">
 							<p
 								:class="{
 									'text-[#707070]': !row.voter_name,
@@ -381,7 +381,7 @@ const downloadCSV = () => {
 								</cv-dropdown-item>
 							</cv-dropdown>
 						</div>
-						<div v-else class="flex items-center !pl-[16px]">
+						<div v-else class="flex items-center pl-[16px]">
 							<div v-if="row.option" class="flex flex-row gap-2 items-center">
 								<p>{{ row.option }}</p>
 								<cv-tooltip
@@ -411,10 +411,10 @@ const downloadCSV = () => {
 
 <style scoped>
 ::v-deep(.bx--table-toolbar) {
-	background-color: white !important;
+	background-color: white;
 }
 
 table tr th {
-	@apply !pl-[32px];
+	@apply pl-[32px];
 }
 </style>

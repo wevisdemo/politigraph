@@ -410,7 +410,7 @@ function scrollToRow(id: string) {
 </script>
 
 <template>
-	<div class="!p-10 min-h-dvh !bg-[#F4F4F4] !pt-[90px] relative">
+	<div class="p-10 min-h-dvh bg-[#F4F4F4] pt-[90px] relative">
 		<cv-breadcrumb noTrailingSlash>
 			<cv-breadcrumb-item class="text-[#0F62FE]"
 				><a href="/admin/vote-events">Vote Events</a></cv-breadcrumb-item

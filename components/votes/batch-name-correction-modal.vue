@@ -61,7 +61,7 @@ function getSubmitPayload() {
 	>
 		<template v-slot:title>Review Suggested Name Corrections</template>
 		<template v-slot:content>
-			<p class="!mb-4">
+			<p class="mb-4">
 				We found {{ dataTable.length }} potential matches for the unrecognized
 				names. Please review the suggestions and uncheck any that are incorrect.
 			</p>
@@ -95,8 +95,8 @@ function getSubmitPayload() {
 						:value="row.id"
 						:class="
 							selectedIds.includes(row.id)
-								? '[&>td]:bg-[#e8e8e8]!'
-								: '[&>td]:bg-[#fff]!'
+								? '[&>td]:bg-[#e8e8e8]'
+								: '[&>td]:bg-[#fff]'
 						"
 					>
 						<cv-data-table-cell
@@ -114,7 +114,7 @@ function getSubmitPayload() {
 						/></cv-data-table-cell>
 						<cv-data-table-cell>{{ row.vote_order }}</cv-data-table-cell>
 						<cv-data-table-cell>{{ row.badge_number }}</cv-data-table-cell>
-						<cv-data-table-cell class="!text-[#DA1E28]">{{
+						<cv-data-table-cell class="text-[#DA1E28]">{{
 							row.voter_name
 						}}</cv-data-table-cell>
 						<cv-data-table-cell>{{ row.suggestedName }}</cv-data-table-cell>

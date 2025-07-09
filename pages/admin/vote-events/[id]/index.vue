@@ -254,7 +254,7 @@ function openSuccessToastNotification() {
 </script>
 
 <template>
-	<div class="!p-10 min-h-dvh !bg-[#F4F4F4] !pt-[90px]">
+	<div class="p-10 min-h-dvh bg-[#F4F4F4] pt-[90px]">
 		<cv-breadcrumb noTrailingSlash>
 			<cv-breadcrumb-item class="text-[#0F62FE]"
 				><a href="/admin/vote-events">Vote Events</a></cv-breadcrumb-item
@@ -303,13 +303,13 @@ function openSuccessToastNotification() {
 				}
 			"
 		>
-			<div class="flex flex-col md:flex-row gap-8 items-start !mt-4">
-				<div class="bg-white !p-4 basis-2/4">
+			<div class="flex flex-col md:flex-row gap-8 items-start mt-4">
+				<div class="bg-white p-4 basis-2/4">
 					<div class="flex flex-col gap-6">
 						<div class="flex flex-col gap-1">
 							<h4>Vote Events Details</h4>
 
-							<p class="!text-xs opacity-70">ID: {{ voteEventData?.id }}</p>
+							<p class="text-xs opacity-70">ID: {{ voteEventData?.id }}</p>
 						</div>
 						<template v-if="!voteEventData">
 							<cv-number-input-skeleton
@@ -395,7 +395,7 @@ function openSuccessToastNotification() {
 								<template v-slot="{ field }">
 									<cv-text-area
 										label="Description"
-										class="!min-h-48"
+										class="min-h-48"
 										placeholder=""
 										:modelValue="field.state.value"
 										@update:modelValue="field.handleChange"
@@ -403,7 +403,7 @@ function openSuccessToastNotification() {
 								</template>
 							</voteEventFormInput.Field>
 							<div>
-								<p class="!font-bold">Related Links</p>
+								<p class="font-bold">Related Links</p>
 
 								<div class="opacity-50">
 									สำหรับช่อง Notes ให้ใส่ชนิดเอกสาร เช่น "ใบประมวลผลการลงมติ"
@@ -467,7 +467,7 @@ function openSuccessToastNotification() {
 				</div>
 
 				<div class="bg-white basis-2/4">
-					<div class="!p-4 flex flex-col gap-2 !mb-3">
+					<div class="p-4 flex flex-col gap-2 mb-3">
 						<h4>Vote Summary (Original)</h4>
 
 						<p class="text-body-01">

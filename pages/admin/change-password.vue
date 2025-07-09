@@ -78,10 +78,10 @@ const signout = async () => {
 <template>
 	<div class="bg-[#F4F4F4] h-dvh">
 		<div
-			class="absolute top-20 inset-x-0 bg-white !p-7.5 max-w-[544px] w-full !mx-auto"
+			class="absolute top-20 inset-x-0 bg-white p-7.5 max-w-[544px] w-full mx-auto"
 		>
 			<template v-if="!isSuccessChangePassword">
-				<h1 class="!font-normal !mb-12">Change Password</h1>
+				<h1 class="font-normal mb-12">Change Password</h1>
 				<cv-form @submit.prevent="changepassword" class="flex flex-col gap-y-4">
 					<cv-text-input
 						v-model="currentPassword"
@@ -122,17 +122,17 @@ const signout = async () => {
 						v-if="isShowErrorMsg"
 					>
 					</cv-toast-notification>
-					<cv-button class="w-full !max-w-full">Change Password</cv-button>
+					<cv-button class="w-full max-w-full">Change Password</cv-button>
 				</cv-form>
 			</template>
 			<template v-else
-				><h1 class="!font-normal">You're all set!</h1>
+				><h1 class="font-normal">You're all set!</h1>
 
-				<p class="!my-12">
+				<p class="my-12">
 					Your password has been updated successfully. You can now sign in with
 					your new password.
 				</p>
-				<cv-button class="w-full !max-w-full" kind="secondary" @click="signout"
+				<cv-button class="w-full max-w-full" kind="secondary" @click="signout"
 					>Go to Sign In</cv-button
 				>
 			</template>

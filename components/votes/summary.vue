@@ -37,9 +37,9 @@ const options = computed(() => [
 </script>
 
 <template>
-	<div class="bg-white flex flex-col !p-4 gap-4">
+	<div class="bg-white flex flex-col p-4 gap-4">
 		<h4>Vote Summary</h4>
-		<p class="!text-sm">
+		<p class="text-sm">
 			ข้อมูลสรุปผลคะแนนที่ OCR จากหัวเอกสารบันทึกผลการลงมติ
 			โดยระบบจะใช้ผลคะแนนนี้ในการตรวจสอบข้อมูลการลงมติ (Votes)
 			ว่าถูกต้องตรงกันหรือไม่ กับผลรวมที่สรุปจากตาราง
@@ -47,7 +47,7 @@ const options = computed(() => [
 		<div class="grid grid-cols-3 gap-3">
 			<div></div>
 			<strong>สรุปจากหัวเอกสาร</strong>
-			<strong class="!pr-4">สรุปจากตาราง</strong>
+			<strong class="pr-4">สรุปจากตาราง</strong>
 
 			<template v-for="{ option, headingCountKey, tableCount } in options">
 				<div class="h-[40px]">
@@ -57,7 +57,7 @@ const options = computed(() => [
 					<cv-skeleton-text v-if="!voteEvent" heading />
 					<cv-number-input
 						v-else-if="headingCountKey"
-						class="!pr-2 !min-w-0"
+						class="pr-2 min-w-0"
 						:modelValue="voteEvent[headingCountKey] ?? 0"
 						@update:modelValue="
 							(value: string) => {
@@ -80,7 +80,7 @@ const options = computed(() => [
 				</div>
 			</template>
 
-			<div class="h-[40px] !font-bold">รวม</div>
+			<div class="h-[40px] font-bold">รวม</div>
 			<div>-</div>
 			<div>
 				{{ options.reduce((acc, option) => acc + (option.tableCount ?? 0), 0) }}

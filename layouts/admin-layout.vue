@@ -49,17 +49,17 @@ const signout = async () => {
 					v-show="username"
 				/>
 				<cv-header-name href="/admin"
-					><p class="!text-black">
-						WeVis <span class="!font-bold">Politigraph Admin</span>
+					><p class="text-black">
+						WeVis <span class="font-bold">Politigraph Admin</span>
 					</p></cv-header-name
 				>
 			</div>
 			<cv-overflow-menu flipMenu v-if="username">
 				<template v-slot:trigger><UserAvatar24 /></template>
-				<div class="!p-4">
-					<p class="!text-sm">{{ username }}</p>
+				<div class="p-4">
+					<p class="text-sm">{{ username }}</p>
 
-					<p class="!text-xs text-[#525252]">{{ email }}</p>
+					<p class="text-xs text-[#525252]">{{ email }}</p>
 				</div>
 				<a href="/admin/api-keys">
 					<cv-overflow-menu-item
@@ -94,22 +94,22 @@ const signout = async () => {
 		>
 			<template v-slot:title>Account Settings</template>
 			<template v-slot:content
-				><div class="!mb-6">
-					<p class="!font-bold">Name</p>
+				><div class="mb-6">
+					<p class="font-bold">Name</p>
 					<p>{{ username }}</p>
 				</div>
-				<div class="!mb-6">
-					<p class="!font-bold">Email</p>
+				<div class="mb-6">
+					<p class="font-bold">Email</p>
 					<p>{{ email }}</p>
 				</div>
-				<div class="!mb-6">
-					<p class="!font-bold">Role</p>
+				<div class="mb-6">
+					<p class="font-bold">Role</p>
 					<p>Admin</p>
 				</div>
 				<hr class="border-[#C6C6C6]" />
-				<div class="!mt-6">
-					<p class="!font-bold !mb-1">Password</p>
-					<a href="/admin/change-password" class="!text-xs">Change Password</a>
+				<div class="mt-6">
+					<p class="font-bold mb-1">Password</p>
+					<a href="/admin/change-password" class="text-xs">Change Password</a>
 				</div></template
 			>
 		</cv-modal>

@@ -1,6 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@100;200;300;400;500;600;700&display=swap');
 @import 'tailwindcss';
-@import 'carbon-components/css/carbon-components.css';
 
 @font-face {
 	font-family: 'IBM Plex Sans Thai';
@@ -14,67 +13,71 @@
 	font-weight: 700;
 }
 
-* {
-	font-family: 'IBM Plex Sans Thai', serif !important;
-}
+@layer base {
+	@import 'carbon-components/css/carbon-components.css';
 
-.bx--data-table-header,
-.bx--data-table tbody,
-.bx--data-table tbody tr td,
-.bx--pagination,
-.bx--pagination .bx--select-input {
-	background-color: #ffffff;
-}
-
-.bx--toast-notification--error {
-	width: 100%;
-	margin: 0;
-}
-
-.bx--header {
-	background-color: #ffffff;
-	border-color: #c6c6c6;
-	justify-content: space-between;
-}
-
-.bx--header__menu-trigger > svg {
-	fill: #000000;
-}
-
-.bx--header__action:hover {
-	svg {
-		fill: #ffffff;
+	* {
+		font-family: 'IBM Plex Sans Thai', serif !important;
 	}
-}
 
-.bx--header__action:focus {
-	border-color: transparent;
-}
+	.bx--data-table-header,
+	.bx--data-table tbody,
+	.bx--data-table tbody tr td,
+	.bx--pagination,
+	.bx--pagination .bx--select-input {
+		background-color: #ffffff;
+	}
 
-.bx--overflow-menu-options {
-	width: auto;
-	background-color: #ffffff;
-}
+	.bx--toast-notification--error {
+		width: 100%;
+		margin: 0;
+	}
 
-.bx--overflow-menu-options__option-content {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	width: 100%;
-}
+	.bx--header {
+		background-color: #ffffff;
+		border-color: #c6c6c6;
+		justify-content: space-between;
+	}
 
-.bx--modal-content p {
-	font-size: 14px;
-}
+	.bx--header__menu-trigger > svg {
+		fill: #000000;
+	}
 
-.bx--inline-notification {
-	max-width: 100%;
-}
+	.bx--header__action:hover {
+		svg {
+			fill: #ffffff;
+		}
+	}
 
-.bx--number__input-wrapper input {
-	padding-right: 5rem !important;
-}
+	.bx--header__action:focus {
+		border-color: transparent;
+	}
 
-.text-body-01 {
-	font-size: 14px;
+	.bx--overflow-menu-options {
+		width: auto;
+		background-color: #ffffff;
+	}
+
+	.bx--overflow-menu-options__option-content {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		width: 100%;
+	}
+
+	.bx--modal-content p {
+		font-size: 14px;
+	}
+
+	.bx--inline-notification {
+		max-width: 100%;
+	}
+
+	.bx--number__input-wrapper input {
+		padding-right: 5rem !important;
+	}
+
+	.text-body-01 {
+		font-size: 14px;
+	}
 }

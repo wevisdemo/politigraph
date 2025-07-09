@@ -42,7 +42,7 @@ const Form = useForm({
 </script>
 
 <template>
-	<div class="!mt-12 !p-3 flex justify-center">
+	<div class="mt-12 p-3 flex justify-center">
 		<div class="max-w-2xl w-full mx-auto">
 			<cv-data-table-skeleton
 				v-if="status === 'pending'"
@@ -87,7 +87,7 @@ const Form = useForm({
 				</cv-data-table>
 				<p
 					v-if="apiKeys.data.length === 0"
-					class="text-center !text-sm opacity-50"
+					class="text-center text-sm opacity-50"
 				>
 					No API keys found
 				</p>

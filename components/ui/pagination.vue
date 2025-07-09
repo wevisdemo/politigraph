@@ -42,9 +42,9 @@ const handlePageChange = (value: number) => {
 		<div class="flex flex-row items-center justify-between bg-white">
 			<div class="flex flex-row items-center">
 				<div class="flex flex-row items-center">
-					<div class="!px-4">Items per page:</div>
+					<div class="px-4">Items per page:</div>
 					<cv-dropdown
-						class="w-24! border-b-0!"
+						class="w-24 border-b-0"
 						:light="true"
 						:modelValue="`${pageSize}`"
 						@change="handlePageSizeChange"
@@ -58,7 +58,7 @@ const handlePageChange = (value: number) => {
 					</cv-dropdown>
 				</div>
 				<div>
-					<div class="!px-4">
+					<div class="px-4">
 						{{
 							`${(page - 1) * pageSize + 1} - ${page * pageSize} of ${totalCount} items`
 						}}
@@ -68,7 +68,7 @@ const handlePageChange = (value: number) => {
 			<div class="flex flex-row items-center">
 				<cv-dropdown
 					:light="true"
-					class="w-24! border-b-0!"
+					class="w-24 border-b-0"
 					:modelValue="`${page}`"
 					@change="handlePageChange"
 				>
@@ -79,7 +79,7 @@ const handlePageChange = (value: number) => {
 						><span style="color: darkred">{{ item }}</span></cv-dropdown-item
 					>
 				</cv-dropdown>
-				<div class="!px-4">
+				<div class="px-4">
 					{{ `of ${pageList.at(-1)} Pages` }}
 				</div>
 

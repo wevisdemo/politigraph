@@ -85,11 +85,11 @@ const router = useRouter();
 </script>
 
 <template>
-	<div class="!p-10 !bg-[#F4F4F4] !pt-[90px]">
+	<div class="p-10 bg-[#F4F4F4] pt-[90px]">
 		<cv-breadcrumb noTrailingSlash>
 			<cv-breadcrumb-item>Vote Events</cv-breadcrumb-item>
 		</cv-breadcrumb>
-		<h1 class="!font-normal !mb-8 !mt-4">Vote Events</h1>
+		<h1 class="font-normal mb-8 mt-4">Vote Events</h1>
 		<cv-data-table-skeleton
 			v-if="!data"
 			title="Vote Events"
@@ -165,8 +165,8 @@ const router = useRouter();
 						</cv-data-table-cell>
 						<cv-data-table-cell
 							:class="{
-								'!text-[#DA1E28]': row.publish_status === 'ERROR',
-								'!text-[#158236]': row.publish_status === 'PUBLISHED',
+								'text-[#DA1E28]': row.publish_status === 'ERROR',
+								'text-[#158236]': row.publish_status === 'PUBLISHED',
 							}"
 							>{{ row.publish_status }}</cv-data-table-cell
 						>

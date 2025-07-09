@@ -33,7 +33,7 @@ const isPublish = computed(() => {
 
 <template>
 	<div
-		class="flex flex-row gap-2 rounded-full w-fit !p-2 items-center border"
+		class="flex flex-row gap-2 rounded-full w-fit p-2 items-center border"
 		:style="{
 			backgroundColor: variation.background,
 			color: variation.foreground,
@@ -43,7 +43,7 @@ const isPublish = computed(() => {
 			class="rounded-full size-4"
 			:style="{ backgroundColor: variation.foreground }"
 		/>
-		<div class="text-[12px] !capitalize">
+		<div class="text-[12px] capitalize">
 			{{ variation.label }}
 		</div>
 	</div>

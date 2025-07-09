@@ -24,13 +24,13 @@ const isPublished = computed(() => props.publishStatus === 'PUBLISHED');
 <template>
 	<cv-skeleton-text
 		v-if="!title"
-		class="!my-6"
+		class="my-6"
 		heading
 		:line-count="2"
 	></cv-skeleton-text>
 	<div
 		v-else
-		class="flex flex-col md:flex-row flex-wrap justify-end items-end md:items-center gap-4 !my-6"
+		class="flex flex-col md:flex-row flex-wrap justify-end items-end md:items-center gap-4 my-6"
 	>
 		<div class="flex-1 flex flex-row gap-4 items-center">
 			<h2 class="md:min-w-xl">
