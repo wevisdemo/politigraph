@@ -1,17 +1,5 @@
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@100;200;300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;700&display=swap');
 @import 'tailwindcss';
-
-@font-face {
-	font-family: 'IBM Plex Sans Thai';
-	src: url('../fonts/IBMPlexSansThai-Regular.ttf');
-	font-weight: 400;
-}
-
-@font-face {
-	font-family: 'IBM Plex Sans Thai';
-	src: url('../fonts/IBMPlexSansThai-Bold.ttf');
-	font-weight: 700;
-}
 
 @layer base {
 	@import 'carbon-components/css/carbon-components.css';
