@@ -4,7 +4,7 @@ import { getGraphqlTypeDefs } from '~/utils/graphql/schema';
 export default defineEventHandler(parseSimpleGraphSchema);
 
 export type GraphSchema = ReturnType<typeof parseSimpleGraphSchema>;
-export type GraphEntity = GraphSchema[keyof GraphSchema][number];
+export type SchemaNode = GraphSchema[keyof GraphSchema][number];
 
 function parseSimpleGraphSchema() {
 	const { definitions } = parseGraphQLSDL(
@@ -12,36 +12,18 @@ function parseSimpleGraphSchema() {
 		getGraphqlTypeDefs(),
 	).document;
 
-	const nodes = definitions
-		.filter((n) => n.kind === 'ObjectTypeDefinition')
-		.filter((n) => !n.name.value.startsWith('Relation'))
+	const objects = definitions
+		.filter((d) => d.kind === 'ObjectTypeDefinition')
+		.filter((d) => !d.name.value.startsWith('Relation'))
 		.map((d) => ({
 			name: d.name.value,
 			description: d.description?.value,
 			interfaces: d.interfaces?.map((i) => i.name.value) ?? [],
-			fields:
-				d.fields?.map((f) => {
-					const type = extractFieldType(f.type)!;
-					const rel = f.directives?.find(
-						(d) => d.name.value === 'relationship',
-					);
-
-					return {
-						name: f.name.value,
-						description: f.description?.value,
-						type,
-						relationship: rel?.arguments
-							? {
-									type: getArgumentValue(rel.arguments, 'type'),
-									direction: getArgumentValue(rel.arguments, 'direction'),
-								}
-							: undefined,
-					};
-				}) ?? [],
+			fields: parseNodeFields(d.fields),
 		}));
 
 	const unions = definitions
-		.filter((n) => n.kind === 'UnionTypeDefinition')
+		.filter((d) => d.kind === 'UnionTypeDefinition')
 		.map((d) => ({
 			name: d.name.value,
 			description: d.description?.value,
@@ -49,17 +31,59 @@ function parseSimpleGraphSchema() {
 		}));
 
 	const interfaces = definitions
-		.filter((n) => n.kind === 'InterfaceTypeDefinition')
+		.filter((d) => d.kind === 'InterfaceTypeDefinition')
 		.map((d) => ({
 			name: d.name.value,
 			description: d.description?.value,
+			fields: parseNodeFields(d.fields),
+		}));
+
+	const enums = definitions
+		.filter((n) => n.kind === 'EnumTypeDefinition')
+		.map((d) => ({
+			name: d.name.value,
+			description: d.description?.value,
+			values:
+				d.values?.map((v) => ({
+					name: v.name.value,
+					description: v.description?.value,
+				})) ?? [],
 		}));
 
 	return {
-		nodes,
+		objects,
 		unions,
 		interfaces,
+		enums,
 	};
+}
+
+function parseNodeFields(
+	fields?: readonly {
+		type: any;
+		directives?: readonly any[];
+		name: { value: string };
+		description?: { value: string };
+	}[],
+) {
+	return (
+		fields?.map((f) => {
+			const type = extractFieldType(f.type)!;
+			const rel = f.directives?.find((d) => d.name.value === 'relationship');
+
+			return {
+				name: f.name.value,
+				description: f.description?.value,
+				type,
+				relationship: rel?.arguments
+					? {
+							type: getArgumentValue(rel.arguments, 'type'),
+							direction: getArgumentValue(rel.arguments, 'direction'),
+						}
+					: undefined,
+			};
+		}) ?? []
+	);
 }
 
 function extractFieldType(obj: unknown, isRequired = false, hasMany = false) {

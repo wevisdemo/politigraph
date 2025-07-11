@@ -8,7 +8,7 @@ import {
 	type VNetworkGraphInstance,
 } from 'v-network-graph';
 import 'v-network-graph/lib/style.css';
-import type { GraphEntity } from '~/server/routes/schema.json';
+import type { SchemaNode } from '~/server/routes/schema.json';
 
 interface Edge {
 	id: string;
@@ -26,7 +26,7 @@ const GraphicColor = {
 
 const { data } = await useFetch('/schema.json');
 
-const configs = defineConfigs<GraphEntity, Edge>({
+const configs = defineConfigs<SchemaNode, Edge>({
 	view: {
 		autoPanAndZoomOnLoad: 'fit-content',
 		fitContentMargin: '5%',
@@ -39,19 +39,25 @@ const configs = defineConfigs<GraphEntity, Edge>({
 			width: 100,
 			height: 30,
 			color: (node) =>
-				'fields' in node ? getForegroundColor(node) : GraphicColor.Background,
+				'interfaces' in node
+					? getForegroundColor(node)
+					: GraphicColor.Background,
 			strokeColor: getForegroundColor,
 			strokeWidth: 1,
 			strokeDasharray: (node) => ('types' in node ? 4 : 0),
 		},
 		hover: {
 			color: (node) =>
-				'fields' in node ? getForegroundColor(node) : GraphicColor.Background,
+				'interfaces' in node
+					? getForegroundColor(node)
+					: GraphicColor.Background,
 		},
 		label: {
 			direction: 'center',
 			color: (node) =>
-				'fields' in node ? GraphicColor.Background : getForegroundColor(node),
+				'interfaces' in node
+					? GraphicColor.Background
+					: getForegroundColor(node),
 		},
 		zOrder: {
 			enabled: true,
@@ -87,7 +93,7 @@ const configs = defineConfigs<GraphEntity, Edge>({
 });
 
 const graph = computed(() => {
-	const nodes: Record<string, GraphEntity> = {};
+	const nodes: Record<string, SchemaNode> = {};
 	const edges: Record<string, Edge> = {};
 
 	if (!data.value) return { nodes, edges };
@@ -101,7 +107,7 @@ const graph = computed(() => {
 		.setDefaultNodeLabel(() => ({}))
 		.setDefaultEdgeLabel(() => ({}));
 
-	function addNode(node: GraphEntity) {
+	function addNode(node: SchemaNode) {
 		nodes[node.name] = node;
 		g.setNode(node.name, {
 			width: configs.node?.normal?.width,
@@ -120,7 +126,7 @@ const graph = computed(() => {
 		g.setEdge(source, target);
 	}
 
-	data.value.nodes.forEach((node) => {
+	data.value.objects.forEach((node) => {
 		addNode(node);
 		node.fields
 			.filter((f) => f.relationship?.direction === 'IN')
@@ -157,15 +163,15 @@ const graphElement = ref<VNetworkGraphInstance>();
 const isMaximized = ref(false);
 const selectedNodes = ref<string[]>([]);
 
-const activeEntity = computed<GraphEntity | null>(() =>
+const selectedNode = computed<SchemaNode | null>(() =>
 	selectedNodes.value.length ? graph.value.nodes[selectedNodes.value[0]] : null,
 );
 
 const activeEdges = computed(() =>
 	Object.values(graph.value.edges).filter(
 		(edge) =>
-			edge.source === activeEntity.value?.name ||
-			edge.target === activeEntity.value?.name,
+			edge.source === selectedNode.value?.name ||
+			edge.target === selectedNode.value?.name,
 	),
 );
 
@@ -176,13 +182,13 @@ function toggleMaximize() {
 	graphElement.value?.panToCenter();
 }
 
-function getForegroundColor(item: GraphEntity | Edge) {
+function getForegroundColor(item: SchemaNode | Edge) {
 	return isGraphicActive(item)
 		? GraphicColor.Foreground
 		: GraphicColor.Disabled;
 }
 
-function isGraphicActive(item: GraphEntity | Edge) {
+function isGraphicActive(item: SchemaNode | Edge) {
 	return (
 		!activeEdges.value.length ||
 		('name' in item
@@ -235,43 +241,36 @@ function isGraphicActive(item: GraphEntity | Edge) {
 		<div
 			class="absolute bottom-2 left-2 flex flex-col gap-1 text-xs text-gray-700"
 		>
-			<div class="flex flex-row gap-1">
-				<div
-					class="size-4 rounded border"
-					:style="{
-						'border-color': GraphicColor.Foreground,
-						'background-color': GraphicColor.Foreground,
-					}"
-				></div>
-				Node
-			</div>
-			<div class="flex flex-row gap-1">
-				<div
-					class="size-4 rounded border"
-					:style="{ 'border-color': GraphicColor.Foreground }"
-				></div>
-				Interface
-			</div>
-			<div class="flex flex-row gap-1">
-				<div
-					class="size-4 rounded border border-dashed"
-					:style="{ 'border-color': GraphicColor.Foreground }"
-				></div>
-				Union
-			</div>
+			<GraphLegend
+				term="Object"
+				definition="A type of the actual node in the dataset"
+				:borderColor="GraphicColor.Foreground"
+				:backgroundColor="GraphicColor.Foreground"
+			/>
+			<GraphLegend
+				term="Interface"
+				definition="An abstracted type used as a blueprint for other object types"
+				:borderColor="GraphicColor.Foreground"
+			/>
+			<GraphLegend
+				term="Union"
+				definition="A set of possible types"
+				:borderColor="GraphicColor.Foreground"
+				dashed
+			/>
 		</div>
 		<div
 			class="flex flex-col gap-4 overflow-y-scroll bg-gray-800 text-white"
 			:class="isMaximized ? 'w-128 p-6' : 'w-84 rounded-r-lg p-3'"
 		>
-			<template v-if="activeEntity">
+			<template v-if="selectedNode">
 				<div class="flex flex-row items-center gap-1">
 					<cv-tag
 						small
 						:label="
-							'fields' in activeEntity
-								? 'Node'
-								: 'types' in activeEntity
+							'interfaces' in selectedNode
+								? 'Object'
+								: 'types' in selectedNode
 									? 'Union'
 									: 'Interface'
 						"
@@ -279,13 +278,13 @@ function isGraphicActive(item: GraphEntity | Edge) {
 					/>
 					<span
 						v-if="
-							'interfaces' in activeEntity && activeEntity.interfaces.length
+							'interfaces' in selectedNode && selectedNode.interfaces.length
 						"
 						class="text-sm text-gray-400 italic"
 					>
 						extends
 						<button
-							v-for="type in activeEntity.interfaces"
+							v-for="type in selectedNode.interfaces"
 							:key="type"
 							class="cursor-pointer text-blue-400"
 							@click="selectedNodes = [type]"
@@ -295,10 +294,10 @@ function isGraphicActive(item: GraphEntity | Edge) {
 					</span>
 				</div>
 				<div>
-					<h3>{{ activeEntity.name }}</h3>
+					<h3>{{ selectedNode.name }}</h3>
 					<p class="text-sm">
 						<template
-							v-for="chunk in activeEntity.description?.split(' ')"
+							v-for="chunk in selectedNode.description?.split(' ')"
 							:key="chunk"
 						>
 							<a
@@ -315,10 +314,10 @@ function isGraphicActive(item: GraphEntity | Edge) {
 					</p>
 				</div>
 				<ul
-					v-if="'types' in activeEntity"
+					v-if="'types' in selectedNode"
 					class="ml-3 flex list-disc flex-col gap-2"
 				>
-					<li v-for="type in activeEntity.types" :key="type">
+					<li v-for="type in selectedNode.types" :key="type">
 						<button
 							class="cursor-pointer text-blue-400"
 							@click="selectedNodes = [type]"
@@ -327,11 +326,11 @@ function isGraphicActive(item: GraphEntity | Edge) {
 						</button>
 					</li>
 				</ul>
-				<ul v-if="'fields' in activeEntity" class="flex flex-col gap-2">
+				<ul v-if="'fields' in selectedNode" class="flex flex-col">
 					<li
-						v-for="{ name, description, type } in activeEntity.fields"
+						v-for="{ name, description, type } in selectedNode.fields"
 						:key="name"
-						class="leading-relaxed"
+						class="border-t border-gray-700 py-2 leading-normal"
 					>
 						<span class="font-bold">{{ name }}</span
 						>:
@@ -345,6 +344,18 @@ function isGraphicActive(item: GraphEntity | Edge) {
 						>{{ type.hasMany ? '[]' : '' }}{{ type.isRequired ? '!' : '' }}
 						<br />
 						<span class="text-sm text-gray-400">{{ description }}</span>
+						<ul
+							v-if="data?.enums.find((e) => e.name === type.name)"
+							class="ml-4 list-disc"
+						>
+							<li
+								v-for="{ name, description } in data.enums.find(e => e.name === type.name)!.values"
+								:key="name"
+							>
+								{{ name }}
+								<span class="text-gray-400">: {{ description }}</span>
+							</li>
+						</ul>
 					</li>
 				</ul>
 			</template>
