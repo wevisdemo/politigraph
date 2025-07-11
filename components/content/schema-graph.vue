@@ -1,6 +1,4 @@
-<script setup lang="tsx">
-//@ts-ignore
-import { Maximize16, Minimize16 } from '@carbon/icons-vue';
+<script setup lang="ts">
 import dagre from 'dagre';
 import {
 	defineConfigs,
@@ -160,7 +158,6 @@ const graph = computed(() => {
 });
 
 const graphElement = ref<VNetworkGraphInstance>();
-const isMaximized = ref(false);
 const selectedNodes = ref<string[]>([]);
 
 const selectedNode = computed<SchemaNode | null>(() =>
@@ -174,13 +171,6 @@ const activeEdges = computed(() =>
 			edge.target === selectedNode.value?.name,
 	),
 );
-
-function toggleMaximize() {
-	isMaximized.value = !isMaximized.value;
-
-	graphElement.value?.fitToContents();
-	graphElement.value?.panToCenter();
-}
 
 function getForegroundColor(item: SchemaNode | Edge) {
 	return isGraphicActive(item)
@@ -201,46 +191,26 @@ function isGraphicActive(item: SchemaNode | Edge) {
 </script>
 
 <template>
-	<div
-		class="flex flex-row justify-end bg-gray-100"
-		:class="
-			isMaximized
-				? 'fixed inset-0'
-				: 'relative h-128 rounded-lg border border-gray-200'
-		"
-	>
-		<ClientOnly>
-			<v-network-graph
-				ref="graphElement"
-				:configs
-				:nodes="graph.nodes"
-				:edges="graph.edges"
-				:layouts="graph.layouts"
-				v-model:selected-nodes="selectedNodes"
-				#edge-label="{ edge, ...slotProps }"
-			>
-				<v-edge-label
-					:text="edge.label"
-					align="center"
-					vertical-align="above"
-					font-size="10"
-					class="relative"
-					v-bind="slotProps"
-				/>
-			</v-network-graph>
-		</ClientOnly>
-		<cv-icon-button
-			class="absolute top-0 left-0"
-			size="small"
-			kind="ghost"
-			tipAlignment="start"
-			:label="isMaximized ? 'Minimize' : 'Maximize'"
-			:icon="isMaximized ? Minimize16 : Maximize16"
-			@click="toggleMaximize"
-		/>
-		<div
-			class="absolute bottom-2 left-2 flex flex-col gap-1 text-xs text-gray-700"
+	<GraphBaseView :graphElement>
+		<v-network-graph
+			ref="graphElement"
+			:configs
+			:nodes="graph.nodes"
+			:edges="graph.edges"
+			:layouts="graph.layouts"
+			v-model:selected-nodes="selectedNodes"
+			#edge-label="{ edge, ...slotProps }"
 		>
+			<v-edge-label
+				:text="edge.label"
+				align="center"
+				vertical-align="above"
+				font-size="10"
+				class="relative"
+				v-bind="slotProps"
+			/>
+		</v-network-graph>
+		<template v-slot:legend>
 			<GraphLegend
 				term="Object"
 				definition="A type of the actual node in the dataset"
@@ -258,11 +228,8 @@ function isGraphicActive(item: SchemaNode | Edge) {
 				:borderColor="GraphicColor.Foreground"
 				dashed
 			/>
-		</div>
-		<div
-			class="flex flex-col gap-4 overflow-y-scroll bg-gray-800 text-white"
-			:class="isMaximized ? 'w-128 p-6' : 'w-84 rounded-r-lg p-3'"
-		>
+		</template>
+		<template v-slot:sidebar>
 			<template v-if="selectedNode">
 				<div class="flex flex-row items-center gap-1">
 					<cv-tag
@@ -349,7 +316,9 @@ function isGraphicActive(item: SchemaNode | Edge) {
 							class="ml-4 list-disc"
 						>
 							<li
-								v-for="{ name, description } in data.enums.find(e => e.name === type.name)!.values"
+								v-for="{ name, description } in data.enums.find(
+									(e) => e.name === type.name,
+								)!.values"
 								:key="name"
 							>
 								{{ name }}
@@ -362,6 +331,6 @@ function isGraphicActive(item: SchemaNode | Edge) {
 			<p v-else class="m-auto text-center text-sm text-gray-400 italic">
 				Select any entity to see more details
 			</p>
-		</div>
-	</div>
+		</template>
+	</GraphBaseView>
 </template>

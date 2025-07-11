@@ -7,4 +7,4 @@ We design the schema based on [Popolo - International open government data speci
 ::schema-graph
 ::
 
-Schema is not the actual data. For example, we might have Person "A", "B" and "C" which are an actual nodes with `Person` type. Those nodes will have only fields and relationships that satisfied the schema.
+Schema is not the actual data. For example, we might have Person "A", "B" and "C" which are actual nodes with **`Person`** type. Those nodes will have only fields and relationships that satisfied the schema.
