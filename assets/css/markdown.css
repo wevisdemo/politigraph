@@ -1,0 +1,17 @@
+.markdown-content {
+	img {
+		@apply mx-auto;
+	}
+
+	code {
+		@apply rounded border border-gray-200 bg-gray-100 px-1 font-mono text-sm text-red-600;
+	}
+
+	pre {
+		@apply overflow-hidden rounded bg-gray-800 px-4;
+	}
+
+	pre > code {
+		@apply rounded-none border-none bg-gray-800;
+	}
+}

@@ -16,6 +16,16 @@ export default defineNuxtConfig({
 	},
 	sourcemap: true,
 	compatibilityDate: '2024-11-01',
+	content: {
+		build: {
+			markdown: {
+				highlight: {
+					theme: 'catppuccin-mocha',
+					langs: ['typescript'],
+				},
+			},
+		},
+	},
 	css: ['~/assets/css/main.css'],
 	devtools: { enabled: true },
 	modules: ['@nuxt/content'],
