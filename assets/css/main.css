@@ -1,7 +1,7 @@
 @import 'tailwindcss';
 
 @layer base {
-	@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@200,400;700&display=swap');
+	@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai+Looped:wght@200;400;700&display=swap');
 	@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&display=swap');
 	@import './carbon.css';
 	@import './markdown.css';
@@ -12,6 +12,6 @@
 }
 
 @theme {
-	--font-sans: 'IBM Plex Sans Thai', sans-serif;
+	--font-sans: 'IBM Plex Sans Thai Looped', sans-serif;
 	--font-mono: 'IBM Plex Mono', monospace;
 }
