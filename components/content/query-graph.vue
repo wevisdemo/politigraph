@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import {
 	defineConfigs,
-	type Edge,
 	type Edges,
 	type VNetworkGraphInstance,
 } from 'v-network-graph';
@@ -14,6 +13,13 @@ import {
 interface GraphqlObject {
 	id: string;
 	[key: string]: string | GraphqlObject[];
+}
+
+interface Edge {
+	id: string;
+	source: string;
+	target: string;
+	label?: string;
 }
 
 const props = defineProps<{
@@ -44,6 +50,14 @@ const configs = defineConfigs<GraphqlObject>({
 	},
 	node: {
 		selectable: true,
+		label: {
+			text: (obj) => obj.id,
+		},
+	},
+	edge: {
+		hover: {
+			width: 2,
+		},
 	},
 });
 
@@ -71,27 +85,41 @@ const graph = computed(() => {
 	}
 
 	function collectGraphItems(node: GraphqlObject) {
+		if (nodes[node.id]) return;
+
 		nodes[node.id] = node;
 
 		Object.values(node).forEach((value) => {
 			if (Array.isArray(value)) {
-				value.forEach((child) => {
-					edges[`${node.id}-${child.id}`] = {
-						source: node.id,
-						target: child.id,
-					};
-					collectGraphItems(child);
-				});
+				value
+					.sort((a, z) => a.id.localeCompare(z.id))
+					.forEach((child) => {
+						if (edges[`${child.id}->${node.id}`]) return;
+
+						edges[`${node.id}->${child.id}`] = {
+							source: node.id,
+							target: child.id,
+						};
+						collectGraphItems(child);
+					});
 			}
 		});
 	}
 
-	Object.values(response.value.data)[0].forEach(collectGraphItems);
+	const initialNodes = Object.values(response.value.data)[0];
+
+	initialNodes.forEach(collectGraphItems);
+	selectedNodes.value = [initialNodes[0].id];
 
 	return { nodes, edges };
 });
 
 const graphElement = ref<VNetworkGraphInstance>();
+const selectedNodes = ref<string[]>([]);
+
+const selectedNode = computed<GraphqlObject | null>(() =>
+	selectedNodes.value.length ? graph.value.nodes[selectedNodes.value[0]] : null,
+);
 </script>
 
 <template>
@@ -102,8 +130,46 @@ const graphElement = ref<VNetworkGraphInstance>();
 				:configs
 				:nodes="graph.nodes"
 				:edges="graph.edges"
+				v-model:selected-nodes="selectedNodes"
 			/>
-			<template v-slot:sidebar>WIP</template>
+			<template v-slot:sidebar>
+				<div v-if="selectedNode" class="flex flex-1 flex-col gap-2">
+					<h5>Fields</h5>
+					<ul class="flex flex-col">
+						<li
+							v-for="[key, value] in Object.entries(selectedNode)"
+							:key="key"
+							class="border-t border-gray-700 py-2 leading-normal"
+						>
+							<span class="font-bold">{{ key }}</span
+							>:
+							<span v-if="value === null" class="text-gray-400 italic"
+								>null</span
+							>
+							<template v-else-if="typeof value === 'string'">
+								{{ value }}
+							</template>
+							<ul v-else>
+								<li v-for="node in value" class="ml-4 list-disc">
+									<button
+										class="cursor-pointer text-blue-400"
+										@click="selectedNodes = [node.id]"
+									>
+										{{ node.id }}
+									</button>
+								</li>
+							</ul>
+						</li>
+					</ul>
+					<p class="mt-auto text-xs leading-tight text-gray-400 italic">
+						*Only interesting fields are shown. Full list can be found in the
+						<a href="/docs/schema" class="text-blue-400">schema</a> page
+					</p>
+				</div>
+				<p v-else class="m-auto text-center text-sm text-gray-400 italic">
+					Select a data node to see more details
+				</p>
+			</template>
 		</GraphBaseView>
 		<div
 			v-if="status !== 'success'"
@@ -113,3 +179,11 @@ const graphElement = ref<VNetworkGraphInstance>();
 		</div>
 	</div>
 </template>
+
+<style scoped>
+@reference "~/assets/css/main.css";
+
+td {
+	@apply border border-gray-600 px-2 py-1 leading-normal break-all;
+}
+</style>
