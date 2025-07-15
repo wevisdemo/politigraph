@@ -7,6 +7,11 @@ import {
 } from 'v-network-graph';
 import 'v-network-graph/lib/style.css';
 import type { SchemaNode } from '~/server/routes/schema.json';
+import { schemeTableau10 } from 'd3-scale-chromatic';
+
+type Node = SchemaNode & {
+	color?: string;
+};
 
 interface Edge {
 	id: string;
@@ -17,14 +22,14 @@ interface Edge {
 }
 
 const GraphicColor = {
-	Foreground: '#4466cc',
-	Disabled: '#aaccff',
+	Foreground: '#222',
+	Disabled: '#ccc',
 	Background: '#f3f4f6',
 };
 
 const { data } = await useFetch('/schema.json');
 
-const configs = defineConfigs<SchemaNode, Edge>({
+const configs = defineConfigs<Node, Edge>({
 	view: {
 		autoPanAndZoomOnLoad: 'fit-content',
 		fitContentMargin: '5%',
@@ -37,25 +42,19 @@ const configs = defineConfigs<SchemaNode, Edge>({
 			width: 100,
 			height: 30,
 			color: (node) =>
-				'interfaces' in node
-					? getForegroundColor(node)
-					: GraphicColor.Background,
-			strokeColor: getForegroundColor,
+				'interfaces' in node ? getNodeColor(node) : GraphicColor.Background,
+			strokeColor: getNodeColor,
 			strokeWidth: 1,
 			strokeDasharray: (node) => ('types' in node ? 4 : 0),
 		},
 		hover: {
 			color: (node) =>
-				'interfaces' in node
-					? getForegroundColor(node)
-					: GraphicColor.Background,
+				'interfaces' in node ? getNodeColor(node) : GraphicColor.Background,
 		},
 		label: {
 			direction: 'center',
 			color: (node) =>
-				'interfaces' in node
-					? GraphicColor.Background
-					: getForegroundColor(node),
+				'interfaces' in node ? GraphicColor.Background : getNodeColor(node),
 		},
 		zOrder: {
 			enabled: true,
@@ -66,11 +65,11 @@ const configs = defineConfigs<SchemaNode, Edge>({
 		normal: {
 			width: 1,
 			dasharray: (edge) => (edge.isAbstracted ? 2 : 0),
-			color: getForegroundColor,
+			color: getEdgeColor,
 		},
 		hover: {
 			width: 1,
-			color: getForegroundColor,
+			color: getEdgeColor,
 		},
 		marker: {
 			source: {
@@ -81,7 +80,7 @@ const configs = defineConfigs<SchemaNode, Edge>({
 			},
 		},
 		label: {
-			color: getForegroundColor,
+			color: getEdgeColor,
 		},
 		zOrder: {
 			enabled: true,
@@ -91,7 +90,7 @@ const configs = defineConfigs<SchemaNode, Edge>({
 });
 
 const graph = computed(() => {
-	const nodes: Record<string, SchemaNode> = {};
+	const nodes: Record<string, Node> = {};
 	const edges: Record<string, Edge> = {};
 
 	if (!data.value) return { nodes, edges };
@@ -105,7 +104,7 @@ const graph = computed(() => {
 		.setDefaultNodeLabel(() => ({}))
 		.setDefaultEdgeLabel(() => ({}));
 
-	function addNode(node: SchemaNode) {
+	function addNode(node: Node) {
 		nodes[node.name] = node;
 		g.setNode(node.name, {
 			width: configs.node?.normal?.width,
@@ -124,8 +123,11 @@ const graph = computed(() => {
 		g.setEdge(source, target);
 	}
 
-	data.value.objects.forEach((node) => {
-		addNode(node);
+	data.value.objects.forEach((node, i) => {
+		addNode({
+			...node,
+			color: schemeTableau10[i],
+		});
 		node.fields
 			.filter((f) => f.relationship?.direction === 'IN')
 			.forEach(({ type, relationship }) =>
@@ -160,7 +162,7 @@ const graph = computed(() => {
 const graphElement = ref<VNetworkGraphInstance>();
 const selectedNodes = ref<string[]>([]);
 
-const selectedNode = computed<SchemaNode | null>(() =>
+const selectedNode = computed<Node | null>(() =>
 	selectedNodes.value.length ? graph.value.nodes[selectedNodes.value[0]] : null,
 );
 
@@ -172,13 +174,19 @@ const activeEdges = computed(() =>
 	),
 );
 
-function getForegroundColor(item: SchemaNode | Edge) {
-	return isGraphicActive(item)
+function getNodeColor(node: Node) {
+	return isGraphicActive(node)
+		? (node.color ?? GraphicColor.Foreground)
+		: GraphicColor.Disabled;
+}
+
+function getEdgeColor(edge: Edge) {
+	return isGraphicActive(edge)
 		? GraphicColor.Foreground
 		: GraphicColor.Disabled;
 }
 
-function isGraphicActive(item: SchemaNode | Edge) {
+function isGraphicActive(item: Node | Edge) {
 	return (
 		!activeEdges.value.length ||
 		('name' in item
@@ -261,7 +269,14 @@ function isGraphicActive(item: SchemaNode | Edge) {
 					</span>
 				</div>
 				<div>
-					<h3>{{ selectedNode.name }}</h3>
+					<div class="flex flex-row items-center gap-2">
+						<h3>{{ selectedNode.name }}</h3>
+						<div
+							v-if="selectedNode.color"
+							class="size-4 rounded-full"
+							:style="{ backgroundColor: selectedNode.color }"
+						></div>
+					</div>
 					<p class="text-sm">
 						<template
 							v-for="chunk in selectedNode.description?.split(' ')"

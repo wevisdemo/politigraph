@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { schemeTableau10 } from 'd3-scale-chromatic';
 import {
 	defineConfigs,
 	type Edges,
@@ -11,6 +12,7 @@ import {
 } from 'v-network-graph/lib/force-layout';
 
 interface GraphqlObject {
+	__typename: string;
 	id: string;
 	[key: string]: string | GraphqlObject[];
 }
@@ -50,13 +52,24 @@ const configs = defineConfigs<GraphqlObject>({
 	},
 	node: {
 		selectable: true,
+		normal: {
+			color: getObjectColor,
+		},
+		hover: {
+			color: getObjectColor,
+		},
 		label: {
 			text: (obj) => obj.id,
 		},
 	},
 	edge: {
+		normal: {
+			width: 1,
+			color: '#bbb',
+		},
 		hover: {
-			width: 2,
+			width: 1,
+			color: '#bbb',
 		},
 	},
 });
@@ -69,18 +82,29 @@ const { data: response, status } = await useFetch<{
 		'Content-Type': 'application/json',
 	},
 	body: JSON.stringify({
-		query: props.query,
+		// insert __typename field in every object
+		query: props.query.replaceAll('{', '{ __typename'),
 		variables: props.variables,
 	}),
 	server: false,
 	lazy: true,
 });
 
+const { data: schema } = await useFetch('/schema.json');
+
 const graph = computed(() => {
 	const nodes: Record<string, GraphqlObject> = {};
 	const edges: Edges = {};
 
 	if (!response.value) {
+		return { nodes, edges };
+	}
+
+	const initialNodes = Object.values(response.value.data).find(
+		(value) => typeof value !== 'string',
+	);
+
+	if (!initialNodes) {
 		return { nodes, edges };
 	}
 
@@ -106,8 +130,6 @@ const graph = computed(() => {
 		});
 	}
 
-	const initialNodes = Object.values(response.value.data)[0];
-
 	initialNodes.forEach(collectGraphItems);
 	selectedNodes.value = [initialNodes[0].id];
 
@@ -117,9 +139,34 @@ const graph = computed(() => {
 const graphElement = ref<VNetworkGraphInstance>();
 const selectedNodes = ref<string[]>([]);
 
-const selectedNode = computed<GraphqlObject | null>(() =>
-	selectedNodes.value.length ? graph.value.nodes[selectedNodes.value[0]] : null,
+const selectedNode = computed(() => {
+	if (!selectedNodes.value.length) return null;
+
+	const node = graph.value.nodes[selectedNodes.value[0]];
+
+	return {
+		schema: typenameSchemaMap.value.get(node.__typename)!,
+		fields: Object.entries(node).filter(([key]) => key !== '__typename'),
+	};
+});
+
+const typenameSchemaMap = computed(
+	() =>
+		new Map(
+			schema.value?.objects.map((obj, i) => [
+				obj.name,
+				{
+					...obj,
+					description: obj.description?.split('อ้างอิงจาก').at(0)?.trim(),
+					color: schemeTableau10[i],
+				},
+			]),
+		),
 );
+
+function getObjectColor({ __typename }: GraphqlObject) {
+	return typenameSchemaMap.value?.get(__typename)?.color ?? '#222';
+}
 </script>
 
 <template>
@@ -132,17 +179,50 @@ const selectedNode = computed<GraphqlObject | null>(() =>
 				:edges="graph.edges"
 				v-model:selected-nodes="selectedNodes"
 			/>
+			<template v-slot:legend>
+				<GraphLegend
+					v-for="obj in typenameSchemaMap
+						.values()
+						.filter((obj) =>
+							Object.values(graph.nodes).some((n) => n.__typename === obj.name),
+						)"
+					:term="obj.name"
+					:definition="obj.description"
+					:borderColor="obj.color"
+					:backgroundColor="obj.color"
+					circle
+				/>
+			</template>
 			<template v-slot:sidebar>
-				<div v-if="selectedNode" class="flex flex-1 flex-col gap-2">
-					<h5>Fields</h5>
+				<template v-if="selectedNode">
+					<cv-tag
+						small
+						:label="selectedNode.schema.name"
+						class="m-0 place-self-start font-bold text-white"
+						:style="{ backgroundColor: selectedNode.schema.color }"
+					/>
+					<p class="text-sm text-gray-400">
+						{{ selectedNode.schema.description }}
+					</p>
 					<ul class="flex flex-col">
 						<li
-							v-for="[key, value] in Object.entries(selectedNode)"
+							v-for="[key, value] in selectedNode.fields"
 							:key="key"
 							class="border-t border-gray-700 py-2 leading-normal"
 						>
-							<span class="font-bold">{{ key }}</span
-							>:
+							<cv-definition-tooltip
+								alignment="start"
+								:term="key"
+								:definition="
+									selectedNode.schema.fields.find((field) => field.name === key)
+										?.description
+								"
+							>
+								<template v-slot:term>
+									<span class="font-bold text-white">{{ key }}:</span>
+								</template>
+							</cv-definition-tooltip>
+							{{ ' ' }}
 							<span v-if="value === null" class="text-gray-400 italic"
 								>null</span
 							>
@@ -165,7 +245,7 @@ const selectedNode = computed<GraphqlObject | null>(() =>
 						*Only interesting fields are shown. Full list can be found in the
 						<a href="/docs/schema" class="text-blue-400">schema</a> page
 					</p>
-				</div>
+				</template>
 				<p v-else class="m-auto text-center text-sm text-gray-400 italic">
 					Select a data node to see more details
 				</p>
