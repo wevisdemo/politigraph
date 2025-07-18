@@ -82,21 +82,27 @@ const configs = defineConfigs<GraphqlObject>({
 	},
 });
 
-const { data: response, status } = await useFetch<{
+const { data: response, status } = await useAsyncData<{
 	data: Record<string, GraphqlObject[]>;
-}>('/graphql', {
-	method: 'POST',
-	headers: {
-		'Content-Type': 'application/json',
+}>(
+	`${props.query}-${props.variables}`,
+	() =>
+		$fetch('/graphql', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify({
+				// insert __typename field in every object that have an id
+				query: props.query.replaceAll(' id ', ' __typename id '),
+				variables: props.variables,
+			}),
+		}),
+	{
+		server: false,
+		lazy: true,
 	},
-	body: JSON.stringify({
-		// insert __typename field in every object that have an id
-		query: props.query.replaceAll(' id ', ' __typename id '),
-		variables: props.variables,
-	}),
-	server: false,
-	lazy: true,
-});
+);
 
 const { data: schema } = await useFetch('/schema.json');
 
