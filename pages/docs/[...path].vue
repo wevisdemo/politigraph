@@ -70,7 +70,7 @@ onMounted(() => {
 					:value="content"
 					class="markdown-content flex h-full flex-col justify-items-stretch gap-6"
 				/>
-				<div class="flex flex-row">
+				<div class="flex flex-row pt-2 pb-12">
 					<a v-if="surroundings?.[0]" :href="surroundings?.[0].path">
 						<CvLink><ChevronLeft16 />{{ surroundings?.[0].title }}</CvLink>
 					</a>

@@ -1,5 +1,5 @@
 .markdown-content {
-	img {
+	> img {
 		@apply mx-auto;
 	}
 
@@ -9,9 +9,17 @@
 
 	pre {
 		@apply overflow-hidden rounded bg-gray-800 px-4;
+
+		code {
+			@apply rounded-none border-none bg-gray-800;
+		}
 	}
 
-	pre > code {
-		@apply rounded-none border-none bg-gray-800;
+	> ol {
+		@apply ml-4 list-decimal text-[1rem] leading-normal;
+	}
+
+	> ul {
+		@apply ml-4 list-disc text-[1rem] leading-normal;
 	}
 }

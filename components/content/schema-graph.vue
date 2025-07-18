@@ -221,18 +221,18 @@ function isGraphicActive(item: Node | Edge) {
 		<template v-slot:legend>
 			<GraphLegend
 				term="Object"
-				definition="A type of the actual node in the dataset"
+				definition="ประเภทของ node ข้อมูลจริง"
 				:borderColor="GraphicColor.Foreground"
 				:backgroundColor="GraphicColor.Foreground"
 			/>
 			<GraphLegend
 				term="Interface"
-				definition="An abstracted type used as a blueprint for other object types"
+				definition="ประเภทที่เป็นข้อกำหนดพื้นฐานให้ประเภทอื่นๆ นำไปใช้ต่อ"
 				:borderColor="GraphicColor.Foreground"
 			/>
 			<GraphLegend
 				term="Union"
-				definition="A set of possible types"
+				definition="เซ็ตของประเภทที่เป็นไปได้"
 				:borderColor="GraphicColor.Foreground"
 				dashed
 			/>

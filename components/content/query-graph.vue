@@ -61,6 +61,7 @@ const configs = defineConfigs<GraphqlObject>({
 			color: getObjectColor,
 		},
 		label: {
+			fontSize: 12,
 			text: (obj) => {
 				const label = getObjectLabel(obj);
 				return label.length > MAX_GRAPH_LABEL_LENGTH
