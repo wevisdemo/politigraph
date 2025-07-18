@@ -20,6 +20,6 @@ defineProps<{
 				borderStyle: dashed ? 'dashed' : 'solid',
 			}"
 		></div>
-		<cv-definition-tooltip :term :definition />
+		<cv-definition-tooltip :term :definition alignment="start" />
 	</div>
 </template>

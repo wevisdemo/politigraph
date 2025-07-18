@@ -41,7 +41,7 @@ function toggleMaximize() {
 			@click="toggleMaximize"
 		/>
 		<div
-			class="absolute bottom-2 left-2 flex flex-col gap-1 text-xs text-gray-700"
+			class="absolute bottom-2 left-2 flex flex-row gap-2 text-xs text-gray-700"
 		>
 			<slot name="legend" />
 		</div>

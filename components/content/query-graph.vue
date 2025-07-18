@@ -24,6 +24,8 @@ interface Edge {
 	label?: string;
 }
 
+const MAX_GRAPH_LABEL_LENGTH = 30;
+
 const props = defineProps<{
 	query: string;
 	variables: Record<string, unknown>;
@@ -59,7 +61,12 @@ const configs = defineConfigs<GraphqlObject>({
 			color: getObjectColor,
 		},
 		label: {
-			text: (obj) => obj.id,
+			text: (obj) => {
+				const label = getObjectLabel(obj);
+				return label.length > MAX_GRAPH_LABEL_LENGTH
+					? `${label.slice(0, MAX_GRAPH_LABEL_LENGTH).trim()}...`
+					: label;
+			},
 		},
 	},
 	edge: {
@@ -82,8 +89,8 @@ const { data: response, status } = await useFetch<{
 		'Content-Type': 'application/json',
 	},
 	body: JSON.stringify({
-		// insert __typename field in every object
-		query: props.query.replaceAll('{', '{ __typename'),
+		// insert __typename field in every object that have an id
+		query: props.query.replaceAll(' id ', ' __typename id '),
 		variables: props.variables,
 	}),
 	server: false,
@@ -146,7 +153,9 @@ const selectedNode = computed(() => {
 
 	return {
 		schema: typenameSchemaMap.value.get(node.__typename)!,
-		fields: Object.entries(node).filter(([key]) => key !== '__typename'),
+		fields: Object.entries(node).filter(
+			([key]) => !['__typename', 'id'].includes(key),
+		),
 	};
 });
 
@@ -166,6 +175,26 @@ const typenameSchemaMap = computed(
 
 function getObjectColor({ __typename }: GraphqlObject) {
 	return typenameSchemaMap.value?.get(__typename)?.color ?? '#222';
+}
+
+function getObjectLabel(obj: GraphqlObject) {
+	return (obj.name ??
+		obj.role ??
+		obj.nickname ??
+		obj.title ??
+		obj.note ??
+		obj.option ??
+		(obj.firstname
+			? `${obj.firstname} ${obj.lastname}`
+			: obj.start_date
+				? `${getShortDateString(obj.start_date)} - ${getShortDateString(obj.end_date)}`
+				: '')) as string;
+}
+
+function getShortDateString(date: unknown) {
+	return typeof date === 'string'
+		? new Date(date).toLocaleDateString('TH-th', { dateStyle: 'short' })
+		: 'ปัจจุบัน';
 }
 </script>
 
@@ -231,12 +260,12 @@ function getObjectColor({ __typename }: GraphqlObject) {
 							</template>
 							<ul v-else>
 								<li v-for="node in value" class="ml-4 list-disc">
-									<button
-										class="cursor-pointer text-blue-400"
+									<span
+										class="cursor-pointer text-left text-blue-400"
 										@click="selectedNodes = [node.id]"
 									>
-										{{ node.id }}
-									</button>
+										{{ getObjectLabel(node) }}
+									</span>
 								</li>
 							</ul>
 						</li>
