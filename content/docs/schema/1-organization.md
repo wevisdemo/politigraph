@@ -16,4 +16,4 @@
 
 พรรคการเมืองก็ถูกจัดเป็น **`Organization`** ที่มี `classification` เป็น _POLITICAL_PARTY_
 
-<QueryGraph query="query Organizations($where: OrganizationWhere) { organizations(where: $where) { id name color founding_date dissolution_date } }" :variables='{ "where": { "classification_EQ": "POLITICAL_PARTY" } }'></QueryGraph>
+<QueryGraph query="query Organizations($where: OrganizationWhere) { organizations(where: $where) { id name color } }" :variables='{ "where": { "classification_EQ": "POLITICAL_PARTY" } }'></QueryGraph>
