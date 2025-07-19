@@ -160,9 +160,7 @@ const selectedNode = computed(() => {
 
 	return {
 		schema: typenameSchemaMap.value.get(node.__typename)!,
-		fields: Object.entries(node).filter(
-			([key]) => !['__typename', 'id'].includes(key),
-		),
+		fields: Object.entries(node).filter(([key]) => key !== '__typename'),
 	};
 });
 

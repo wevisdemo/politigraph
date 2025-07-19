@@ -36,41 +36,46 @@ onMounted(() => {
 
 <template>
 	<div class="flex min-h-dvh flex-row">
-		<div
-			class="flex w-72 flex-col gap-4 border-r border-gray-300 bg-gray-100 p-6"
-		>
-			<a href="/">&lt; Back</a>
-			<h1 class="text-2xl"><span class="font-bold">Politigraph</span> Docs</h1>
-			<ul class="flex flex-col gap-3">
-				<li
-					v-for="parent in navigations?.[0].children"
-					:key="parent.path"
-					class="flex flex-col gap-3"
-				>
-					<span v-if="parent.path === route.path">{{ parent.title }}</span>
-					<a v-else :href="parent.path">{{ parent.title }}</a>
-					<ul v-if="parent.children" class="ml-4 flex list-disc flex-col gap-3">
-						<li
-							v-for="child in parent.children.filter(
-								(c) => c.title !== parent.title,
-							)"
-							:key="child.path"
+		<div class="relative w-72 border-r border-gray-300 bg-gray-100">
+			<div class="sticky top-0 flex flex-col gap-4 p-6">
+				<a href="/">&lt; Back</a>
+				<h1 class="text-2xl">
+					<span class="font-bold">Politigraph</span> Docs
+				</h1>
+				<ul class="flex flex-col gap-3">
+					<li
+						v-for="parent in navigations?.[0].children"
+						:key="parent.path"
+						class="flex flex-col gap-3"
+					>
+						<span v-if="parent.path === route.path">{{ parent.title }}</span>
+						<a v-else :href="parent.path">{{ parent.title }}</a>
+						<ul
+							v-if="parent.children"
+							class="ml-4 flex list-disc flex-col gap-3"
 						>
-							<span v-if="child.path === route.path">{{ child.title }}</span>
-							<a v-else :href="child.path">{{ child.title }}</a>
-						</li>
-					</ul>
-				</li>
-			</ul>
+							<li
+								v-for="child in parent.children.filter(
+									(c) => c.title !== parent.title,
+								)"
+								:key="child.path"
+							>
+								<span v-if="child.path === route.path">{{ child.title }}</span>
+								<a v-else :href="child.path">{{ child.title }}</a>
+							</li>
+						</ul>
+					</li>
+				</ul>
+			</div>
 		</div>
 		<div class="flex flex-1 px-6 py-16">
-			<div class="mx-auto w-full max-w-screen-md">
+			<div class="mx-auto flex w-full max-w-screen-md flex-col gap-12">
 				<ContentRenderer
 					v-if="content"
 					:value="content"
 					class="markdown-content flex h-full flex-col justify-items-stretch gap-6"
 				/>
-				<div class="flex flex-row pt-2 pb-12">
+				<div class="flex flex-row">
 					<a v-if="surroundings?.[0]" :href="surroundings?.[0].path">
 						<CvLink><ChevronLeft16 />{{ surroundings?.[0].title }}</CvLink>
 					</a>
