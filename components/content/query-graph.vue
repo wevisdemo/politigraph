@@ -80,6 +80,14 @@ const configs = defineConfigs<GraphqlObject>({
 			width: 1,
 			color: '#bbb',
 		},
+		marker: {
+			source: {
+				type: 'none',
+			},
+			target: {
+				type: 'arrow',
+			},
+		},
 	},
 });
 
@@ -140,26 +148,25 @@ const graph = computed(() => {
 
 		Object.values(node).forEach((value) => {
 			if (Array.isArray(value)) {
-				const children = value
-					.filter(
-						(child) => !nodes[child.id] && !edges[`${child.id}->${node.id}`],
-					)
-					.sort((a, z) => a.id.localeCompare(z.id));
+				value
+					.sort((a, z) => a.id.localeCompare(z.id))
+					.forEach((child, i) => {
+						edges[`${node.id}->${child.id}`] = {
+							source: node.id,
+							target: child.id,
+						};
 
-				children.forEach((child, i) => {
-					edges[`${node.id}->${child.id}`] = {
-						source: node.id,
-						target: child.id,
-					};
-					collectGraphItems(
-						child,
-						i,
-						children.length,
-						r + 100,
-						theta - coneSize / 2,
-						theta + coneSize / 2,
-					);
-				});
+						if (!nodes[child.id]) {
+							collectGraphItems(
+								child,
+								i,
+								value.length,
+								r + 100,
+								theta - coneSize / 2,
+								theta + coneSize / 2,
+							);
+						}
+					});
 			}
 		});
 	}

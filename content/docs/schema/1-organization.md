@@ -10,7 +10,7 @@
 - **วุฒิสภา (สว.)**: _HOUSE_OF_SENATE_
 - **คณะรัฐมนตรี (ครม.)**: _CABINET_
 
-<QueryGraph  query="query Query($where: OrganizationWhere) { organizations(where: $where) { id name classification founding_date dissolution_date children { id name classification description founding_date dissolution_date parents { id name } } } }" :variables='{ "where": { "classification_EQ": "PARLIAMENT" } }'></QueryGraph>
+<QueryGraph  query="query Query($where: OrganizationWhere) { organizations(where: $where) { id name classification founding_date dissolution_date children { id name classification description founding_date dissolution_date } } }" :variables='{ "where": { "classification_EQ": "PARLIAMENT" } }'></QueryGraph>
 
 ## พรรคการเมือง
 
