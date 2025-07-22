@@ -10,9 +10,9 @@ defineProps<{
 </script>
 
 <template>
-	<div class="flex flex-row gap-1">
+	<div class="flex flex-row items-center gap-1">
 		<div
-			class="size-4 rounded border"
+			class="size-3 rounded border"
 			:class="circle ? 'rounded-full' : 'rounded'"
 			:style="{
 				borderColor,
