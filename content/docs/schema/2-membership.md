@@ -24,4 +24,4 @@
 
 เรามองว่ามี "พรรคฝ่ายรัฐบาล" และ "พรรคฝ่ายค้าน" ก็คือตำแหน่ง **`Post`** ใน ครม. ที่มีพรรคการเมืองเป็นสมาชิก เนื่องฝ่ายของพรรคจะยึดโยงกับสมัยของ ครม. เสมอ
 
-<QueryGraph query="query Posts($where: PostWhere) { posts(where: $where) { id role organizations { id name } memberships { id start_date end_date members { ... on Organization { id name } } } } }" :variables='{ "where": { "role_STARTS_WITH": "พรรคฝ่าย", "organizations_SOME": { "id_EQ": "คณะรัฐมนตรี-63" } } }'></QueryGraph>
+<QueryGraph query="query Organizations($where: OrganizationWhere, $postsWhere2: PostWhere) { organizations(where: $where) { id name posts(where: $postsWhere2) { id role memberships { id start_date end_date members { ... on Organization { id name } } } } } }" :variables='{ "where": { "id_EQ": "คณะรัฐมนตรี-63" }, "postsWhere2": { "role_STARTS_WITH": "พรรคฝ่าย" } }'></QueryGraph>

@@ -3,6 +3,7 @@ import { schemeTableau10 } from 'd3-scale-chromatic';
 import {
 	defineConfigs,
 	type Edges,
+	type Layouts,
 	type VNetworkGraphInstance,
 } from 'v-network-graph';
 import {
@@ -47,7 +48,7 @@ const configs = defineConfigs<GraphqlObject>({
 							.distance(100),
 					)
 					.force('charge', d3.forceManyBody())
-					.force('collide', d3.forceCollide(50).strength(0.2))
+					.force('collide', d3.forceCollide(30).strength(0.2))
 					.force('center', d3.forceCenter().strength(0.05))
 					.alphaMin(0.001),
 		}),
@@ -109,6 +110,7 @@ const { data: schema } = await useFetch('/schema.json');
 const graph = computed(() => {
 	const nodes: Record<string, GraphqlObject> = {};
 	const edges: Edges = {};
+	const layouts: Layouts = { nodes: {} };
 
 	if (!response.value) {
 		return { nodes, edges };
@@ -122,32 +124,52 @@ const graph = computed(() => {
 		return { nodes, edges };
 	}
 
-	function collectGraphItems(node: GraphqlObject) {
-		if (nodes[node.id]) return;
+	function collectGraphItems(
+		node: GraphqlObject,
+		siblingIndex: number,
+		siblingCount: number,
+		r = 1,
+		minTheta = 0,
+		maxTheta = 2 * Math.PI,
+	) {
+		const coneSize = (maxTheta - minTheta) / siblingCount;
+		const theta = minTheta + coneSize * siblingIndex;
 
 		nodes[node.id] = node;
+		layouts.nodes[node.id] = { x: r * Math.cos(theta), y: r * Math.sin(theta) };
 
 		Object.values(node).forEach((value) => {
 			if (Array.isArray(value)) {
-				value
-					.sort((a, z) => a.id.localeCompare(z.id))
-					.forEach((child) => {
-						if (edges[`${child.id}->${node.id}`]) return;
+				const children = value
+					.filter(
+						(child) => !nodes[child.id] && !edges[`${child.id}->${node.id}`],
+					)
+					.sort((a, z) => a.id.localeCompare(z.id));
 
-						edges[`${node.id}->${child.id}`] = {
-							source: node.id,
-							target: child.id,
-						};
-						collectGraphItems(child);
-					});
+				children.forEach((child, i) => {
+					edges[`${node.id}->${child.id}`] = {
+						source: node.id,
+						target: child.id,
+					};
+					collectGraphItems(
+						child,
+						i,
+						children.length,
+						r + 100,
+						theta - coneSize / 2,
+						theta + coneSize / 2,
+					);
+				});
 			}
 		});
 	}
 
-	initialNodes.forEach(collectGraphItems);
+	initialNodes.forEach((node, i) =>
+		collectGraphItems(node, i, initialNodes.length),
+	);
 	selectedNodes.value = [initialNodes[0].id];
 
-	return { nodes, edges };
+	return { nodes, edges, layouts };
 });
 
 const graphElement = ref<VNetworkGraphInstance>();
@@ -211,6 +233,7 @@ function getShortDateString(date: unknown) {
 				:configs
 				:nodes="graph.nodes"
 				:edges="graph.edges"
+				:layouts="graph.layouts"
 				v-model:selected-nodes="selectedNodes"
 			/>
 			<template v-slot:legend>
