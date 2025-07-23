@@ -200,24 +200,26 @@ function isGraphicActive(item: Node | Edge) {
 
 <template>
 	<GraphBaseView :graphElement>
-		<v-network-graph
-			ref="graphElement"
-			:configs
-			:nodes="graph.nodes"
-			:edges="graph.edges"
-			:layouts="graph.layouts"
-			v-model:selected-nodes="selectedNodes"
-			#edge-label="{ edge, ...slotProps }"
-		>
-			<v-edge-label
-				:text="edge.label"
-				align="center"
-				vertical-align="above"
-				font-size="10"
-				class="relative"
-				v-bind="slotProps"
-			/>
-		</v-network-graph>
+		<ClientOnly>
+			<v-network-graph
+				ref="graphElement"
+				:configs
+				:nodes="graph.nodes"
+				:edges="graph.edges"
+				:layouts="graph.layouts"
+				v-model:selected-nodes="selectedNodes"
+				#edge-label="{ edge, ...slotProps }"
+			>
+				<v-edge-label
+					:text="edge.label"
+					align="center"
+					vertical-align="above"
+					font-size="10"
+					class="relative"
+					v-bind="slotProps"
+				/>
+			</v-network-graph>
+		</ClientOnly>
 		<template v-slot:legend>
 			<GraphLegend
 				term="Object"
@@ -344,7 +346,7 @@ function isGraphicActive(item: Node | Edge) {
 				</ul>
 			</template>
 			<p v-else class="m-auto text-center text-sm text-gray-400 italic">
-				Select any entity to see more details
+				เลือก entity ใดๆ เพื่อแสดงข้อมูลเพิ่มเติม
 			</p>
 		</template>
 	</GraphBaseView>

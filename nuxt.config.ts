@@ -21,7 +21,7 @@ export default defineNuxtConfig({
 			markdown: {
 				highlight: {
 					theme: 'catppuccin-mocha',
-					langs: ['typescript'],
+					langs: ['graphql', 'json', 'typescript'],
 				},
 			},
 		},

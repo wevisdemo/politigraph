@@ -3,16 +3,9 @@
 		@apply mx-auto;
 	}
 
-	code {
+	p code,
+	li code {
 		@apply rounded border border-gray-200 bg-gray-100 px-1 font-mono text-sm text-red-600;
-	}
-
-	pre {
-		@apply overflow-hidden rounded bg-gray-800 px-4;
-
-		code {
-			@apply rounded-none border-none bg-gray-800;
-		}
 	}
 
 	> ol {
@@ -21,5 +14,13 @@
 
 	> ul {
 		@apply ml-4 list-disc text-[1rem] leading-normal;
+	}
+
+	.cv-inline-notification {
+		@apply my-0;
+
+		.bx--inline-notification__close-button {
+			@apply hidden;
+		}
 	}
 }

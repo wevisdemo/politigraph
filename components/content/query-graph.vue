@@ -1,4 +1,7 @@
 <script setup lang="ts">
+//@ts-ignore
+import { Code16, DataVis_116, Launch16 } from '@carbon/icons-vue';
+import { useFormattedGraphqlCode } from '~/utils/graphql/formatter';
 import { schemeTableau10 } from 'd3-scale-chromatic';
 import {
 	defineConfigs,
@@ -57,6 +60,7 @@ const configs = defineConfigs<GraphqlObject>({
 		selectable: true,
 		normal: {
 			color: getObjectColor,
+			radius: 12,
 		},
 		hover: {
 			color: getObjectColor,
@@ -111,6 +115,12 @@ const { data: response, status } = await useAsyncData<{
 		server: false,
 		lazy: true,
 	},
+);
+
+const { data: formattedCode } = await useFormattedGraphqlCode(
+	props.query,
+	props.variables,
+	response,
 );
 
 const { data: schema } = await useFetch('/schema.json');
@@ -179,6 +189,7 @@ const graph = computed(() => {
 	return { nodes, edges, layouts };
 });
 
+const isGraphView = ref(true);
 const graphElement = ref<VNetworkGraphInstance>();
 const selectedNodes = ref<string[]>([]);
 
@@ -235,15 +246,50 @@ function getShortDateString(date: unknown) {
 <template>
 	<div class="relative">
 		<GraphBaseView :graphElement>
-			<v-network-graph
-				ref="graphElement"
-				:configs
-				:nodes="graph.nodes"
-				:edges="graph.edges"
-				:layouts="graph.layouts"
-				v-model:selected-nodes="selectedNodes"
-			/>
-			<template v-slot:legend>
+			<template v-slot:control>
+				<cv-icon-button
+					:key="isGraphView"
+					size="small"
+					:kind="isGraphView ? 'secondary' : 'ghost'"
+					tipAlignment="start"
+					label="Graph View"
+					:icon="DataVis_116"
+					@click="isGraphView = true"
+				/>
+				<cv-icon-button
+					:key="isGraphView"
+					size="small"
+					:kind="isGraphView ? 'ghost' : 'secondary'"
+					class="rounded-br"
+					tipAlignment="start"
+					label="Query View"
+					:icon="Code16"
+					@click="isGraphView = false"
+				/>
+			</template>
+			<ClientOnly v-if="isGraphView">
+				<v-network-graph
+					ref="graphElement"
+					:configs
+					:nodes="graph.nodes"
+					:edges="graph.edges"
+					:layouts="graph.layouts"
+					v-model:selected-nodes="selectedNodes"
+				/>
+			</ClientOnly>
+			<div v-else class="flex flex-1 flex-col gap-1 overflow-scroll p-2 pt-10">
+				<p class="mt-4 font-bold">GraphQL Query</p>
+				<div v-html="formattedCode?.query"></div>
+				<p class="mt-3 font-bold">GraphQL Variables</p>
+				<div v-html="formattedCode?.variables"></div>
+				<a
+					href="/graphql"
+					target="_blank"
+					class="mt-3 flex flex-row items-center gap-1 self-center text-blue-600"
+					>เปิด GraphQL Playground <Launch16
+				/></a>
+			</div>
+			<template v-slot:legend v-if="isGraphView">
 				<GraphLegend
 					v-for="obj in typenameSchemaMap
 						.values()
@@ -258,7 +304,11 @@ function getShortDateString(date: unknown) {
 				/>
 			</template>
 			<template v-slot:sidebar>
-				<template v-if="selectedNode">
+				<template v-if="!isGraphView">
+					<p class="mt-2 font-bold">Response</p>
+					<div v-html="formattedCode?.response"></div>
+				</template>
+				<template v-else-if="selectedNode">
 					<cv-tag
 						small
 						:label="selectedNode.schema.name"
@@ -306,12 +356,12 @@ function getShortDateString(date: unknown) {
 						</li>
 					</ul>
 					<p class="mt-auto text-xs leading-tight text-gray-400 italic">
-						*Only interesting fields are shown. Full list can be found in the
-						<a href="/docs/schema" class="text-blue-400">schema</a> page
+						*แสดงแค่ nodes, properties, และ relationship ที่ query มาเท่านั้น
+						<a href="/docs/schema" class="text-blue-400">ดู schema แบบเต็ม</a>
 					</p>
 				</template>
 				<p v-else class="m-auto text-center text-sm text-gray-400 italic">
-					Select a data node to see more details
+					เลือก node เพื่อดูคำอธิบายและ properties
 				</p>
 			</template>
 		</GraphBaseView>
@@ -329,5 +379,17 @@ function getShortDateString(date: unknown) {
 
 td {
 	@apply border border-gray-600 px-2 py-1 leading-normal break-all;
+}
+
+::v-deep(.shiki) {
+	@apply w-auto overflow-scroll rounded px-2 py-1 font-mono text-sm;
+}
+
+::v-deep(.catppuccin-latte) {
+	@apply border border-gray-300;
+}
+
+::v-deep(.catppuccin-mocha) {
+	@apply border border-gray-700;
 }
 </style>
