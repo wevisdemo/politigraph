@@ -2,19 +2,22 @@
 
 [WIP] An open Thai political database
 
+To learn more about the data and API, visit the [documentations](https://politigraph.wevis.info/docs)
+
 ## 1. Stack
 
-- Nuxt
+- Nuxt + Nuxt Content
 - Better-Auth
 - GenQL
-- Neo4J + Apollo GraphQL Server
+- Neo4JGraphQL + Apollo GraphQL Server
 
 ## 2. Routes and Deployment
 
 Main routes of the web application:
 
 - `/` A landing page for public
-- `/admin` admin panel for managing politigraph data (required an account)
+- `/admin` Admin panel for managing politigraph data (required an account)
+- `/docs` Public documentations. Auto generated from markdown files in `/content/docs` folder.
 - `/graphql` GraphQL endpoint and playground for querying and updating data.
 
 https://politigraph.wevis.info will be deployed through GitHub Actions every time the repository code has updated.
