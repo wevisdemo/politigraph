@@ -125,10 +125,14 @@ const router = useRouter();
 						:key="row.id"
 						:value="row.id"
 						v-for="row in data.voteEvents"
-						@click="() => router.push(`./vote-events/${row.id}`)"
-						class="cursor-pointer"
 					>
-						<cv-data-table-cell>{{ row.title }}</cv-data-table-cell>
+						<cv-data-table-cell
+							><a
+								:href="`./vote-events/${row.id}`"
+								class="w-full text-inherit hover:underline"
+								>{{ row.title }}</a
+							></cv-data-table-cell
+						>
 						<cv-data-table-cell class="text-nowrap">{{
 							row.start_date
 						}}</cv-data-table-cell>
