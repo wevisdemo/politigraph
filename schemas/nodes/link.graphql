@@ -3,6 +3,10 @@
 """
 type Link @node {
 	"""
+	ID แบบสุ่ม
+	"""
+	id: ID! @id
+	"""
 	URL
 	"""
 	url: String!

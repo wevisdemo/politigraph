@@ -2,6 +2,7 @@
 //@ts-ignore
 import { TrashCan16 } from '@carbon/icons-vue';
 import { useForm } from '@tanstack/vue-form';
+import type { Link } from '~/.genql';
 import { graphqlClient } from '~/utils/graphql/client';
 import { validateVotes } from '~/utils/votes/validator';
 import { diff } from 'radash';
@@ -38,6 +39,7 @@ const { data: voteEventData, refresh: refreshVoteEvent } = await useAsyncData(
 					name: true,
 				},
 				links: {
+					id: true,
 					note: true,
 					url: true,
 					__args: {
@@ -91,10 +93,6 @@ const defaultValues = reactive({
 	publish_status: computed(() => voteEventData?.value?.publish_status),
 });
 
-const isPublish = computed(
-	() => voteEventData.value?.publish_status === 'PUBLISHED',
-);
-
 const voteEventFormInput = useForm({
 	defaultValues,
 	onSubmit: async ({ value }) => {
@@ -111,9 +109,24 @@ const voteEventFormInput = useForm({
 			);
 		}
 
-		const linkDelete: string[] = defaultValues.links.map((d) => d.url);
-		const linkCreate: { node: { note: string; url: string } }[] =
-			value.links.map((d) => ({ node: { note: d.note ?? '', url: d.url } }));
+		const deletedLinkIds: string[] = defaultValues.links
+			.filter(
+				(oldLink) => !value.links.some((newLink) => oldLink.id === newLink.id),
+			)
+			.map((link) => link.id);
+		const createdLinks: { node: Pick<Link, 'note' | 'url'> }[] = value.links
+			.filter(
+				(newLink) =>
+					!defaultValues.links.some((oldLink) => oldLink.id === newLink.id),
+			)
+			.map(({ note, url }) => ({ node: { note, url } }));
+		const updatedLinks = value.links.filter((newLink) =>
+			defaultValues.links.some(
+				(oldLink) =>
+					oldLink.id === newLink.id &&
+					(oldLink.note !== newLink.note || oldLink.url !== newLink.url),
+			),
+		);
 
 		await graphqlClient.mutation({
 			updateVoteEvents: {
@@ -164,12 +177,12 @@ const voteEventFormInput = useForm({
 									{
 										where: {
 											node: {
-												url_IN: linkDelete,
+												id_IN: deletedLinkIds,
 											},
 										},
 									},
 								],
-								create: linkCreate,
+								create: createdLinks,
 							},
 						],
 					},
@@ -179,6 +192,27 @@ const voteEventFormInput = useForm({
 				},
 			},
 		});
+
+		await Promise.all(
+			updatedLinks.map(({ id, ...data }) =>
+				graphqlClient.mutation({
+					updateLinks: {
+						__args: {
+							where: {
+								id_EQ: id,
+							},
+							update: {
+								note_SET: data.note,
+								url_SET: data.url,
+							},
+						},
+						links: {
+							id: true,
+						},
+					},
+				}),
+			),
+		);
 
 		openSuccessToastNotification();
 		refreshVoteEvent();
@@ -413,15 +447,13 @@ function openSuccessToastNotification() {
 							<voteEventFormInput.Field name="links">
 								<template v-slot="{ field }">
 									<div
-										v-for="(_, i) of field.state.value"
+										v-for="({ id }, i) of field.state.value"
 										class="flex flex-col gap-3"
+										:key="id ?? i"
 									>
-										<voteEventFormInput.Field
-											:key="i"
-											:name="`links[${i}].note`"
-										>
+										<voteEventFormInput.Field :name="`links[${i}].note`">
 											<template v-slot="{ field: subField }">
-												<div class="flex flex-row justify-between">
+												<div class="flex flex-row items-center justify-between">
 													<h6>{{ `Link ${i + 1}` }}</h6>
 													<cv-button
 														@click="field.removeValue(i)"
@@ -439,10 +471,7 @@ function openSuccessToastNotification() {
 												</cv-text-input>
 											</template>
 										</voteEventFormInput.Field>
-										<voteEventFormInput.Field
-											:key="i"
-											:name="`links[${i}].url`"
-										>
+										<voteEventFormInput.Field :name="`links[${i}].url`">
 											<template v-slot="{ field: subField }">
 												<cv-text-input
 													label="URL"
@@ -457,7 +486,9 @@ function openSuccessToastNotification() {
 									<cv-button
 										default="Add Another Item"
 										kind="tertiary"
-										@click="() => field.pushValue({ note: '', url: '' })"
+										@click="
+											() => field.pushValue({ id: '', note: '', url: '' })
+										"
 										>Add a link</cv-button
 									>
 								</template>
