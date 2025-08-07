@@ -47,6 +47,7 @@ const isPublished = computed(() => props.publishStatus === 'PUBLISHED');
 				v-if="originalDocumentUrl"
 				:href="originalDocumentUrl"
 				rel="noopener noreferrer"
+				target="_blank"
 			>
 				<cv-button :icon="DocumentView16" kind="tertiary">
 					View Original
