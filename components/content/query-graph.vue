@@ -392,4 +392,8 @@ td {
 ::v-deep(.catppuccin-mocha) {
 	@apply border border-gray-700;
 }
+
+::v-deep(.v-ng-canvas) {
+	@apply min-h-80;
+}
 </style>

@@ -35,9 +35,9 @@ onMounted(() => {
 </script>
 
 <template>
-	<div class="flex min-h-dvh flex-row">
-		<div class="relative w-72 border-r border-gray-300 bg-gray-100">
-			<div class="sticky top-0 flex flex-col gap-4 p-6">
+	<div class="flex min-h-dvh flex-col md:flex-row">
+		<div class="relative border-r border-gray-300 bg-gray-100 md:w-72">
+			<div class="sticky top-0 flex flex-col gap-4 p-3 md:p-6">
 				<a href="/">&lt; Back</a>
 				<h1 class="text-2xl">
 					<span class="font-bold">Politigraph</span> Docs
@@ -68,7 +68,7 @@ onMounted(() => {
 				</ul>
 			</div>
 		</div>
-		<div class="flex flex-1 px-6 py-16">
+		<div class="flex flex-1 px-3 py-6 md:px-6 md:py-16">
 			<div class="mx-auto flex w-full max-w-screen-md flex-col gap-12">
 				<ContentRenderer
 					v-if="content"
