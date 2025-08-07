@@ -2,32 +2,23 @@
 import type { PublishStatus, VoteEventType } from '~/.genql';
 
 const props = defineProps<{
-	filters: {
-		assembly: string;
-		status: string;
-		classification: string[];
-	};
 	statusOptions: { label: string; value: string }[];
 	classificationOption: { label: string; value: string }[];
 	assembliesOption: { label: string; value: string }[];
 }>();
 
-const emit = defineEmits<{
-	(e: 'update:filters', value: typeof props.filters): void;
-}>();
-
-watch(
-	props.filters,
-	(newVal) => {
-		emit('update:filters', newVal);
-	},
-	{ deep: true },
-);
+const filters = defineModel<{
+	assembly: string;
+	status: string;
+	classification: string[];
+}>('filters', { required: true });
 
 const resetFilter = () => {
-	props.filters.assembly = 'ALL';
-	props.filters.status = 'ALL';
-	props.filters.classification = [];
+	filters.value.assembly = 'ALL';
+	filters.value.status = 'ALL';
+	filters.value.classification = [
+		...props.classificationOption.map((c) => c.value),
+	];
 };
 </script>
 

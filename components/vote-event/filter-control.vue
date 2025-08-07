@@ -3,15 +3,9 @@ const props = defineProps<{
 	type: 'radio' | 'multi-select';
 	label: string;
 	options: { label: string; value: string }[];
-	modelValue: string | string[];
 }>();
 
-const emit = defineEmits(['update:modelValue']);
-
-const model = computed({
-	get: () => props.modelValue,
-	set: (val) => emit('update:modelValue', val),
-});
+const model = defineModel<string | string[]>();
 </script>
 
 <template>

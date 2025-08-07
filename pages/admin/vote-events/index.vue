@@ -23,6 +23,18 @@ const paginationData = ref({
 	pageSize: Number(route.query.pageSize ?? 50),
 });
 
+const statusOption = Object.values(enumPublishStatus);
+const classificationOption = [...Object.values(enumVoteEventType), '__NULL__'];
+const voteEventType: Record<string, string> = {
+	MP_1: 'สส. วาระที่ 1',
+	MP_2: 'สส. วาระที่ 2',
+	MP_3: 'สส. วาระที่ 3',
+	SENATE_1: 'สว. วาระที่ 1',
+	SENATE_2: 'สว. วาระที่ 2',
+	SENATE_3: 'สว. วาระที่ 3',
+	__NULL__: 'ไม่ระบุ',
+};
+
 const getStringQueryParam = (
 	val: LocationQueryValue | LocationQueryValue[] | undefined,
 	fallback: string = '',
@@ -34,8 +46,20 @@ const getStringQueryParam = (
 const getArrayQueryParam = (
 	val: LocationQueryValue | LocationQueryValue[] | undefined,
 ): string[] => {
-	if (Array.isArray(val)) return val.filter(Boolean) as string[];
-	return val ? [val] : [];
+	if (!val) return [];
+
+	if (Array.isArray(val)) {
+		if (val.includes('ALL')) {
+			return [...classificationOption];
+		}
+		return val.filter(Boolean) as string[];
+	}
+
+	if (val === 'ALL') {
+		return [...classificationOption];
+	}
+
+	return [val];
 };
 
 const filters = ref({
@@ -59,8 +83,26 @@ const { data } = await useAsyncData(
 			where.publish_status_EQ = filters.value.status;
 		}
 
-		if (filters.value.classification.length > 0) {
-			where.classification_IN = filters.value.classification;
+		const selectedClassifications = filters.value.classification || [];
+		const includeNull = selectedClassifications.includes('__NULL__');
+		const normalClassifications = selectedClassifications.filter(
+			(c) => c !== '__NULL__',
+		);
+
+		if (includeNull && normalClassifications.length > 0) {
+			where.OR = [
+				{ classification_IN: normalClassifications },
+				{ classification_EQ: null },
+			];
+		} else if (includeNull) {
+			where.classification_EQ = null;
+		} else if (normalClassifications.length > 0) {
+			where.classification_IN = normalClassifications;
+		} else {
+			return {
+				voteEvents: [],
+				totalCount: 0,
+			};
 		}
 
 		const { voteEvents, voteEventsConnection } = await graphqlClient.query({
@@ -146,16 +188,17 @@ const handlePageSizeChange = (pageSize: number) => {
 	paginationData.value.pageSize = pageSize;
 };
 
-const statusOption = Object.values(enumPublishStatus);
-const classificationOption = Object.values(enumVoteEventType);
-const voteEventType: Record<string, string> = {
-	MP_1: 'สส. วาระที่ 1',
-	MP_2: 'สส. วาระที่ 2',
-	MP_3: 'สส. วาระที่ 3',
-	SENATE_1: 'สว. วาระที่ 1',
-	SENATE_2: 'สว. วาระที่ 2',
-	SENATE_3: 'สว. วาระที่ 3',
-};
+onMounted(() => {
+	if (!route.query.classification) {
+		filters.value.classification = [...classificationOption];
+		router.replace({
+			query: {
+				...route.query,
+				classification: 'ALL',
+			},
+		});
+	}
+});
 
 watch(
 	[filters, paginationData],
@@ -168,9 +211,11 @@ watch(
 				status:
 					filters.value.status !== 'ALL' ? filters.value.status : undefined,
 				classification:
-					filters.value.classification.length > 0
-						? filters.value.classification
-						: undefined,
+					filters.value.classification.length === classificationOption.length
+						? 'ALL'
+						: filters.value.classification.length > 0
+							? filters.value.classification
+							: undefined,
 				page:
 					paginationData.value.page !== 1
 						? paginationData.value.page
