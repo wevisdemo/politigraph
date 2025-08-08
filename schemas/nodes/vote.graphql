@@ -3,7 +3,21 @@
 
 อ้างอิงจาก https://www.popoloproject.com/specs/vote.html
 """
-type Vote @node {
+type Vote
+	@node
+	@authorization(
+		filter: [
+			# Admin can see all votes
+			{ where: {} }
+			# Public can only see votes belong to published events
+			{
+				requireAuthentication: false
+				where: {
+					node: { vote_events_SOME: { publish_status_EQ: "PUBLISHED" } }
+				}
+			}
+		]
+	) {
 	"""
 	ID แบบสุ่ม
 	"""

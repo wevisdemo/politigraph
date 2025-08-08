@@ -28,6 +28,6 @@ Due to the large number of nodes and relationships in Politigraph, we need to ex
 
 For example, if we want to know _"Which vote event did อนุทิน ชาญวีรกูล were agreeing with?"_ We can query a node representing him and the relationships that lead to the votes he were agreeing and the vote event.
 
-<QueryGraph query="query People($where: PersonWhere, $votesWhere2: VoteWhere) { people(where: $where) { id firstname lastname image votes(where: $votesWhere2) { id option vote_events { id title nickname result start_date end_date } } } }" :variables='{ "where": { "id_EQ": "อนุทิน-ชาญวีรกูล" }, "votesWhere2": { "vote_events_ALL": { "publish_status_EQ": "PUBLISHED" }, "option_EQ": "เห็นด้วย" } }'></QueryGraph>
+<QueryGraph query="query People($where: PersonWhere, $votesWhere2: VoteWhere) { people(where: $where) { id firstname lastname image votes(where: $votesWhere2) { id option vote_events { id title nickname result start_date end_date } } } }" :variables='{ "where": { "id_EQ": "อนุทิน-ชาญวีรกูล" }, "votesWhere2": { "option_EQ": "เห็นด้วย" } }'></QueryGraph>
 
 We use [Neo4jGraphQL](https://neo4j.com/docs/graphql/) as a main tools to manage the database and creating API in the [GraphQL](https://graphql.org) standard. You can try building and calling a query at https://politigraph.wevis.info/graphql
