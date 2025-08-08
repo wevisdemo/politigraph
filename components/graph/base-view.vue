@@ -51,7 +51,7 @@ function toggleMaximize() {
 		</div>
 		<div
 			class="flex flex-col gap-3 overflow-y-scroll bg-gray-800 text-white"
-			:class="isMaximized ? 'flex-1 p-6' : 'rounded-lg p-3 md:h-128 md:w-84'"
+			:class="isMaximized ? 'flex-1 p-6' : 'rounded-lg p-3 md:h-128 md:w-72'"
 		>
 			<slot name="sidebar" />
 		</div>

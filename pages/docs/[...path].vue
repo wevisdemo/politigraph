@@ -4,8 +4,25 @@ import { ChevronLeft16, ChevronRight16 } from '@carbon/icons-vue';
 
 const route = useRoute();
 
-const { data: navigations } = await useAsyncData('docs-navigation', () =>
-	queryCollectionNavigation('docs'),
+const lang = computed(() =>
+	route.path.includes('/en')
+		? { current: 'en', change: 'th' }
+		: { current: 'th', change: 'en' },
+);
+
+const { data: navigations } = await useAsyncData(
+	`docs-navigation-${lang.value.current}`,
+	async () => {
+		const [rootNavigation] = await queryCollectionNavigation('docs').where(
+			'lang',
+			'=',
+			lang.value.current,
+		);
+
+		return lang.value.current === 'th'
+			? rootNavigation.children
+			: rootNavigation.children?.[0].children;
+	},
 );
 
 const { data: content } = await useAsyncData(route.path, () =>
@@ -14,9 +31,12 @@ const { data: content } = await useAsyncData(route.path, () =>
 
 const { data: surroundings } = await useAsyncData(
 	`${route.path}-surroundings`,
-	() => {
-		return queryCollectionItemSurroundings('docs', route.path);
-	},
+	() =>
+		queryCollectionItemSurroundings('docs', route.path).where(
+			'lang',
+			'=',
+			lang.value.current,
+		),
 );
 
 useSeoMeta({
@@ -38,13 +58,26 @@ onMounted(() => {
 	<div class="flex min-h-dvh flex-col md:flex-row">
 		<div class="relative border-r border-gray-300 bg-gray-100 md:w-72">
 			<div class="sticky top-0 flex flex-col gap-4 p-3 md:p-6">
-				<a href="/">&lt; Back</a>
+				<div class="flex flex-row justify-between">
+					<a href="/">&lt; Back</a>
+					<a
+						:href="
+							route.path.replace(
+								...((lang.current === 'en'
+									? ['/docs/en', '/docs']
+									: ['/docs', '/docs/en']) as [string, string]),
+							)
+						"
+					>
+						{{ lang.change.toUpperCase() }}
+					</a>
+				</div>
 				<h1 class="text-2xl">
 					<span class="font-bold">Politigraph</span> Docs
 				</h1>
 				<ul class="flex flex-col gap-3">
 					<li
-						v-for="parent in navigations?.[0].children"
+						v-for="parent in navigations"
 						:key="parent.path"
 						class="flex flex-col gap-3"
 					>

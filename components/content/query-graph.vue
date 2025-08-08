@@ -361,7 +361,7 @@ function getShortDateString(date: unknown) {
 					</p>
 				</template>
 				<p v-else class="m-auto text-center text-sm text-gray-400 italic">
-					เลือก node เพื่อดูคำอธิบายและ properties
+					Select any node to see the description and properties
 				</p>
 			</template>
 		</GraphBaseView>

@@ -15,7 +15,7 @@
 
 ## Node
 
-ยกตัวอย่างเช่น เรามีข้อมูลของ _"อนุทิน ชาญวีรกูล", "แพทองธาร ชินวัตร", "พิธา ลิ้มเจริญรัตน์"_ เป็น node ประเภท **`Person`** ดังนั้นทั้งสามคน จะมี property และ relationship มากกว่าตามที่กำหนดไว้ใน **`Person`** **schema** ไม่ได้ (แต่มีข้อมูลน้อยกว่า property ที่ถูกกำหนดไว้ได้ ในกรณีนี้ property นั้นๆ จะมีค่าเป็น _null_)
+ยกตัวอย่างเช่น เรามีข้อมูลของ _"อนุทิน ชาญวีรกูล", "แพทองธาร ชินวัตร", "พิธา ลิ้มเจริญรัตน์"_ เป็น node ประเภท **`Person`** ดังนั้นทั้งสามคน จะมี property และ relationship มากกว่าตามที่กำหนดไว้ใน **`Person`** **schema** ไม่ได้ (แต่ไม่มี property ที่ไม่ได้บังคับได้ ในกรณีนี้ property นั้นๆ จะมีค่าเป็น _null_)
 
 <QueryGraph query="query People($where: PersonWhere) { people(where: $where) { id prefix firstname lastname image birth_date educations previous_occupations }}" :variables='{ "where": { "id_IN": ["อนุทิน-ชาญวีรกูล", "แพทองธาร-ชินวัตร", "พิธา-ลิ้มเจริญรัตน์"] }}'></QueryGraph>
 

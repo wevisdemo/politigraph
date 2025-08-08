@@ -346,7 +346,7 @@ function isGraphicActive(item: Node | Edge) {
 				</ul>
 			</template>
 			<p v-else class="m-auto text-center text-sm text-gray-400 italic">
-				เลือก entity ใดๆ เพื่อแสดงข้อมูลเพิ่มเติม
+				Select an entity to see more details
 			</p>
 		</template>
 	</GraphBaseView>
