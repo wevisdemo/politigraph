@@ -17,6 +17,10 @@ type Person @node {
 	"""
 	firstname: String!
 	"""
+	ชื่อกลาง
+	"""
+	middlename: String
+	"""
 	นามสกุล
 	"""
 	lastname: String!
