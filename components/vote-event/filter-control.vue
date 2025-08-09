@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const props = defineProps<{
+defineProps<{
 	type: 'radio' | 'multi-select';
 	label: string;
 	options: { label: string; value: string }[];
