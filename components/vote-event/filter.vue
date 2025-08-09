@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import type { PublishStatus, VoteEventType } from '~/.genql';
-
 const props = defineProps<{
 	statusOptions: { label: string; value: string }[];
 	classificationOption: { label: string; value: string }[];

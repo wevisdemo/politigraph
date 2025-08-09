@@ -74,9 +74,11 @@ const { data } = await useAsyncData(
 		const where: Record<string, any> = {};
 
 		if (filters.value.assembly !== 'ALL') {
-			where.organizations_SOME = {
-				id_EQ: filters.value.assembly,
-			};
+			const assemblyIds = filters.value.assembly.split('|');
+			where.AND = [
+				{ organizations_ALL: { id_IN: assemblyIds } },
+				{ organizationsAggregate: { count_EQ: assemblyIds.length } },
+			];
 		}
 
 		if (filters.value.status !== 'ALL') {
@@ -167,12 +169,69 @@ const { data: organizations } = await useAsyncData(
 				id: true,
 				abbreviation: true,
 				term: true,
+				classification: true,
+				founding_date: true,
+				dissolution_date: true,
 			},
 		});
-		return result.organizations ?? [];
+
+		const orgs = result.organizations ?? [];
+		orgs.sort((a, b) => Number(b.term) - Number(a.term));
+		return orgs;
 	},
 	{ server: false },
 );
+
+const isOverlapping = (
+	orgA: { founding_date: string | null; dissolution_date: string },
+	orgB: { founding_date: string | null; dissolution_date: string },
+) => {
+	const startA = orgA.founding_date ? new Date(orgA.founding_date) : Date.now();
+	const endA = orgA.dissolution_date
+		? new Date(orgA.dissolution_date)
+		: new Date();
+	const startB = orgB.founding_date ? new Date(orgB.founding_date) : Date.now();
+	const endB = orgB.dissolution_date
+		? new Date(orgB.dissolution_date)
+		: new Date();
+	return startA <= endB && startB <= endA;
+};
+
+const organizationsOption = () => {
+	const reps =
+		organizations.value?.filter(
+			(o) => o.classification === 'HOUSE_OF_REPRESENTATIVE',
+		) || [];
+	const sens =
+		organizations.value?.filter(
+			(o) => o.classification === 'HOUSE_OF_SENATE',
+		) || [];
+
+	const singleOptions =
+		organizations.value?.map((o) => ({
+			label: `${o.abbreviation ?? ''} ชุดที่ ${o.term ?? '-'}`,
+			value: o.id,
+			term: o.term ?? 0,
+		})) || [];
+
+	const overlappingOptions = reps.flatMap((rep) =>
+		sens
+			.filter((sen) => isOverlapping(rep, sen))
+			.map((sen) => ({
+				label: `${rep.abbreviation ?? ''} ชุดที่ ${rep.term ?? '-'}, ${
+					sen.abbreviation ?? ''
+				} ชุดที่ ${sen.term ?? '-'}`,
+				value: `${rep.id}|${sen.id}`,
+				term: Math.max(rep.term ?? 0, sen.term ?? 0),
+			})),
+	);
+
+	singleOptions.sort((a, b) => b.term - a.term);
+	overlappingOptions.sort((a, b) => b.term - a.term);
+
+	const allOptions = [...singleOptions, ...overlappingOptions];
+	return allOptions;
+};
 
 const numberOfPage = computed(() =>
 	data.value?.totalCount
@@ -249,9 +308,9 @@ watch(
 					v-model:filters="filters"
 					:assemblies-option="[
 						{ label: 'All assemblies', value: 'ALL' },
-						...(organizations ?? []).map((o) => ({
-							label: `${o.abbreviation} ชุดที่ ${o.term}`,
-							value: o.id,
+						...(organizationsOption() ?? []).map((o) => ({
+							label: o.label,
+							value: o.value,
 						})),
 					]"
 					:status-options="[
