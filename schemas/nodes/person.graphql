@@ -25,6 +25,18 @@ type Person @node {
 	"""
 	lastname: String!
 	"""
+	ชื่อจริง ภาษาอังกฤษ
+	"""
+	firstname_en: String!
+	"""
+	ชื่อกลาง ภาษาอังกฤษ
+	"""
+	middlename_en: String
+	"""
+	นามสกุล ภาษาอังกฤษ
+	"""
+	lastname_en: String!
+	"""
 	อีเมล
 	"""
 	email: String
