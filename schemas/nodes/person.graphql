@@ -27,7 +27,7 @@ type Person @node {
 	"""
 	ชื่อจริง ภาษาอังกฤษ
 	"""
-	firstname_en: String!
+	firstname_en: String
 	"""
 	ชื่อกลาง ภาษาอังกฤษ
 	"""
@@ -35,7 +35,7 @@ type Person @node {
 	"""
 	นามสกุล ภาษาอังกฤษ
 	"""
-	lastname_en: String!
+	lastname_en: String
 	"""
 	อีเมล
 	"""
