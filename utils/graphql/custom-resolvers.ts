@@ -1,4 +1,4 @@
-import type { Organization } from '~/.genql';
+import type { Organization, Person } from '~/.genql';
 
 export const resolvers = {
 	Organization: {
@@ -20,5 +20,21 @@ export const resolvers = {
 			)
 				? name.split(' ').at(-1)
 				: null,
+	},
+	Person: {
+		name: ({ firstname, middlename, lastname }: Person) => {
+			const filteredArray: string[] = [firstname, middlename, lastname].filter(
+				(x) => x !== null,
+			);
+			return filteredArray.join(' ');
+		},
+		name_en: ({ firstname_en, middlename_en, lastname_en }: Person) => {
+			const filteredArray: string[] = [
+				firstname_en,
+				middlename_en,
+				lastname_en,
+			].filter((x) => x !== null);
+			return filteredArray.join(' ');
+		},
 	},
 };

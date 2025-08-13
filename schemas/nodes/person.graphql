@@ -25,6 +25,10 @@ type Person @node {
 	"""
 	lastname: String!
 	"""
+	ชื่อเต็มที่ประกอบด้วยชื่อ ชื่อกลาง และนามสกุล
+	"""
+	name: String @customResolver(requires: "firstname middlename lastname")
+	"""
 	ชื่อจริง ภาษาอังกฤษ
 	"""
 	firstname_en: String
@@ -36,6 +40,11 @@ type Person @node {
 	นามสกุล ภาษาอังกฤษ
 	"""
 	lastname_en: String
+	"""
+	ชื่อเต็มภาษาอังกฤษที่ประกอบด้วยชื่อ ชื่อกลาง และนามสกุล
+	"""
+	name_en: String
+		@customResolver(requires: "firstname_en middlename_en lastname_en")
 	"""
 	อีเมล
 	"""
