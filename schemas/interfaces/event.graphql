@@ -4,6 +4,10 @@
 """
 interface Event {
 	"""
+	ID แบบสุ่ม
+	"""
+	id: ID!
+	"""
 	องค์กรที่เกี่ยวข้อง
 	"""
 	organizations: [Organization!]! @declareRelationship

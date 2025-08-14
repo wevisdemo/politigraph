@@ -4,6 +4,10 @@
 """
 interface Motion {
 	"""
+	ID แบบสุ่ม
+	"""
+	id: ID!
+	"""
 	องค์กรที่พิจารณาญัตติ
 	"""
 	organizations: [Organization!]! @declareRelationship
