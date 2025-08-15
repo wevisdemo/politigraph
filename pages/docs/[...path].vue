@@ -59,7 +59,7 @@ onMounted(() => {
 		<div class="relative border-r border-gray-300 bg-gray-100 md:w-72">
 			<div class="sticky top-0 flex flex-col gap-4 p-3 md:p-6">
 				<div class="flex flex-row justify-between">
-					<a href="/">&lt; Back</a>
+					<a href="/">&lt; Home</a>
 					<a
 						:href="
 							route.path.replace(
