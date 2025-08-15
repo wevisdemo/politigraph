@@ -25,7 +25,7 @@ function toggleMaximize() {
 		:class="
 			isMaximized
 				? 'fixed inset-0 z-10'
-				: 'relative rounded-lg border border-gray-200'
+				: 'relative rounded-lg border border-gray-200 md:h-128'
 		"
 	>
 		<div
@@ -50,8 +50,12 @@ function toggleMaximize() {
 			</div>
 		</div>
 		<div
-			class="flex flex-col gap-3 overflow-y-scroll bg-gray-800 text-white"
-			:class="isMaximized ? 'flex-1 p-6' : 'rounded-lg p-3 md:h-128 md:w-72'"
+			class="flex h-full flex-col gap-3 overflow-y-scroll bg-gray-800 text-white"
+			:class="
+				isMaximized
+					? 'p-6 md:w-[30vw]'
+					: 'max-h-80 rounded-lg p-3 md:max-h-none md:w-72'
+			"
 		>
 			<slot name="sidebar" />
 		</div>

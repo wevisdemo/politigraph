@@ -1,5 +1,5 @@
 <script setup lang="ts">
-//@ts-ignore
+// @ts-ignore
 import { Code16, DataVis_116, Launch16 } from '@carbon/icons-vue';
 import { useFormattedGraphqlCode } from '~/utils/graphql/formatter';
 import { schemeTableau10 } from 'd3-scale-chromatic';
@@ -356,8 +356,8 @@ function getShortDateString(date: unknown) {
 						</li>
 					</ul>
 					<p class="mt-auto text-xs leading-tight text-gray-400 italic">
-						*แสดงแค่ nodes, properties, และ relationship ที่ query มาเท่านั้น
-						<a href="/docs/schema" class="text-blue-400">ดู schema แบบเต็ม</a>
+						*Only showing nodes, properties, และ relationships from the query
+						<a href="/docs/schema" class="text-blue-400">see full schema</a>
 					</p>
 				</template>
 				<p v-else class="m-auto text-center text-sm text-gray-400 italic">

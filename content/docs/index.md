@@ -3,7 +3,7 @@
 **"Politigraph"** คือฐานข้อมูลการเมืองไทย พัฒนาโดย [WeVis](https://wevis.info) กลุ่มเทคโนโลยีเพื่อประชาสังคม code ทั้งหมดของโปรเจคนี้เป็นสาธารณะ สามารถเข้าถึงได้ที่ [GitHub](https://github.com/wevisdemo/politigraph/)
 
 <cv-inline-notification kind="warning" title="Politigraph อยู่ระหว่างการพัฒนา">
-  <template #subtitle>ข้อมูลยังไม่ครบถ้วย และฟังชั่นหลายส่วนยังไม่สมบูรณ์</template>
+  <template #subtitle>ข้อมูลยังไม่ครบถ้วน และฟังชั่นหลายส่วนยังไม่สมบูรณ์</template>
 </cv-inline-notification>
 
 <cv-inline-notification lowContrast kind="info" title="สำหรับผู้ใช้ทั่วไปที่สนใจข้อมูลเกี่ยวกับการทำงานของรัฐสภาไทย">
