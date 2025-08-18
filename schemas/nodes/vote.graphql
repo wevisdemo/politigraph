@@ -49,9 +49,13 @@ type Vote
 	"""
 	voter_party: String
 	"""
-	ผลการลงคะแนน (จากตารางในรายงานการประชุมของ MSBIS)
+	การออกเสียงลงคะแนน
 	"""
 	option: String!
+	"""
+	การออกเสียงลงคะแนน ภาษาอังกฤษ
+	"""
+	option_en: String @customResolver(requires: "option")
 	"""
 	วันที่เพิ่มลงในฐานข้อมูล
 	"""

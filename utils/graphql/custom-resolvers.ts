@@ -1,4 +1,4 @@
-import type { Organization, Person } from '~/.genql';
+import type { Organization, Person, Vote } from '~/.genql';
 
 export const resolvers = {
 	Organization: {
@@ -35,6 +35,24 @@ export const resolvers = {
 				lastname_en,
 			].filter((x) => x !== null);
 			return filteredArray.join(' ');
+		},
+	},
+	Vote: {
+		option_en: ({ option }: Vote) => {
+			switch (option) {
+				case 'เห็นด้วย':
+					return 'Agree';
+				case 'ไม่เห็นด้วย':
+					return 'Disagree';
+				case 'งดออกเสียง':
+					return 'Abstain';
+				case 'ไม่ลงคะแนนเสียง':
+					return 'No Vote';
+				case 'ลา / ขาดลงมติ':
+					return 'Absent';
+				default:
+					return null;
+			}
 		},
 	},
 };
