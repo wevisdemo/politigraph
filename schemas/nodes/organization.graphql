@@ -13,6 +13,10 @@ type Organization @node {
 	"""
 	name: String!
 	"""
+	ชื่อ ภาษาอังกฤษ
+	"""
+	name_en: String
+	"""
 	คำอธิบาย
 	"""
 	description: String
