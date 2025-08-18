@@ -223,23 +223,23 @@ function getObjectColor({ __typename }: GraphqlObject) {
 }
 
 function getObjectLabel(obj: GraphqlObject) {
-	return (obj.name ??
-		obj.role ??
-		obj.nickname ??
-		obj.title ??
-		obj.note ??
-		obj.option ??
-		(obj.firstname
-			? `${obj.firstname} ${obj.lastname}`
-			: obj.start_date
-				? `${getShortDateString(obj.start_date)} - ${getShortDateString(obj.end_date)}`
-				: '')) as string;
+	return (obj.name_en ||
+		obj.name ||
+		obj.role ||
+		obj.nickname ||
+		obj.title ||
+		obj.note ||
+		obj.option_en ||
+		obj.option ||
+		(obj.start_date
+			? `${getShortDateString(obj.start_date)} - ${getShortDateString(obj.end_date)}`
+			: '')) as string;
 }
 
 function getShortDateString(date: unknown) {
 	return typeof date === 'string'
 		? new Date(date).toLocaleDateString('TH-th', { dateStyle: 'short' })
-		: 'ปัจจุบัน';
+		: 'now';
 }
 </script>
 
@@ -356,7 +356,7 @@ function getShortDateString(date: unknown) {
 						</li>
 					</ul>
 					<p class="mt-auto text-xs leading-tight text-gray-400 italic">
-						*Only showing nodes, properties, และ relationships from the query
+						*Only showing nodes, properties, and relationships from the query
 						<a href="/docs/schema" class="text-blue-400">see full schema</a>
 					</p>
 				</template>

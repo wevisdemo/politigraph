@@ -10,9 +10,9 @@
 4. ไม่ลงคะแนนเสียง
 5. ลา / ขาดลงมติ
 
-ยกตัวอย่างเช่น ร่าง พ.ร.บ. งบประมาณ 2564 (วาระ 3) และการออกเสียงของผู้มีสิทธ์เข้าร่วมลงมติ 20 คนแรก
+ยกตัวอย่างเช่น ร่าง พ.ร.บ. งบประมาณ 2564 (วาระ 3) และการออกเสียงของตัวอย่างผู้มีสิทธ์เข้าร่วมลงมติ 20 คน
 
-<QueryGraph query="query VoteEvents($where: VoteEventWhere, $limit: Int, $votesLimit2: Int) { voteEvents(where: $where, limit: $limit) { id title nickname publish_status start_date result votes(limit: $votesLimit2) { id option voters { id firstname lastname } } } }" :variables='{ "where": { "id_EQ": "fd854f98-a9c0-4ef2-b007-58821da695dc" }, "limit": 1, "votesLimit2": 20 }'></QueryGraph>
+<QueryGraph query="query VoteEvents($where: VoteEventWhere, $limit: Int, $votesLimit2: Int) { voteEvents(where: $where, limit: $limit) { id title nickname publish_status start_date result votes(limit: $votesLimit2) { id option voters { id name } } } }" :variables='{ "where": { "id_EQ": "fd854f98-a9c0-4ef2-b007-58821da695dc" }, "limit": 1, "votesLimit2": 20 }'></QueryGraph>
 
 ## การอัพเดตข้อมูลและสถานะการเผยแพร่
 

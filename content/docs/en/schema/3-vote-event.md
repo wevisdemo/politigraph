@@ -8,15 +8,15 @@ We collect voting data from both the House of Representatives and the Senate usi
 
 The voting options (property `option` in **`Vote`**) in parliamentary votes generally have 5 formats:
 
-1. Agree (ไม่เห็นด้วย)
+1. Agree (เห็นด้วย)
 2. Disagree (ไม่เห็นด้วย)
 3. Abstain (งดออกเสียง)
 4. No Vote (ไม่ลงคะแนนเสียง)
 5. Absent (ลา / ขาดลงมติ)
 
-For example, the draft Budget Act 2021 (Section 3) and the voting of the first 20 eligible participants.
+For example, the draft Budget Act 2021 (Section 3) and the voting of the 20 sample participants.
 
-<QueryGraph query="query VoteEvents($where: VoteEventWhere, $limit: Int, $votesLimit2: Int) { voteEvents(where: $where, limit: $limit) { id title nickname publish_status start_date result votes(limit: $votesLimit2) { id option voters { id firstname lastname } } } }" :variables='{ "where": { "id_EQ": "fd854f98-a9c0-4ef2-b007-58821da695dc" }, "limit": 1, "votesLimit2": 20 }'></QueryGraph>
+<QueryGraph query="query VoteEvents($where: VoteEventWhere, $limit: Int, $votesWhere2: VoteWhere, $votesLimit2: Int) { voteEvents(where: $where, limit: $limit) { id title nickname publish_status start_date result votes(where: $votesWhere2, limit: $votesLimit2) { id option_en voters { id name name_en } } } }" :variables='{ "where": { "id_EQ": "fd854f98-a9c0-4ef2-b007-58821da695dc" }, "votesWhere2": { "voters_ALL": { "NOT": { "firstname_en_EQ": null } } }, "votesLimit2": 20 }'></QueryGraph>
 
 ## Data Updates and Publish Status
 

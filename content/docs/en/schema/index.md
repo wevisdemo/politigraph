@@ -19,12 +19,12 @@ Feel free to select entities to read the descriptions.
 
 ## Node
 
-For example, we have _"อนุทิน ชาญวีรกูล", "แพทองธาร ชินวัตร", "พิธา ลิ้มเจริญรัตน์"_ represented with nodes type of **`Person`** These nodes will only have property and relationship that satisfied **`Person`** **schema** (they don't need to have optional properties, so querying those will have value of _null_)
+For example, we have these people with first-name starting with _"Nat"_ represented with nodes type of **`Person`**. These nodes will only have property and relationship that satisfied **`Person`** **schema** (they don't need to have optional properties, so querying those will have value of _null_)
 
-<QueryGraph query="query People($where: PersonWhere) { people(where: $where) { id prefix firstname lastname image birth_date educations previous_occupations }}" :variables='{ "where": { "id_IN": ["อนุทิน-ชาญวีรกูล", "แพทองธาร-ชินวัตร", "พิธา-ลิ้มเจริญรัตน์"] }}'></QueryGraph>
+<QueryGraph query="query People($where: PersonWhere) { people(where: $where) { id prefix name_en image birth_date educations previous_occupations }}" :variables='{ "where": { "firstname_en_STARTS_WITH": "Nat" }}'></QueryGraph>
 
 ## Relationship
 
 Relationship in **schema** will have a name with arrow direction for human interpretation such as `Post--IN--> Organization` meaning **`Post`** is "in" an **`Organization`** But in the query process, either nodes at the both end can be queried from each other. For example, **`Post`** has property `organizations` and **`Organization`** has property `posts` that refer to reach other node of this relationship.
 
-<QueryGraph query="query Organizations($where: OrganizationWhere, $postsWhere2: PostWhere) { organizations(where: $where) { id name posts(where: $postsWhere2) { id role organizations { id name } } } }" :variables='{ "where": { "id_EQ": "คณะรัฐมนตรี-64" }, "postsWhere2": { "role_EQ": "นายกรัฐมนตรี" } }'></QueryGraph>
+<QueryGraph query="query Organizations($where: OrganizationWhere, $postsWhere2: PostWhere) { organizations(where: $where) { id name_en posts(where: $postsWhere2) { id role organizations { id name } } } }" :variables='{ "where": { "id_EQ": "คณะรัฐมนตรี-64" }, "postsWhere2": { "role_EQ": "นายกรัฐมนตรี" } }'></QueryGraph>

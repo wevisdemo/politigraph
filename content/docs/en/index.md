@@ -26,8 +26,8 @@ Politigraph store the data in the **"Graph"** structure which consist of
 
 Due to the large number of nodes and relationships in Politigraph, we need to extract data for each point of interest. We call the code writing process to select nodes and relationships of interest **"query"** and the returned data **"response"**, which is in JSON format: machine-readable and convenient for further use. However, to make it easier to visualize, we will visualize the response in this documentation in the form of a graph.
 
-For example, if we want to know _"Which vote event did อนุทิน ชาญวีรกูล were agreeing with?"_ We can query a node representing him and the relationships that lead to the votes he were agreeing and the vote event.
+For example, if we want to know _"Which vote event did Anutin Charnvirakul were agreeing with?"_ We can query a node representing him and the relationships that lead to the votes he were agreeing and the vote event.
 
-<QueryGraph query="query People($where: PersonWhere, $votesWhere2: VoteWhere) { people(where: $where) { id firstname lastname image votes(where: $votesWhere2) { id option vote_events { id title nickname result start_date end_date } } } }" :variables='{ "where": { "id_EQ": "อนุทิน-ชาญวีรกูล" }, "votesWhere2": { "option_EQ": "เห็นด้วย" } }'></QueryGraph>
+<QueryGraph query="query People($where: PersonWhere, $votesWhere2: VoteWhere) { people(where: $where) { id name name_en image votes(where: $votesWhere2) { id option_en vote_events { id title nickname result start_date end_date } } } }" :variables='{ "where": { "firstname_en_EQ": "Anutin", "lastname_en_EQ": "Charnvirakul" }, "votesWhere2": { "option_EQ": "เห็นด้วย" } }'></QueryGraph>
 
 We use [Neo4jGraphQL](https://neo4j.com/docs/graphql/) as a main tools to manage the database and creating API in the [GraphQL](https://graphql.org) standard. You can try building and calling a query at https://politigraph.wevis.info/graphql

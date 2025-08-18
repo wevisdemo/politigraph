@@ -14,10 +14,10 @@ The Thai Parliament (รัฐสภาไทย) has a `classification` of _PAR
 - **House of Senate** (วุฒิสภา): _HOUSE_OF_SENATE_
 - **Cabinet** (คณะรัฐมนตรี): _CABINET_
 
-<QueryGraph  query="query Query($where: OrganizationWhere) { organizations(where: $where) { id name classification founding_date dissolution_date children { id name classification description founding_date dissolution_date } } }" :variables='{ "where": { "classification_EQ": "PARLIAMENT" } }'></QueryGraph>
+<QueryGraph  query="query Query($where: OrganizationWhere) { organizations(where: $where) { id name_en classification founding_date dissolution_date children { id name_en classification description founding_date dissolution_date } } }" :variables='{ "where": { "classification_EQ": "PARLIAMENT" } }'></QueryGraph>
 
 ## Political Parties
 
-Political parties are also classified as **`Organization`** with a `classification` of _POLIITICAL_PARTY_. Here are all the political parties we have in the database.
+Political parties are also classified as **`Organization`** with a `classification` of _POLITICAL_PARTY_. Here are all the political parties we have in the database.
 
-<QueryGraph query="query Organizations($where: OrganizationWhere) { organizations(where: $where) { id name color } }" :variables='{ "where": { "classification_EQ": "POLITICAL_PARTY" } }'></QueryGraph>
+<QueryGraph query="query Organizations($where: OrganizationWhere) { organizations(where: $where) { id name name_en color } }" :variables='{ "where": { "classification_EQ": "POLITICAL_PARTY" } }'></QueryGraph>
