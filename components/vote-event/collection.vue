@@ -14,7 +14,7 @@ const props = defineProps<{
 		| 'option'
 		| 'badge_number'
 	> & {
-		voters: Pick<Person, 'id' | 'firstname' | 'lastname'>[];
+		voters: Pick<Person, 'id' | 'name'>[];
 	})[];
 }>();
 
@@ -81,9 +81,7 @@ const router = useRouter();
 						firstRowIndexOfPage + i + 1
 					}}</cv-data-table-cell>
 					<cv-data-table-cell>{{
-						row.voters.length
-							? `${row.voters[0].firstname} ${row.voters[0].lastname}`
-							: row.voter_name
+						row.voters.at(0)?.name || row.voter_name
 					}}</cv-data-table-cell>
 					<cv-data-table-cell>{{ row.voter_party }}</cv-data-table-cell>
 					<cv-data-table-cell>{{ row.option }}</cv-data-table-cell>

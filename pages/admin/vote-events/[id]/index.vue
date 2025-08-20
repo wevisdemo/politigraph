@@ -59,8 +59,7 @@ const { data: voteEventData, refresh: refreshVoteEvent } = await useAsyncData(
 					badge_number: true,
 					voters: {
 						id: true,
-						firstname: true,
-						lastname: true,
+						name: true,
 					},
 				},
 			},

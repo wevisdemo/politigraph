@@ -1,6 +1,4 @@
 <script setup lang="ts">
-//@ts-ignore
-import { DocumentView16, Save16 } from '@carbon/icons-vue';
 import type { Vote } from '~/.genql';
 import { graphqlClient } from '~/utils/graphql/client';
 import { validateVotes } from '~/utils/votes/validator';
@@ -126,15 +124,14 @@ const { data: peopleOptions } = await useAsyncData(
 					sort: [{ id: 'ASC' }],
 				},
 				id: true,
-				firstname: true,
-				lastname: true,
+				name: true,
 			},
 		});
 
-		return result.people.map((person) => ({
-			value: person.id,
-			name: `${person.firstname} ${person.lastname}`,
-			label: `${person.firstname} ${person.lastname}`,
+		return result.people.map(({ id, name }) => ({
+			value: id,
+			name,
+			label: name,
 		}));
 	},
 	{ server: false },
