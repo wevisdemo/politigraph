@@ -27,7 +27,7 @@ type Person @node {
 	"""
 	ชื่อเต็มที่ประกอบด้วยชื่อ ชื่อกลาง และนามสกุล
 	"""
-	name: String @customResolver(requires: "firstname middlename lastname")
+	name: String! @customResolver(requires: "firstname middlename lastname")
 	"""
 	ชื่อจริง ภาษาอังกฤษ
 	"""
