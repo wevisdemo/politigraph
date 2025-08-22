@@ -5,9 +5,7 @@ type VoteEvent implements Event
 	@node
 	@authorization(
 		filter: [
-			# Admin can see all events
 			{ where: {} }
-			# Public can only see published events
 			{
 				requireAuthentication: false
 				where: { node: { publish_status_EQ: "PUBLISHED" } }

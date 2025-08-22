@@ -7,9 +7,7 @@ type Vote
 	@node
 	@authorization(
 		filter: [
-			# Admin can see all votes
 			{ where: {} }
-			# Public can only see votes belong to published events
 			{
 				requireAuthentication: false
 				where: {

@@ -3,7 +3,23 @@
 
 อ้างอิงจาก https://www.popoloproject.com/specs/membership.html
 """
-type Membership @node {
+type Membership
+	@node
+	@authorization(
+		filter: [
+			{ where: {} }
+			{
+				requireAuthentication: false
+				where: {
+					node: {
+						NOT: {
+							members_ALL: { Person: { publish_status_EQ: "UNPUBLISHED" } }
+						}
+					}
+				}
+			}
+		]
+	) {
 	"""
 	ID แบบสุ่ม
 	"""

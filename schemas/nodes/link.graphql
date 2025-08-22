@@ -1,7 +1,23 @@
 """
 ลิงก์ไปยังเว็บไซต์ภายนอกที่เกี่ยวข้อง
 """
-type Link @node {
+type Link
+	@node
+	@authorization(
+		filter: [
+			{ where: {} }
+			{
+				requireAuthentication: false
+				where: {
+					node: {
+						NOT: {
+							owners_ALL: { Person: { publish_status_EQ: "UNPUBLISHED" } }
+						}
+					}
+				}
+			}
+		]
+	) {
 	"""
 	ID แบบสุ่ม
 	"""
