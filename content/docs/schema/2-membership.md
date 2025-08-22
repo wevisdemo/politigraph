@@ -13,7 +13,7 @@
 
 ยกตัวอย่างเช่น ถ้าเราอยากทราบว่า _ชวน หลีกภัย_ เคยอยู่ในตำแหน่งใดขององค์กรใดบ้าง
 
-<QueryGraph query="query People($where: PersonWhere) { people(where: $where) { id name memberships { id label start_date end_date posts { id label role organizations { id name classification } } } } }" :variables='{ "where": { "id_EQ": "ชวน-หลีกภัย" } }'></QueryGraph>
+<QueryGraph query="query People($where: PersonWhere) { people(where: $where) { id name memberships { id label start_date end_date posts { id label role organizations { id name classification } } } } }" :variables='{ "where": { "firstname_EQ": "ชวน", "lastname_EQ": "หลีกภัย" } }'></QueryGraph>
 
 เนื่องจากฐานข้อมูลแบบ graph ที่แต่ละ node เชื่อมถึงกันทั้งหมด เราจะเริ่มต้น query ที่ node ใดก็ได้ เช่น ถ้าเราอยากทราบว่าเคยมีใครได้รับตำแหน่ง _หัวหน้าพรรคการเมือง_ ของ _พรรคเพื่อไทย_ บ้าง เราก็สามารถเริ่มต้น query จาก **`Post`** ได้
 
