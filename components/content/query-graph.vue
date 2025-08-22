@@ -225,7 +225,7 @@ function getObjectColor({ __typename }: GraphqlObject) {
 function getObjectLabel(obj: GraphqlObject) {
 	return (obj.name_en ||
 		obj.name ||
-		obj.role ||
+		obj.label ||
 		obj.nickname ||
 		obj.title ||
 		obj.note ||

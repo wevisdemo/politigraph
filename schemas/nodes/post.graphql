@@ -11,7 +11,8 @@ type Post @node {
 	"""
 	ชื่อตำแหน่งแบบเต็ม (มีชื่อองกรณ์)
 	"""
-	label: String
+	label: String!
+		@customResolver(requires: "role organizations { name classification }")
 	"""
 	ชื่อตำแหน่งแบบสั้น
 	"""

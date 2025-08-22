@@ -27,4 +27,4 @@ For example, we have these people with first-name starting with _"Nat"_ represen
 
 Relationship in **schema** will have a name with arrow direction for human interpretation such as `Post--IN--> Organization` meaning **`Post`** is "in" an **`Organization`** But in the query process, either nodes at the both end can be queried from each other. For example, **`Post`** has property `organizations` and **`Organization`** has property `posts` that refer to reach other node of this relationship.
 
-<QueryGraph query="query Organizations($where: OrganizationWhere, $postsWhere2: PostWhere) { organizations(where: $where) { id name_en posts(where: $postsWhere2) { id role organizations { id name } } } }" :variables='{ "where": { "id_EQ": "คณะรัฐมนตรี-64" }, "postsWhere2": { "role_EQ": "นายกรัฐมนตรี" } }'></QueryGraph>
+<QueryGraph query="query Organizations($where: OrganizationWhere, $postsWhere2: PostWhere) { organizations(where: $where) { id name_en posts(where: $postsWhere2) { id label role organizations { id name } } } }" :variables='{ "where": { "id_EQ": "คณะรัฐมนตรี-64" }, "postsWhere2": { "role_EQ": "นายกรัฐมนตรี" } }'></QueryGraph>

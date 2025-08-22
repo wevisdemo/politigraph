@@ -23,4 +23,4 @@
 
 Relationship ใน **schema** จะมีชื่อเรียกพร้อมกับทิศทางตามหัวลูกศรเพื่อให้เราเข้าใจความสัมพันธ์ เช่น `Post--IN--> Organization` ทำให้เราเข้าใจว่า **`Post`** "อยู่ใน" **`Organization`** แต่ในกระบวนการ query ข้อมูล เราสามารถเข้าถึง relationship ได้ทั้งสองฝั่งของลูกศร ยกตัวอย่างเช่น **`Post`** มี property `organizations` และ **`Organization`** มี property `posts` ที่อ้างอิง node ซึ่งอยู่อีกฝั่งของ relationship นี้
 
-<QueryGraph query="query Organizations($where: OrganizationWhere, $postsWhere2: PostWhere) { organizations(where: $where) { id name posts(where: $postsWhere2) { id role organizations { id name } } } }" :variables='{ "where": { "id_EQ": "คณะรัฐมนตรี-64" }, "postsWhere2": { "role_EQ": "นายกรัฐมนตรี" } }'></QueryGraph>
+<QueryGraph query="query Organizations($where: OrganizationWhere, $postsWhere2: PostWhere) { organizations(where: $where) { id name posts(where: $postsWhere2) { id label role organizations { id name } } } }" :variables='{ "where": { "id_EQ": "คณะรัฐมนตรี-64" }, "postsWhere2": { "role_EQ": "นายกรัฐมนตรี" } }'></QueryGraph>
