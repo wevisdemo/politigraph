@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Add16 } from '@carbon/icons-vue';
 import type { Person, PublishStatus } from '~/.genql';
 
 type Membership = {
@@ -11,7 +12,7 @@ type PeopleProps = Pick<Person, 'id' | 'name' | 'created_at' | 'updated_at'> & {
 	publish_status: PublishStatus;
 };
 
-defineProps<{
+const props = defineProps<{
 	people: PeopleProps[];
 	totalCount: number;
 	page: number;
@@ -23,19 +24,56 @@ const emit = defineEmits<{
 	(e: 'page-change', page: number): void;
 	(e: 'page-size-change', pageSize: number): void;
 }>();
+
+const searchQuery = ref('');
+
+const onSearch = (event: string) => {
+	searchQuery.value = event;
+};
+
+const filteredPeople = computed(() => {
+	if (!props.people || !Array.isArray(props.people)) {
+		return [];
+	}
+
+	return props.people.filter((person) => {
+		const query = searchQuery.value.toLowerCase();
+
+		const isNameMatch = person.name?.toLowerCase().includes(query);
+		const isPostLabelMatch = person.memberships.some((membership) =>
+			membership.posts.some((post) =>
+				post.label?.toLowerCase().includes(query),
+			),
+		);
+		const isStatusMatch = person.publish_status?.toString().includes(query);
+
+		return isNameMatch || isPostLabelMatch || isStatusMatch;
+	});
+});
 </script>
 
 <template>
 	<div>
-		<cv-data-table title="Persons" helperText="ข้อมูลบุคคลทางการเมืองทั้งหมด">
+		<cv-data-table
+			title="Persons"
+			helperText="ข้อมูลบุคคลทางการเมืองทั้งหมด"
+			@search="onSearch"
+		>
+			<template #actions>
+				<cv-button :icon="Add16"> New Person </cv-button>
+			</template>
 			<template #headings>
 				<cv-data-table-heading
 					id="sb-title"
-					heading="Title"
+					heading="Name"
 					order="ascending"
 					class="w-sm md:w-lg"
 				/>
-				<cv-data-table-heading id="sb-post" heading="Post" class="w-sm" />
+				<cv-data-table-heading
+					id="sb-post"
+					heading="Post"
+					class="w-sm md:w-lg"
+				/>
 				<cv-data-table-heading id="sb-created" heading="Created" />
 				<cv-data-table-heading id="sb-lastupdate" heading="Last Updated" />
 				<cv-data-table-heading id="sb-status" heading="Status" />
@@ -43,7 +81,7 @@ const emit = defineEmits<{
 
 			<template #data>
 				<cv-data-table-row
-					v-for="row in people"
+					v-for="row in filteredPeople"
 					:id="row.id"
 					:key="row.id"
 					:value="row.id"
@@ -91,3 +129,9 @@ const emit = defineEmits<{
 		/>
 	</div>
 </template>
+
+<style scoped>
+::v-deep(.bx--table-toolbar) {
+	background-color: white;
+}
+</style>
