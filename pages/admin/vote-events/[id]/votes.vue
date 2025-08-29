@@ -233,7 +233,9 @@ async function onSaveChanges() {
 
 		if (rowsToPatch.length) {
 			const mutationPromises = rowsToPatch.map((vote) => {
-				const voterId = vote.voter_name;
+				const voterId = peopleOptions.value?.find(
+					(option) => option.name === vote.voter_name,
+				)?.value;
 
 				if (voterId && existingIds.has(vote.id)) {
 					// Update
@@ -475,7 +477,7 @@ function scrollToRow(id: string) {
 				:editedRows
 				v-model:activeEditingCell="activeEditingCell"
 				v-model:toDeleteIds="toDeleteIds"
-				@edited="(rowCellId) => markVoteAsEdited(...rowCellId)"
+				@edited="(arg) => markVoteAsEdited(...arg)"
 				@deleted="showRowDeleteNotification"
 			/>
 			<VotesSummary class="sticky top-16 max-w-xs" :voteEvent />

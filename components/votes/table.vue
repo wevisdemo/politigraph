@@ -306,7 +306,7 @@ const downloadCSV = () => {
 					>
 						<div v-if="isActiveEditing(i, 2)">
 							<cv-combo-box
-								:label="row.voter_name ?? 'Select voter name'"
+								:label="row.voter_name || 'Select voter name'"
 								v-model="row.voter_name"
 								:options="getVoterOptions(row.id, row.voters.length > 0)"
 								item-value-key="value"
@@ -322,12 +322,7 @@ const downloadCSV = () => {
 									'text-[#707070]': !row.voter_name,
 								}"
 							>
-								{{
-									peopleOptions?.find((p) => p.value === row.voter_name)
-										?.name ||
-									row.voter_name ||
-									'Select voter name'
-								}}
+								{{ row.voter_name || 'Select voter name' }}
 							</p>
 							<cv-tooltip
 								v-if="
