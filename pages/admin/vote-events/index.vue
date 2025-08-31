@@ -2,6 +2,7 @@
 //@ts-ignore
 import { DocumentPdf16, NotebookReference16 } from '@carbon/icons-vue';
 import { enumPublishStatus, enumVoteEventType } from '~/.genql';
+import PublishStatusLabel from '~/components/ui/PublishStatusLabel.vue';
 import { graphqlClient } from '~/utils/graphql/client';
 import dayjs from 'dayjs';
 import { ref } from 'vue';
@@ -402,13 +403,9 @@ watch(
 										</a>
 									</div>
 								</cv-data-table-cell>
-								<cv-data-table-cell
-									:class="{
-										'text-[#DA1E28]': row.publish_status === 'ERROR',
-										'text-[#158236]': row.publish_status === 'PUBLISHED',
-									}"
-									>{{ row.publish_status }}</cv-data-table-cell
-								>
+								<cv-data-table-cell>
+									<PublishStatusLabel :status="row.publish_status" />
+								</cv-data-table-cell>
 							</cv-data-table-row>
 						</template>
 					</cv-data-table>

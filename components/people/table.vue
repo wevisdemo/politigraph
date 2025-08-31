@@ -1,6 +1,8 @@
 <script setup lang="ts">
+// @ts-ignore
 import { Add16 } from '@carbon/icons-vue';
 import type { Person, PublishStatus } from '~/.genql';
+import PublishStatusLabel from '~/components/ui/PublishStatusLabel.vue';
 
 type Membership = {
 	id: string;
@@ -12,7 +14,7 @@ type PeopleProps = Pick<Person, 'id' | 'name' | 'created_at' | 'updated_at'> & {
 	publish_status: PublishStatus;
 };
 
-const props = defineProps<{
+defineProps<{
 	people: PeopleProps[];
 	totalCount: number;
 	page: number;
@@ -23,33 +25,8 @@ const props = defineProps<{
 const emit = defineEmits<{
 	(e: 'page-change', page: number): void;
 	(e: 'page-size-change', pageSize: number): void;
+	(e: 'search', query: string): void;
 }>();
-
-const searchQuery = ref('');
-
-const onSearch = (event: string) => {
-	searchQuery.value = event;
-};
-
-const filteredPeople = computed(() => {
-	if (!props.people || !Array.isArray(props.people)) {
-		return [];
-	}
-
-	return props.people.filter((person) => {
-		const query = searchQuery.value.toLowerCase();
-
-		const isNameMatch = person.name?.toLowerCase().includes(query);
-		const isPostLabelMatch = person.memberships.some((membership) =>
-			membership.posts.some((post) =>
-				post.label?.toLowerCase().includes(query),
-			),
-		);
-		const isStatusMatch = person.publish_status?.toString().includes(query);
-
-		return isNameMatch || isPostLabelMatch || isStatusMatch;
-	});
-});
 </script>
 
 <template>
@@ -57,7 +34,7 @@ const filteredPeople = computed(() => {
 		<cv-data-table
 			title="Persons"
 			helperText="ข้อมูลบุคคลทางการเมืองทั้งหมด"
-			@search="onSearch"
+			@search="emit('search', $event)"
 		>
 			<template #actions>
 				<cv-button :icon="Add16"> New Person </cv-button>
@@ -81,7 +58,7 @@ const filteredPeople = computed(() => {
 
 			<template #data>
 				<cv-data-table-row
-					v-for="row in filteredPeople"
+					v-for="row in people"
 					:id="row.id"
 					:key="row.id"
 					:value="row.id"
@@ -104,16 +81,20 @@ const filteredPeople = computed(() => {
 					</cv-data-table-cell>
 					<cv-data-table-cell>
 						{{
-							new Date(row.created_at ?? new Date()).toLocaleDateString('en-CA')
+							row.created_at
+								? new Date(row.created_at).toLocaleDateString('en-CA')
+								: new Date().toLocaleDateString('en-CA')
 						}}
 					</cv-data-table-cell>
 					<cv-data-table-cell>
 						{{
-							new Date(row.updated_at ?? new Date()).toLocaleDateString('en-CA')
+							row.updated_at
+								? new Date(row.updated_at).toLocaleDateString('en-CA')
+								: new Date().toLocaleDateString('en-CA')
 						}}
 					</cv-data-table-cell>
 					<cv-data-table-cell>
-						{{ row.publish_status }}
+						<PublishStatusLabel :status="row.publish_status" />
 					</cv-data-table-cell>
 				</cv-data-table-row>
 			</template>

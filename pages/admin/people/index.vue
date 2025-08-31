@@ -1,4 +1,6 @@
 <script setup lang="ts">
+// @ts-ignore
+import { useDebounce } from '@vueuse/core';
 import { graphqlClient } from '~/utils/graphql/client';
 
 definePageMeta({
@@ -6,7 +8,7 @@ definePageMeta({
 });
 
 useHead({
-	title: 'Persons | Politigraph Admin',
+	title: 'People | Politigraph Admin',
 });
 
 const paginationData = ref({
@@ -28,12 +30,33 @@ const handlePageSizeChange = (pageSize: number) => {
 	paginationData.value.pageSize = pageSize;
 };
 
+const searchQuery = ref('');
+const debouncedSearch = useDebounce(searchQuery, 1000);
+
+watch(debouncedSearch, () => {
+	paginationData.value.page = 1;
+});
+
+const handleSearchChange = (query: string) => {
+	searchQuery.value = query;
+};
+
 const { data } = await useAsyncData(
-	'persons',
+	'people',
 	async () => {
+		const where: Record<string, any> = {};
+
+		if (debouncedSearch.value) {
+			where.OR = [
+				{ firstname_CONTAINS: debouncedSearch.value },
+				{ lastname_CONTAINS: debouncedSearch.value },
+			];
+		}
+
 		const { people, peopleConnection } = await graphqlClient.query({
 			people: {
 				__args: {
+					where,
 					limit: paginationData.value.pageSize,
 					offset:
 						(paginationData.value.page - 1) * paginationData.value.pageSize,
@@ -62,14 +85,13 @@ const { data } = await useAsyncData(
 				},
 			},
 		});
-		console.log(people);
 		return {
 			people,
 			totalCount: peopleConnection.aggregate.count.nodes,
 		};
 	},
 	{
-		watch: [paginationData.value],
+		watch: [paginationData.value, debouncedSearch],
 		server: false,
 	},
 );
@@ -78,12 +100,12 @@ const { data } = await useAsyncData(
 <template>
 	<div class="bg-[#F4F4F4] p-10 pt-[90px]">
 		<cv-breadcrumb noTrailingSlash>
-			<cv-breadcrumb-item>Persons</cv-breadcrumb-item>
+			<cv-breadcrumb-item>People</cv-breadcrumb-item>
 		</cv-breadcrumb>
-		<h1 class="mt-4 mb-8 font-normal">Persons</h1>
+		<h1 class="mt-4 mb-8 font-normal">People</h1>
 		<cv-data-table-skeleton
 			v-if="!data"
-			title="Persons"
+			title="People"
 			helperText="ข้อมูลบุคคลทางการเมืองทั้งหมด"
 		></cv-data-table-skeleton>
 		<div v-else>
@@ -95,6 +117,7 @@ const { data } = await useAsyncData(
 				:number-of-page="numberOfPage"
 				@page-change="handlePageChange"
 				@page-size-change="handlePageSizeChange"
+				@search="handleSearchChange"
 			/>
 		</div>
 	</div>
