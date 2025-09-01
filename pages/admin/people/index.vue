@@ -78,6 +78,7 @@ const { data } = await useAsyncData(
 				},
 			},
 			peopleConnection: {
+				__args: { where },
 				aggregate: {
 					count: {
 						nodes: true,

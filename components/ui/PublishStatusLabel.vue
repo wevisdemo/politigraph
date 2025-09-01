@@ -1,5 +1,4 @@
 <script setup lang="ts">
-// @ts-ignore
 import type { PublishStatus } from '~/.genql';
 import { enumPublishStatus } from '~/.genql';
 
