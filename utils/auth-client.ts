@@ -26,10 +26,10 @@ export function useAuthClientWithRouteGuard(
 		const { data: session } = await client.getSession();
 
 		if (!session) {
-			router.replace('/admin');
+			router.replace('/admin/login');
 		} else {
-			if (route.name === 'admin') {
-				router.replace('/admin/vote-events');
+			if (route.name === 'admin-login') {
+				router.replace('/admin');
 			}
 
 			successCallback?.(session.user);

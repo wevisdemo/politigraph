@@ -6,6 +6,7 @@ import {
 	UserSettings16,
 	//@ts-ignore
 } from '@carbon/icons-vue';
+import { ADMIN_NAVIGATIONS } from '~/constants/navigation';
 
 const { signOut } = useAuthClientWithRouteGuard((user) => {
 	username.value = user.name;
@@ -13,6 +14,7 @@ const { signOut } = useAuthClientWithRouteGuard((user) => {
 });
 
 const router = useRouter();
+const route = useRoute();
 const username = ref('');
 const email = ref('');
 const showSettings = ref(false);
@@ -23,7 +25,7 @@ const signout = async () => {
 			onSuccess: () => {
 				username.value = '';
 				localStorage.setItem('isLogout', 'true');
-				router.push('/admin');
+				router.push('/admin/login');
 			},
 		},
 	});
@@ -34,10 +36,20 @@ const signout = async () => {
 	<ClientOnly>
 		<cv-header aria-label="Header">
 			<template v-slot:left-panels>
-				<cv-side-nav id="side-nav" rail fixed>
+				<cv-side-nav
+					id="side-nav"
+					rail
+					fixed
+					class="border-r border-gray-200 shadow-lg"
+				>
 					<cv-side-nav-items>
-						<cv-side-nav-link href="/admin/vote-events" active>
-							Vote Events
+						<cv-side-nav-link
+							v-for="{ label, path } in ADMIN_NAVIGATIONS"
+							:key="label"
+							:href="`/admin/${path}`"
+							:active="route.path.includes(path)"
+						>
+							{{ label }}
 						</cv-side-nav-link>
 					</cv-side-nav-items>
 				</cv-side-nav>
@@ -114,5 +126,7 @@ const signout = async () => {
 			>
 		</cv-modal>
 	</ClientOnly>
-	<slot />
+	<div class="mt-12 flex h-full min-h-dvh flex-col bg-neutral-100 p-3 md:p-10">
+		<slot />
+	</div>
 </template>

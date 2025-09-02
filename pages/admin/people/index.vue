@@ -97,27 +97,26 @@ const { data } = await useAsyncData(
 </script>
 
 <template>
-	<div class="bg-[#F4F4F4] p-10 pt-[90px]">
-		<cv-breadcrumb noTrailingSlash>
-			<cv-breadcrumb-item>People</cv-breadcrumb-item>
-		</cv-breadcrumb>
-		<h1 class="mt-4 mb-8 font-normal">People</h1>
-		<cv-data-table-skeleton
-			v-if="!data"
-			title="People"
-			helperText="ข้อมูลบุคคลทางการเมืองทั้งหมด"
-		></cv-data-table-skeleton>
-		<div v-else>
-			<PeopleTable
-				:people="data.people"
-				:total-count="data.totalCount"
-				:page="paginationData.page"
-				:page-size="paginationData.pageSize"
-				:number-of-page="numberOfPage"
-				@page-change="handlePageChange"
-				@page-size-change="handlePageSizeChange"
-				@search="handleSearchChange"
-			/>
-		</div>
+	<cv-breadcrumb noTrailingSlash>
+		<cv-breadcrumb-item><a href="/admin">Datasets</a></cv-breadcrumb-item>
+		<cv-breadcrumb-item>People</cv-breadcrumb-item>
+	</cv-breadcrumb>
+	<h1 class="mt-4 mb-8 font-normal">People</h1>
+	<cv-data-table-skeleton
+		v-if="!data"
+		title="People"
+		helperText="ข้อมูลบุคคลทางการเมืองทั้งหมด"
+	></cv-data-table-skeleton>
+	<div v-else>
+		<PeopleTable
+			:people="data.people"
+			:total-count="data.totalCount"
+			:page="paginationData.page"
+			:page-size="paginationData.pageSize"
+			:number-of-page="numberOfPage"
+			@page-change="handlePageChange"
+			@page-size-change="handlePageSizeChange"
+			@search="handleSearchChange"
+		/>
 	</div>
 </template>

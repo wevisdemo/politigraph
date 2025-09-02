@@ -42,7 +42,7 @@ const Form = useForm({
 </script>
 
 <template>
-	<div class="mt-12 flex justify-center p-3">
+	<div class="flex justify-center">
 		<div class="mx-auto w-full max-w-2xl">
 			<cv-data-table-skeleton
 				v-if="status === 'pending'"
