@@ -28,7 +28,7 @@ export default defineNuxtConfig({
 	},
 	css: ['~/assets/css/main.css'],
 	devtools: { enabled: true },
-	modules: ['@nuxt/content'],
+	modules: ['@nuxt/content', '@vueuse/nuxt'],
 	nitro: {
 		esbuild: {
 			options: {

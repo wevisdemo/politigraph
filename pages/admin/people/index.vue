@@ -1,6 +1,4 @@
 <script setup lang="ts">
-// @ts-ignore
-import { useDebounce } from '@vueuse/core';
 import { graphqlClient } from '~/utils/graphql/client';
 
 definePageMeta({
