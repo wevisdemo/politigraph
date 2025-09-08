@@ -37,7 +37,9 @@ const Post = {
 
 		const abbreviation = Organization.abbreviation(org);
 
-		return `${role} ${abbreviation ? [abbreviation, ...org.name.split(' ').slice(1)].join(' ') : org.name}`;
+		return abbreviation
+			? [abbreviation, ...org.name.split(' ').slice(1)].join(' ')
+			: `${role} ${org.name}`;
 	},
 };
 
