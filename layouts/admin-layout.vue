@@ -126,7 +126,9 @@ const signout = async () => {
 			>
 		</cv-modal>
 	</ClientOnly>
-	<div class="mt-12 flex h-full min-h-dvh flex-col bg-neutral-100 p-3 md:p-10">
+	<div
+		class="mt-12 flex h-full min-h-[calc(100dvh-3rem)] flex-col bg-neutral-100 p-3 md:p-10"
+	>
 		<slot />
 	</div>
 </template>

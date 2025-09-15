@@ -64,7 +64,7 @@ onMounted(async () => {
 </script>
 
 <template>
-	<div class="flex h-full flex-1 px-0">
+	<div class="-m-3 flex h-full flex-1 md:-m-10">
 		<div class="parliament-bg basis-3/3 lg:basis-2/3"></div>
 		<div class="login-box relative bg-white p-7.5 sm:basis-1/3 lg:pt-20">
 			<h1 class="mb-12 font-normal">Log in</h1>

@@ -380,7 +380,10 @@ watch(
 									>
 								</div>
 							</cv-data-table-cell>
-							<cv-data-table-cell>{{ row.result }}</cv-data-table-cell>
+							<cv-data-table-cell
+								class="max-w-26 overflow-hidden text-ellipsis whitespace-nowrap"
+								>{{ row.result }}</cv-data-table-cell
+							>
 							<cv-data-table-cell>
 								<div class="flex flex-row gap-1">
 									<a
