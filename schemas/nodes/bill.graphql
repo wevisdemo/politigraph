@@ -17,6 +17,10 @@ type Bill implements Motion @node {
 	creators: [MotionProposer!]!
 		@relationship(type: "PROPOSED_BY", properties: "Relation", direction: OUT)
 	"""
+	เลข ID ของหน้าข้อมูลกฎหมายในเว็บไซต์ lis.parliament
+	"""
+	lis_id: Int
+	"""
 	จำนวนรายชื่อของประชาชนที่สนับสนุน (ในกรณีที่ประชาชนเป็นคนเสนอ)
 	"""
 	people_signature_count: Int

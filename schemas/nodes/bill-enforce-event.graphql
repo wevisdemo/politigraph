@@ -1,7 +1,7 @@
 """
-ขั้นตอนในประบวนการพิจารณากฏหมาย
+การประกาศเป็นกฎหมาย
 """
-type BillEvent implements Event @node {
+type BillEnforceEvent implements Event @node {
 	"""
 	ID แบบสุ่ม
 	"""
@@ -17,15 +17,15 @@ type BillEvent implements Event @node {
 	motions: [Motion!]!
 		@relationship(type: "IN", properties: "Relation", direction: OUT)
 	"""
-	เป็นขั้นตอนในของกระบวนการพิจารณากฏหมาย
+	ชื่อร่างหลังจากประกาศเป็นกฎหมาย
 	"""
-	classification: BillEventType!
+	title: String
 	"""
-	คำอธิบายคร่าวๆ
+	คำอธิบาย
 	"""
 	description: String
 	"""
-	วันที่เริ่มต้น
+	วันที่เริ่ม
 	"""
 	start_date: Date
 	"""
@@ -37,20 +37,8 @@ type BillEvent implements Event @node {
 	"""
 	publish_status: PublishStatus!
 	"""
-	ผลลัพธ์จากเหตุการ
-	"""
-	result: String
-	"""
 	เว็บไซต์ภายนอกที่เกี่ยวข้อง
 	"""
 	links: [Link!]!
 		@relationship(type: "HAVE", properties: "Relation", direction: OUT)
-	"""
-	วันที่เพิ่มลงในฐานข้อมูล
-	"""
-	created_at: DateTime! @timestamp(operations: [CREATE])
-	"""
-	วันที่แก้ไขข้อมูลล่าสุด
-	"""
-	updated_at: DateTime @timestamp(operations: [UPDATE])
 }

@@ -1,0 +1,44 @@
+"""
+การประกาศร่างตกไป
+"""
+type BillRejectEvent implements Event @node {
+	"""
+	ID แบบสุ่ม
+	"""
+	id: ID! @id
+	"""
+	องค์กรที่เกี่ยวข้อง
+	"""
+	organizations: [Organization!]!
+		@relationship(type: "HELD_EVENT", properties: "Relation", direction: IN)
+	"""
+	กฏหมายที่เกี่ยวข้อง
+	"""
+	motions: [Motion!]!
+		@relationship(type: "IN", properties: "Relation", direction: OUT)
+	"""
+	คำอธิบาย
+	"""
+	description: String
+	"""
+	วันที่เริ่ม
+	"""
+	start_date: Date
+	"""
+	วันที่สิ้นสุด
+	"""
+	end_date: Date
+	"""
+	เหตุผลที่ร่างตกไป
+	"""
+	reject_reason: String!
+	"""
+	สถานะการเผยแพร่
+	"""
+	publish_status: PublishStatus!
+	"""
+	เว็บไซต์ภายนอกที่เกี่ยวข้อง
+	"""
+	links: [Link!]!
+		@relationship(type: "HAVE", properties: "Relation", direction: OUT)
+}

@@ -1,0 +1,98 @@
+"""
+node ชั่วคราวของการลงมติ
+"""
+type DraftVoteEvent implements Event
+	@node
+	@authorization(
+		filter: [
+			{ where: {} }
+			{
+				requireAuthentication: false
+				where: { node: { publish_status_EQ: "PUBLISHED" } }
+			}
+		]
+	) {
+	"""
+	ID แบบสุ่ม
+	"""
+	id: ID! @id
+	"""
+	องค์กรที่เกี่ยวข้อง
+	"""
+	organizations: [Organization!]!
+		@relationship(type: "HELD_EVENT", properties: "Relation", direction: IN)
+	"""
+	กฏหมายที่เกี่ยวข้อง
+	"""
+	motions: [Motion!]!
+		@relationship(type: "IN", properties: "Relation", direction: OUT)
+	"""
+	การลงมติอยู่ในขั้นตอนใดของกระบวนการพิจารณากฏหมายใด
+	"""
+	classification: VoteEventType
+	"""
+	คำอธิบายคร่าวๆ
+	"""
+	description: String
+	"""
+	วันที่เริ่มต้น
+	"""
+	start_date: Date!
+	"""
+	วันที่สิ้นสุด
+	"""
+	end_date: Date!
+	"""
+	สถานะการเผยแพร่
+	"""
+	publish_status: PublishStatus!
+	"""
+	ชื่อวาระจาก MSBIS
+	"""
+	title: String!
+	"""
+	ชื่อเล่นสำหรับคนทั่วไป
+	"""
+	nickname: String
+	"""
+	ผลการลงมติ
+	"""
+	result: String
+	"""
+	เงื่อนไขในการผ่านมติ
+	"""
+	pass_condition: String
+	"""
+	จำนวนผู้ที่เห็นด้วย (จากหัวเอกสารรายงานการประชุมของ MSBIS)
+	"""
+	agree_count: Int
+	"""
+	จำนวนผู้ที่ไม่เห็นด้วย (จากหัวเอกสารรายงานการประชุมของ MSBIS)
+	"""
+	disagree_count: Int
+	"""
+	จำนวนผู้ที่งดออกเสียง (จากหัวเอกสารรายงานการประชุมของ MSBIS)
+	"""
+	abstain_count: Int
+	"""
+	จำนวนผู้ที่ไม่ลงคะแนนเสียง (จากหัวเอกสารรายงานการประชุมของ MSBIS)
+	"""
+	novote_count: Int
+	"""
+	ID ใน URL ของ MSBIS
+	"""
+	msbis_id: Int
+	"""
+	เว็บไซต์ภายนอกที่เกี่ยวข้อง
+	"""
+	links: [Link!]!
+		@relationship(type: "HAVE", properties: "Relation", direction: OUT)
+	"""
+	วันที่เพิ่มลงในฐานข้อมูล
+	"""
+	created_at: DateTime! @timestamp(operations: [CREATE])
+	"""
+	วันที่แก้ไขข้อมูลล่าสุด
+	"""
+	updated_at: DateTime @timestamp(operations: [UPDATE])
+}
