@@ -39,7 +39,7 @@ services:
     container_name: politigraph-neo4j
     restart: always
     volumes:
-      - neo4j:/data
+      - ./neo4j-data:/data
     labels:
       - docker-volume-backup.stop-during-backup=true
 
@@ -60,7 +60,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - /var/backup:/archive
       - betterauth:/backup/betterauth:ro
-      - neo4j:/backup/neo4j:ro
+      - ./neo4j-data:/backup/neo4j:ro
     environment:
       BACKUP_CRON_EXPRESSION: 0 21 * * 5
       BACKUP_COMPRESSION: zst
@@ -74,4 +74,3 @@ services:
 volumes:
   betterauth:
   letsencrypt:
-  neo4j:
