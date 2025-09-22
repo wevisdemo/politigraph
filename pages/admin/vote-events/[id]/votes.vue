@@ -174,31 +174,31 @@ async function onSaveChanges() {
 	if (isSaving.value || !voteEvent.value) return;
 	isSaving.value = true;
 
-	try {
-		const summaryCountKeyChanges = Object.entries(originalCount)
-			.filter(
-				([key, value]) =>
-					voteEvent.value &&
-					key in voteEvent.value &&
-					value !== voteEvent.value[key as keyof typeof originalCount],
-			)
-			.map(([key]) => key as keyof typeof originalCount);
-
-		const allVotes = voteEvent.value?.votes ?? [];
-		const existingIds = new Set(Object.keys(originalVotesMap.value));
-
-		const rowsToPatch = allVotes.filter(
-			(vote) => editedRows.value.has(vote.id) || !existingIds.has(vote.id),
-		);
-
-		if (
-			summaryCountKeyChanges.length +
-				rowsToPatch.length +
-				toDeleteIds.value.size ===
-			0
+	const summaryCountKeyChanges = Object.entries(originalCount)
+		.filter(
+			([key, value]) =>
+				voteEvent.value &&
+				key in voteEvent.value &&
+				value !== voteEvent.value[key as keyof typeof originalCount],
 		)
-			return;
+		.map(([key]) => key as keyof typeof originalCount);
 
+	const allVotes = voteEvent.value?.votes ?? [];
+	const existingIds = new Set(Object.keys(originalVotesMap.value));
+
+	const rowsToPatch = allVotes.filter(
+		(vote) => editedRows.value.has(vote.id) || !existingIds.has(vote.id),
+	);
+
+	if (
+		summaryCountKeyChanges.length +
+			rowsToPatch.length +
+			toDeleteIds.value.size ===
+		0
+	)
+		return;
+
+	try {
 		if (
 			summaryCountKeyChanges.length ||
 			(voteEvent.value.publish_status === 'ERROR' &&
@@ -233,9 +233,7 @@ async function onSaveChanges() {
 
 		if (rowsToPatch.length) {
 			const mutationPromises = rowsToPatch.map((vote) => {
-				const voterId = peopleOptions.value?.find(
-					(option) => option.name === vote.voter_name,
-				)?.value;
+				const voterId = vote.voter_name;
 
 				if (voterId && existingIds.has(vote.id)) {
 					// Update
@@ -393,8 +391,8 @@ async function togglePublishStatus() {
 }
 
 function showRowDeleteNotification(count: number) {
-	titleNotification.value.title = 'Row Deleted';
-	titleNotification.value.subtitle = `${count} vote record has been removed from the table.`;
+	titleNotification.value.title = `${count} row(s) will be deleted`;
+	titleNotification.value.subtitle = `Don't save changes if you want to undo this.`;
 	isShowNotification.value = true;
 	setTimeout(() => {
 		isShowNotification.value = false;

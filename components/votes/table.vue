@@ -322,7 +322,13 @@ const downloadCSV = () => {
 									'text-[#707070]': !row.voter_name,
 								}"
 							>
-								{{ row.voter_name || 'Select voter name' }}
+								{{
+									peopleOptions?.find(
+										(option) => option.value === row.voter_name,
+									)?.label ||
+									row.voter_name ||
+									'Select voter name'
+								}}
 							</p>
 							<cv-tooltip
 								v-if="
