@@ -37,11 +37,11 @@ type DraftVoteEvent implements Event
 	"""
 	วันที่เริ่มต้น
 	"""
-	start_date: Date!
+	start_date: Date
 	"""
 	วันที่สิ้นสุด
 	"""
-	end_date: Date!
+	end_date: Date
 	"""
 	สถานะการเผยแพร่
 	"""
