@@ -1,4 +1,13 @@
-import type { Organization, Person, Post, Vote } from '~/.genql';
+import type {
+	Bill,
+	BillMergeEvent,
+	BillRejectEvent,
+	Event,
+	Organization,
+	Person,
+	Post,
+	Vote,
+} from '~/.genql';
 
 const Organization = {
 	abbreviation: ({ classification }: Organization) => {
@@ -62,11 +71,76 @@ const Vote = {
 	},
 };
 
+interface BillWithResolveType extends Bill {
+	bill_events: (Event & { __resolveType: Event['__typename'] })[];
+}
+
+const getRejectEventStatus = (event: BillRejectEvent): string => {
+	if (!event.reject_reason || event.reject_reason.length > 50) {
+		return 'ตกไป';
+	}
+	return event.reject_reason;
+};
+const Bill = {
+	status: ({ id, bill_events }: BillWithResolveType) => {
+		if (bill_events && Array.isArray(bill_events)) {
+			// ถูกรวมร่าง
+			if (
+				bill_events.some((event) => event.__resolveType === 'BillMergeEvent')
+			) {
+				// Check id there is main bill
+				const merge_event = bill_events.find(
+					(event) => event.__resolveType === 'BillMergeEvent',
+				) as BillMergeEvent | undefined;
+				if (merge_event && merge_event.main_bill_id !== id) {
+					// this bill is not main bill
+					return 'ถูกรวมร่าง';
+				}
+			}
+
+			// ร่างกฎหมายผ่าน
+			if (
+				bill_events.some((event) => event.__resolveType === 'BillEnforceEvent')
+			) {
+				return 'ประกาศในราชกิจจานุเบกษา';
+			}
+
+			// ร่างกฎหมายตกไป
+			if (
+				bill_events.some((event) => event.__resolveType === 'BillRejectEvent')
+			) {
+				const reject_event = bill_events.find(
+					(event) => event.__resolveType === 'BillRejectEvent',
+				) as BillRejectEvent | undefined;
+				if (!reject_event) {
+					return 'ตกไป';
+				}
+				const reject_status = getRejectEventStatus(reject_event);
+				if (reject_status.includes('ตกไป')) {
+					return reject_status;
+				}
+				return 'ตกไปเนื่องจาก' + reject_status;
+			}
+
+			// นำขึ้นทูลเกล้าทูลกระหม่อมถวาย
+			if (
+				bill_events.some(
+					(event) => event.__resolveType === 'BillRoyalAssentEvent',
+				)
+			) {
+				return 'นำขึ้นทูลเกล้าทูลกระหม่อมถวาย';
+			}
+		}
+		return 'กำลังดำเนินการ';
+	},
+};
+
 export const resolvers = {
 	Organization,
 	Person,
 	Post,
 	Vote,
+	Bill,
 };
 
 function joinFullName(...args: (string | null)[]) {
