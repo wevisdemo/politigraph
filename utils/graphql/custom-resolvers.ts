@@ -92,7 +92,11 @@ const Bill = {
 				const merge_event = bill_events.find(
 					(event) => event.__resolveType === 'BillMergeEvent',
 				) as BillMergeEvent | undefined;
-				if (merge_event && merge_event.main_bill_id !== id) {
+				if (
+					merge_event &&
+					merge_event.main_bill_id &&
+					merge_event.main_bill_id !== id
+				) {
 					// this bill is not main bill
 					return 'ถูกรวมร่าง';
 				}
