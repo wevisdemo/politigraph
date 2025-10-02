@@ -6,8 +6,8 @@ import {
 	type VNetworkGraphInstance,
 } from 'v-network-graph';
 import 'v-network-graph/lib/style.css';
+import { nodeIconMap } from '~/constants/schema';
 import type { SchemaNode } from '~/server/routes/schema.json';
-import { schemeTableau10 } from 'd3-scale-chromatic';
 
 type Node = SchemaNode & {
 	color?: string;
@@ -22,7 +22,7 @@ interface Edge {
 }
 
 const GraphicColor = {
-	Foreground: '#222',
+	Foreground: '#4466cc',
 	Disabled: '#ccc',
 	Background: '#f3f4f6',
 };
@@ -39,11 +39,13 @@ const configs = defineConfigs<Node, Edge>({
 		selectable: true,
 		normal: {
 			type: 'rect',
-			width: 100,
-			height: 30,
+			width: 120,
+			height: 60,
+			borderRadius: 5,
 			color: (node) =>
 				'interfaces' in node ? getNodeColor(node) : GraphicColor.Background,
-			strokeColor: getNodeColor,
+			strokeColor: (node) =>
+				'interfaces' in node ? GraphicColor.Background : getNodeColor(node),
 			strokeWidth: 1,
 			strokeDasharray: (node) => ('types' in node ? 4 : 0),
 		},
@@ -123,11 +125,8 @@ const graph = computed(() => {
 		g.setEdge(source, target);
 	}
 
-	data.value.objects.forEach((node, i) => {
-		addNode({
-			...node,
-			color: schemeTableau10[i],
-		});
+	data.value.objects.forEach((node) => {
+		addNode(node);
 		node.fields
 			.filter((f) => f.relationship?.direction === 'IN')
 			.forEach(({ type, relationship }) =>
@@ -176,7 +175,7 @@ const activeEdges = computed(() =>
 
 function getNodeColor(node: Node) {
 	return isGraphicActive(node)
-		? (node.color ?? GraphicColor.Foreground)
+		? GraphicColor.Foreground
 		: GraphicColor.Disabled;
 }
 
@@ -208,16 +207,60 @@ function isGraphicActive(item: Node | Edge) {
 				:edges="graph.edges"
 				:layouts="graph.layouts"
 				v-model:selected-nodes="selectedNodes"
-				#edge-label="{ edge, ...slotProps }"
 			>
-				<v-edge-label
-					:text="edge.label"
-					align="center"
-					vertical-align="above"
-					font-size="10"
-					class="relative"
-					v-bind="slotProps"
-				/>
+				<template #override-node="{ nodeId, scale, config, ...nodeSlotProps }">
+					<rect
+						:x="-config.width / 2"
+						:y="-config.height / 2"
+						:width="config.width"
+						:height="config.height"
+						:fill="config.color"
+						:rx="config.borderRadius"
+						:stroke="config.strokeColor"
+						:stroke-width="config.strokeWidth"
+						:stroke-dasharray="config.strokeDasharray"
+						v-bind="nodeSlotProps"
+					/>
+					<component
+						:is="nodeIconMap.get(nodeId)"
+						:style="{
+							transform: `translate(${-8 * scale}px, ${-16 * scale}px) scale(${scale})`,
+							fill: config.strokeColor,
+						}"
+					></component>
+				</template>
+				<template
+					#override-node-label="{
+						scale,
+						text,
+						x,
+						y,
+						config,
+						textAnchor,
+						dominantBaseline,
+					}"
+				>
+					<text
+						x="0"
+						y="12"
+						:font-size="config.fontSize * scale"
+						:text-anchor="textAnchor"
+						:dominant-baseline="dominantBaseline"
+						:fill="config.color"
+						:transform="`translate(${x} ${y})`"
+						>{{ text }}</text
+					>
+				</template>
+				<template #edge-label="{ edge, ...edgeSlotProps }">
+					<v-edge-label
+						:text="edge.label"
+						align="center"
+						vertical-align="above"
+						font-size="10"
+						class="relative"
+						v-bind="edgeSlotProps"
+					/>
+				</template>
 			</v-network-graph>
 		</ClientOnly>
 		<template v-slot:legend>
@@ -314,7 +357,7 @@ function isGraphicActive(item: Node | Edge) {
 					<li
 						v-for="{ name, description, type } in selectedNode.fields"
 						:key="name"
-						class="border-t border-gray-700 py-2 leading-normal"
+						class="border-t border-gray-700 py-2 leading-normal break-all"
 					>
 						<span class="font-bold">{{ name }}</span
 						>:

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { nodeIconMap } from '~/constants/schema';
+
 defineProps<{
 	term: string;
 	definition?: string;
@@ -11,7 +13,9 @@ defineProps<{
 
 <template>
 	<div class="flex flex-row items-center gap-1">
+		<component v-if="nodeIconMap.has(term)" :is="nodeIconMap.get(term)" />
 		<div
+			v-else
 			class="size-3 rounded border"
 			:class="circle ? 'rounded-full' : 'rounded'"
 			:style="{

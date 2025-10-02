@@ -1,8 +1,8 @@
 <script setup lang="ts">
 // @ts-ignore
-import { Code16, DataVis_116, Launch16 } from '@carbon/icons-vue';
+import { Code16, DataVis_116, Launch16, UserFilled16 } from '@carbon/icons-vue';
+import { nodeIconMap } from '~/constants/schema';
 import { useFormattedGraphqlCode } from '~/utils/graphql/formatter';
-import { schemeTableau10 } from 'd3-scale-chromatic';
 import {
 	defineConfigs,
 	type Edges,
@@ -59,11 +59,7 @@ const configs = defineConfigs<GraphqlObject>({
 	node: {
 		selectable: true,
 		normal: {
-			color: getObjectColor,
-			radius: 12,
-		},
-		hover: {
-			color: getObjectColor,
+			radius: 14,
 		},
 		label: {
 			fontSize: 12,
@@ -207,20 +203,15 @@ const selectedNode = computed(() => {
 const typenameSchemaMap = computed(
 	() =>
 		new Map(
-			schema.value?.objects.map((obj, i) => [
+			schema.value?.objects.map((obj) => [
 				obj.name,
 				{
 					...obj,
 					description: obj.description?.split('อ้างอิงจาก').at(0)?.trim(),
-					color: schemeTableau10[i],
 				},
 			]),
 		),
 );
-
-function getObjectColor({ __typename }: GraphqlObject) {
-	return typenameSchemaMap.value?.get(__typename)?.color ?? '#222';
-}
 
 function getObjectLabel(obj: GraphqlObject) {
 	return (obj.name_en ||
@@ -275,7 +266,22 @@ function getShortDateString(date: unknown) {
 					:edges="graph.edges"
 					:layouts="graph.layouts"
 					v-model:selected-nodes="selectedNodes"
-				/>
+				>
+					<template #override-node="{ nodeId, scale, config, ...slotProps }">
+						<circle
+							:r="config.radius * scale"
+							:fill="config.color"
+							v-bind="slotProps"
+						/>
+						<component
+							:is="nodeIconMap.get(graph.nodes[nodeId].__typename)"
+							class="fill-white"
+							:style="{
+								transform: `translate(${-8 * scale}px, ${-8 * scale}px) scale(${scale})`,
+							}"
+						></component>
+					</template>
+				</v-network-graph>
 			</ClientOnly>
 			<div v-else class="flex flex-1 flex-col gap-1 overflow-scroll p-2 pt-10">
 				<p class="mt-4 font-bold">GraphQL Query</p>
@@ -298,8 +304,6 @@ function getShortDateString(date: unknown) {
 						)"
 					:term="obj.name"
 					:definition="obj.description"
-					:borderColor="obj.color"
-					:backgroundColor="obj.color"
 					circle
 				/>
 			</template>
@@ -312,8 +316,7 @@ function getShortDateString(date: unknown) {
 					<cv-tag
 						small
 						:label="selectedNode.schema.name"
-						class="m-0 place-self-start font-bold text-white"
-						:style="{ backgroundColor: selectedNode.schema.color }"
+						class="m-0 place-self-start bg-blue-700 font-bold text-white"
 					/>
 					<p class="text-sm text-gray-400">
 						{{ selectedNode.schema.description }}
@@ -322,7 +325,7 @@ function getShortDateString(date: unknown) {
 						<li
 							v-for="[key, value] in selectedNode.fields"
 							:key="key"
-							class="border-t border-gray-700 py-2 leading-normal"
+							class="border-t border-gray-700 py-2 leading-normal break-all"
 						>
 							<cv-definition-tooltip
 								alignment="start"
