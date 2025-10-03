@@ -12,6 +12,13 @@ export default defineNuxtConfig({
 					href: 'https://wevis.info/wp-content/uploads/2022/01/favicon.png',
 				},
 			],
+			script: [
+				{
+					defer: true,
+					'data-domain': 'politigraph.wevis.info',
+					src: 'https://analytics.punchup.world/js/script.js',
+				},
+			],
 		},
 	},
 	sourcemap: true,
