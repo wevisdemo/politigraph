@@ -292,7 +292,7 @@ function getShortDateString(date: unknown) {
 					href="/graphql"
 					target="_blank"
 					class="mt-3 flex flex-row items-center gap-1 self-center text-blue-600"
-					>เปิด GraphQL Playground <Launch16
+					>Open GraphQL Playground <Launch16
 				/></a>
 			</div>
 			<template v-slot:legend v-if="isGraphView">

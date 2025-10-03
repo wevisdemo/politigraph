@@ -2,8 +2,8 @@
 
 **"Politigraph"** คือฐานข้อมูลการเมืองไทย พัฒนาโดย [WeVis](https://wevis.info) กลุ่มเทคโนโลยีเพื่อประชาสังคม code ทั้งหมดของโปรเจคนี้เป็นสาธารณะ สามารถเข้าถึงได้ที่ [GitHub](https://github.com/wevisdemo/politigraph/)
 
-<cv-inline-notification kind="warning" title="Politigraph อยู่ระหว่างการพัฒนา">
-  <template #subtitle>ข้อมูลยังไม่ครบถ้วน และฟังชั่นหลายส่วนยังไม่สมบูรณ์</template>
+<cv-inline-notification kind="warning" title="เราไม่สามารถรับผิดชอบข้อผิดพลาดหรือผลกระทบใดๆ จากการนำข้อมูลบน Politigraph ไปใช้">
+  <template #subtitle>ข้อมูลสาธารณะเหล่านี้ถูกรวบรวม แปลงรูปแบบ และตรวจสอบโดยทีม WeVis ซึ่งเป็นทีมภาคประชาสังคมเพื่อยกระดับมาตราฐาน Open API ของประเทศไทย เราไม่ใช่หน่วยงานภาครัฐที่เป็นเจ้าของและรับผิดชอบการเผยแพร่ข้อมูลเหล่านี้โดยตรง หากมีข้อแนะนำหรือข้อเสนอแนะประการใด โปรดส่งอีเมล์มาที่ team@wevis.info หรือสร้าง Issue ใหม่บน GitHub ของโปรเจค</template>
 </cv-inline-notification>
 
 <cv-inline-notification lowContrast kind="info" title="สำหรับผู้ใช้ทั่วไปที่สนใจข้อมูลเกี่ยวกับการทำงานของรัฐสภาไทย">

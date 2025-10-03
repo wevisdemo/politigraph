@@ -1,8 +1,11 @@
 # Politigraph
 
-[WIP] An open Thai political database
+A (WIP) civic-initiated open API for Thai political data
 
 To learn more about the data and API, visit the [documentations](https://politigraph.wevis.info/docs)
+
+> [!WARNING]
+> We are not responsible for any misinformation or consequence of any usage on our data. These open data are collected, transformed, validated, and published by us, a civil society, to push the open API standard in Thailand. We are not the official government institution who originally own and responsible in publishing these data. Please send us any feedback or suggestion via team@wevis.info or create an issue on GitHub.
 
 ## 1. Stack
 
@@ -74,17 +77,25 @@ You need to create an account first to login to the admin panel, by making a POS
 }
 ```
 
-## References
+## 4. References
 
-### GraphQL API authentication
+### 4.1 GraphQL API authentication
 
 GraphQL required user account for **write** permission. To make an update to GraphQL outside the Politigraph website, you need to create an API key by logging in into the Admin Panel (/admin) > Profile Menu > API Keys. Then add `x-api-key: KEY_VALUE` to the header when making a request.
 
-### Tunneling to Neo4j on production server
+### 4.2 Tunneling to Neo4j on production server
 
 To access Neo4j on the production on local environment
 
 ```shell
-ssh -L 7687:localhost:7687 dev@politigraph
-ssh -L 7474:localhost:7474 dev@politigraph
+ssh -L 7687:localhost:7687 politigraph
+ssh -L 7474:localhost:7474 politigraph
+```
+
+### 4.3 Dump production database to local
+
+To make local neo4j have up-to-dated data, use rsync to download production database while local neo4j docker service in not running.
+
+```shell
+rsync -azvP --delete politigraph:/var/server/politigraph/neo4j/data .neo4j
 ```

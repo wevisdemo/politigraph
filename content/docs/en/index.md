@@ -6,13 +6,13 @@ lang: en
 
 **"Politigraph"** is a Thai politics database developed by [WeVis](https://wevis.info), a Thai civic-technology team. The code is open-source and accessible via [GitHub](https://github.com/wevisdemo/politigraph/)
 
-<cv-inline-notification kind="warning" title="Politigraph is under an early development">
-  <template #subtitle> Some data and functionality are not available yet.</template>
+<cv-inline-notification kind="warning" title="We are not responsible for any misinformation or consequence of any usage on our data.">
+  <template #subtitle> These open data are collected, transformed, validated, and published by us, a civil society, to push the open API standard in Thailand. We are not the official government institution who originally own and responsible in publishing these data. Please send us any feedback or suggestion via team@wevis.info or create an issue on GitHub.</template>
 </cv-inline-notification>
 
-<cv-inline-notification lowContrast kind="info" title="For general user who want to understand Thai parliamentary data">
+<cv-inline-notification lowContrast kind="info" title="For general user who want to understand Thai parliamentary data:">
   <template #subtitle>
-    We recommend <a href="https://parliamentwatch.wevis.info" target="_blank">Parliament Watch</a> which organize and visalized data from politigraph in a friendly format.
+    We recommend using <a href="https://parliamentwatch.wevis.info" target="_blank">Parliament Watch</a> which organize and visualized data from Politigraph in a friendly format.
   </template>
 </cv-inline-notification>
 
