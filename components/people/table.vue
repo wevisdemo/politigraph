@@ -64,7 +64,11 @@ const emit = defineEmits<{
 					:value="row.id"
 				>
 					<cv-data-table-cell>
-						<div>{{ row.name }}</div>
+						<a
+							:href="`/admin/people/${row.id}`"
+							class="w-full text-inherit hover:underline"
+							>{{ row.name }}</a
+						>
 					</cv-data-table-cell>
 					<cv-data-table-cell>
 						<div class="flex flex-wrap gap-1 py-2">
