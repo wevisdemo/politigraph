@@ -113,33 +113,14 @@ const Bill = {
 			if (
 				bill_events.some((event) => event.__resolveType === 'BillEnforceEvent')
 			) {
-				return 'ประกาศในราชกิจจานุเบกษา';
+				return 'ออกเป็นกฎหมาย';
 			}
 
 			// ร่างกฎหมายตกไป
 			if (
 				bill_events.some((event) => event.__resolveType === 'BillRejectEvent')
 			) {
-				const reject_event = bill_events.find(
-					(event) => event.__resolveType === 'BillRejectEvent',
-				) as BillRejectEvent | undefined;
-				if (!reject_event) {
-					return 'ตกไป';
-				}
-				const reject_status = getRejectEventStatus(reject_event);
-				if (reject_status.includes('ตกไป')) {
-					return reject_status;
-				}
-				return 'ตกไปเนื่องจาก' + reject_status;
-			}
-
-			// นำขึ้นทูลเกล้าทูลกระหม่อมถวาย
-			if (
-				bill_events.some(
-					(event) => event.__resolveType === 'BillRoyalAssentEvent',
-				)
-			) {
-				return 'นำขึ้นทูลเกล้าทูลกระหม่อมถวาย';
+				return 'ตกไป';
 			}
 		}
 		return 'กำลังดำเนินการ';
