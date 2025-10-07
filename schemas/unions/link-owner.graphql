@@ -4,6 +4,7 @@
 union LinkOwner =
 	| Person
 	| Organization
+	| Membership
 	| Bill
 	| VoteEvent
 	| DraftVoteEvent
