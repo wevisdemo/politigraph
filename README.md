@@ -83,19 +83,10 @@ You need to create an account first to login to the admin panel, by making a POS
 
 GraphQL required user account for **write** permission. To make an update to GraphQL outside the Politigraph website, you need to create an API key by logging in into the Admin Panel (/admin) > Profile Menu > API Keys. Then add `x-api-key: KEY_VALUE` to the header when making a request.
 
-### 4.2 Tunneling to Neo4j on production server
+### 4.2 Dump production database to local
 
-To access Neo4j on the production on local environment
-
-```shell
-ssh -L 7687:localhost:7687 politigraph
-ssh -L 7474:localhost:7474 politigraph
-```
-
-### 4.3 Dump production database to local
-
-To make local neo4j have up-to-dated data, use rsync to download production database while local neo4j docker service in not running.
+To make local neo4j have up-to-dated data, we have a script to use rsync to download production database while local neo4j docker service in not running:
 
 ```shell
-rsync -azvP --delete politigraph:/var/server/politigraph/neo4j/data .neo4j
+npm run db:pull
 ```

@@ -12,7 +12,8 @@
 		"format": "prettier --write --ignore-unknown --ignore-path .gitignore .",
 		"genql": "tsx scripts/generate-genql.ts",
 		"auth:generate": "npx @better-auth/cli generate",
-		"auth:migrate": "npx @better-auth/cli migrate --y"
+		"auth:migrate": "npx @better-auth/cli migrate --y",
+		"db:pull": "rsync -azvP --delete politigraph:/var/server/politigraph/neo4j/data .neo4j"
 	},
 	"lint-staged": {
 		"*": "prettier --write --ignore-unknown"
