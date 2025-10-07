@@ -45,9 +45,16 @@ const Post = {
 		}
 
 		const abbreviation = Organization.abbreviation(org);
+		const fullname = org.name.split(' ')[0];
 
 		return abbreviation
-			? [abbreviation, ...org.name.split(' ').slice(1)].join(' ')
+			? [
+					role.replace('สมาชิก', '').replace(fullname, ''),
+					abbreviation,
+					...org.name.split(' ').slice(1),
+				]
+					.join(' ')
+					.trim()
 			: `${role} ${org.name}`;
 	},
 };
