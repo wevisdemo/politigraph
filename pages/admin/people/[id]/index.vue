@@ -111,17 +111,14 @@ const cabinetMemberships = computed({
 		<PeopleDetail v-model="peopleData" />
 		<div v-if="peopleData" class="flex flex-col gap-6">
 			<PeopleMemberDetail
-				v-if="partyMemberships.length > 0"
 				classification="Party"
 				v-model:memberships="partyMemberships"
 			/>
 			<PeopleMemberDetail
-				v-if="housesMemberships.length > 0"
 				classification="Houses"
 				v-model:memberships="housesMemberships"
 			/>
 			<PeopleMemberDetail
-				v-if="cabinetMemberships.length > 0"
 				classification="Cabinet"
 				v-model:memberships="cabinetMemberships"
 			/>

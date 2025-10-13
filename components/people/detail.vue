@@ -3,7 +3,7 @@
 import { Add16, TrashCan16 } from '@carbon/icons-vue';
 import { enumGender, type Link } from '~/.genql';
 
-interface PeopleDetailProps {
+export interface PeopleDetailProps {
 	id: string;
 	name: string;
 	prefix?: string | null;
@@ -26,10 +26,7 @@ const genderOptions = Object.values(enumGender);
 	<div class="h-fit space-y-4 bg-white p-4">
 		<h4 class="pt-2">Person Details</h4>
 		<template v-if="!modelValue">
-			<cv-number-input-skeleton
-				v-for="i in 9"
-				:key="i"
-			></cv-number-input-skeleton>
+			<cv-number-input-skeleton v-for="i in 9" :key="i" />
 		</template>
 		<template v-else>
 			<div class="flex w-full gap-6 2xl:w-3/5">
@@ -142,7 +139,7 @@ const genderOptions = Object.values(enumGender);
 					</div>
 				</div>
 				<cv-button :icon="Add16" kind="tertiary" aria-label="Add" class="w-fit">
-					Add Another Iten
+					Add Another Item
 				</cv-button>
 			</template>
 		</template>
