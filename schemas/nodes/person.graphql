@@ -59,7 +59,7 @@ type Person
 	ชื่ออื่นๆ
 	"""
 	other_names: [OtherNames!]!
-		@relationship(type: "AKA", properties: "Relation", direction: OUT) # TODO change relation type
+		@relationship(type: "KNOWN_AS", properties: "Relation", direction: OUT) # TODO change relation type
 	"""
 	อีเมล
 	"""

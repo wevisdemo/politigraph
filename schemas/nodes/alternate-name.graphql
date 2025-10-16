@@ -22,7 +22,7 @@ type AlternateName @node {
 	entity เจ้าของชื่อ
 	"""
 	named_entity: [NamedEntity!]!
-		@relationship(type: "AKA", properties: "Relation", direction: IN) # TODO change relation type
+		@relationship(type: "KNOWN_AS", properties: "Relation", direction: IN)
 	"""
 	วันที่เริ่มต้นใช้ชื่อนี้
 	"""
