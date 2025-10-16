@@ -19,7 +19,7 @@ type Bill implements Motion @node {
 	"""
 	เลข ID ของหน้าข้อมูลกฎหมายในเว็บไซต์ lis.parliament
 	"""
-	lis_id: Int
+	lis_id: Int!
 	"""
 	จำนวนรายชื่อของประชาชนที่สนับสนุน (ในกรณีที่ประชาชนเป็นคนเสนอ)
 	"""
@@ -27,7 +27,7 @@ type Bill implements Motion @node {
 	"""
 	ชื่อทางการ
 	"""
-	title: String
+	title: String!
 	"""
 	วันที่รับร่างเข้ากระบวนการ
 	"""
@@ -40,10 +40,6 @@ type Bill implements Motion @node {
 	เงื่อนไขของการผ่านร่าง
 	"""
 	requirement: String
-	"""
-	ผลลัพธ์ของการพิจารณาร่าง
-	"""
-	result: String
 	"""
 	ขั้นตอนในประบวนการพิจารณากฏหมาย
 	"""
