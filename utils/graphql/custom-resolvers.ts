@@ -1,4 +1,5 @@
 import type {
+	AlternatePersonName,
 	Bill,
 	BillMergeEvent,
 	BillRejectEvent,
@@ -127,12 +128,18 @@ const Bill = {
 	},
 };
 
+const AlternatePersonName = {
+	name: (p: AlternatePersonName) =>
+		joinFullName(p.firstname, p.middlename, p.lastname),
+};
+
 export const resolvers = {
 	Organization,
 	Person,
 	Post,
 	Vote,
 	Bill,
+	AlternatePersonName,
 };
 
 function joinFullName(...args: (string | null)[]) {

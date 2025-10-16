@@ -1,0 +1,4 @@
+"""
+ชื่ออื่นๆ
+"""
+union OtherNames = AlternateName | AlternatePersonName

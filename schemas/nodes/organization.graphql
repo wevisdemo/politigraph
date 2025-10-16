@@ -17,6 +17,11 @@ type Organization @node {
 	"""
 	name_en: String
 	"""
+	ชื่ออื่นๆ
+	"""
+	other_names: [OtherNames!]!
+		@relationship(type: "AKA", properties: "Relation", direction: OUT) # TODO change relation type
+	"""
 	คำอธิบาย
 	"""
 	description: String

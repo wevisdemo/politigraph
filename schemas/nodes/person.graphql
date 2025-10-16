@@ -56,6 +56,11 @@ type Person
 	name_en: String
 		@customResolver(requires: "firstname_en middlename_en lastname_en")
 	"""
+	ชื่ออื่นๆ
+	"""
+	other_names: [OtherNames!]!
+		@relationship(type: "AKA", properties: "Relation", direction: OUT) # TODO change relation type
+	"""
 	อีเมล
 	"""
 	email: String

@@ -1,0 +1,42 @@
+"""
+ชื่ออื่นๆของ entity ต่างๆ
+"""
+type AlternateName @node {
+	"""
+	ID ที่มาจากชื่อองค์กร
+	"""
+	id: ID!
+	"""
+	ชื่อ
+	"""
+	name: String!
+	"""
+	ชื่อ ภาษาอังกฤษ
+	"""
+	name_en: String
+	"""
+	คำอธิบาย
+	"""
+	description: String
+	"""
+	entity เจ้าของชื่อ
+	"""
+	named_entity: [NamedEntity!]!
+		@relationship(type: "AKA", properties: "Relation", direction: IN) # TODO change relation type
+	"""
+	วันที่เริ่มต้นใช้ชื่อนี้
+	"""
+	start_date: Date!
+	"""
+	วันที่สิ้นสุดใช้ชื่อนี้
+	"""
+	end_date: Date!
+	"""
+	วันที่เพิ่มลงในฐานข้อมูล
+	"""
+	created_at: DateTime! @timestamp(operations: [CREATE])
+	"""
+	วันที่แก้ไขข้อมูลล่าสุด
+	"""
+	updated_at: DateTime @timestamp(operations: [UPDATE])
+}

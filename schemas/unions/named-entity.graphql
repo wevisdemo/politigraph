@@ -1,0 +1,4 @@
+"""
+entity ที่มีชื่อ
+"""
+union NamedEntity = Person | Organization
