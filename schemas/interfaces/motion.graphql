@@ -31,8 +31,4 @@ interface Motion {
 	เงื่อนไขของการผ่านญัตติ
 	"""
 	requirement: String
-	"""
-	ผลลัพธ์ของการพิจารณาญัตติ
-	"""
-	result: String
 }
