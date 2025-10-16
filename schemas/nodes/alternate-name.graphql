@@ -26,11 +26,11 @@ type AlternateName @node {
 	"""
 	วันที่เริ่มต้นใช้ชื่อนี้
 	"""
-	start_date: Date!
+	start_date: Date
 	"""
 	วันที่สิ้นสุดใช้ชื่อนี้
 	"""
-	end_date: Date!
+	end_date: Date
 	"""
 	วันที่เพิ่มลงในฐานข้อมูล
 	"""
