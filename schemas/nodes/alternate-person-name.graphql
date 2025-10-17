@@ -5,7 +5,7 @@ type AlternatePersonName @node {
 	"""
 	ID ที่มาจากชื่อองค์กร
 	"""
-	id: ID!
+	id: ID! @id
 	"""
 	ชื่อจริง
 	"""
