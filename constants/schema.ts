@@ -1,5 +1,8 @@
+// Available icons: https://v10.carbondesignsystem.com/guidelines/icons/library/
 import {
 	Calendar16,
+	Chat16,
+	ChatBot16,
 	CheckmarkOutline16,
 	CopyLink16,
 	DirectionMerge16,
@@ -8,12 +11,14 @@ import {
 	Events16,
 	EventSchedule16,
 	FlowData16,
+	Forum16,
 	GroupPresentation16,
 	Identification16,
 	Link16,
 	Partnership16,
 	Portfolio16,
 	Stamp16,
+	Tag16,
 	User16,
 	UserProfileAlt16,
 	VoiceActivate16,
@@ -21,6 +26,8 @@ import {
 } from '@carbon/icons-vue';
 
 export const nodeIconMap = new Map([
+	['AlternateName', Chat16],
+	['AlternatePersonName', ChatBot16],
 	['Bill', Document16],
 	['BillEnforceEvent', CheckmarkOutline16],
 	['BillMergeEvent', DirectionMerge16],
@@ -34,7 +41,9 @@ export const nodeIconMap = new Map([
 	['Membership', Identification16],
 	['Motion', FlowData16],
 	['MotionProposer', UserProfileAlt16],
+	['NamedEntity', Tag16],
 	['Organization', Events16],
+	['OtherNames', Forum16],
 	['Person', User16],
 	['Post', Portfolio16],
 	['Vote', VoiceActivate16],
