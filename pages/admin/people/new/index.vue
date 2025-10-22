@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+// @ts-ignore
+import { Save16, ViewOff16 } from '@carbon/icons-vue';
 import { PeopleDetail, PeopleMemberDetail } from '#components';
 import type { PeopleDetailProps } from '~/components/people/detail.vue';
 
@@ -51,10 +53,10 @@ const savePeople = async () => {
 			}}
 		</h1>
 		<div class="flex flex-wrap items-start gap-4">
-			<cv-button @click="savePeople" class="mt-4" kind="primary"
+			<cv-button @click="savePeople" class="mt-4" kind="primary" :icon="Save16"
 				>Save Changes</cv-button
 			>
-			<cv-button @click="savePeople" class="mt-4" kind="tertiary"
+			<cv-button @click="" class="mt-4" kind="tertiary" :icon="ViewOff16"
 				>Unpublished</cv-button
 			>
 		</div>

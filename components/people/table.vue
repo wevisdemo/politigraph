@@ -27,6 +27,8 @@ const emit = defineEmits<{
 	(e: 'page-size-change', pageSize: number): void;
 	(e: 'search', query: string): void;
 }>();
+
+const router = useRouter();
 </script>
 
 <template>
@@ -37,7 +39,12 @@ const emit = defineEmits<{
 			@search="emit('search', $event)"
 		>
 			<template #actions>
-				<cv-button :icon="Add16"> New Person </cv-button>
+				<cv-button
+					:icon="Add16"
+					@click="() => $router.push('/admin/people/new')"
+				>
+					New Person
+				</cv-button>
 			</template>
 			<template #headings>
 				<cv-data-table-heading

@@ -1,18 +1,23 @@
 <script setup lang="ts">
 // @ts-ignore
 import { Add16, TrashCan16 } from '@carbon/icons-vue';
-import { enumGender, type Link } from '~/.genql';
+import { enumGender, type Gender, type Link } from '~/.genql';
 
 export interface PeopleDetailProps {
 	id: string;
 	name: string;
+	name_en?: string | null;
 	prefix?: string | null;
 	firstname?: string | null;
 	middlename?: string | null;
 	lastname?: string | null;
-	gender?: string | null;
+	firstname_en?: string | null;
+	middlename_en?: string | null;
+	lastname_en?: string | null;
+	gender?: Gender | null;
 	birth_date?: string | null;
 	educations?: string | null;
+	previous_occupations?: string | null;
 	image?: string | null;
 	links?: Pick<Link, 'url' | 'note'>[] | null;
 }
@@ -54,25 +59,44 @@ const genderOptions = Object.values(enumGender);
 			<div class="flex gap-6">
 				<cv-text-input
 					v-model="modelValue.firstname"
-					label="Firstname*"
+					label="Firstname (Thai)*"
 					placeholder=""
 					required
 				/>
 				<cv-text-input
 					v-model="modelValue.middlename"
-					label="Middlename"
+					label="Middlename (Thai)"
 					placeholder=""
 				/>
 				<cv-text-input
 					v-model="modelValue.lastname"
-					label="Lastname*"
+					label="Lastname (Thai)*"
+					placeholder=""
+					required
+				/>
+			</div>
+			<div class="flex gap-6">
+				<cv-text-input
+					v-model="modelValue.firstname_en"
+					label="Firstname (Eng)*"
+					placeholder=""
+					required
+				/>
+				<cv-text-input
+					v-model="modelValue.middlename_en"
+					label="Middlename (Eng)"
+					placeholder=""
+				/>
+				<cv-text-input
+					v-model="modelValue.lastname_en"
+					label="Lastname (Eng)*"
 					placeholder=""
 					required
 				/>
 			</div>
 			<cv-dropdown
 				:placeholder="modelValue.gender"
-				v-model:value="modelValue.gender"
+				v-model="modelValue.gender"
 				label="Sex"
 				class="w-fit"
 			>
@@ -86,8 +110,9 @@ const genderOptions = Object.values(enumGender);
 			</cv-dropdown>
 			<cv-date-picker
 				v-model="modelValue.birth_date"
-				label="ฺBirthdate (yyyy/mm/dd)"
+				dateLabel="ฺBirthdate (yyyy/mm/dd)"
 				placeholder=""
+				kind="single"
 			/>
 			<cv-text-area
 				v-model="modelValue.educations"
@@ -95,7 +120,12 @@ const genderOptions = Object.values(enumGender);
 				placeholder=""
 				rows="6"
 			/>
-			<cv-text-area label="Previous Occupations" placeholder="" rows="6" />
+			<cv-text-area
+				v-model="modelValue.previous_occupations"
+				label="Previous Occupations"
+				placeholder=""
+				rows="6"
+			/>
 			<template class="flex flex-col gap-8">
 				<h6>Social Media</h6>
 				<div class="flex flex-col gap-4">
