@@ -81,20 +81,7 @@ type Bill implements Motion @node {
 	"""
 	สถานะของร่างกฎหมาย
 	"""
-	status: String!
-		@customResolver(
-			requires: """
-			id
-			bill_events {
-				... on BillRejectEvent {
-					reject_reason
-				}
-				... on BillMergeEvent {
-					main_bill_id
-				}
-			}
-			"""
-		)
+	status: BillStatus
 	"""
 	เว็บไซต์ภายนอกที่เกี่ยวข้อง
 	"""
