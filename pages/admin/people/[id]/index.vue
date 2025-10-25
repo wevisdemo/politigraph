@@ -2,7 +2,8 @@
 // @ts-ignore
 import { Save16, ViewOff16 } from '@carbon/icons-vue';
 import { PeopleDetail, PeopleMemberDetail } from '#components';
-import { enumOrganizationType } from '~/.genql';
+import { enumOrganizationType, type Membership } from '~/.genql';
+import type { MemberShipProp } from '~/components/people/member-detail.vue';
 import { graphqlClient } from '~/utils/graphql/client';
 
 definePageMeta({
@@ -15,6 +16,7 @@ useHead({
 	title: 'People | Politigraph Admin',
 });
 
+const originalMemberships = ref<Partial<Membership>[] | null>(null);
 const { data: peopleData, refresh: refreshPeopleDetail } = await useAsyncData(
 	'people-detail',
 	async () => {
@@ -44,9 +46,11 @@ const { data: peopleData, refresh: refreshPeopleDetail } = await useAsyncData(
 					note: true,
 				},
 				memberships: {
+					id: true,
 					start_date: true,
 					end_date: true,
 					posts: {
+						id: true,
 						role: true,
 						organizations: {
 							id: true,
@@ -58,83 +62,84 @@ const { data: peopleData, refresh: refreshPeopleDetail } = await useAsyncData(
 			},
 		});
 		console.log(people[0]);
+		originalMemberships.value = JSON.parse(
+			JSON.stringify(people[0].memberships),
+		);
 		return people[0];
 	},
 	{ server: false },
 );
 
-const partyMemberships = computed({
-	get: () =>
-		peopleData.value?.memberships?.filter(
+const partyMemberships = ref<MemberShipProp[]>([]);
+const housesMemberships = ref<MemberShipProp[]>([]);
+const cabinetMemberships = ref<MemberShipProp[]>([]);
+
+watch(
+	() => peopleData.value?.memberships,
+	(newVal) => {
+		if (!newVal) return;
+
+		partyMemberships.value = newVal.filter(
 			(m) =>
 				m.posts?.[0]?.organizations?.[0]?.classification ===
 				enumOrganizationType.POLITICAL_PARTY,
-		) ?? [],
-	set: (val) => {
-		if (peopleData.value) {
-			const others =
-				peopleData.value.memberships?.filter(
-					(m) =>
-						m.posts?.[0]?.organizations?.[0]?.classification !==
-						enumOrganizationType.POLITICAL_PARTY,
-				) ?? [];
+		);
 
-			peopleData.value.memberships = [...others, ...val];
-		}
-	},
-});
-
-const housesMemberships = computed({
-	get: () =>
-		peopleData.value?.memberships?.filter(
+		housesMemberships.value = newVal.filter(
 			(m) =>
 				m.posts?.[0]?.organizations?.[0]?.classification ===
 					enumOrganizationType.HOUSE_OF_SENATE ||
 				m.posts?.[0]?.organizations?.[0]?.classification ===
 					enumOrganizationType.HOUSE_OF_REPRESENTATIVE,
-		) ?? [],
-	set: (val) => {
-		if (peopleData.value) {
-			const others =
-				peopleData.value.memberships?.filter(
-					(m) =>
-						m.posts?.[0]?.organizations?.[0]?.classification !==
-							enumOrganizationType.HOUSE_OF_SENATE &&
-						m.posts?.[0]?.organizations?.[0]?.classification !==
-							enumOrganizationType.HOUSE_OF_REPRESENTATIVE,
-				) ?? [];
+		);
 
-			peopleData.value.memberships = [...others, ...val];
-		}
-	},
-});
-
-const cabinetMemberships = computed({
-	get: () =>
-		peopleData.value?.memberships?.filter(
+		cabinetMemberships.value = newVal.filter(
 			(m) =>
 				m.posts?.[0]?.organizations?.[0]?.classification ===
 				enumOrganizationType.CABINET,
-		) ?? [],
-	set: (val) => {
-		if (peopleData.value) {
-			const others =
-				peopleData.value.memberships?.filter(
-					(m) =>
-						m.posts?.[0]?.organizations?.[0]?.classification !==
-						enumOrganizationType.CABINET,
-				) ?? [];
-
-			peopleData.value.memberships = [...others, ...val];
-		}
+		);
 	},
-});
+	{ immediate: true },
+);
+
+const getChangedMemberships = (current: MemberShipProp[]) => {
+	return current.filter((m) => {
+		const orig = originalMemberships.value?.find((o) => o.id === m.id);
+		if (!orig) return true;
+
+		return (
+			m.start_date !== orig.start_date ||
+			m.end_date !== orig.end_date ||
+			m.posts?.[0]?.id !== orig.posts?.[0]?.id ||
+			m.posts?.[0]?.organizations?.[0]?.id !==
+				orig.posts?.[0]?.organizations?.[0]?.id
+		);
+	});
+};
+
+const changedPartyMemberships = ref<MemberShipProp[]>([]);
+const changedHousesMemberships = ref<MemberShipProp[]>([]);
+const changedCabinetMemberships = ref<MemberShipProp[]>([]);
+
+watch(
+	[partyMemberships, housesMemberships, cabinetMemberships],
+	() => {
+		changedPartyMemberships.value = getChangedMemberships(
+			partyMemberships.value ?? [],
+		);
+		changedHousesMemberships.value = getChangedMemberships(
+			housesMemberships.value ?? [],
+		);
+		changedCabinetMemberships.value = getChangedMemberships(
+			cabinetMemberships.value ?? [],
+		);
+	},
+	{
+		deep: true,
+	},
+);
 
 const saveChanges = async () => {
-	console.log(peopleData.value);
-	console.log(partyMemberships);
-	console.log(housesMemberships);
-	console.log(cabinetMemberships);
 	try {
 		await graphqlClient.mutation({
 			updatePeople: {
@@ -163,13 +168,61 @@ const saveChanges = async () => {
 			},
 		});
 
-		// await Promise.all(
+		const changedMemberships = [
+			...changedPartyMemberships.value,
+			...changedHousesMemberships.value,
+			...changedCabinetMemberships.value,
+		];
 
-		refreshPeopleDetail();
+		const newMemberships = changedMemberships.filter((m) => !m.id);
+		const updatedMemberships = changedMemberships.filter((m) => !!m.id);
+
+		console.log({ newMemberships });
+
+		const updatePromises = updatedMemberships.map(async (membership) => {
+			const newPostId = membership.posts[0]?.id;
+			if (!newPostId)
+				throw new Error('Post ID is required for membership update.');
+			const oldPostId = originalMemberships.value?.find(
+				(s) => s.id === membership.id,
+			)?.posts?.[0]?.id;
+
+			return graphqlClient.mutation({
+				updateMemberships: {
+					__args: {
+						where: { id_EQ: membership.id },
+						update: {
+							start_date_SET: membership.start_date,
+							end_date_SET: membership.end_date,
+							posts: [
+								{
+									disconnect: oldPostId
+										? [
+												{
+													where: { node: { id_EQ: oldPostId } },
+												},
+											]
+										: [],
+									connect: [
+										{
+											where: { node: { id_EQ: newPostId } },
+										},
+									],
+								},
+							],
+						},
+					},
+					memberships: { id: true },
+				},
+			});
+		});
+
+		await Promise.all([...updatePromises]);
+		await refreshPeopleDetail();
 		openSuccessToastNotification();
 	} catch (error) {
 		console.error('Failed to save changes:', error);
-		alert('Failed to save changes.');
+		openFailureToastNotification();
 	}
 };
 
@@ -183,20 +236,39 @@ const openSuccessToastNotification = () => {
 	}, 5000);
 };
 
+const isShowFailureNotification = ref(false);
+const openFailureToastNotification = () => {
+	isShowFailureNotification.value = false;
+	isShowFailureNotification.value = true;
+
+	setTimeout(() => {
+		isShowFailureNotification.value = false;
+	}, 5000);
+};
+
 const { data: organizationsOptions } = await useAsyncData(
-	'classification-options',
+	'organizations-with-posts',
 	async () => {
 		const { organizations } = await graphqlClient.query({
 			organizations: {
 				id: true,
 				name: true,
 				classification: true,
+				posts: {
+					id: true,
+					role: true,
+				},
 			},
 		});
 		const organizationsOptions = organizations.map((org) => ({
 			label: org.name,
 			value: org.id,
 			classification: org.classification,
+			posts:
+				org.posts?.map((p) => ({
+					label: p.role,
+					value: p.id,
+				})) ?? [],
 		}));
 
 		console.log(organizationsOptions);
@@ -205,19 +277,31 @@ const { data: organizationsOptions } = await useAsyncData(
 	{ server: false },
 );
 
-const getOrganizationClassification = (classification: string) => {
+const selectedOrganization = ref<string | null>(null);
+const postOptions = ref<{ label: string; value: string }[]>([]);
+
+watch(selectedOrganization, (orgId) => {
+	if (!orgId) {
+		postOptions.value = [];
+		return;
+	}
+	const org = organizationsOptions.value?.find((o) => o.value === orgId);
+	postOptions.value = org?.posts || [];
+});
+
+const getOrganizationOptions = (classification: string) => {
 	const org = organizationsOptions.value?.filter(
 		(o) => o.classification === classification,
 	);
-	return org?.map((o) => ({ label: o.label, value: o.value })) || [];
+	return (
+		org?.map((o) => ({
+			label: o.label,
+			value: o.value,
+			classification: o.classification,
+			posts: o.posts,
+		})) || []
+	);
 };
-
-const postOptions = [
-	{ label: 'member', value: 'member' },
-	{ label: 'leader', value: 'leader' },
-	{ label: 'prime minister', value: 'prime_minister' },
-	{ label: 'minister', value: 'minister' },
-];
 </script>
 
 <template>
@@ -232,6 +316,15 @@ const postOptions = [
 		kind="success"
 		title="ข้อมูลถูกบันทึกเรียบร้อย"
 		@close="isShowSuccessNotification = false"
+		class="fixed top-[60px] right-[4px] z-50"
+	/>
+
+	<cv-toast-notification
+		v-if="isShowFailureNotification"
+		title="เกิดข้อผิดพลาดในการบันทึกข้อมูล"
+		kind="warning"
+		@close="isShowFailureNotification = false"
+		subTitle="กรุณาลองใหม่อีกครั้ง"
 		class="fixed top-[60px] right-[4px] z-50"
 	/>
 
@@ -254,32 +347,37 @@ const postOptions = [
 				title="Party"
 				:classification="enumOrganizationType.POLITICAL_PARTY"
 				:organizationsOptions="
-					getOrganizationClassification(enumOrganizationType.POLITICAL_PARTY)
+					getOrganizationOptions(enumOrganizationType.POLITICAL_PARTY)
 				"
-				:postOptions="postOptions"
 				v-model:memberships="partyMemberships"
+				:editedMembershipsId="new Set(changedPartyMemberships.map((m) => m.id))"
+				@savechanges="saveChanges"
 			/>
 			<PeopleMemberDetail
 				title="Houses"
 				:classification="enumOrganizationType.HOUSE_OF_REPRESENTATIVE"
 				:organizationsOptions="
-					getOrganizationClassification(
+					getOrganizationOptions(
 						enumOrganizationType.HOUSE_OF_REPRESENTATIVE,
-					).concat(
-						getOrganizationClassification(enumOrganizationType.HOUSE_OF_SENATE),
-					)
+					).concat(getOrganizationOptions(enumOrganizationType.HOUSE_OF_SENATE))
 				"
-				:postOptions="postOptions"
 				v-model:memberships="housesMemberships"
+				:editedMembershipsId="
+					new Set(changedHousesMemberships.map((m) => m.id))
+				"
+				@savechanges="saveChanges"
 			/>
 			<PeopleMemberDetail
 				title="Cabinet"
 				:classification="enumOrganizationType.CABINET"
 				:organizationsOptions="
-					getOrganizationClassification(enumOrganizationType.CABINET)
+					getOrganizationOptions(enumOrganizationType.CABINET)
 				"
-				:postOptions="postOptions"
 				v-model:memberships="cabinetMemberships"
+				:editedMembershipsId="
+					new Set(changedCabinetMemberships.map((m) => m.id))
+				"
+				@savechanges="saveChanges"
 			/>
 		</div>
 	</div>
