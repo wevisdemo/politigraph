@@ -64,7 +64,6 @@ const { data: peopleData, refresh: refreshPeopleDetail } = await useAsyncData(
 				},
 			},
 		});
-		console.log(people[0]);
 		originalMemberships.value = JSON.parse(
 			JSON.stringify(people[0].memberships),
 		);
@@ -240,8 +239,6 @@ const saveChanges = async () => {
 		const newMemberships = changedMemberships.filter((m) => !m.id);
 		const updatedMemberships = changedMemberships.filter((m) => !!m.id);
 
-		console.log({ newMemberships });
-
 		const updateMembershipsPromises = updatedMemberships.map(
 			async (membership) => {
 				const newPostId = membership.posts[0]?.id;
@@ -341,7 +338,6 @@ const { data: organizationsOptions } = await useAsyncData(
 				})) ?? [],
 		}));
 
-		console.log(organizationsOptions);
 		return organizationsOptions;
 	},
 	{ server: false },

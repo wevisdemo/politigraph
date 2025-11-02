@@ -1,6 +1,8 @@
 <script lang="ts" setup>
 // @ts-ignore
 import { Add16 } from '@carbon/icons-vue';
+import { formatDate, parseDate } from '~/utils/dateUtils';
+import type { title } from 'radash';
 
 export type MemberShipProp = {
 	id: string;
@@ -30,6 +32,8 @@ const props = defineProps<{
 }>();
 
 const memberships = defineModel<MemberShipProp[] | null>('memberships');
+
+const localDates = ref<{ start: Date | null; end: Date | null }[]>([]);
 
 const handleAddMembership = () => {
 	const newItem: MemberShipProp = {
@@ -69,6 +73,32 @@ const getRowClass = (id: string): string => {
 const emit = defineEmits<{
 	(e: 'savechanges'): void;
 }>();
+
+watch(
+	memberships,
+	(newVal) => {
+		if (!newVal) return;
+		localDates.value = newVal.map((m) => ({
+			start: parseDate(m.start_date),
+			end: parseDate(m.end_date),
+		}));
+	},
+	{ immediate: true },
+);
+
+watch(
+	localDates,
+	(newVal) => {
+		if (!memberships.value) return;
+		newVal.forEach((d, i) => {
+			if (memberships.value?.[i]) {
+				memberships.value[i].start_date = formatDate(d.start);
+				memberships.value[i].end_date = formatDate(d.end);
+			}
+		});
+	},
+	{ deep: true },
+);
 </script>
 
 <template>
@@ -104,31 +134,28 @@ const emit = defineEmits<{
 
 				<template #data class="relative">
 					<cv-data-table-row
-						v-for="m in memberships"
+						v-for="(m, i) in memberships"
 						:key="m.id"
 						:class="getRowClass(m.id)"
 					>
 						<!-- Organization classification -->
 						<cv-data-table-cell>
-							<cv-dropdown
+							<cv-combo-box
 								v-model="m.posts[0].organizations[0].id"
-								aria-label="classification"
-								class="absolute -mt-2.5 -ml-1.5 w-1/2 border-0 bg-transparent text-sm"
-								@change="
-									() => {
-										m.posts[0].id = '';
-									}
+								:label="
+									m.posts[0].organizations[0].id
+										? m.posts[0].organizations[0].name
+										: `Select ${title}`
 								"
-							>
-								<cv-dropdown-item
-									v-for="item in organizationsOptions"
-									:key="item.value"
-									:value="item.value"
-									class="text-[14px]"
-								>
-									{{ item.label }}
-								</cv-dropdown-item>
-							</cv-dropdown>
+								aria-label="classification"
+								autoFilter
+								autoHighlight
+								:options="organizationsOptions"
+								class="no-style-combo absolute -mt-2.5 -ml-1.5 w-1/2 text-sm"
+								item-value-key="value"
+								item-text-key="label"
+								@change="m.posts[0].id = ''"
+							/>
 						</cv-data-table-cell>
 
 						<!-- Role -->
@@ -155,18 +182,22 @@ const emit = defineEmits<{
 						<!-- Start -->
 						<cv-data-table-cell>
 							<cv-date-picker
-								v-model="m.start_date"
+								v-model="localDates[i].start"
 								dateLabel=""
 								placeholder="Select date"
+								kind="single"
+								class="full-width-date-picker"
 							/>
 						</cv-data-table-cell>
 
 						<!-- End -->
 						<cv-data-table-cell>
 							<cv-date-picker
-								v-model="m.end_date"
+								v-model="localDates[i].end"
 								dateLabel=""
 								placeholder="Select date"
+								kind="single"
+								class="full-width-date-picker"
 							/>
 						</cv-data-table-cell>
 					</cv-data-table-row>
@@ -190,5 +221,27 @@ const emit = defineEmits<{
 <style scoped>
 ::v-deep(.bx--table-toolbar) {
 	background-color: white;
+}
+:deep(.no-style-combo .bx--list-box) {
+	border: none !important;
+	background-color: transparent !important;
+}
+
+:deep(.no-style-combo .bx--text-input) {
+	background-color: transparent !important;
+	border: none !important;
+}
+
+:deep(.full-width-date-picker .bx--date-picker) {
+	background-color: transparent !important;
+	border: none !important;
+	width: 100% !important;
+	min-width: 0 !important;
+}
+:deep(.full-width-date-picker .bx--date-picker__input) {
+	background-color: transparent !important;
+	border: none !important;
+	width: 100% !important;
+	min-width: 0 !important;
 }
 </style>

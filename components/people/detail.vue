@@ -1,6 +1,9 @@
 <script setup lang="ts">
+// @ts-ignore
+import { UserFilled32 } from '@carbon/icons-vue';
 import { enumGender, type Gender, type Link } from '~/.genql';
 import LinksForm from '~/components/vote-event/LinksForm.vue';
+import { formatDate, parseDate } from '~/utils/dateUtils';
 
 export interface PeopleDetailProps {
 	id: string;
@@ -23,6 +26,22 @@ export interface PeopleDetailProps {
 
 const modelValue = defineModel<PeopleDetailProps | null>();
 
+const birthDateLocal = ref<Date | null>(
+	parseDate(modelValue.value?.birth_date ?? null),
+);
+
+watch(birthDateLocal, (val) => {
+	if (!modelValue.value) return;
+	modelValue.value.birth_date = formatDate(val);
+});
+
+watch(
+	() => modelValue.value?.birth_date,
+	(val) => {
+		birthDateLocal.value = parseDate(val ?? null);
+	},
+);
+
 const genderOptions = Object.values(enumGender);
 </script>
 
@@ -34,11 +53,20 @@ const genderOptions = Object.values(enumGender);
 		</template>
 		<template v-else>
 			<div class="flex w-full gap-6 2xl:w-3/5">
-				<img
-					:src="modelValue.image ? modelValue.image : ''"
-					alt=""
-					class="h-[128px] w-[128px] flex-none rounded-full border border-gray-400 object-cover"
-				/>
+				<div
+					class="flex h-[128px] w-[128px] flex-none items-center justify-center rounded-full border border-gray-400 bg-[#F4F4F4]"
+				>
+					<img
+						v-if="modelValue.image"
+						:src="modelValue.image"
+						class="h-[128px] w-[128px] rounded-full object-cover"
+					/>
+					<UserFilled32
+						v-else
+						class="text-[#A8A8A8]"
+						style="width: 48px; height: 48px"
+					/>
+				</div>
 				<div class="flex flex-col gap-3">
 					<span class="font-bold">Profile Image</span>
 					<span class="text-[#525252]"
@@ -108,7 +136,7 @@ const genderOptions = Object.values(enumGender);
 				</cv-dropdown-item>
 			</cv-dropdown>
 			<cv-date-picker
-				v-model="modelValue.birth_date"
+				v-model="birthDateLocal"
 				dateLabel="ฺBirthdate (yyyy/mm/dd)"
 				placeholder=""
 				kind="single"
