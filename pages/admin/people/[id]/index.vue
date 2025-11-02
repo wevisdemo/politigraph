@@ -2,7 +2,7 @@
 // @ts-ignore
 import { Save16, ViewOff16 } from '@carbon/icons-vue';
 import { PeopleDetail, PeopleMemberDetail } from '#components';
-import { enumOrganizationType, type Membership } from '~/.genql';
+import { enumOrganizationType, type Link, type Membership } from '~/.genql';
 import type { MemberShipProp } from '~/components/people/member-detail.vue';
 import { graphqlClient } from '~/utils/graphql/client';
 
@@ -17,6 +17,8 @@ useHead({
 });
 
 const originalMemberships = ref<Partial<Membership>[] | null>(null);
+const originalLinks = ref<Pick<Link, 'id' | 'note' | 'url'>[]>([]);
+
 const { data: peopleData, refresh: refreshPeopleDetail } = await useAsyncData(
 	'people-detail',
 	async () => {
@@ -42,6 +44,7 @@ const { data: peopleData, refresh: refreshPeopleDetail } = await useAsyncData(
 				previous_occupations: true,
 				image: true,
 				links: {
+					id: true,
 					url: true,
 					note: true,
 				},
@@ -65,6 +68,7 @@ const { data: peopleData, refresh: refreshPeopleDetail } = await useAsyncData(
 		originalMemberships.value = JSON.parse(
 			JSON.stringify(people[0].memberships),
 		);
+		originalLinks.value = JSON.parse(JSON.stringify(people[0].links));
 		return people[0];
 	},
 	{ server: false },
@@ -140,6 +144,8 @@ watch(
 );
 
 const saveChanges = async () => {
+	if (!peopleData.value) return;
+
 	try {
 		await graphqlClient.mutation({
 			updatePeople: {
@@ -168,6 +174,63 @@ const saveChanges = async () => {
 			},
 		});
 
+		const linksToCreate = peopleData.value.links.filter((l) => !l.id);
+		const linksToUpdate = peopleData.value.links.filter((l) => l.id);
+		const linksToDelete = originalLinks.value.filter(
+			(ol) => !peopleData.value?.links.some((el) => el.id === ol.id),
+		);
+
+		const createLinksPromises = linksToCreate.map((l) =>
+			graphqlClient.mutation({
+				createLinks: {
+					__args: {
+						input: [
+							{
+								note: l.note,
+								url: l.url,
+								owners: {
+									Person: {
+										connect: [
+											{
+												where: {
+													node: {
+														id_EQ: peopleData.value?.id,
+													},
+												},
+											},
+										],
+									},
+								},
+							},
+						],
+					},
+					links: { id: true },
+				},
+			}),
+		);
+
+		const updateLinkPromises = linksToUpdate.map((l) =>
+			graphqlClient.mutation({
+				updateLinks: {
+					__args: {
+						where: { id_EQ: l.id },
+						update: { note_SET: l.note, url_SET: l.url },
+					},
+					links: { id: true },
+				},
+			}),
+		);
+
+		const deleteLinksPromises = linksToDelete.map((l) =>
+			graphqlClient.mutation({
+				deleteLinks: {
+					__args: { where: { id_EQ: l.id } },
+					nodesDeleted: true,
+					relationshipsDeleted: true,
+				},
+			}),
+		);
+
 		const changedMemberships = [
 			...changedPartyMemberships.value,
 			...changedHousesMemberships.value,
@@ -179,45 +242,52 @@ const saveChanges = async () => {
 
 		console.log({ newMemberships });
 
-		const updatePromises = updatedMemberships.map(async (membership) => {
-			const newPostId = membership.posts[0]?.id;
-			if (!newPostId)
-				throw new Error('Post ID is required for membership update.');
-			const oldPostId = originalMemberships.value?.find(
-				(s) => s.id === membership.id,
-			)?.posts?.[0]?.id;
+		const updateMembershipsPromises = updatedMemberships.map(
+			async (membership) => {
+				const newPostId = membership.posts[0]?.id;
+				if (!newPostId)
+					throw new Error('Post ID is required for membership update.');
+				const oldPostId = originalMemberships.value?.find(
+					(s) => s.id === membership.id,
+				)?.posts?.[0]?.id;
 
-			return graphqlClient.mutation({
-				updateMemberships: {
-					__args: {
-						where: { id_EQ: membership.id },
-						update: {
-							start_date_SET: membership.start_date,
-							end_date_SET: membership.end_date,
-							posts: [
-								{
-									disconnect: oldPostId
-										? [
-												{
-													where: { node: { id_EQ: oldPostId } },
-												},
-											]
-										: [],
-									connect: [
-										{
-											where: { node: { id_EQ: newPostId } },
-										},
-									],
-								},
-							],
+				return graphqlClient.mutation({
+					updateMemberships: {
+						__args: {
+							where: { id_EQ: membership.id },
+							update: {
+								start_date_SET: membership.start_date,
+								end_date_SET: membership.end_date,
+								posts: [
+									{
+										disconnect: oldPostId
+											? [
+													{
+														where: { node: { id_EQ: oldPostId } },
+													},
+												]
+											: [],
+										connect: [
+											{
+												where: { node: { id_EQ: newPostId } },
+											},
+										],
+									},
+								],
+							},
 						},
+						memberships: { id: true },
 					},
-					memberships: { id: true },
-				},
-			});
-		});
+				});
+			},
+		);
 
-		await Promise.all([...updatePromises]);
+		await Promise.all([
+			...createLinksPromises,
+			...updateLinkPromises,
+			...deleteLinksPromises,
+			...updateMembershipsPromises,
+		]);
 		await refreshPeopleDetail();
 		openSuccessToastNotification();
 	} catch (error) {

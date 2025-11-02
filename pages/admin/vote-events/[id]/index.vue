@@ -1,8 +1,7 @@
 <script setup lang="ts">
-//@ts-ignore
-import { TrashCan16 } from '@carbon/icons-vue';
 import { useForm } from '@tanstack/vue-form';
 import type { Link } from '~/.genql';
+import RelatedLinksForm from '~/components/vote-event/LinksForm.vue';
 import { graphqlClient } from '~/utils/graphql/client';
 import { validateVotes } from '~/utils/votes/validator';
 import { diff } from 'radash';
@@ -443,49 +442,10 @@ function openSuccessToastNotification() {
 						</div>
 						<voteEventFormInput.Field name="links">
 							<template v-slot="{ field }">
-								<div
-									v-for="({ id }, i) of field.state.value"
-									class="flex flex-col gap-3"
-									:key="id ?? i"
-								>
-									<voteEventFormInput.Field :name="`links[${i}].note`">
-										<template v-slot="{ field: subField }">
-											<div class="flex flex-row items-center justify-between">
-												<h6>{{ `Link ${i + 1}` }}</h6>
-												<cv-button
-													@click="field.removeValue(i)"
-													kind="danger--ghost"
-													:icon="TrashCan16"
-													>Delete</cv-button
-												>
-											</div>
-											<cv-text-input
-												label="Notes"
-												placeholder=""
-												:modelValue="subField.state.value"
-												@update:modelValue="subField.handleChange"
-											>
-											</cv-text-input>
-										</template>
-									</voteEventFormInput.Field>
-									<voteEventFormInput.Field :name="`links[${i}].url`">
-										<template v-slot="{ field: subField }">
-											<cv-text-input
-												label="URL"
-												placeholder=""
-												:modelValue="subField.state.value"
-												@update:modelValue="subField.handleChange"
-											>
-											</cv-text-input>
-										</template>
-									</voteEventFormInput.Field>
-								</div>
-								<cv-button
-									default="Add Another Item"
-									kind="tertiary"
-									@click="() => field.pushValue({ id: '', note: '', url: '' })"
-									>Add a link</cv-button
-								>
+								<RelatedLinksForm
+									v-model:links="field.state.value"
+									@update:links="field.handleChange"
+								/>
 							</template>
 						</voteEventFormInput.Field>
 					</template>

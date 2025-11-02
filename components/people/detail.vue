@@ -1,7 +1,6 @@
 <script setup lang="ts">
-// @ts-ignore
-import { Add16, TrashCan16 } from '@carbon/icons-vue';
 import { enumGender, type Gender, type Link } from '~/.genql';
+import LinksForm from '~/components/vote-event/LinksForm.vue';
 
 export interface PeopleDetailProps {
 	id: string;
@@ -19,7 +18,7 @@ export interface PeopleDetailProps {
 	educations?: string | null;
 	previous_occupations?: string | null;
 	image?: string | null;
-	links?: Pick<Link, 'url' | 'note'>[] | null;
+	links?: Pick<Link, 'id' | 'url' | 'note'>[] | null;
 }
 
 const modelValue = defineModel<PeopleDetailProps | null>();
@@ -126,51 +125,12 @@ const genderOptions = Object.values(enumGender);
 				placeholder=""
 				rows="6"
 			/>
-			<template class="flex flex-col gap-8">
+			<template
+				class="flex flex-col gap-8"
+				v-if="modelValue && modelValue.links"
+			>
 				<h6>Social Media</h6>
-				<div class="flex flex-col gap-4">
-					<div
-						class="flex flex-col"
-						v-for="(link, index) in modelValue.links || []"
-						:key="index"
-					>
-						<div class="flex items-center justify-between">
-							<h6>Link {{ index + 1 }}</h6>
-							<cv-button kind="danger--ghost" :icon="TrashCan16"
-								>Delete</cv-button
-							>
-						</div>
-						<div class="flex flex-col gap-4 sm:flex-row">
-							<div class="flex items-end sm:w-1/3">
-								<cv-dropdown
-									label="Type"
-									:placeholder="link.note || 'Select link type'"
-									v-model:value="link.note"
-								>
-									<cv-dropdown-item
-										v-for="item in []"
-										:key="item"
-										:value="item"
-									>
-										{{ item }}
-									</cv-dropdown-item>
-								</cv-dropdown>
-							</div>
-							<div class="flex items-end sm:w-2/3">
-								<cv-text-input
-									aria-label="URL"
-									v-model="link.url"
-									label="URL"
-									placeholder=""
-									class="w-full"
-								/>
-							</div>
-						</div>
-					</div>
-				</div>
-				<cv-button :icon="Add16" kind="tertiary" aria-label="Add" class="w-fit">
-					Add Another Item
-				</cv-button>
+				<LinksForm v-model:links="modelValue.links" />
 			</template>
 		</template>
 	</div>
