@@ -1,8 +1,13 @@
 <script lang="ts" setup>
 // @ts-ignore
-import { Save16, ViewOff16 } from '@carbon/icons-vue';
+import { Save16, View16, ViewOff16 } from '@carbon/icons-vue';
 import { PeopleDetail, PeopleMemberDetail } from '#components';
-import { enumOrganizationType, type Link, type Membership } from '~/.genql';
+import {
+	enumOrganizationType,
+	enumPublishStatus,
+	type Link,
+	type Membership,
+} from '~/.genql';
 import type { MemberShipProp } from '~/components/people/member-detail.vue';
 import { graphqlClient } from '~/utils/graphql/client';
 
@@ -42,6 +47,7 @@ const { data: peopleData, refresh: refreshPeopleDetail } = await useAsyncData(
 				birth_date: true,
 				educations: true,
 				previous_occupations: true,
+				publish_status: true,
 				image: true,
 				links: {
 					id: true,
@@ -293,6 +299,36 @@ const saveChanges = async () => {
 	}
 };
 
+const isPublished = computed(
+	() => peopleData.value?.publish_status === enumPublishStatus.PUBLISHED,
+);
+
+const togglePublishStatus = async () => {
+	const { updatePeople } = await graphqlClient.mutation({
+		updatePeople: {
+			__args: {
+				where: {
+					id_EQ: peopleData.value?.id,
+				},
+				update: {
+					publish_status:
+						peopleData.value?.publish_status !== enumPublishStatus.PUBLISHED
+							? enumPublishStatus.PUBLISHED
+							: enumPublishStatus.UNPUBLISHED,
+				},
+			},
+			people: {
+				publish_status: true,
+			},
+		},
+	});
+
+	if (updatePeople.people) {
+		openSuccessToastNotification();
+		refreshPeopleDetail();
+	}
+};
+
 const isShowSuccessNotification = ref(false);
 const openSuccessToastNotification = () => {
 	isShowSuccessNotification.value = false;
@@ -395,13 +431,23 @@ const getOrganizationOptions = (classification: string) => {
 	/>
 
 	<div class="flex flex-wrap justify-between">
-		<h1 class="mt-4 mb-8 font-normal">{{ peopleData?.name }}</h1>
+		<div class="flex flex-wrap items-center gap-4">
+			<h1 class="mt-4 mb-8 font-normal">{{ peopleData?.name }}</h1>
+			<div class="pb-2">
+				<UiPublishStatusTag :status="peopleData?.publish_status" />
+			</div>
+		</div>
 		<div class="flex flex-wrap items-start gap-4">
 			<cv-button @click="saveChanges" class="mt-4" kind="primary" :icon="Save16"
 				>Save Changes</cv-button
 			>
-			<cv-button @click="" class="mt-4" kind="tertiary" :icon="ViewOff16"
-				>Unpublished</cv-button
+			<cv-button
+				default="Unpublished"
+				:icon="isPublished ? ViewOff16 : View16"
+				class="mt-4"
+				kind="tertiary"
+				@click="togglePublishStatus"
+				>{{ isPublished ? 'Unpublished' : 'Published' }}</cv-button
 			>
 		</div>
 	</div>
