@@ -81,7 +81,7 @@ type Bill implements Motion @node {
 	"""
 	สถานะของร่างกฎหมาย
 	"""
-	status: BillStatus
+	status: String
 	"""
 	เว็บไซต์ภายนอกที่เกี่ยวข้อง
 	"""
