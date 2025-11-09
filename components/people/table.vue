@@ -40,7 +40,6 @@ const router = useRouter();
 		>
 			<template #actions>
 				<cv-button
-					hidden
 					:icon="Add16"
 					@click="() => $router.push('/admin/people/new')"
 				>

@@ -22,13 +22,13 @@ export type MemberShipProp = {
 const props = defineProps<{
 	title: string;
 	classification: string;
-	organizationsOptions: Array<{
+	organizationsOptions?: Array<{
 		label: string;
 		value: string;
 		classification: string;
 		posts: Array<{ label: string; value: string }>;
-	}> | null;
-	editedMembershipsId: Set<string>;
+	}>;
+	editedMembershipsId?: Set<string>;
 }>();
 
 const memberships = defineModel<MemberShipProp[] | null>('memberships');
@@ -64,7 +64,7 @@ const getPostOptionsForOrg = (orgId: string) => {
 };
 
 const getRowClass = (id: string): string => {
-	if (props.editedMembershipsId.has(id)) {
+	if (props.editedMembershipsId?.has(id)) {
 		return '[&>td]:bg-[#FCF4D6]';
 	}
 	return '';
@@ -225,7 +225,7 @@ const handleRoleInput = (event: InputEvent, m: MemberShipProp) => {
 			</cv-data-table>
 		</div>
 		<cv-inline-notification
-			v-if="editedMembershipsId.size > 0"
+			v-if="editedMembershipsId && editedMembershipsId.size > 0"
 			kind="warning"
 			lowContrast
 			title="Unsaved changes"
