@@ -2,8 +2,8 @@
 // @ts-ignore
 import { UserFilled32 } from '@carbon/icons-vue';
 import { enumGender, type Gender, type Link } from '~/.genql';
-import LinksForm from '~/components/vote-event/LinksForm.vue';
-import { formatDate, parseDate } from '~/utils/dateUtils';
+import LinksForm from '~/components/LinksForm.vue';
+import { formatDate, parseDate } from '~/utils/date';
 
 export interface PeopleDetailProps {
 	id: string;
@@ -52,29 +52,19 @@ const genderOptions = Object.values(enumGender);
 			<cv-number-input-skeleton v-for="i in 9" :key="i" />
 		</template>
 		<template v-else>
-			<div class="flex w-full gap-6 2xl:w-3/5">
-				<div
-					class="flex h-[128px] w-[128px] flex-none items-center justify-center rounded-full border border-gray-400 bg-[#F4F4F4]"
-				>
-					<img
-						v-if="modelValue.image"
-						:src="modelValue.image"
-						class="h-[128px] w-[128px] rounded-full object-cover"
-					/>
-					<UserFilled32
-						v-else
-						class="text-[#A8A8A8]"
-						style="width: 48px; height: 48px"
-					/>
-				</div>
-				<div class="flex flex-col gap-3">
-					<span class="font-bold">Profile Image</span>
-					<span class="text-[#525252]"
-						>Max file size is 500kb. Supported file types are .jpg and
-						.png.</span
-					>
-					<cv-button class="w-fit"> Upload </cv-button>
-				</div>
+			<div
+				class="flex h-[128px] w-[128px] flex-none items-center justify-center rounded-full border border-gray-400 bg-[#F4F4F4]"
+			>
+				<img
+					v-if="modelValue.image"
+					:src="modelValue.image"
+					class="h-[128px] w-[128px] rounded-full object-cover"
+				/>
+				<UserFilled32
+					v-else
+					class="text-[#A8A8A8]"
+					style="width: 48px; height: 48px"
+				/>
 			</div>
 			<cv-text-input
 				v-model="modelValue.prefix"
@@ -105,7 +95,7 @@ const genderOptions = Object.values(enumGender);
 			<div class="flex gap-6">
 				<cv-text-input
 					v-model="modelValue.firstname_en"
-					label="Firstname (Eng)*"
+					label="Firstname (Eng)"
 					placeholder=""
 					required
 				/>
@@ -116,7 +106,7 @@ const genderOptions = Object.values(enumGender);
 				/>
 				<cv-text-input
 					v-model="modelValue.lastname_en"
-					label="Lastname (Eng)*"
+					label="Lastname (Eng)"
 					placeholder=""
 					required
 				/>

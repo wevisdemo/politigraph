@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useForm } from '@tanstack/vue-form';
 import type { Link } from '~/.genql';
-import RelatedLinksForm from '~/components/vote-event/LinksForm.vue';
+import RelatedLinksForm from '~/components/LinksForm.vue';
 import { graphqlClient } from '~/utils/graphql/client';
 import { validateVotes } from '~/utils/votes/validator';
 import { diff } from 'radash';

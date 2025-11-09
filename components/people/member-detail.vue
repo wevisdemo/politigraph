@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 // @ts-ignore
 import { Add16 } from '@carbon/icons-vue';
-import { formatDate, parseDate } from '~/utils/dateUtils';
+import { formatDate, parseDate } from '~/utils/date';
 import type { title } from 'radash';
 
 export type MemberShipProp = {
@@ -99,6 +99,18 @@ watch(
 	},
 	{ deep: true },
 );
+
+const handleRoleInput = (event: InputEvent, m: MemberShipProp) => {
+	const target = event.target as HTMLInputElement;
+	const value = target?.value?.trim() ?? '';
+	const options = getPostOptionsForOrg(m.posts[0].organizations[0].id);
+	const found = options.find((opt) => opt.value === value);
+
+	if (!found && value.trim()) {
+		m.posts[0].id = crypto.randomUUID();
+		m.posts[0].role = value;
+	}
+};
 </script>
 
 <template>
@@ -114,7 +126,14 @@ watch(
 
 			<cv-data-table v-else :key="memberships.length">
 				<template #actions>
-					<cv-button @click="" :icon="Add16" aria-label="Add"> Add </cv-button>
+					<cv-button
+						hidden
+						@click="handleAddMembership"
+						:icon="Add16"
+						aria-label="Add"
+					>
+						Add
+					</cv-button>
 				</template>
 
 				<template #headings>
@@ -154,29 +173,30 @@ watch(
 								class="no-style-combo absolute -mt-2.5 -ml-1.5 w-1/2 text-sm"
 								item-value-key="value"
 								item-text-key="label"
-								@change="m.posts[0].id = ''"
+								@change="
+									m.posts[0].id = '';
+									m.posts[0].role = '';
+								"
 							/>
 						</cv-data-table-cell>
 
 						<!-- Role -->
 						<cv-data-table-cell>
-							<cv-dropdown
+							<cv-combo-box
 								v-model="m.posts[0].id"
-								aria-label="post"
-								class="absolute -mt-2.5 -ml-1 w-1/2 border-0 bg-transparent text-sm"
 								:disabled="!m.posts[0].organizations[0].id"
-							>
-								<cv-dropdown-item
-									v-for="item in getPostOptionsForOrg(
-										m.posts[0].organizations[0].id,
-									)"
-									:key="item.value"
-									:value="item.value"
-									class="text-[14px]"
-								>
-									{{ item.label }}
-								</cv-dropdown-item>
-							</cv-dropdown>
+								:options="getPostOptionsForOrg(m.posts[0].organizations[0].id)"
+								:label="m.posts[0].id ? m.posts[0].role : `Select Post`"
+								:key="m.posts[0].organizations[0].id"
+								aria-label="post"
+								autoFilter
+								autoHighlight
+								class="no-style-combo absolute -mt-2.5 -ml-1.5 w-1/2 text-sm"
+								item-value-key="value"
+								item-text-key="label"
+								allow-custom-value
+								@input="(event: InputEvent) => handleRoleInput(event, m)"
+							/>
 						</cv-data-table-cell>
 
 						<!-- Start -->

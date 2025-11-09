@@ -247,12 +247,48 @@ const saveChanges = async () => {
 
 		const updateMembershipsPromises = updatedMemberships.map(
 			async (membership) => {
-				const newPostId = membership.posts[0]?.id;
-				if (!newPostId)
+				const currentPostId = membership.posts[0]?.id;
+				if (!currentPostId)
 					throw new Error('Post ID is required for membership update.');
 				const oldPostId = originalMemberships.value?.find(
 					(s) => s.id === membership.id,
 				)?.posts?.[0]?.id;
+
+				const postResult = await graphqlClient.query({
+					posts: {
+						__args: { where: { id_EQ: currentPostId } },
+						id: true,
+					},
+				});
+
+				let newPostId = currentPostId;
+
+				if (!postResult.posts?.length) {
+					const created = await graphqlClient.mutation({
+						createPosts: {
+							__args: {
+								input: [
+									{
+										role: membership.posts[0]?.role,
+										organizations: {
+											connect: [
+												{
+													where: {
+														node: {
+															id_EQ: membership.posts[0]?.organizations[0].id,
+														},
+													},
+												},
+											],
+										},
+									},
+								],
+							},
+							posts: { id: true },
+						},
+					});
+					newPostId = created.createPosts?.posts?.[0]?.id ?? currentPostId;
+				}
 
 				return graphqlClient.mutation({
 					updateMemberships: {
