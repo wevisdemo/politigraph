@@ -10,7 +10,7 @@ if (!existsSync(BETTER_AUTH_PATH)) {
 }
 
 process.env.BETTER_AUTH_URL =
-	process.env.NUXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+	process.env.NUXT_PUBLIC_BASE_URL || 'http://127.0.0.1:3000';
 
 export const auth = betterAuth({
 	basePath: 'auth',

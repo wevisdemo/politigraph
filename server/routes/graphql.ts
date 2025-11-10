@@ -17,7 +17,7 @@ export default startServerAndCreateH3Handler(
 				return { token };
 			}
 
-			const res = await fetch('http://localhost:3000/auth/token', {
+			const res = await fetch('http://127.0.0.1:3000/auth/token', {
 				headers,
 			});
 

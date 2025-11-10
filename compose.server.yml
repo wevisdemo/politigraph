@@ -9,12 +9,10 @@ services:
       - ./nginx.conf:/etc/nginx/user_conf.d/web.conf:ro
       - /var/htdocs:/var/htdocs
       - letsencrypt:/etc/letsencrypt
-    ports:
-      - 80:80
-      - 443:443
     environment:
       CERTBOT_EMAIL: team@wevis.info
     privileged: true
+    network_mode: 'host'
 
   nuxt:
     container_name: politigraph-nuxt
@@ -25,12 +23,10 @@ services:
     env_file:
       - '.env'
     environment:
-      NEO4J_HOST: neo4j
       NUXT_PUBLIC_BASE_URL: https://politigraph.wevis.info
     volumes:
       - betterauth:/app/.better-auth
-    ports:
-      - 3000:3000
+    network_mode: 'host'
 
   neo4j:
     extends:
@@ -43,6 +39,7 @@ services:
     labels:
       - docker-volume-backup.stop-during-backup=true
     privileged: true
+    network_mode: 'host'
 
   do-agent:
     image: digitalocean/do-agent:stable
@@ -51,6 +48,7 @@ services:
     volumes:
       - /proc:/host/proc:ro
       - /sys:/host/sys:ro
+    network_mode: 'host'
 
   backup:
     image: offen/docker-volume-backup:v2
@@ -71,6 +69,7 @@ services:
       AWS_STORAGE_CLASS: STANDARD_IA
     env_file:
       - '.backup.env'
+    network_mode: 'host'
 
 volumes:
   betterauth:

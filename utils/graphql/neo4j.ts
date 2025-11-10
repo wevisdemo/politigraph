@@ -5,7 +5,7 @@ import { getGraphqlTypeDefs } from './schema';
 
 export function initGraphqlNeo4j() {
 	const driver = neo4j.driver(
-		`neo4j://${process.env.NEO4J_HOST ?? 'localhost'}:7687`,
+		`neo4j://${process.env.NEO4J_HOST ?? '127.0.0.1'}:7687`,
 		neo4j.auth.basic(process.env.NEO4J_USERNAME!, process.env.NEO4J_PASSWORD!),
 	);
 
@@ -16,7 +16,7 @@ export function initGraphqlNeo4j() {
 		features: {
 			authorization: {
 				key: {
-					url: 'http://localhost:3000/auth/jwks',
+					url: 'http://127.0.0.1:3000/auth/jwks',
 				},
 			},
 			excludeDeprecatedFields: {

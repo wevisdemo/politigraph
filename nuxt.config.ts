@@ -50,7 +50,7 @@ export default defineNuxtConfig({
 	},
 	runtimeConfig: {
 		public: {
-			baseUrl: 'http://localhost:3000',
+			baseUrl: 'http://127.0.0.1:3000',
 		},
 	},
 	vite: { plugins: [tailwindcss()] },
