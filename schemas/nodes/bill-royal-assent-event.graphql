@@ -1,7 +1,7 @@
 """
 การนำขึ้นทูลเกล้าทูลกระหม่อมถวาย
 """
-type BillRoyalAssentEvent implements Event {
+type BillRoyalAssentEvent implements Event @node {
 	"""
 	ID แบบสุ่ม
 	"""
