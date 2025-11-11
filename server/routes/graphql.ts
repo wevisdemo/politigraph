@@ -11,15 +11,10 @@ export default startServerAndCreateH3Handler(
 	}),
 	{
 		context: async ({ event: { headers } }) => {
-			const token = headers.get('authorization')?.replace('Bearer ', '');
-
-			if (token) {
-				return { token };
-			}
-
 			const res = await fetch('http://127.0.0.1:3000/auth/token', {
 				headers: {
-					Cookie: headers.get('cookie') ?? '',
+					cookie: headers.get('cookie') ?? '',
+					'x-api-key': headers.get('x-api-key') ?? '',
 				},
 			});
 

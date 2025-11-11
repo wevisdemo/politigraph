@@ -16,7 +16,9 @@ export const auth = betterAuth({
 	basePath: 'auth',
 	database: new Database(`${BETTER_AUTH_PATH}/sqlite.db`),
 	plugins: [
-		apiKey(),
+		apiKey({
+			enableSessionForAPIKeys: true,
+		}),
 		jwt(),
 		...(process.env.NODE_ENV !== 'production' ? [openAPI()] : []),
 	],
