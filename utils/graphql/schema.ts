@@ -1,16 +1,23 @@
-import { readdirSync, readFileSync } from 'fs';
+import { readdir } from 'node:fs/promises';
 
 const SCHEMAS_DIR = 'schemas';
 
-export function getGraphqlTypeDefs() {
-	return readdirSync(SCHEMAS_DIR, { recursive: true })
-		.filter((file) => (file as string).endsWith('.graphql'))
-		.map((schemaFile) => readFileSync(`${SCHEMAS_DIR}/${schemaFile}`, 'utf-8'))
-		.join('\n');
+export async function getGraphqlTypeDefs() {
+	const schemaFiles = (await readdir(SCHEMAS_DIR, { recursive: true })).filter(
+		(file) => (file as string).endsWith('.graphql'),
+	);
+
+	const schemas = await Promise.all(
+		schemaFiles.map((schemaFile) =>
+			Bun.file(`${SCHEMAS_DIR}/${schemaFile}`).text(),
+		),
+	);
+
+	return schemas.join('\n');
 }
 
-export function getGraphqlCreateIndexQueries() {
-	return readFileSync(`${SCHEMAS_DIR}/indexes.cypher`, 'utf-8')
+export async function getGraphqlCreateIndexQueries() {
+	return (await Bun.file(`${SCHEMAS_DIR}/indexes.cypher`).text())
 		.split(';')
 		.map((query) => query.trim())
 		.filter((query) => query);

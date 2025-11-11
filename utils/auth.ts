@@ -1,16 +1,16 @@
-import { existsSync, mkdirSync } from 'fs';
+import { exists, mkdir } from 'node:fs/promises';
 import { betterAuth } from 'better-auth';
 import { apiKey, jwt, openAPI } from 'better-auth/plugins';
-import Database from 'better-sqlite3';
+import { Database } from 'bun:sqlite';
 
 const BETTER_AUTH_PATH = '.better-auth';
 
-if (!existsSync(BETTER_AUTH_PATH)) {
-	mkdirSync(BETTER_AUTH_PATH);
+if (!(await exists(BETTER_AUTH_PATH))) {
+	await mkdir(BETTER_AUTH_PATH);
 }
 
 process.env.BETTER_AUTH_URL =
-	process.env.NUXT_PUBLIC_BASE_URL || 'http://127.0.0.1:3000';
+	process.env.NUXT_PUBLIC_BASE_URL || 'http://localhost:3000';
 
 export const auth = betterAuth({
 	basePath: 'auth',

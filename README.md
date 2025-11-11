@@ -9,6 +9,7 @@ To learn more about the data and API, visit the [documentations](https://politig
 
 ## 1. Stack
 
+- Bun
 - Nuxt + Nuxt Content
 - Better-Auth
 - GenQL
@@ -56,11 +57,11 @@ Neo4j data is stored in `.neo4j` folder in your project root.
 
 ### 3.3 Start development server
 
-Requires Node.js
+Requires [Bun](https://bun.com/)
 
 ```sh
-npm i	# Install dependencies for the first time
-npm run dev
+bun i	# Install dependencies for the first time
+bun dev
 ```
 
 Then politigraph will be accessible at `http://localhost:3000`
@@ -88,5 +89,5 @@ GraphQL required user account for **write** permission. To make an update to Gra
 To make local neo4j have up-to-dated data, we have a script to use rsync to download production database while local neo4j docker service in not running:
 
 ```shell
-npm run db:pull
+bun run db:pull
 ```

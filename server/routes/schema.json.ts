@@ -3,13 +3,13 @@ import { getGraphqlTypeDefs } from '~/utils/graphql/schema';
 
 export default defineEventHandler(parseSimpleGraphSchema);
 
-export type GraphSchema = ReturnType<typeof parseSimpleGraphSchema>;
+export type GraphSchema = Awaited<ReturnType<typeof parseSimpleGraphSchema>>;
 export type SchemaNode = GraphSchema[keyof GraphSchema][number];
 
-function parseSimpleGraphSchema() {
+async function parseSimpleGraphSchema() {
 	const { definitions } = parseGraphQLSDL(
 		undefined,
-		getGraphqlTypeDefs(),
+		await getGraphqlTypeDefs(),
 	).document;
 
 	const objects = definitions

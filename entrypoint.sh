@@ -1,2 +1,2 @@
-npx @better-auth/cli migrate --y
-node server/index.mjs
+bunx --bun @better-auth/cli migrate --y
+bun run --bun index.mjs

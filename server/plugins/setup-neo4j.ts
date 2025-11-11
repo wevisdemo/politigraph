@@ -9,13 +9,13 @@ export default defineNitroPlugin(async () => {
 		return;
 	}
 
-	const { driver, neo4jgraphql } = initGraphqlNeo4j();
+	const { driver, neo4jgraphql } = await initGraphqlNeo4j();
 
 	await neo4jgraphql.getSchema();
 	await neo4jgraphql.checkNeo4jCompat();
 	await neo4jgraphql.assertIndexesAndConstraints();
 
-	const queries = getGraphqlCreateIndexQueries();
+	const queries = await getGraphqlCreateIndexQueries();
 	const session = driver.session();
 	const tx = await session.beginTransaction();
 

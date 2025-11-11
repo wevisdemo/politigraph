@@ -34,9 +34,13 @@ export default defineNuxtConfig({
 		},
 	},
 	css: ['~/assets/css/main.css'],
+	devServer: {
+		host: '0.0.0.0',
+	},
 	devtools: { enabled: true },
 	modules: ['@nuxt/content', '@vueuse/nuxt'],
 	nitro: {
+		preset: 'bun',
 		esbuild: {
 			options: {
 				target: 'esnext',
@@ -50,7 +54,7 @@ export default defineNuxtConfig({
 	},
 	runtimeConfig: {
 		public: {
-			baseUrl: 'http://127.0.0.1:3000',
+			baseUrl: 'http://localhost:3000',
 		},
 	},
 	vite: { plugins: [tailwindcss()] },
