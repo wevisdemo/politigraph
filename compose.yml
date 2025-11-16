@@ -12,3 +12,15 @@ services:
     ports:
       - '7474:7474'
       - '7687:7687'
+  postgres:
+    image: postgres:18.1-alpine
+    environment:
+      POSTGRES_DB: betterauth
+      POSTGRES_PASSWORD: localdevonly
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres:/var/lib/postgresql
+
+volumes:
+  postgres:
