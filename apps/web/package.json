@@ -5,8 +5,7 @@
 	"type": "module",
 	"scripts": {
 		"dev": "bunx --bun nuxt dev",
-		"build": "bunx --bun nuxt build",
-		"generate": "bunx --bun nuxt generate",
+		"build": "bunx --bun nuxt build && bunx --bun nuxt generate",
 		"preview": "bunx --bun nuxt preview",
 		"postinstall": "nuxt prepare"
 	},
