@@ -1,4 +1,5 @@
-import { getGraphqlTypeDefs, parseGraphQLSDL } from '@politigraph/graphql';
+import { parseGraphQLSDL } from '@politigraph/graphql/libs';
+import { getGraphqlTypeDefs } from '@politigraph/graphql/schema';
 
 export default defineEventHandler(parseSimpleGraphSchema);
 
@@ -8,7 +9,7 @@ export type SchemaNode = GraphSchema[keyof GraphSchema][number];
 async function parseSimpleGraphSchema() {
 	const { definitions } = parseGraphQLSDL(
 		undefined,
-		await getGraphqlTypeDefs('../../packages/graphql/schemas'),
+		await getGraphqlTypeDefs('../../packages/graphql/schema'),
 	).document;
 
 	const objects = definitions

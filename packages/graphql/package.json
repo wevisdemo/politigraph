@@ -2,9 +2,8 @@
 	"name": "@politigraph/graphql",
 	"type": "module",
 	"private": true,
-	"main": "src/index.ts",
 	"scripts": {
-		"build": "bun run src/generate-genql.ts"
+		"build": "bun run generate-genql.ts"
 	},
 	"dependencies": {
 		"@genql/cli": "^6.3.3",

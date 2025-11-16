@@ -4,7 +4,7 @@ import type {
 	Person,
 	Post,
 	Vote,
-} from '../genql';
+} from './genql';
 
 const Organization = {
 	abbreviation: ({ classification }: Organization) => {

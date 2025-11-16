@@ -1,9 +1,9 @@
+import { resolvers } from '@politigraph/graphql/custom-resolvers';
+import { Neo4jGraphQL } from '@politigraph/graphql/libs';
 import {
 	getGraphqlCreateIndexQueries,
 	getGraphqlTypeDefs,
-	Neo4jGraphQL,
-	resolvers,
-} from '@politigraph/graphql';
+} from '@politigraph/graphql/schema';
 import { Context } from 'elysia';
 import neo4j from 'neo4j-driver';
 import { apollo } from './apollo';
