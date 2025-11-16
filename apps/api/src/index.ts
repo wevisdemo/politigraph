@@ -1,5 +1,5 @@
+import { auth } from '@politigraph/auth/auth';
 import { Elysia } from 'elysia';
-import { auth } from './auth';
 import { apolloServer, prepareNeo4j } from './neo4j-graphql';
 
 await prepareNeo4j();

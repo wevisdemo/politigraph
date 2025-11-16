@@ -1,20 +1,25 @@
-import { exists, mkdir } from 'node:fs/promises';
 import { betterAuth } from 'better-auth';
+import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { apiKey, jwt, openAPI } from 'better-auth/plugins';
-import { Database } from 'bun:sqlite';
+import { drizzle } from 'drizzle-orm/bun-sql';
+import * as schema from './auth-schema';
 
-const BETTER_AUTH_PATH = '.better-auth';
-
-if (!(await exists(BETTER_AUTH_PATH))) {
-	await mkdir(BETTER_AUTH_PATH);
+if (!process.env.DATABASE_URL) {
+	throw Error('DATABASE_URL env is not provided');
 }
 
 process.env.BETTER_AUTH_URL =
-	process.env.BETTER_AUTH_URL || 'http://localhost:8000';
+	process.env.NUXT_PUBLIC_BASE_URL || 'http://localhost:8000';
+
+const db = drizzle(process.env.DATABASE_URL);
 
 export const auth = betterAuth({
 	basePath: 'auth',
-	database: new Database(`${BETTER_AUTH_PATH}/sqlite.db`),
+	database: drizzleAdapter(db, {
+		provider: 'pg',
+		usePlural: true,
+		schema,
+	}),
 	plugins: [
 		apiKey({
 			enableSessionForAPIKeys: true,

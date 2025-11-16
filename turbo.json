@@ -3,11 +3,14 @@
 	"tasks": {
 		"build": {
 			"dependsOn": ["^build"],
-			"outputs": ["dist/**", "genql/**"]
+			"outputs": [".output/**", "dist/**", "genql/**"]
 		},
 		"dev": {
-			"dependsOn": ["@politigraph/graphql#build"],
+			"dependsOn": ["@politigraph/graphql#build", "migrate"],
 			"persistent": true,
+			"cache": false
+		},
+		"migrate": {
 			"cache": false
 		}
 	}

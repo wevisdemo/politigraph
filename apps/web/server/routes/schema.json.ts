@@ -8,7 +8,7 @@ export type SchemaNode = GraphSchema[keyof GraphSchema][number];
 async function parseSimpleGraphSchema() {
 	const { definitions } = parseGraphQLSDL(
 		undefined,
-		await getGraphqlTypeDefs('../graphql/schemas'),
+		await getGraphqlTypeDefs('../../packages/graphql/schemas'),
 	).document;
 
 	const objects = definitions

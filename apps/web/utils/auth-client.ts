@@ -1,6 +1,8 @@
-import type { User } from 'better-auth';
-import { apiKeyClient } from 'better-auth/client/plugins';
-import { createAuthClient } from 'better-auth/vue';
+import {
+	apiKeyClient,
+	createAuthClient,
+	type User,
+} from '@politigraph/auth/betterauth';
 
 export const isValidatingSession = ref(true);
 
