@@ -12,10 +12,6 @@ interface Event {
 	"""
 	organizations: [Organization!]! @declareRelationship
 	"""
-	กฏหมายที่เกี่ยวข้อง
-	"""
-	motions: [Motion!]! @declareRelationship
-	"""
 	คำอธิบาย
 	"""
 	description: String
