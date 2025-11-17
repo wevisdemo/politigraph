@@ -29,7 +29,7 @@ type VoteEvent implements Event
 	"""
 	กฏหมายที่เกี่ยวข้อง
 	"""
-	motions: [Motion!]!
+	bills: [Bill!]!
 		@relationship(type: "IN", properties: "Relation", direction: OUT)
 	"""
 	อีเวนต์การโหวตในร่างกฎหมาย
