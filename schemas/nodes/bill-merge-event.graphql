@@ -33,6 +33,10 @@ type BillMergeEvent implements Event @node {
 	"""
 	main_bill_id: String
 	"""
+	จำนวนร่างกฎหมายที่ถูกรวม
+	"""
+	total_merged_bills: Int!
+	"""
 	สถานะการเผยแพร่
 	"""
 	publish_status: PublishStatus!
