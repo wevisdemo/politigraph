@@ -3,7 +3,8 @@
 	"tasks": {
 		"build": {
 			"dependsOn": ["^build"],
-			"outputs": [".output/**", "dist/**", "genql/**"]
+			"outputs": [".output/**", "dist/**", "genql/**"],
+			"env": ["NODE_ENV"]
 		},
 		"dev": {
 			"dependsOn": ["@politigraph/graphql#build", "migrate"],
