@@ -14,7 +14,7 @@ type BillEnactEvent implements Event @node {
 	"""
 	กฏหมายที่เกี่ยวข้อง
 	"""
-	motions: [Motion!]!
+	bills: [Bill!]!
 		@relationship(type: "IN", properties: "Relation", direction: OUT)
 	"""
 	ชื่อร่างหลังจากประกาศเป็นกฎหมาย
