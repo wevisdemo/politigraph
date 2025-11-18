@@ -1,5 +1,4 @@
-import { parseGraphQLSDL } from '@politigraph/graphql/libs';
-import { getGraphqlTypeDefs } from '@politigraph/graphql/schema';
+import definitions from '@politigraph/graphql/dist/definitions.json';
 
 export default defineEventHandler(parseSimpleGraphSchema);
 
@@ -7,16 +6,11 @@ export type GraphSchema = Awaited<ReturnType<typeof parseSimpleGraphSchema>>;
 export type SchemaNode = GraphSchema[keyof GraphSchema][number];
 
 async function parseSimpleGraphSchema() {
-	const { definitions } = parseGraphQLSDL(
-		undefined,
-		await getGraphqlTypeDefs('../../packages/graphql/schema'),
-	).document;
-
 	const objects = definitions
 		.filter((d) => d.kind === 'ObjectTypeDefinition')
-		.filter((d) => !d.name.value.startsWith('Relation'))
+		.filter((d) => !d.name!.value.startsWith('Relation'))
 		.map((d) => ({
-			name: d.name.value,
+			name: d.name!.value,
 			description: d.description?.value,
 			interfaces: d.interfaces?.map((i) => i.name.value) ?? [],
 			fields: parseNodeFields(d.fields),
@@ -25,7 +19,7 @@ async function parseSimpleGraphSchema() {
 	const unions = definitions
 		.filter((d) => d.kind === 'UnionTypeDefinition')
 		.map((d) => ({
-			name: d.name.value,
+			name: d.name!.value,
 			description: d.description?.value,
 			types: d.types?.map((t) => t.name.value) ?? [],
 		}));
@@ -33,7 +27,7 @@ async function parseSimpleGraphSchema() {
 	const interfaces = definitions
 		.filter((d) => d.kind === 'InterfaceTypeDefinition')
 		.map((d) => ({
-			name: d.name.value,
+			name: d.name!.value,
 			description: d.description?.value,
 			fields: parseNodeFields(d.fields),
 		}));
@@ -41,7 +35,7 @@ async function parseSimpleGraphSchema() {
 	const enums = definitions
 		.filter((n) => n.kind === 'EnumTypeDefinition')
 		.map((d) => ({
-			name: d.name.value,
+			name: d.name!.value,
 			description: d.description?.value,
 			values:
 				d.values?.map((v) => ({

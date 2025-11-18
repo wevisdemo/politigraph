@@ -3,7 +3,8 @@
 	"type": "module",
 	"private": true,
 	"scripts": {
-		"build": "bun run generate-genql.ts"
+		"dev": "bun run build.ts --watch",
+		"build": "bun run build.ts"
 	},
 	"dependencies": {
 		"@genql/cli": "^6.3.3",
