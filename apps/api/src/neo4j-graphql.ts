@@ -1,9 +1,8 @@
 import { resolvers } from '@politigraph/graphql/custom-resolvers';
-import { Neo4jGraphQL } from '@politigraph/graphql/libs';
-import {
-	getGraphqlCreateIndexQueries,
-	getGraphqlTypeDefs,
-} from '@politigraph/graphql/schema';
+// @ts-ignore
+import typeDefs from '@politigraph/graphql/dist/typedefs.graphql' with { type: 'text' };
+import { Neo4jGraphQL } from '@politigraph/graphql/neo4j-graphql';
+import { getGraphqlCreateIndexQueries } from '@politigraph/graphql/schema';
 import { Context } from 'elysia';
 import neo4j from 'neo4j-driver';
 import { apollo } from './apollo';
@@ -14,7 +13,7 @@ const driver = neo4j.driver(
 );
 
 const neo4jGraphql = new Neo4jGraphQL({
-	typeDefs: await getGraphqlTypeDefs(),
+	typeDefs,
 	driver,
 	resolvers,
 	features: {

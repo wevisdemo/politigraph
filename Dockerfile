@@ -16,7 +16,6 @@ RUN turbo build
 FROM gcr.io/distroless/base AS run
 ENV NODE_ENV=production
 WORKDIR /app
-COPY --from=build /app/packages/graphql/schemas ./packages/graphql/schemas
 COPY --from=build /app/apps/api/dist/server .
 
 CMD ["./server"]
