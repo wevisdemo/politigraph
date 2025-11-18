@@ -7,6 +7,8 @@
 	},
 	"dependencies": {
 		"@apollo/server": "^4.11.2",
+		"@elysiajs/cors": "^1.4.0",
+		"@elysiajs/static": "1.4.0",
 		"@politigraph/auth": "workspace:*",
 		"@politigraph/graphql": "workspace:*",
 		"elysia": "^1.4.16",

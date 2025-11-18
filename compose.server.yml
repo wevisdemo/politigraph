@@ -1,44 +1,46 @@
 services:
-  nginx:
-    image: jonasal/nginx-certbot:5.4.0-alpine
-    container_name: nginx
-    restart: always
-    depends_on:
-      - nuxt
-    volumes:
-      - ./nginx.conf:/etc/nginx/user_conf.d/web.conf:ro
-      - /var/htdocs:/var/htdocs
-      - letsencrypt:/etc/letsencrypt
-    environment:
-      CERTBOT_EMAIL: team@wevis.info
-    privileged: true
-    network_mode: 'host'
-
-  nuxt:
-    container_name: politigraph-nuxt
+  elysia:
     image: wevisdemo/politigraph:latest
+    container_name: elysia
     restart: always
     depends_on:
       - neo4j
-    env_file:
-      - '.env'
-    environment:
-      NUXT_PUBLIC_BASE_URL: https://politigraph.wevis.info
+      - postgres
     volumes:
-      - betterauth:/app/server/.better-auth
+      - /var/htdocs/assets:/app/public/assets:ro
+    environment:
+      BETTER_AUTH_SECRET: $BETTER_AUTH_SECRET
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@127.0.0.1:5432/betterauth
+      NEO4J_USERNAME: $NEO4J_USERNAME
+      NEO4J_PASSWORD: $NEO4J_PASSWORD
+      PORT: 80
     network_mode: 'host'
 
   neo4j:
     extends:
       file: compose.yml
       service: neo4j
-    container_name: politigraph-neo4j
+    container_name: neo4j
     restart: always
     volumes:
       - ./neo4j/data:/data
     labels:
       - docker-volume-backup.stop-during-backup=true
     privileged: true
+    network_mode: 'host'
+
+  postgres:
+    extends:
+      file: compose.yml
+      service: postgres
+    container_name: postgres
+    restart: always
+    environment:
+      POSTGRES_DB: betterauth
+      POSTGRES_USER: $POSTGRES_USER
+      POSTGRES_PASSWORD: $POSTGRES_PASSWORD
+    labels:
+      - docker-volume-backup.stop-during-backup=true
     network_mode: 'host'
 
   do-agent:
@@ -58,7 +60,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - /var/backup:/archive
-      - betterauth:/backup/betterauth:ro
+      - postgres:/backup/postgres:ro
       - ./neo4j/data:/backup/neo4j:ro
     environment:
       BACKUP_CRON_EXPRESSION: 0 21 * * 5
@@ -72,5 +74,4 @@ services:
     network_mode: 'host'
 
 volumes:
-  betterauth:
-  letsencrypt:
+  postgres:

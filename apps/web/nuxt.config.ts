@@ -21,7 +21,6 @@ export default defineNuxtConfig({
 			],
 		},
 	},
-	sourcemap: true,
 	compatibilityDate: '2024-11-01',
 	content: {
 		build: {
@@ -40,7 +39,7 @@ export default defineNuxtConfig({
 	devtools: { enabled: true },
 	modules: ['@nuxt/content', '@vueuse/nuxt'],
 	nitro: {
-		preset: 'bun',
+		preset: 'static',
 		esbuild: {
 			options: {
 				target: 'esnext',
@@ -49,8 +48,9 @@ export default defineNuxtConfig({
 	},
 	routeRules: {
 		'/': { prerender: true },
-		'/admin/**': { ssr: false },
+		'/admin/**': { prerender: false },
 		'/docs/**': { prerender: true },
+		'/graphql': { prerender: false },
 		'/schema.json': { prerender: true },
 		...(process.env.NODE_ENV !== 'production'
 			? {
@@ -64,6 +64,7 @@ export default defineNuxtConfig({
 			baseUrl: 'http://localhost:8000',
 		},
 	},
+	sourcemap: true,
+	ssr: false,
 	vite: { plugins: [tailwindcss()] },
-	watch: [/schemas\/.+.graphql/],
 });

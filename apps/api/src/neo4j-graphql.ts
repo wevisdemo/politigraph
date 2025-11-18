@@ -40,6 +40,7 @@ const schema = await neo4jGraphql.getSchema();
 export const apolloServer = apollo({
 	schema,
 	allowBatchedHttpRequests: true,
+	introspection: true,
 	context: async ({ request: { headers } }: Context) => {
 		const res = await fetch('http://127.0.0.1:3000/auth/token', {
 			headers: {
