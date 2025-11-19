@@ -20,7 +20,7 @@ jobs:
         uses: burnett01/rsync-deployments@7.0.1
         with:
           switches: -azvP --chown=bot:deployer --chmod=g+w
-          path: politigraph-image.tar.gz compose.yml compose.server.yml nginx.conf
+          path: politigraph-image.tar.gz compose.yml compose.server.yml
           remote_host: ${{ secrets.SSH_HOST }}
           remote_user: bot
           remote_key: ${{ secrets.SSH_KEY }}
@@ -41,7 +41,6 @@ jobs:
             cd ${{ secrets.SSH_APP_DIR }}
             docker image tag wevisdemo/politigraph:latest wevisdemo/politigraph:previous
             docker load --input politigraph-image.tar.gz
-            docker compose -f compose.server.yml up -d
-            docker compose -f compose.server.yml restart nginx
+            docker compose -f compose.server.yml up -d --remove-orphans
             docker container prune --force
             docker image prune --all --force --filter "until=72h"
