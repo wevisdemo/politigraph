@@ -1,9 +1,9 @@
 import { cors } from '@elysiajs/cors';
 import { staticPlugin } from '@elysiajs/static';
-import { auth } from '@politigraph/auth/auth';
-import { trustedOrigins } from '@politigraph/auth/trust-origins';
-import { Elysia } from 'elysia';
-import { apolloServer } from './neo4j-graphql';
+import { auth, trustedOrigins } from '@politigraph/auth/auth';
+import { schema } from '@politigraph/graphql/neo4j-graphql';
+import { Elysia, type Context } from 'elysia';
+import { apollo } from './apollo';
 
 const app = new Elysia()
 	.use(
@@ -11,7 +11,25 @@ const app = new Elysia()
 			origin: trustedOrigins,
 		}),
 	)
-	.use(apolloServer)
+	.use(
+		apollo({
+			schema,
+			allowBatchedHttpRequests: true,
+			introspection: true,
+			context: async ({ request: { headers } }: Context) => {
+				const res = await fetch('http://127.0.0.1:3000/auth/token', {
+					headers: {
+						cookie: headers.get('cookie') ?? '',
+						'x-api-key': headers.get('x-api-key') ?? '',
+					},
+				});
+
+				if (res.ok) {
+					return res.json();
+				}
+			},
+		}),
+	)
 	.all('/auth/*', (ctx) => auth.handler(ctx.request))
 	.use(
 		staticPlugin({
