@@ -11,8 +11,7 @@
 		"@elysiajs/static": "1.4.0",
 		"@politigraph/auth": "workspace:*",
 		"@politigraph/graphql": "workspace:*",
-		"elysia": "^1.4.16",
-		"neo4j-driver": "^5.27.0"
+		"elysia": "^1.4.16"
 	},
 	"devDependencies": {
 		"bun-types": "latest"

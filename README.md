@@ -69,7 +69,7 @@ Web server in dev mode will pass request request from `/api` and `/graphql` in p
 
 ### 3.4 Create user account (for admin access)
 
-You need to create an account first to login to the admin panel, by making a POST request to `/auth/sign-up/email` with the following body:
+You need to create an account first to login to the admin panel, by making a POST request to `/auth/sign-up/email` with header `Origin: http://localhost:3000` and the following body:
 
 ```json
 {
