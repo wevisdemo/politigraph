@@ -4,8 +4,7 @@
 	"private": true,
 	"scripts": {
 		"generate": "bunx --bun @better-auth/cli generate -y && bunx --bun drizzle-kit generate",
-		"migrate": "bunx --bun drizzle-kit migrate",
-		"push": "bunx --bun drizzle-kit push"
+		"migrate": "bun migrate.ts"
 	},
 	"dependencies": {
 		"better-auth": "^1.3.34",
