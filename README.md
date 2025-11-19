@@ -7,17 +7,20 @@ To learn more about the data and API, visit the [documentations](https://politig
 > [!WARNING]
 > We are not responsible for any misinformation or consequence of any usage on our data. These open data are collected, transformed, validated, and published by us, a civil society, to push the open API standard in Thailand. We are not the official government institution who originally own and responsible in publishing these data. Please send us any feedback or suggestion via team@wevis.info or create an issue on GitHub.
 
-## 1. Stack
+## 1. The Monorepo
 
-- Bun
-- Nuxt + Nuxt Content
-- Better-Auth
-- GenQL
-- Neo4JGraphQL + Apollo GraphQL Server
+Managed with [Turborepo](https://turborepo.com/)
+
+- **/apps** : Application repository
+  - **/api** : Backend API for GraphQL, authentication, and static file (web/assets) serving
+  - **/web** : Landing page, admin panel, and document to be rendered as SPA
+- **/packages** : Shared packages between app
+  - **/auth** : Authentication and related database management
+  - **/graphql** : Schemas and custom resolvers implementation
 
 ## 2. Routes and Deployment
 
-Main routes of the web application:
+Main routes of the final application:
 
 - `/` A landing page for public
 - `/admin` Admin panel for managing politigraph data (required an account)
@@ -32,18 +35,14 @@ Following these steps will help you set up Politigraph on your local development
 
 ### 3.1 Environment Variables
 
-Add following variables to the `.env`
+Add following variables to the root `.env` (for docker) and `/api/.env` (for API) to config neo4j credential. Both file must be the same.
 
 ```env
-NEO4J_USERNAME=neo4j
+NEO4J_USERNAME=<SOME_USER_NAME>
 NEO4J_PASSWORD=<SOME_INITIAL_PASSWORD>
-BETTER_AUTH_URL=http://localhost:3000
-BETTER_AUTH_SECRET=<RANDOM_STRING>
 ```
 
-Better-Auth secret can be obtained from Better-Auth's [Generate secret button](https://www.better-auth.com/docs/installation)
-
-### 3.2 Start Neo4j Server
+### 3.2 Start Neo4j and Postgres Containers
 
 Using Docker Compose
 
@@ -51,11 +50,11 @@ Using Docker Compose
 docker compose up -d
 ```
 
-Neo4j API will be running at `http://localhost:7687` with web UI at `http://localhost:7474`
+Neo4j API will be running at `http://localhost:7687` with web UI at `http://localhost:7474` and the data is stored in `.neo4j` folder in your project root.
 
-Neo4j data is stored in `.neo4j` folder in your project root.
+Postgres will be running at `http://localhost:5342` and the data will ve stored in docker volume.
 
-### 3.3 Start development server
+### 3.3 Start apps' development server
 
 Requires [Bun](https://bun.com/)
 
@@ -64,7 +63,9 @@ bun i	# Install dependencies for the first time
 bun dev
 ```
 
-Then politigraph will be accessible at `http://localhost:3000`
+Web will be started and accessible at `http://localhost:8000` while API will be availabled at `http://localhost:3000`
+
+Web server in dev mode will pass request request from `/api` and `/graphql` in port 8000 to the API at port 3000, so auth cookie will be pass correctly.
 
 ### 3.4 Create user account (for admin access)
 

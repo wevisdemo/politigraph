@@ -1,15 +1,13 @@
-# graphql
+# @politigraph/graphql
 
-To install dependencies:
+Schemas and custom resolvers implementation
 
-```bash
-bun install
-```
+## Tech Stack
 
-To run:
+- Neo4j GraphQL library
+- GenQL
 
-```bash
-bun run index.ts
-```
+## Scripts
 
-This project was created using `bun init` in bun v1.3.2. [Bun](https://bun.com) is a fast all-in-one JavaScript runtime.
+- `dev` build in watch mode
+- `build` build genql client, GraphQL schema, and definitions JSON file

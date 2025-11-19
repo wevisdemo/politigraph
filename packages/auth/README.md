@@ -1,15 +1,14 @@
-# auth
+# @politigraph/auth
 
-To install dependencies:
+Authentication and related database management
 
-```bash
-bun install
-```
+## Tech Stack
 
-To run:
+- Better Auth
+- Drizzle + Bun SQL
+- Postgres
 
-```bash
-bun run index.ts
-```
+## Scripts
 
-This project was created using `bun init` in bun v1.3.2. [Bun](https://bun.com) is a fast all-in-one JavaScript runtime.
+- `generate` generate migration file from current better-auth plugins
+- `migrate` migrate Postgres database to match generated migration file

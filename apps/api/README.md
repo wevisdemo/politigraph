@@ -1,19 +1,13 @@
-# Elysia with Bun runtime
+# @politigraph/api
 
-## Getting Started
+Backend API for GraphQL, authentication, and static file (web/assets) serving
 
-To get started with this template, simply paste this command into your terminal:
+## Tech Stack
 
-```bash
-bun create elysia ./elysia-example
-```
+- Elysia
+- Apollo GraphQL Server
 
-## Development
+## Scripts
 
-To start the development server run:
-
-```bash
-bun run dev
-```
-
-Open http://localhost:3000/ with your browser to see the result.
+- `dev` run server in watch mode
+- `build` build server as a single file executable using Bun
