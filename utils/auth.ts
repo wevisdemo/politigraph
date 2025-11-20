@@ -18,6 +18,9 @@ export const auth = betterAuth({
 	plugins: [
 		apiKey({
 			enableSessionForAPIKeys: true,
+			rateLimit: {
+				enabled: false,
+			},
 		}),
 		jwt(),
 		...(process.env.NODE_ENV !== 'production' ? [openAPI()] : []),
