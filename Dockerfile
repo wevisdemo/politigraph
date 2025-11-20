@@ -1,20 +1,20 @@
-FROM oven/bun:1-alpine AS base
+FROM oven/bun:1 AS base
 WORKDIR /app
+RUN bun add -g turbo@^2.6.0
 
-FROM base AS prerelease
+FROM base AS prepare
 COPY . .
-RUN bun install --production --frozen-lockfile --ignore-scripts
-ENV NODE_ENV=production
-RUN bun run build
+RUN turbo prune --docker @politigraph/api
 
-FROM base AS release
-RUN bun add -g @better-auth/cli --ignore-scripts
-COPY --from=prerelease /app/.output .
-WORKDIR /app/server
-COPY entrypoint.sh .
-COPY better-auth_migrations ./better-auth_migrations
-COPY schemas ./schemas
-COPY utils/auth.ts .
+FROM base AS build
+COPY --from=prepare /app/out/json/ .
+RUN bun install --frozen-lockfile --ignore-scripts --production --no-cache
+COPY --from=prepare /app/out/full/ .
+RUN turbo build
 
-EXPOSE 3000/tcp
-ENTRYPOINT [ "sh", "entrypoint.sh" ]
+FROM gcr.io/distroless/base AS run
+WORKDIR /app
+COPY --from=build /app/packages/graphql/schemas ./packages/graphql/schemas
+COPY --from=build /app/apps/api/dist/server .
+
+CMD ["./server"]

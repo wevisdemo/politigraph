@@ -1,0 +1,14 @@
+{
+	"$schema": "https://turborepo.com/schema.json",
+	"tasks": {
+		"build": {
+			"dependsOn": ["^build"],
+			"outputs": ["dist/**", "genql/**"]
+		},
+		"dev": {
+			"dependsOn": ["@politigraph/graphql#build"],
+			"persistent": true,
+			"cache": false
+		}
+	}
+}
