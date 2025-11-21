@@ -17,7 +17,7 @@ const neo4jGraphql = new Neo4jGraphQL({
 	features: {
 		authorization: {
 			key: {
-				url: 'http://127.0.0.1:3000/auth/jwks',
+				url: `http://127.0.0.1:${process.env.PORT ?? 3000}/auth/jwks`,
 			},
 		},
 		excludeDeprecatedFields: {

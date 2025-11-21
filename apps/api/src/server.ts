@@ -5,6 +5,8 @@ import { schema } from '@politigraph/graphql/neo4j-graphql';
 import { Elysia, type Context } from 'elysia';
 import { apollo } from './apollo';
 
+const port = process.env.PORT ?? 3000;
+
 const app = new Elysia()
 	.use(
 		cors({
@@ -17,7 +19,7 @@ const app = new Elysia()
 			allowBatchedHttpRequests: true,
 			introspection: true,
 			context: async ({ request: { headers } }: Context) => {
-				const res = await fetch('http://127.0.0.1:3000/auth/token', {
+				const res = await fetch(`http://127.0.0.1:${port}/auth/token`, {
 					headers: {
 						cookie: headers.get('cookie') ?? '',
 						'x-api-key': headers.get('x-api-key') ?? '',
@@ -45,7 +47,7 @@ const app = new Elysia()
 			return Bun.file('public/index.html');
 		}
 	})
-	.listen(process.env.PORT ?? 3000);
+	.listen(port);
 
 console.info(
 	`[Elysia] API is running at http://${app.server?.hostname}:${app.server?.port}`,
