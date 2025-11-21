@@ -1,3 +1,4 @@
+import { bearer } from '@elysiajs/bearer';
 import { cors } from '@elysiajs/cors';
 import { staticPlugin } from '@elysiajs/static';
 import { auth, trustedOrigins } from '@politigraph/auth/auth';
@@ -7,13 +8,16 @@ import { apollo } from './apollo';
 
 const port = process.env.PORT ?? 3000;
 const landingSpa = Bun.file('public/index.html');
+const cert = Bun.file('tls/cert.pem');
+const key = Bun.file('tls/key.pem');
 
-const app = new Elysia()
-	.use(
-		cors({
-			origin: trustedOrigins,
-		}),
-	)
+const app = new Elysia({
+	serve: {
+		tls:
+			(await cert.exists()) && (await key.exists()) ? { cert, key } : undefined,
+	},
+})
+	.use(cors({ origin: trustedOrigins }))
 	.use(
 		apollo({
 			schema,
@@ -39,23 +43,42 @@ const app = new Elysia()
 			},
 		}),
 	)
-	.all('/auth/*', (ctx) => auth.handler(ctx.request))
-	.use(
-		staticPlugin({
-			prefix: '/',
-			alwaysStatic: true,
-		}),
-	)
-	.get('/', () => landingSpa)
-	.onError(({ code, path, set }) => {
-		// Bun SPA Workaround https://github.com/elysiajs/elysia/issues/1515#issuecomment-3521899834
-		if (code === 'NOT_FOUND' && !path.startsWith('/auth/')) {
-			set.status = 200;
-			return landingSpa;
+	.all('/auth/*', (ctx) => auth.handler(ctx.request));
+
+if (process.env.NODE_ENV === 'production') {
+	app.use(bearer()).post('/auth/sign-up/email', (ctx) => {
+		if (
+			!process.env.SIGN_UP_TOKEN ||
+			ctx.bearer !== process.env.SIGN_UP_TOKEN
+		) {
+			ctx.set.status = 'Forbidden';
+			return 'Forbidden';
 		}
-	})
-	.listen(port);
+
+		return auth.handler(ctx.request);
+	});
+}
+
+if (await landingSpa.exists()) {
+	app
+		.use(
+			staticPlugin({
+				prefix: '/',
+				alwaysStatic: true,
+			}),
+		)
+		.get('/', () => landingSpa)
+		.onError(({ code, path, set }) => {
+			// Bun SPA Workaround https://github.com/elysiajs/elysia/issues/1515#issuecomment-3521899834
+			if (code === 'NOT_FOUND' && !path.startsWith('/auth/')) {
+				set.status = 200;
+				return landingSpa;
+			}
+		});
+}
+
+app.listen(port);
 
 console.info(
-	`[Elysia] API is running at http://${app.server?.hostname}:${app.server?.port}`,
+	`API is running at http://${app.server?.hostname}:${app.server?.port}`,
 );
