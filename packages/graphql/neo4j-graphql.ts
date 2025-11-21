@@ -10,39 +10,36 @@ const driver = neo4j.driver(
 	neo4j.auth.basic(process.env.NEO4J_USERNAME!, process.env.NEO4J_PASSWORD!),
 );
 
-const neo4jGraphql = new Neo4jGraphQL({
-	typeDefs,
-	driver,
-	resolvers,
-	features: {
-		authorization: {
-			key: {
-				url: `http://127.0.0.1:${process.env.PORT ?? 3000}/auth/jwks`,
+export function initNeo4jGraphql(jwksUrl: string) {
+	return new Neo4jGraphQL({
+		typeDefs,
+		driver,
+		resolvers,
+		features: {
+			authorization: {
+				key: {
+					url: jwksUrl,
+				},
+			},
+			excludeDeprecatedFields: {
+				implicitEqualFilters: true,
+				implicitSet: true,
+				deprecatedOptionsArgument: true,
+				directedArgument: true,
+				connectOrCreate: true,
+				typename_IN: true,
+				idAggregations: true,
+				deprecatedAggregateOperations: true,
 			},
 		},
-		excludeDeprecatedFields: {
-			implicitEqualFilters: true,
-			implicitSet: true,
-			deprecatedOptionsArgument: true,
-			directedArgument: true,
-			connectOrCreate: true,
-			typename_IN: true,
-			idAggregations: true,
-			deprecatedAggregateOperations: true,
-		},
-	},
-});
+	});
+}
 
-export const schema = await neo4jGraphql.getSchema();
-
-export async function prepareNeo4j() {
+export async function createNeo4jIndex() {
 	if (!process.env.NEO4J_USERNAME || !process.env.NEO4J_PASSWORD) {
 		console.info('[Neo4j] Credential env not found, skipping setup');
 		return;
 	}
-
-	await neo4jGraphql.checkNeo4jCompat();
-	await neo4jGraphql.assertIndexesAndConstraints();
 
 	const queries = await getGraphqlCreateIndexQueries();
 	const session = driver.session();

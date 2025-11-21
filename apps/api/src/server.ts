@@ -2,35 +2,42 @@ import { bearer } from '@elysiajs/bearer';
 import { cors } from '@elysiajs/cors';
 import { staticPlugin } from '@elysiajs/static';
 import { auth, trustedOrigins } from '@politigraph/auth/auth';
-import { schema } from '@politigraph/graphql/neo4j-graphql';
+import { initNeo4jGraphql } from '@politigraph/graphql/neo4j-graphql';
 import { Elysia, type Context } from 'elysia';
 import logixlysia from 'logixlysia';
 import { apollo } from './apollo';
 
+const isProduction = process.env.NODE_ENV === 'production';
 const port = process.env.PORT ?? 3000;
 const landingSpa = Bun.file('public/index.html');
 const ca = Bun.file('tls/ca.pem');
 const cert = Bun.file('tls/cert.pem');
 const key = Bun.file('tls/key.pem');
 
-const isProduction = process.env.NODE_ENV === 'production';
+const tls =
+	(await cert.exists()) && (await key.exists())
+		? {
+				ca: (await ca.exists()) ? ca : undefined,
+				cert,
+				key,
+			}
+		: undefined;
 
-const app = new Elysia({
-	serve: {
-		tls: {
-			ca: (await ca.exists()) ? ca : undefined,
-			cert: (await cert.exists()) ? cert : undefined,
-			key: (await key.exists()) ? key : undefined,
-		},
-	},
-})
+const origin = `${tls ? 'https' : 'http'}://127.0.0.1:${port}`;
+
+const neo4jGraphql = initNeo4jGraphql(`${origin}/auth/jwks`);
+const schema = await neo4jGraphql.getSchema();
+await neo4jGraphql.checkNeo4jCompat();
+await neo4jGraphql.assertIndexesAndConstraints();
+
+const app = new Elysia({ serve: { tls } })
 	.use(
 		logixlysia({
 			config: {
 				showStartupMessage: true,
 				startupMessageFormat: 'simple',
 				logFilter: {
-					level: isProduction ? 'ERROR' : 'DEBUG',
+					level: isProduction ? 'WARNING' : 'DEBUG',
 				},
 			},
 		}),
@@ -47,7 +54,7 @@ const app = new Elysia({
 
 				if (!apiKey && !cookie) return;
 
-				const res = await fetch(`http://127.0.0.1:${port}/auth/token`, {
+				const res = await fetch(`${origin}/auth/token`, {
 					headers: apiKey
 						? {
 								'x-api-key': apiKey,
