@@ -4,6 +4,7 @@ import { staticPlugin } from '@elysiajs/static';
 import { auth, trustedOrigins } from '@politigraph/auth/auth';
 import { schema } from '@politigraph/graphql/neo4j-graphql';
 import { Elysia, type Context } from 'elysia';
+import logixlysia from 'logixlysia';
 import { apollo } from './apollo';
 
 const port = process.env.PORT ?? 3000;
@@ -11,6 +12,8 @@ const landingSpa = Bun.file('public/index.html');
 const ca = Bun.file('tls/ca.pem');
 const cert = Bun.file('tls/cert.pem');
 const key = Bun.file('tls/key.pem');
+
+const isProduction = process.env.NODE_ENV === 'production';
 
 const app = new Elysia({
 	serve: {
@@ -21,6 +24,17 @@ const app = new Elysia({
 		},
 	},
 })
+	.use(
+		logixlysia({
+			config: {
+				showStartupMessage: true,
+				startupMessageFormat: 'simple',
+				logFilter: {
+					level: isProduction ? 'ERROR' : 'DEBUG',
+				},
+			},
+		}),
+	)
 	.use(cors({ origin: trustedOrigins }))
 	.use(
 		apollo({
@@ -49,7 +63,7 @@ const app = new Elysia({
 	)
 	.all('/auth/*', (ctx) => auth.handler(ctx.request));
 
-if (process.env.NODE_ENV === 'production') {
+if (isProduction) {
 	app.use(bearer()).post('/auth/sign-up/email', (ctx) => {
 		if (
 			!process.env.SIGN_UP_TOKEN ||
@@ -82,7 +96,3 @@ if (await landingSpa.exists()) {
 }
 
 app.listen(port);
-
-console.info(
-	`API is running at http://${app.server?.hostname}:${app.server?.port}`,
-);
