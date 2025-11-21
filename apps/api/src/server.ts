@@ -6,6 +6,7 @@ import { Elysia, type Context } from 'elysia';
 import { apollo } from './apollo';
 
 const port = process.env.PORT ?? 3000;
+const landingSpa = Bun.file('public/index.html');
 
 const app = new Elysia()
 	.use(
@@ -19,11 +20,17 @@ const app = new Elysia()
 			allowBatchedHttpRequests: true,
 			introspection: true,
 			context: async ({ request: { headers } }: Context) => {
+				const apiKey = headers.get('x-api-key');
+				const cookie = headers.get('cookie');
+
+				if (!apiKey && !cookie) return;
+
 				const res = await fetch(`http://127.0.0.1:${port}/auth/token`, {
-					headers: {
-						cookie: headers.get('cookie') ?? '',
-						'x-api-key': headers.get('x-api-key') ?? '',
-					},
+					headers: apiKey
+						? {
+								'x-api-key': apiKey,
+							}
+						: ({ cookie } as { cookie: string }),
 				});
 
 				if (res.ok) {
@@ -39,12 +46,12 @@ const app = new Elysia()
 			alwaysStatic: true,
 		}),
 	)
-	.get('/', () => Bun.file('public/index.html'))
+	.get('/', () => landingSpa)
 	.onError(({ code, path, set }) => {
 		// Bun SPA Workaround https://github.com/elysiajs/elysia/issues/1515#issuecomment-3521899834
 		if (code === 'NOT_FOUND' && !path.startsWith('/auth/')) {
 			set.status = 200;
-			return Bun.file('public/index.html');
+			return landingSpa;
 		}
 	})
 	.listen(port);
