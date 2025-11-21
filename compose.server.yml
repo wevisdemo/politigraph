@@ -16,6 +16,7 @@ services:
       NEO4J_PASSWORD: $NEO4J_PASSWORD
       PORT: 443
       SIGN_UP_TOKEN: $SIGN_UP_TOKEN
+    privileged: true
     network_mode: 'host'
 
   neo4j:
