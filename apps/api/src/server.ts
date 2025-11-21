@@ -8,13 +8,17 @@ import { apollo } from './apollo';
 
 const port = process.env.PORT ?? 3000;
 const landingSpa = Bun.file('public/index.html');
+const ca = Bun.file('tls/ca.pem');
 const cert = Bun.file('tls/cert.pem');
 const key = Bun.file('tls/key.pem');
 
 const app = new Elysia({
 	serve: {
-		tls:
-			(await cert.exists()) && (await key.exists()) ? { cert, key } : undefined,
+		tls: {
+			ca: (await ca.exists()) ? ca : undefined,
+			cert: (await cert.exists()) ? cert : undefined,
+			key: (await key.exists()) ? key : undefined,
+		},
 	},
 })
 	.use(cors({ origin: trustedOrigins }))
