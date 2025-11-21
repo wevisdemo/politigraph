@@ -7,13 +7,15 @@ services:
       - neo4j
       - postgres
     volumes:
+      - ./tls:/app/tls:ro
       - /var/htdocs/assets:/app/public/assets:ro
     environment:
       BETTER_AUTH_SECRET: $BETTER_AUTH_SECRET
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@127.0.0.1:5432/betterauth
       NEO4J_USERNAME: $NEO4J_USERNAME
       NEO4J_PASSWORD: $NEO4J_PASSWORD
-      PORT: 80
+      PORT: 443
+      SIGN_UP_TOKEN: $SIGN_UP_TOKEN
     network_mode: 'host'
 
   neo4j:
