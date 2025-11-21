@@ -65,14 +65,14 @@ services:
       - postgres:/backup/postgres:ro
       - ./neo4j/data:/backup/neo4j:ro
     environment:
-      BACKUP_CRON_EXPRESSION: 0 21 * * 5
-      BACKUP_COMPRESSION: zst
-      BACKUP_RETENTION_DAYS: 30
+      AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+      AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
       AWS_S3_BUCKET_NAME: puwv-backup
       AWS_S3_PATH: wevis-politigraph
       AWS_STORAGE_CLASS: STANDARD_IA
-    env_file:
-      - '.backup.env'
+      BACKUP_COMPRESSION: zst
+      BACKUP_CRON_EXPRESSION: 0 21 * * 5
+      BACKUP_RETENTION_DAYS: 30
     network_mode: 'host'
 
 volumes:
