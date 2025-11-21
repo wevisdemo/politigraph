@@ -12,3 +12,7 @@ Authentication and related database management
 
 - `generate` generate migration file from current better-auth plugins
 - `migrate` migrate Postgres database to match generated migration file
+
+## Environment Variables
+
+- `DATABASE_URL` postgres connection URL
