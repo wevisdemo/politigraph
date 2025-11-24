@@ -68,7 +68,7 @@ const signout = async () => {
 		fetchOptions: {
 			onSuccess: () => {
 				localStorage.setItem('isLogout', 'true');
-				router.push('/login');
+				router.push('/admin/login');
 			},
 		},
 	});
