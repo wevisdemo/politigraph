@@ -1,0 +1,50 @@
+services:
+  nginx:
+    image: nginx:1.29-alpine
+    container_name: nginx
+    restart: always
+    privileged: true
+    network_mode: 'host'
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./tls:/var/tls:ro
+      - /var/htdocs:/var/htdocs:ro
+
+  elysia:
+    image: wevisdemo/politigraph:latest
+    container_name: elysia
+    restart: always
+    network_mode: 'host'
+    environment:
+      BETTER_AUTH_SECRET: $BETTER_AUTH_SECRET
+      DATABASE_URL: $DATABASE_URL
+      NEO4J_HOST: $NEO4J_HOST
+      NEO4J_USERNAME: $NEO4J_USERNAME
+      NEO4J_PASSWORD: $NEO4J_PASSWORD
+
+  beszel-agent:
+    image: henrygd/beszel-agent:0.16
+    container_name: beszel-agent
+    restart: always
+    privileged: true
+    network_mode: host
+    volumes:
+      - beszel_agent:/var/lib/beszel-agent
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      LISTEN: 45876
+      HUB_URL: $BESZEL_AGENT_HUB_URL
+      TOKEN: $BESZEL_AGENT_TOKEN
+      KEY: $BESZEL_AGENT_KEY
+
+  do-agent:
+    image: digitalocean/do-agent:stable
+    container_name: do-agent
+    restart: always
+    network_mode: 'host'
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+
+volumes:
+  beszel_agent:

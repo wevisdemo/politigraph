@@ -6,6 +6,7 @@ on:
     paths-ignore:
       - 'README.md'
       - 'LICENSE'
+      - 'servers/db/*'
   workflow_dispatch:
 jobs:
   build:
@@ -20,7 +21,7 @@ jobs:
         uses: burnett01/rsync-deployments@7.0.1
         with:
           switches: -azvP --chown=bot:deployer --chmod=g+w
-          path: compose.yml compose.server.yml nginx.conf politigraph-image.tar.gz
+          path: servers/api/compose.yml servers/api/nginx.conf politigraph-image.tar.gz
           remote_host: ${{ secrets.SSH_HOST }}
           remote_user: bot
           remote_key: ${{ secrets.SSH_KEY }}
@@ -41,7 +42,7 @@ jobs:
             cd ${{ secrets.SSH_APP_DIR }}
             docker image tag wevisdemo/politigraph:latest wevisdemo/politigraph:previous
             docker load --input politigraph-image.tar.gz
-            docker compose -f compose.server.yml up -d --remove-orphans
+            docker compose up -d --remove-orphans
             docker exec nginx nginx -t
             docker exec nginx nginx -s reload
             docker container prune --force
