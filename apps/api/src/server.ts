@@ -2,10 +2,8 @@ import { staticPlugin } from '@elysiajs/static';
 import { auth } from '@politigraph/auth/auth';
 import { initNeo4jGraphql } from '@politigraph/graphql/neo4j-graphql';
 import { Elysia, type Context } from 'elysia';
-import logixlysia from 'logixlysia';
 import { apollo } from './apollo';
 
-const isProduction = process.env.NODE_ENV === 'production';
 const landingSpa = Bun.file('public/index.html');
 const port = process.env.PORT ?? 3000;
 const origin = `http://127.0.0.1:${port}`;
@@ -16,17 +14,6 @@ await neo4jGraphql.checkNeo4jCompat();
 await neo4jGraphql.assertIndexesAndConstraints();
 
 const app = new Elysia()
-	.use(
-		logixlysia({
-			config: {
-				showStartupMessage: true,
-				startupMessageFormat: 'simple',
-				logFilter: {
-					level: isProduction ? 'WARNING' : 'DEBUG',
-				},
-			},
-		}),
-	)
 	.use(
 		apollo({
 			schema,
@@ -73,3 +60,5 @@ if (await landingSpa.exists()) {
 }
 
 app.listen(port);
+
+console.log(`🦊 Elysia is running at http://localhost:${port}`);
