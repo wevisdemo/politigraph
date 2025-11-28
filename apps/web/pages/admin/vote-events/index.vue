@@ -73,7 +73,7 @@ const filters = ref({
 	classification: getArrayQueryParam(route.query.classification),
 });
 
-const { data } = await useAsyncData(
+const { data } = await useLazyAsyncData(
 	'voteEvents',
 	async () => {
 		const where: Record<string, any> = {};
@@ -157,7 +157,6 @@ const { data } = await useAsyncData(
 	},
 	{
 		watch: [paginationData.value, filters.value],
-		server: false,
 	},
 );
 

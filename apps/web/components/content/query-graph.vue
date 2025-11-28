@@ -93,26 +93,20 @@ const configs = defineConfigs<GraphqlObject>({
 
 const config = useRuntimeConfig();
 
-const { data: response, status } = await useAsyncData<{
+const { data: response, status } = await useLazyAsyncData<{
 	data: Record<string, GraphqlObject[]>;
-}>(
-	`${props.query}-${props.variables}`,
-	() =>
-		$fetch(`${config.public.baseUrl}/graphql`, {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-			},
-			body: JSON.stringify({
-				// insert __typename field in every object that have an id
-				query: props.query.replaceAll(' id ', ' __typename id '),
-				variables: props.variables,
-			}),
+}>(`${props.query}-${props.variables}`, () =>
+	$fetch(`${config.public.baseUrl}/graphql`, {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+		},
+		body: JSON.stringify({
+			// insert __typename field in every object that have an id
+			query: props.query.replaceAll(' id ', ' __typename id '),
+			variables: props.variables,
 		}),
-	{
-		server: false,
-		lazy: true,
-	},
+	}),
 );
 
 const { data: formattedCode } = await useFormattedGraphqlCode(

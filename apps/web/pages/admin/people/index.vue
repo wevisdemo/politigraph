@@ -40,7 +40,7 @@ const handleSearchChange = (query: string) => {
 	searchQuery.value = query;
 };
 
-const { data } = await useAsyncData(
+const { data } = await useLazyAsyncData(
 	'people',
 	async () => {
 		const where: Record<string, any> = {};
@@ -92,7 +92,6 @@ const { data } = await useAsyncData(
 	},
 	{
 		watch: [paginationData.value, debouncedSearch],
-		server: false,
 	},
 );
 </script>

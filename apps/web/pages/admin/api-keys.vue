@@ -18,10 +18,7 @@ const {
 	data: apiKeys,
 	status,
 	refresh,
-} = await useAsyncData(() => apiKey.list(), {
-	server: false,
-	lazy: true,
-});
+} = await useLazyAsyncData(() => apiKey.list());
 
 const Form = useForm({
 	defaultValues: {

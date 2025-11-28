@@ -15,8 +15,8 @@ const graphqlClient = useGraphqlClient();
 
 const isShowSuccessNotification = ref(false);
 
-const { data: voteEventData, refresh: refreshVoteEvent } = await useAsyncData(
-	async () => {
+const { data: voteEventData, refresh: refreshVoteEvent } =
+	await useLazyAsyncData(async () => {
 		const { voteEvents } = await graphqlClient.query({
 			voteEvents: {
 				__args: {
@@ -65,9 +65,7 @@ const { data: voteEventData, refresh: refreshVoteEvent } = await useAsyncData(
 			},
 		});
 		return voteEvents[0];
-	},
-	{ server: false },
-);
+	});
 
 useHead({
 	title: `${voteEventData.value?.title || 'Vote Event'} | Politigraph Admin`,
@@ -235,7 +233,7 @@ const { data: OrganizationList } = await useAsyncData(
 		});
 		return organizations ?? [];
 	},
-	{ server: false },
+	{ lazy: true },
 );
 
 const voteEventFormStore = voteEventFormInput.useStore();

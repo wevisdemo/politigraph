@@ -25,9 +25,8 @@ useHead({
 const originalMemberships = ref<Partial<Membership>[] | null>(null);
 const originalLinks = ref<Pick<Link, 'id' | 'note' | 'url'>[]>([]);
 
-const { data: peopleData, refresh: refreshPeopleDetail } = await useAsyncData(
-	'people-detail',
-	async () => {
+const { data: peopleData, refresh: refreshPeopleDetail } =
+	await useLazyAsyncData('people-detail', async () => {
 		const { id } = route.params;
 		const { people } = await graphqlClient.query({
 			people: {
@@ -76,9 +75,7 @@ const { data: peopleData, refresh: refreshPeopleDetail } = await useAsyncData(
 		);
 		originalLinks.value = JSON.parse(JSON.stringify(people[0].links));
 		return people[0];
-	},
-	{ server: false },
-);
+	});
 
 const partyMemberships = ref<MemberShipProp[]>([]);
 const housesMemberships = ref<MemberShipProp[]>([]);
@@ -413,7 +410,7 @@ const { data: organizationsOptions } = await useAsyncData(
 
 		return organizationsOptions;
 	},
-	{ server: false },
+	{ lazy: true },
 );
 
 const selectedOrganization = ref<string | null>(null);
