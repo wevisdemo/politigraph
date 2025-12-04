@@ -73,6 +73,10 @@ type Person
 	"""
 	birth_date: Date
 	"""
+	วันเสียชีวิต
+	"""
+	death_date: Date
+	"""
 	ประวัติการศึกษา
 	"""
 	educations: String
