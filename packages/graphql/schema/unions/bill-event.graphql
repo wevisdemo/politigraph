@@ -1,0 +1,9 @@
+"""
+เหตุการที่เกี่ยวข้องกับกฏหมายหรือร่างกฏหมาย
+"""
+union BillEvent =
+	| BillEnactEvent
+	| BillMergeEvent
+	| BillRejectEvent
+	| BillRoyalAssentEvent
+	| BillVoteEvent

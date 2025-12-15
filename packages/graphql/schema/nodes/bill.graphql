@@ -43,7 +43,7 @@ type Bill implements Motion @node {
 	"""
 	ขั้นตอนในประบวนการพิจารณากฏหมาย
 	"""
-	bill_events: [Event!]!
+	bill_events: [BillEvent!]!
 		@relationship(type: "IN", properties: "Relation", direction: IN)
 	"""
 	ประเภท
