@@ -59,6 +59,10 @@ if (await landingSpa.exists()) {
 		});
 }
 
+if (process.env.NODE_ENV !== 'production') {
+	app.use((await import('@elysiajs/cors')).cors());
+}
+
 app.listen(port);
 
 console.log(`🦊 Elysia is running at http://localhost:${port}`);
