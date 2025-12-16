@@ -13,10 +13,6 @@ enum BillStatus {
 	"""
 	ออกเป็นกฎหมาย
 	"""
-	ENFORCED
-	"""
-	ออกเป็นกฎหมาย
-	"""
 	ENACTED
 	"""
 	ตกไป
