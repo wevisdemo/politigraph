@@ -1,0 +1,18 @@
+{
+	"useTabs": true,
+	"semi": true,
+	"singleQuote": true,
+	"plugins": [
+		"@ianvs/prettier-plugin-sort-imports",
+		"prettier-plugin-tailwindcss",
+		"prettier-plugin-astro"
+	],
+	"overrides": [
+		{
+			"files": "*.astro",
+			"options": {
+				"parser": "astro"
+			}
+		}
+	]
+}

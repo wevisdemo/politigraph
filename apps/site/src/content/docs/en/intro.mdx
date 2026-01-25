@@ -1,0 +1,46 @@
+---
+title: Introduction
+sidebar:
+  order: 1
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import QueryTabs from '../../../components/query-tabs.astro';
+
+**"Politigraph"** is a Thai politics database developed by [WeVis](https://wevis.info), a Thai civic-technology team. The code is open-source and accessible via [GitHub](https://github.com/wevisdemo/politigraph/)
+
+<Aside
+	type="caution"
+	title="We are not responsible for any misinformation or consequence"
+>
+	These open data are collected, transformed, validated, and published by us, a
+	civil society, to push the open API standard in Thailand. We are not the
+	official government institution who originally own and responsible in
+	publishing these data. Please send us any feedback or suggestion via
+	team@wevis.info or create an issue on GitHub.
+</Aside>
+
+<Aside
+	type="note"
+	title="For general user who want to understand Thai parliamentary data"
+>
+	We recommend using [Parliament Watch](https://parliamentwatch.wevis.info)
+	which organize and visualized data from Politigraph in a friendly format.
+</Aside>
+
+Politigraph store the data in the **"Graph"** structure which consist of
+
+1. **"Node"** representing each entity in the database (has circle symbol). Each node have they own data called **"property"** such as a node representing person might have properties of first name, last name, birthdate, etc.
+
+2. **"Relationship"** or sometime called edge (has arrow symbol) representing a relationship between two nodes.
+
+![Graph data structure](https://neo4j.com/docs/getting-started/_images/graph_concept_three_nodes-arr.svg)
+
+Due to the large number of nodes and relationships in Politigraph, we need to extract data for each point of interest. We call the code writing process to select nodes and relationships of interest **"query"** and the returned data **"response"**, which is in JSON format: machine-readable and convenient for further use. However, to make it easier to visualize, we will visualize the response in this documentation in the form of a graph.
+
+For example, if we want to know _"Which vote event did Anutin Charnvirakul were agreeing with?"_ We can query a node representing him and the relationships that lead to the votes he were agreeing and the vote event.
+
+<QueryTabs
+	query="query People($where: PersonWhere, $votesWhere2: VoteWhere) { people(where: $where) { id name name_en image votes(where: $votesWhere2) { id option_en vote_events { id title nickname result start_date end_date } } } }"
+	variables='{ "where": { "firstname_en_EQ": "Anutin", "lastname_en_EQ": "Charnvirakul" }, "votesWhere2": { "option_EQ": "เห็นด้วย" } }'
+/>

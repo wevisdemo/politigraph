@@ -1,0 +1,67 @@
+---
+import { Code, TabItem, Tabs } from '@astrojs/starlight/components';
+import * as graphql from 'prettier/plugins/graphql';
+import { format } from 'prettier/standalone';
+import QueryGraph from './query-graph.vue';
+
+interface Props {
+	query: string;
+	variables?: string;
+}
+
+const { query, variables } = Astro.props;
+
+const response = await (
+	await fetch('https://politigraph.wevis.info/graphql', {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+		},
+		body: JSON.stringify({
+			// insert __typename field in every object that have an id
+			query: query.replaceAll(' id ', ' __typename id '),
+			variables: variables ? JSON.parse(variables) : {},
+		}),
+	})
+).json();
+
+const formattedQuery = await format(query, {
+	parser: 'graphql',
+	plugins: [graphql],
+});
+
+function formatJson(str: string) {
+	return JSON.stringify(str, null, 2);
+}
+---
+
+<Tabs>
+	<TabItem label="Visualization">
+		<QueryGraph client:visible data={response.data} />
+	</TabItem>
+	<TabItem label="Query">
+		<Code
+			code={formattedQuery}
+			lang="graphql"
+			class="md:h-128 overflow-y-auto"
+		/>
+	</TabItem>
+	{
+		variables && (
+			<TabItem label="Variables">
+				<Code
+					code={formatJson(JSON.parse(variables))}
+					lang="json"
+					class="md:h-128 overflow-y-auto"
+				/>
+			</TabItem>
+		)
+	}
+	<TabItem label="Response">
+		<Code
+			code={formatJson(response)}
+			lang="json"
+			class="md:h-128 overflow-y-auto"
+		/>
+	</TabItem>
+</Tabs>
