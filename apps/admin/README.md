@@ -1,4 +1,4 @@
-# @politigraph/web
+# @politigraph/admin
 
 Landing page, admin panel, and document to be rendered as SPA
 

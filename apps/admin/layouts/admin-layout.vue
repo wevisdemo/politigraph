@@ -25,7 +25,7 @@ const signout = async () => {
 			onSuccess: () => {
 				username.value = '';
 				localStorage.setItem('isLogout', 'true');
-				router.push('/admin/login');
+				router.push('/login');
 			},
 		},
 	});
@@ -46,7 +46,7 @@ const signout = async () => {
 						<cv-side-nav-link
 							v-for="{ label, path } in ADMIN_NAVIGATIONS"
 							:key="label"
-							:href="`/admin/${path}`"
+							:href="`/${path}`"
 							:active="route.path.includes(path)"
 						>
 							{{ label }}

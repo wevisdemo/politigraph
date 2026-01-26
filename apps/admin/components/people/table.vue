@@ -39,10 +39,7 @@ const router = useRouter();
 			@search="emit('search', $event)"
 		>
 			<template #actions>
-				<cv-button
-					:icon="Add16"
-					@click="() => $router.push('/admin/people/new')"
-				>
+				<cv-button :icon="Add16" @click="() => $router.push('/people/new')">
 					New Person
 				</cv-button>
 			</template>

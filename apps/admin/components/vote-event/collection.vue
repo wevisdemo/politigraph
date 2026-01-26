@@ -56,7 +56,7 @@ const router = useRouter();
 				<cv-button
 					kind="ghost"
 					:icon="Edit16"
-					@click="() => router.push(`/admin/vote-events/${voteEventId}/votes`)"
+					@click="() => router.push(`/vote-events/${voteEventId}/votes`)"
 					>Edit</cv-button
 				>
 			</template>
