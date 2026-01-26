@@ -11,6 +11,16 @@ export default defineConfig({
 		starlight({
 			title: 'Politigraph',
 			favicon: '/favicon.png',
+			head: [
+				{
+					tag: 'script',
+					attrs: {
+						defer: true,
+						'data-domain': 'politigraph.wevis.info',
+						src: 'https://analytics.punchup.world/js/script.js',
+					},
+				},
+			],
 			defaultLocale: 'root',
 			locales: {
 				root: {
