@@ -76,9 +76,9 @@ jobs:
       - name: Join built outputs
         run: |
           mkdir dist
-          cp -r ./out/apps/docs/dist/* .
+          cp -r ./out/apps/docs/dist/* ./dist
           mkdir dist/admin
-          cp -r ./out/apps/admin/.output/public/* ./admin
+          cp -r ./out/apps/admin/.output/public/* ./dist/admin
       - name: Upload to server
         uses: burnett01/rsync-deployments@7.0.1
         with:
