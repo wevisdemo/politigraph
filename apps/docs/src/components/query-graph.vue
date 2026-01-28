@@ -97,6 +97,16 @@ onMounted(() => {
 	}, 100);
 });
 
+const typenameSchemaMap = new Map(
+	objects.map((obj) => [
+		obj.name,
+		{
+			...obj,
+			description: obj.description?.split('อ้างอิงจาก').at(0)?.trim(),
+		},
+	]),
+);
+
 const graph = computed(() => {
 	const nodes: Record<string, GraphqlObject> = {};
 	const edges: Edges = {};
@@ -166,23 +176,10 @@ const selectedNode = computed(() => {
 	const node = graph.value.nodes[selectedNodes.value[0]];
 
 	return {
-		schema: typenameSchemaMap.value.get(node.__typename)!,
+		schema: typenameSchemaMap.get(node.__typename)!,
 		fields: Object.entries(node).filter(([key]) => key !== '__typename'),
 	};
 });
-
-const typenameSchemaMap = computed(
-	() =>
-		new Map(
-			objects.map((obj) => [
-				obj.name,
-				{
-					...obj,
-					description: obj.description?.split('อ้างอิงจาก').at(0)?.trim(),
-				},
-			]),
-		),
-);
 
 function getObjectLabel(obj: GraphqlObject) {
 	return (obj.name_en ||
