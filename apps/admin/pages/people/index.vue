@@ -47,8 +47,8 @@ const { data } = await useLazyAsyncData(
 
 		if (debouncedSearch.value) {
 			where.OR = [
-				{ firstname_CONTAINS: debouncedSearch.value },
-				{ lastname_CONTAINS: debouncedSearch.value },
+				{ firstname: { contains: debouncedSearch.value } },
+				{ lastname: { contains: debouncedSearch.value } },
 			];
 		}
 
@@ -67,7 +67,7 @@ const { data } = await useLazyAsyncData(
 				publish_status: true,
 				memberships: {
 					__args: {
-						where: { end_date_EQ: null },
+						where: { end_date: { eq: null } },
 					},
 					id: true,
 					posts: {

@@ -21,7 +21,7 @@ For example, if we want to know what positions _Chuan Leekpai_ has held in which
 
 <QueryTabs
 	query="query People($where: PersonWhere) { people(where: $where) { id name_en memberships { id label start_date end_date posts { id label organizations { id name_en name classification } } } } }"
-	variables='{ "where": { "firstname_en_EQ": "Chuan", "lastname_en_EQ": "Leekpai" } }'
+	variables='{ "where": { "firstname_en": { "eq": "Chuan" } }, "lastname_en": { "eq": "Leekpai" } }'
 />
 
 Because the graph database connects all nodes, we can start a query from any node. For example, if we want to know who has ever held the position of _leader_ of the _Pheu Thai Party_, we can start the query from **`Post`**.
@@ -29,7 +29,7 @@ Because the graph database connects all nodes, we can start a query from any nod
 <QueryTabs
 	query="query Posts($where: PostWhere) { posts(where: $where) { id label role organizations { id name_en name } memberships { id start_date end_date members { ... on Person { id name_en } } } } }
 "
-	variables='{ "where": { "role_EQ": "หัวหน้าพรรคการเมือง", "organizations_SOME": { "id_EQ": "พรรคเพื่อไทย" } } }'
+	variables='{ "where": { "role": { "eq": "หัวหน้าพรรคการเมือง" } }, "organizations": { "some": { "id": { "eq": "พรรคเพื่อไทย" } } } }'
 />
 
 ## Government and Opposition parties
@@ -38,5 +38,5 @@ We model "Government parties (พรรคฝ่ายรัฐบาล)" and "
 
 <QueryTabs
 	query="query Organizations($where: OrganizationWhere, $postsWhere2: PostWhere) { organizations(where: $where) { id name_en posts(where: $postsWhere2) { id label role memberships { id start_date end_date members { ... on Organization { id name } } } } } }"
-	variables='{ "where": { "id_EQ": "คณะรัฐมนตรี-63" }, "postsWhere2": { "role_STARTS_WITH": "พรรคฝ่าย" } }'
+	variables='{ "where": { "id": { "eq": "คณะรัฐมนตรี-63" } }, "postsWhere2": { "role": { "startsWith": "พรรคฝ่าย" } } }'
 />

@@ -1,5 +1,13 @@
 import definitions from '@politigraph/graphql/dist/definitions.json';
 
+export interface GraphqlObject {
+	__typename: string;
+	id: string;
+	[key: string]: string | GraphqlObject[];
+}
+
+export type GraphqlDataResponse = Record<string, GraphqlObject[]>;
+
 export const objects = definitions
 	.filter((d) => d.kind === 'ObjectTypeDefinition')
 	.filter((d) => !d.name!.value.startsWith('Relation'))

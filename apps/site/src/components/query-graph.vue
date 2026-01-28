@@ -14,15 +14,13 @@ import {
 } from 'v-network-graph/lib/force-layout';
 import { computed, onMounted, ref } from 'vue';
 import { nodeIconMap } from '../constants/schema';
-import { objects } from '../utils/schema';
+import {
+	objects,
+	type GraphqlDataResponse,
+	type GraphqlObject,
+} from '../utils/schema';
 import BaseView from './graph/base-view.vue';
 import Legend from './graph/legend.vue';
-
-interface GraphqlObject {
-	__typename: string;
-	id: string;
-	[key: string]: string | GraphqlObject[];
-}
 
 interface Edge {
 	id: string;
@@ -34,7 +32,7 @@ interface Edge {
 const MAX_GRAPH_LABEL_LENGTH = 20;
 
 const props = defineProps<{
-	data: Record<string, GraphqlObject[]>;
+	data: GraphqlDataResponse;
 }>();
 
 const configs = defineConfigs<GraphqlObject>({

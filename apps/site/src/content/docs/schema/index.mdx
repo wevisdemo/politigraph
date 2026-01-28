@@ -26,7 +26,7 @@ import SchemaGraph from '../../../components/schema-graph.vue';
 
 <QueryTabs
 	query="query People($where: PersonWhere) { people(where: $where) { id prefix name image birth_date educations previous_occupations }}"
-	variables='{ "where": { "firstname_STARTS_WITH": "ณัฐ" }}'
+	variables='{ "where": { "firstname": { "startsWith": "ณัฐ" } } }'
 />
 
 ## Relationship
@@ -35,5 +35,5 @@ Relationship ใน **schema** จะมีชื่อเรียกพร้�
 
 <QueryTabs
 	query="query Organizations($where: OrganizationWhere, $postsWhere2: PostWhere) { organizations(where: $where) { id name posts(where: $postsWhere2) { id label role organizations { id name } } } }"
-	variables='{ "where": { "id_EQ": "คณะรัฐมนตรี-64" }, "postsWhere2": { "role_EQ": "นายกรัฐมนตรี" } }'
+	variables='{ "where": { "id": { "eq": "คณะรัฐมนตรี-64" } }, "postsWhere2": { "role": { "eq": "นายกรัฐมนตรี" } } }'
 />

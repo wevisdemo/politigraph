@@ -61,7 +61,7 @@ const { data: voteEvent, refresh } = useAsyncData(
 				__args: {
 					limit: 1,
 					where: {
-						id_EQ: route.params.id as string,
+						id: { eq: route.params.id as string },
 					},
 				},
 				id: true,
@@ -74,7 +74,7 @@ const { data: voteEvent, refresh } = useAsyncData(
 				links: {
 					__args: {
 						where: {
-							note_EQ: 'ใบประมวลผลการลงมติ',
+							note: { eq: 'ใบประมวลผลการลงมติ' },
 						},
 					},
 					url: true,
@@ -211,18 +211,20 @@ async function onSaveChanges() {
 				updateVoteEvents: {
 					__args: {
 						where: {
-							id_EQ: voteEvent.value.id,
+							id: { eq: voteEvent.value.id },
 						},
 						update: {
-							publish_status_SET: voteValidationResult.value?.errors.length
-								? 'ERROR'
-								: voteEvent.value.publish_status === 'PUBLISHED'
-									? 'PUBLISHED'
-									: 'UNPUBLISHED',
+							publish_status: {
+								set: voteValidationResult.value?.errors.length
+									? 'ERROR'
+									: voteEvent.value.publish_status === 'PUBLISHED'
+										? 'PUBLISHED'
+										: 'UNPUBLISHED',
+							},
 							...Object.fromEntries(
 								summaryCountKeyChanges.map((key) => [
-									`${key}_SET`,
-									voteEvent.value![key],
+									key,
+									{ set: voteEvent.value![key] },
 								]),
 							),
 						},
@@ -242,21 +244,20 @@ async function onSaveChanges() {
 						updateVotes: {
 							__args: {
 								where: {
-									id_EQ: vote.id,
+									id: { eq: vote.id },
 								},
 								update: {
-									vote_order_SET: vote.vote_order,
-									badge_number_SET: vote.badge_number,
-									voter_name_SET: vote.voter_name,
-									voter_party_SET: vote.voter_party,
-									option_SET: vote.option,
+									vote_order: { set: vote.vote_order },
+									badge_number: { set: vote.badge_number },
+									voter_party: { set: vote.voter_party },
+									option: { set: vote.option },
 									voters: [
 										{
 											disconnect: [
 												{
 													where: {
 														node: {
-															id_IN: vote.voters.map((v) => v.id),
+															id: { in: vote.voters.map((v) => v.id) },
 														},
 													},
 												},
@@ -265,7 +266,7 @@ async function onSaveChanges() {
 												{
 													where: {
 														node: {
-															id_EQ: voterId,
+															id: { eq: voterId },
 														},
 													},
 												},
@@ -307,7 +308,7 @@ async function onSaveChanges() {
 												{
 													where: {
 														node: {
-															id_EQ: voteEvent.value?.id,
+															id: { eq: voteEvent.value?.id },
 														},
 													},
 												},
@@ -332,7 +333,7 @@ async function onSaveChanges() {
 				await graphqlClient.mutation({
 					deleteVotes: {
 						__args: {
-							where: { id_IN: [...toDeleteIds.value] },
+							where: { id: { in: [...toDeleteIds.value] } },
 						},
 						nodesDeleted: true,
 					},
@@ -371,13 +372,15 @@ async function togglePublishStatus() {
 		updateVoteEvents: {
 			__args: {
 				where: {
-					id_EQ: route.params.id as string,
+					id: { eq: route.params.id as string },
 				},
 				update: {
-					publish_status:
-						voteEvent.value?.publish_status !== 'PUBLISHED'
-							? 'PUBLISHED'
-							: 'UNPUBLISHED',
+					publish_status: {
+						set:
+							voteEvent.value?.publish_status !== 'PUBLISHED'
+								? 'PUBLISHED'
+								: 'UNPUBLISHED',
+					},
 				},
 			},
 			voteEvents: {

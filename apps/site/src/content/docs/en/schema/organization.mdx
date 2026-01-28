@@ -18,7 +18,7 @@ The Thai Parliament (รัฐสภาไทย) has a `classification` of _PAR
 
 <QueryTabs
 	query="query Query($where: OrganizationWhere) { organizations(where: $where) { id name_en classification founding_date dissolution_date children { id name_en classification description founding_date dissolution_date } } }"
-	variables='{ "where": { "classification_EQ": "PARLIAMENT" } }'
+	variables='{ "where": { "classification": { "eq": "PARLIAMENT" } } }'
 />
 
 ## Political Parties
@@ -27,5 +27,5 @@ Political parties are also classified as **`Organization`** with a `classificati
 
 <QueryTabs
 	query="query Organizations($where: OrganizationWhere) { organizations(where: $where) { id name name_en color } }"
-	variables='{ "where": { "classification_EQ": "POLITICAL_PARTY" } }'
+	variables='{ "where": { "classification": { "eq": "POLITICAL_PARTY" } } }'
 />

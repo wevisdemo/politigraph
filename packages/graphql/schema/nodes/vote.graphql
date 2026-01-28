@@ -11,7 +11,9 @@ type Vote
 			{
 				requireAuthentication: false
 				where: {
-					node: { vote_events_SOME: { publish_status_EQ: "PUBLISHED" } }
+					node: {
+						vote_events: { some: { publish_status: { eq: "PUBLISHED" } } }
+					}
 				}
 			}
 		]

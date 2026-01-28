@@ -10,7 +10,7 @@ type Person
 			{ where: {} }
 			{
 				requireAuthentication: false
-				where: { node: { publish_status_EQ: "PUBLISHED" } }
+				where: { node: { publish_status: { eq: "PUBLISHED" } } }
 			}
 		]
 	) {

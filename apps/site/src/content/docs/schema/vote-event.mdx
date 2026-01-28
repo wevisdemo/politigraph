@@ -20,7 +20,7 @@ import QueryTabs from '../../../components/query-tabs.astro';
 
 <QueryTabs
 	query="query VoteEvents($where: VoteEventWhere, $limit: Int, $votesLimit2: Int) { voteEvents(where: $where, limit: $limit) { id title nickname publish_status start_date result votes(limit: $votesLimit2) { id option voters { id name } } } }"
-	variables='{ "where": { "id_EQ": "fd854f98-a9c0-4ef2-b007-58821da695dc" }, "limit": 1, "votesLimit2": 20 }'
+	variables='{ "where": { "id": { "eq":  "fd854f98-a9c0-4ef2-b007-58821da695dc" }}, "votesWhere2": { "voters": { "all": { "NOT": { "firstname_en": { "eq": null } } } } }, "votesLimit2": 20 }'
 />
 
 ## การอัพเดตข้อมูลและสถานะการเผยแพร่

@@ -9,8 +9,8 @@
 	"dependencies": {
 		"@genql/cli": "^6.3.3",
 		"@graphql-tools/utils": "^10.6.2",
-		"@neo4j/graphql": "^6.5.2",
-		"neo4j-driver": "^5.27.0"
+		"@neo4j/graphql": "^7.4.2",
+		"neo4j-driver": "^6.0.1"
 	},
 	"devDependencies": {
 		"@types/bun": "latest"

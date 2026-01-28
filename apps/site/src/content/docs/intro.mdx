@@ -42,5 +42,5 @@ Politigraph เก็บข้อมูลในรูปแบบของ **"�
 
 <QueryTabs
 	query="query People($where: PersonWhere, $votesWhere2: VoteWhere) { people(where: $where) { id name image votes(where: $votesWhere2) { id option vote_events { id title nickname result start_date end_date } } } }"
-	variables='{ "where": { "firstname_EQ": "อนุทิน", "lastname_EQ": "ชาญวีรกูล" }, "votesWhere2": { "option_EQ": "เห็นด้วย" } }'
+	variables='{ "where": { "firstname": { "eq": "อนุทิน" }, "lastname": { "eq": "ชาญวีรกูล" } }, "votesWhere2": { "option": { "eq": "เห็นด้วย" } } }'
 />

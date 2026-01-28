@@ -42,5 +42,5 @@ For example, if we want to know _"Which vote event did Anutin Charnvirakul were 
 
 <QueryTabs
 	query="query People($where: PersonWhere, $votesWhere2: VoteWhere) { people(where: $where) { id name name_en image votes(where: $votesWhere2) { id option_en vote_events { id title nickname result start_date end_date } } } }"
-	variables='{ "where": { "firstname_en_EQ": "Anutin", "lastname_en_EQ": "Charnvirakul" }, "votesWhere2": { "option_EQ": "เห็นด้วย" } }'
+	variables='{ "where": { "firstname_en": { "eq": "Anutin" }, "lastname_en": { "eq": "Charnvirakul" } }, "votesWhere2": { "option": { "eq": "เห็นด้วย" } } }'
 />

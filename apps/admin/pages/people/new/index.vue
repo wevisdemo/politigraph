@@ -119,7 +119,7 @@ const savePeople = async () => {
 								url: l.url,
 								owners: {
 									Person: {
-										connect: [{ where: { node: { id_EQ: newPersonId } } }],
+										connect: [{ where: { node: { id: { eq: newPersonId } } } }],
 									},
 								},
 							},

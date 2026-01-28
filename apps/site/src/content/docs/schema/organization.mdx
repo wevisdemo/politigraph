@@ -18,7 +18,7 @@ import QueryTabs from '../../../components/query-tabs.astro';
 
 <QueryTabs
 	query="query Query($where: OrganizationWhere) { organizations(where: $where) { id name classification founding_date dissolution_date children { id name classification description founding_date dissolution_date } } }"
-	variables='{ "where": { "classification_EQ": "PARLIAMENT" } }'
+	variables='{ "where": { "classification": { "eq": "PARLIAMENT" } } }'
 />
 
 ## พรรคการเมือง
@@ -27,5 +27,5 @@ import QueryTabs from '../../../components/query-tabs.astro';
 
 <QueryTabs
 	query="query Organizations($where: OrganizationWhere) { organizations(where: $where) { id name color } }"
-	variables='{ "where": { "classification_EQ": "POLITICAL_PARTY" } }'
+	variables='{ "where": { "classification": { "eq": "POLITICAL_PARTY" } } }'
 />

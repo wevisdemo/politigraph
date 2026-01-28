@@ -23,7 +23,7 @@ const { data: voteEventData, refresh: refreshVoteEvent } =
 					limit: 20,
 					offset: 0,
 					where: {
-						id_EQ: route.params.id as string,
+						id: { eq: route.params.id as string },
 					},
 				},
 				id: true,
@@ -132,27 +132,29 @@ const voteEventFormInput = useForm({
 						id_EQ: route.params.id as string,
 					},
 					update: {
-						title: value.title,
-						nickname: value.nickname,
-						start_date: value.start_date,
-						result: value.result,
-						description: value.description,
-						disagree_count: Number(value.disagree_count),
-						agree_count: Number(value.agree_count),
-						abstain_count: Number(value.abstain_count),
-						novote_count: Number(value.novote_count),
-						publish_status: voteValidationResult.value?.errors.length
-							? 'ERROR'
-							: value.publish_status === 'PUBLISHED'
-								? 'PUBLISHED'
-								: 'UNPUBLISHED',
+						title: { set: value.title },
+						nickname: { set: value.nickname },
+						start_date: { set: value.start_date },
+						result: { set: value.result },
+						description: { set: value.description },
+						disagree_count: { set: Number(value.disagree_count) },
+						agree_count: { set: Number(value.agree_count) },
+						abstain_count: { set: Number(value.abstain_count) },
+						novote_count: { set: Number(value.novote_count) },
+						publish_status: {
+							set: voteValidationResult.value?.errors.length
+								? 'ERROR'
+								: value.publish_status === 'PUBLISHED'
+									? 'PUBLISHED'
+									: 'UNPUBLISHED',
+						},
 						organizations: [
 							{
 								connect: [
 									{
 										where: {
 											node: {
-												id_IN: organizationsConnect,
+												id: { in: organizationsConnect },
 											},
 										},
 									},
@@ -161,7 +163,7 @@ const voteEventFormInput = useForm({
 									{
 										where: {
 											node: {
-												id_IN: organizationDisconnect,
+												id: { in: organizationDisconnect },
 											},
 										},
 									},
@@ -174,7 +176,7 @@ const voteEventFormInput = useForm({
 									{
 										where: {
 											node: {
-												id_IN: deletedLinkIds,
+												id: { in: deletedLinkIds },
 											},
 										},
 									},
@@ -196,11 +198,11 @@ const voteEventFormInput = useForm({
 					updateLinks: {
 						__args: {
 							where: {
-								id_EQ: id,
+								id: { eq: id },
 							},
 							update: {
-								note_SET: data.note,
-								url_SET: data.url,
+								note: { set: data.note },
+								url: { set: data.url },
 							},
 						},
 						links: {
@@ -223,7 +225,9 @@ const { data: OrganizationList } = await useAsyncData(
 			organizations: {
 				__args: {
 					where: {
-						classification_IN: ['HOUSE_OF_SENATE', 'HOUSE_OF_REPRESENTATIVE'],
+						classification: {
+							in: ['HOUSE_OF_SENATE', 'HOUSE_OF_REPRESENTATIVE'],
+						},
 					},
 				},
 				id: true,
@@ -253,13 +257,15 @@ async function togglePublishStatus() {
 		updateVoteEvents: {
 			__args: {
 				where: {
-					id_EQ: route.params.id as string,
+					id: { eq: route.params.id as string },
 				},
 				update: {
-					publish_status:
-						defaultValues.publish_status !== 'PUBLISHED'
-							? 'PUBLISHED'
-							: 'UNPUBLISHED',
+					publish_status: {
+						set:
+							defaultValues.publish_status !== 'PUBLISHED'
+								? 'PUBLISHED'
+								: 'UNPUBLISHED',
+					},
 				},
 			},
 			voteEvents: {

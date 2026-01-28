@@ -81,13 +81,13 @@ const { data } = await useLazyAsyncData(
 		if (filters.value.assembly !== 'ALL') {
 			const assemblyIds = filters.value.assembly.split('|');
 			where.AND = [
-				{ organizations_ALL: { id_IN: assemblyIds } },
-				{ organizationsAggregate: { count_EQ: assemblyIds.length } },
+				{ organizations_ALL: { id: { in: assemblyIds } } },
+				{ organizationsAggregate: { count: { eq: assemblyIds.length } } },
 			];
 		}
 
 		if (filters.value.status !== 'ALL') {
-			where.publish_status_EQ = filters.value.status;
+			where.publish_status = { eq: filters.value.status };
 		}
 
 		const selectedClassifications = filters.value.classification || [];
@@ -98,13 +98,13 @@ const { data } = await useLazyAsyncData(
 
 		if (includeNull && normalClassifications.length > 0) {
 			where.OR = [
-				{ classification_IN: normalClassifications },
-				{ classification_EQ: null },
+				{ classification: { in: normalClassifications } },
+				{ classification: { eq: null } },
 			];
 		} else if (includeNull) {
-			where.classification_EQ = null;
+			where.classification = { eq: null };
 		} else if (normalClassifications.length > 0) {
-			where.classification_IN = normalClassifications;
+			where.classification = { in: normalClassifications };
 		} else {
 			return {
 				voteEvents: [],
@@ -167,7 +167,9 @@ const { data: organizations } = await useAsyncData(
 			organizations: {
 				__args: {
 					where: {
-						classification_IN: ['HOUSE_OF_REPRESENTATIVE', 'HOUSE_OF_SENATE'],
+						classification: {
+							in: ['HOUSE_OF_REPRESENTATIVE', 'HOUSE_OF_SENATE'],
+						},
 					},
 				},
 				id: true,

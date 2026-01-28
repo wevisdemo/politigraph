@@ -13,7 +13,9 @@ type Membership
 				where: {
 					node: {
 						NOT: {
-							members_ALL: { Person: { publish_status_EQ: "UNPUBLISHED" } }
+							members: {
+								all: { Person: { publish_status: { eq: "UNPUBLISHED" } } }
+							}
 						}
 					}
 				}

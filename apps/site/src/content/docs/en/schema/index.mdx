@@ -26,7 +26,7 @@ For example, we have these people with first-name starting with _"Nat"_ represen
 
 <QueryTabs
 	query="query People($where: PersonWhere) { people(where: $where) { id prefix name_en image birth_date educations previous_occupations }}"
-	variables='{ "where": { "firstname_en_STARTS_WITH": "Nat" }}'
+	variables='{ "where": { "firstname_en": { "startsWith": "Nat" } } }'
 />
 
 ## Relationship
@@ -35,5 +35,5 @@ Relationship in **schema** will have a name with arrow direction for human inter
 
 <QueryTabs
 	query="query Organizations($where: OrganizationWhere, $postsWhere2: PostWhere) { organizations(where: $where) { id name_en posts(where: $postsWhere2) { id label role organizations { id name } } } }"
-	variables='{ "where": { "id_EQ": "คณะรัฐมนตรี-64" }, "postsWhere2": { "role_EQ": "นายกรัฐมนตรี" } }'
+	variables='{ "where": { "id": { "eq": "คณะรัฐมนตรี-64" } }, "postsWhere2": { "role": { "eq": "นายกรัฐมนตรี" } } }'
 />

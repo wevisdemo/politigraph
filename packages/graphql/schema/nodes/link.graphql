@@ -11,7 +11,9 @@ type Link
 				where: {
 					node: {
 						NOT: {
-							owners_ALL: { Person: { publish_status_EQ: "UNPUBLISHED" } }
+							owners: {
+								all: { Person: { publish_status: { eq: "UNPUBLISHED" } } }
+							}
 						}
 					}
 				}

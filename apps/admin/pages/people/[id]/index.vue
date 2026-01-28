@@ -27,11 +27,10 @@ const originalLinks = ref<Pick<Link, 'id' | 'note' | 'url'>[]>([]);
 
 const { data: peopleData, refresh: refreshPeopleDetail } =
 	await useLazyAsyncData('people-detail', async () => {
-		const { id } = route.params;
 		const { people } = await graphqlClient.query({
 			people: {
 				__args: {
-					where: { id_EQ: route.params.id as string },
+					where: { id: { eq: route.params.id as string } },
 				},
 				id: true,
 				name: true,
@@ -154,21 +153,23 @@ const saveChanges = async () => {
 			updatePeople: {
 				__args: {
 					where: {
-						id_EQ: peopleData.value?.id as string,
+						id: { eq: peopleData.value?.id as string },
 					},
 					update: {
-						prefix_SET: peopleData.value?.prefix,
-						firstname_SET: peopleData.value?.firstname,
-						middlename_SET: peopleData.value?.middlename,
-						lastname_SET: peopleData.value?.lastname,
-						firstname_en_SET: peopleData.value?.firstname_en,
-						middlename_en_SET: peopleData.value?.middlename_en,
-						lastname_en_SET: peopleData.value?.lastname_en,
-						gender_SET: peopleData.value?.gender,
-						birth_date_SET: peopleData.value?.birth_date,
-						educations_SET: peopleData.value?.educations,
-						previous_occupations_SET: peopleData.value?.previous_occupations,
-						image_SET: peopleData.value?.image,
+						prefix: { set: peopleData.value?.prefix },
+						firstname: { set: peopleData.value?.firstname },
+						middlename: { set: peopleData.value?.middlename },
+						lastname: { set: peopleData.value?.lastname },
+						firstname_en: { set: peopleData.value?.firstname_en },
+						middlename_en: { set: peopleData.value?.middlename_en },
+						lastname_en: { set: peopleData.value?.lastname_en },
+						gender: { set: peopleData.value?.gender },
+						birth_date: { set: peopleData.value?.birth_date },
+						educations: { set: peopleData.value?.educations },
+						previous_occupations: {
+							set: peopleData.value?.previous_occupations,
+						},
+						image: { set: peopleData.value?.image },
 					},
 				},
 				people: {
@@ -197,7 +198,7 @@ const saveChanges = async () => {
 											{
 												where: {
 													node: {
-														id_EQ: peopleData.value?.id,
+														id: { eq: peopleData.value?.id },
 													},
 												},
 											},
@@ -216,8 +217,8 @@ const saveChanges = async () => {
 			graphqlClient.mutation({
 				updateLinks: {
 					__args: {
-						where: { id_EQ: l.id },
-						update: { note_SET: l.note, url_SET: l.url },
+						where: { id: { eq: l.id } },
+						update: { note: { set: l.note }, url: { set: l.url } },
 					},
 					links: { id: true },
 				},
@@ -227,7 +228,7 @@ const saveChanges = async () => {
 		const deleteLinksPromises = linksToDelete.map((l) =>
 			graphqlClient.mutation({
 				deleteLinks: {
-					__args: { where: { id_EQ: l.id } },
+					__args: { where: { id: { eq: l.id } } },
 					nodesDeleted: true,
 					relationshipsDeleted: true,
 				},
@@ -254,7 +255,7 @@ const saveChanges = async () => {
 
 				const postResult = await graphqlClient.query({
 					posts: {
-						__args: { where: { id_EQ: currentPostId } },
+						__args: { where: { id: { eq: currentPostId } } },
 						id: true,
 					},
 				});
@@ -273,7 +274,9 @@ const saveChanges = async () => {
 												{
 													where: {
 														node: {
-															id_EQ: membership.posts[0]?.organizations[0].id,
+															id: {
+																eq: membership.posts[0]?.organizations[0].id,
+															},
 														},
 													},
 												},
@@ -291,22 +294,22 @@ const saveChanges = async () => {
 				return graphqlClient.mutation({
 					updateMemberships: {
 						__args: {
-							where: { id_EQ: membership.id },
+							where: { id: { eq: membership.id } },
 							update: {
-								start_date_SET: membership.start_date,
-								end_date_SET: membership.end_date,
+								start_date: { set: membership.start_date },
+								end_date: { set: membership.end_date },
 								posts: [
 									{
 										disconnect: oldPostId
 											? [
 													{
-														where: { node: { id_EQ: oldPostId } },
+														where: { node: { id: { eq: oldPostId } } },
 													},
 												]
 											: [],
 										connect: [
 											{
-												where: { node: { id_EQ: newPostId } },
+												where: { node: { id: { eq: newPostId } } },
 											},
 										],
 									},
@@ -342,13 +345,15 @@ const togglePublishStatus = async () => {
 		updatePeople: {
 			__args: {
 				where: {
-					id_EQ: peopleData.value?.id,
+					id: { eq: peopleData.value?.id },
 				},
 				update: {
-					publish_status:
-						peopleData.value?.publish_status !== enumPublishStatus.PUBLISHED
-							? enumPublishStatus.PUBLISHED
-							: enumPublishStatus.UNPUBLISHED,
+					publish_status: {
+						set:
+							peopleData.value?.publish_status !== enumPublishStatus.PUBLISHED
+								? enumPublishStatus.PUBLISHED
+								: enumPublishStatus.UNPUBLISHED,
+					},
 				},
 			},
 			people: {
