@@ -1,6 +1,5 @@
 import { staticPlugin } from '@elysiajs/static';
 import { auth } from '@politigraph/auth/auth';
-import { resolvers } from '@politigraph/graphql/custom-resolvers';
 import { initNeo4jGraphql } from '@politigraph/graphql/neo4j-graphql';
 import { Elysia, type Context } from 'elysia';
 import { apollo } from './apollo';

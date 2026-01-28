@@ -8,13 +8,15 @@ on:
       - 'LICENSE'
       - 'servers/db/*'
   workflow_dispatch:
+
 jobs:
-  build:
+  build-api:
+    name: Build API image
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - name: Build image
-        run: docker build -t wevisdemo/politigraph --build-arg BASE_URL=https://politigraph.wevis.info .
+        run: docker build -t wevisdemo/politigraph .
       - name: Save image
         run: docker save wevisdemo/politigraph | gzip > politigraph-image.tar.gz
       - name: Upload image and configs to server
@@ -26,9 +28,11 @@ jobs:
           remote_user: bot
           remote_key: ${{ secrets.SSH_KEY }}
           remote_path: ${{ secrets.SSH_APP_DIR }}
-  deploy:
+  update-server:
+    name: Update server containers
     runs-on: ubuntu-latest
-    needs: build
+    needs:
+      - build-api
     steps:
       - name: Update server containers
         uses: appleboy/ssh-action@v1.2.0
@@ -46,3 +50,41 @@ jobs:
             docker exec nginx sh -c "nginx -t && nginx -s reload"
             docker container prune --force
             docker image prune --all --force --filter "until=72h"
+  frontend:
+    name: Build and upload frontend
+    runs-on: ubuntu-latest
+    needs:
+      - update-server
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+      - name: Install Turborepo
+        run: bun add -g turbo@^2.6.1
+      - name: Prune unrelated packages
+        run: |
+          turbo prune @politigraph/admin @politigraph/docs
+      - name: Install dependencies
+        working-directory: out
+        run: bun install --frozen-lockfile --ignore-scripts --production
+      - name: Build frontend apps
+        working-directory: out
+        run: turbo build
+        env:
+          BASE_URL: https://politigraph.wevis.info
+          NODE_ENV: production
+      - name: Join built outputs
+        run: |
+          mkdir dist
+          cp -r ./out/apps/docs/dist/* .
+          mkdir dist/admin
+          cp -r ./out/apps/admin/.output/public/* ./admin
+      - name: Upload to server
+        uses: burnett01/rsync-deployments@7.0.1
+        with:
+          switches: -azvP --chown=bot:deployer --chmod=g+w --delete
+          path: ./dist/*
+          remote_host: ${{ secrets.SSH_HOST }}
+          remote_user: bot
+          remote_key: ${{ secrets.SSH_KEY }}
+          remote_path: /var/htdocs/web
