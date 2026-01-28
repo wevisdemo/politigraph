@@ -1,5 +1,6 @@
 import { staticPlugin } from '@elysiajs/static';
 import { auth } from '@politigraph/auth/auth';
+import { resolvers } from '@politigraph/graphql/custom-resolvers';
 import { initNeo4jGraphql } from '@politigraph/graphql/neo4j-graphql';
 import { Elysia, type Context } from 'elysia';
 import { apollo } from './apollo';
@@ -23,15 +24,17 @@ const app = new Elysia()
 				const apiKey = headers.get('x-api-key');
 				const cookie = headers.get('cookie');
 
-				if (!apiKey && !cookie) return;
+				if (!apiKey && !cookie?.includes('better-auth.session_token')) return;
 
-				const res = await fetch(`${origin}/auth/token`, {
-					headers: apiKey
-						? {
-								'x-api-key': apiKey,
-							}
-						: ({ cookie } as { cookie: string }),
-				});
+				const res = await auth.handler(
+					new Request(`${origin}/auth/token`, {
+						headers: apiKey
+							? {
+									'x-api-key': apiKey,
+								}
+							: ({ cookie } as { cookie: string }),
+					}),
+				);
 
 				if (res.ok) {
 					return res.json();
