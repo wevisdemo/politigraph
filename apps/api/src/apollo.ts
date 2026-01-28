@@ -50,13 +50,18 @@ export class ElysiaApolloServer<
 	}: ServerRegistration<Path, Context>) {
 		await this.start();
 
-		const landingPage = await ApolloServerPluginLandingPageLocalDefault({
-			footer: false,
-			embed: {
-				runTelemetry: false,
-				endpointIsEditable: false,
+		const landingPage: string = await ApolloServerPluginLandingPageLocalDefault(
+			{
+				footer: false,
+				embed: {
+					runTelemetry: false,
+					endpointIsEditable: false,
+					initialState: {
+						pollForSchemaUpdates: false,
+					},
+				},
 			},
-		})
+		)
 			.serverWillStart?.({} as GraphQLServerContext)
 			.then((r) =>
 				r?.renderLandingPage
@@ -69,15 +74,24 @@ export class ElysiaApolloServer<
 
 		const app = new Elysia();
 
-		if (landingPage)
-			app.get(
-				path,
-				new Response(landingPage as string, {
+		if (landingPage) {
+			app.get(path, ({ server, request }) => {
+				const host = request.headers.get('host');
+
+				if (host && !host.includes('localhost')) {
+					triggerPlausiblePageview(
+						request.headers.get('user-agent') ?? '',
+						server?.requestIP(request)?.address ?? '',
+					);
+				}
+
+				return new Response(landingPage, {
 					headers: {
 						'Content-Type': 'text/html',
 					},
-				}),
-			);
+				});
+			});
+		}
 
 		return app.post(
 			path,
@@ -127,3 +141,19 @@ export const apollo = async <
 		context,
 		path,
 	});
+
+function triggerPlausiblePageview(userAgent: string, clientIp: string) {
+	fetch('https://analytics.punchup.world/api/event', {
+		method: 'POST',
+		headers: {
+			'content-type': 'application/json',
+			'user-agent': userAgent,
+			'x-forwarded-for': clientIp,
+		},
+		body: JSON.stringify({
+			name: 'pageview',
+			url: 'https://politigraph.wevis.info/graphql',
+			domain: 'politigraph.wevis.info',
+		}),
+	});
+}
