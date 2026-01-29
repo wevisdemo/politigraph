@@ -71,8 +71,8 @@ jobs:
         working-directory: out
         run: turbo build
         env:
-          BASE_URL: https://politigraph.wevis.info
           NODE_ENV: production
+          NUXT_PUBLIC_BASE_URL: https://politigraph.wevis.info
       - name: Join built outputs
         run: |
           mkdir dist
