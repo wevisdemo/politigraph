@@ -21,14 +21,15 @@ export default defineNuxtConfig({
 		port: 8000,
 	},
 	devtools: { enabled: true },
+	hooks: {
+		// SPA - https://nuxt.com/docs/4.x/guide/concepts/rendering#deploying-a-static-client-rendered-app
+		'prerender:routes'({ routes }) {
+			routes.clear();
+		},
+	},
 	modules: ['@vueuse/nuxt'],
 	nitro: {
 		preset: 'static',
-		esbuild: {
-			options: {
-				target: 'esnext',
-			},
-		},
 	},
 	routeRules:
 		process.env.NODE_ENV !== 'production'
