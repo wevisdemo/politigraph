@@ -53,12 +53,12 @@ const genderOptions = Object.values(enumGender);
 		</template>
 		<template v-else>
 			<div
-				class="flex h-[128px] w-[128px] flex-none items-center justify-center rounded-full border border-gray-400 bg-[#F4F4F4]"
+				class="flex h-32 w-32 flex-none items-center justify-center rounded-full border border-gray-400 bg-[#F4F4F4]"
 			>
 				<img
 					v-if="modelValue.image"
 					:src="modelValue.image"
-					class="h-[128px] w-[128px] rounded-full object-cover"
+					class="h-32 w-32 rounded-full object-cover"
 				/>
 				<UserFilled32
 					v-else
@@ -76,18 +76,18 @@ const genderOptions = Object.values(enumGender);
 			<div class="flex gap-6">
 				<cv-text-input
 					v-model="modelValue.firstname"
-					label="Firstname (Thai)*"
+					label="First name (Thai)*"
 					placeholder=""
 					required
 				/>
 				<cv-text-input
 					v-model="modelValue.middlename"
-					label="Middlename (Thai)"
+					label="Middle name (Thai)"
 					placeholder=""
 				/>
 				<cv-text-input
 					v-model="modelValue.lastname"
-					label="Lastname (Thai)*"
+					label="Last name (Thai)*"
 					placeholder=""
 					required
 				/>
@@ -95,18 +95,18 @@ const genderOptions = Object.values(enumGender);
 			<div class="flex gap-6">
 				<cv-text-input
 					v-model="modelValue.firstname_en"
-					label="Firstname (Eng)"
+					label="First name (Eng)"
 					placeholder=""
 					required
 				/>
 				<cv-text-input
 					v-model="modelValue.middlename_en"
-					label="Middlename (Eng)"
+					label="Middle name (Eng)"
 					placeholder=""
 				/>
 				<cv-text-input
 					v-model="modelValue.lastname_en"
-					label="Lastname (Eng)"
+					label="Last name (Eng)"
 					placeholder=""
 					required
 				/>
@@ -114,7 +114,7 @@ const genderOptions = Object.values(enumGender);
 			<cv-dropdown
 				:placeholder="modelValue.gender"
 				v-model="modelValue.gender"
-				label="Sex"
+				label="Gender"
 				class="w-fit"
 			>
 				<cv-dropdown-item
@@ -127,7 +127,7 @@ const genderOptions = Object.values(enumGender);
 			</cv-dropdown>
 			<cv-date-picker
 				v-model="birthDateLocal"
-				dateLabel="ฺBirthdate (yyyy/mm/dd)"
+				dateLabel="ฺBirth date (yyyy/mm/dd)"
 				placeholder=""
 				kind="single"
 			/>

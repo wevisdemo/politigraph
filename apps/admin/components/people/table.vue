@@ -75,31 +75,27 @@ const router = useRouter();
 						>
 					</cv-data-table-cell>
 					<cv-data-table-cell>
-						<div class="flex flex-wrap gap-1 py-2">
+						<div
+							class="flex flex-wrap gap-1 py-2"
+							v-if="row.memberships.length > 0"
+						>
 							<div v-for="memberships in row.memberships" :key="memberships.id">
 								<div
 									v-for="post in memberships.posts"
 									:key="post.id"
-									class="rounded-[24px] bg-[#D0E2FF] px-2 pb-[2px] text-[#0043CE]"
+									class="rounded-3xl bg-[#D0E2FF] px-2 pb-0.5 text-[#0043CE]"
 								>
 									{{ post.label ?? '' }}
 								</div>
 							</div>
 						</div>
+						<p v-else>-</p>
 					</cv-data-table-cell>
 					<cv-data-table-cell>
-						{{
-							row.created_at
-								? new Date(row.created_at).toLocaleDateString('en-CA')
-								: new Date().toLocaleDateString('en-CA')
-						}}
+						{{ formatDate(row.created_at) ?? '-' }}
 					</cv-data-table-cell>
 					<cv-data-table-cell>
-						{{
-							row.updated_at
-								? new Date(row.updated_at).toLocaleDateString('en-CA')
-								: new Date().toLocaleDateString('en-CA')
-						}}
+						{{ formatDate(row.updated_at) ?? '-' }}
 					</cv-data-table-cell>
 					<cv-data-table-cell>
 						<PublishStatusLabel :status="row.publish_status" />

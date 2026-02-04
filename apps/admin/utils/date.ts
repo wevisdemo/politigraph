@@ -17,12 +17,27 @@ export const parseDate = (d: string | null): Date | null => {
 export const formatDate = (d: Date | string | null): string | null => {
 	if (!d) return null;
 
-	const date = typeof d === 'string' ? new Date(d) : d;
+	const date =
+		typeof d === 'string' ? new Date(d.length === 10 ? `${d}T00:00:00` : d) : d;
 
 	if (isNaN(date.getTime())) return null;
 
-	const yyyy = date.getFullYear();
-	const mm = String(date.getMonth() + 1).padStart(2, '0');
+	const yyyy = date.getFullYear() + 543;
+	const monthNames = [
+		'ม.ค.',
+		'ก.พ.',
+		'มี.ค.',
+		'เม.ย.',
+		'พ.ค.',
+		'มิ.ย.',
+		'ก.ค.',
+		'ส.ค.',
+		'ก.ย.',
+		'ต.ค.',
+		'พ.ย.',
+		'ธ.ค.',
+	];
+	const month = monthNames[date.getMonth()];
 	const dd = String(date.getDate()).padStart(2, '0');
-	return `${yyyy}-${mm}-${dd}`;
+	return `${dd} ${month} ${yyyy}`;
 };
