@@ -78,7 +78,6 @@
         "d3-force": "^3.0.0",
         "dagre": "^0.8.5",
         "prettier": "^3.6.2",
-        "sharp": "^0.34.2",
         "tailwind": "^4.0.0",
         "tailwindcss": "^4.1.18",
         "v-network-graph": "^0.9.21",

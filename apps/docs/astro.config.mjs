@@ -1,16 +1,24 @@
 import starlight from '@astrojs/starlight';
 import vue from '@astrojs/vue';
 import tailwindcss from '@tailwindcss/vite';
-import { defineConfig } from 'astro/config';
+import { defineConfig, passthroughImageService } from 'astro/config';
 
 export default defineConfig({
 	site: 'https://politigraph.wevis.info',
 	// @ts-ignore
 	vite: { plugins: [tailwindcss()] },
+	image: {
+		service: passthroughImageService(),
+	},
 	integrations: [
 		starlight({
 			title: 'Politigraph',
 			favicon: '/favicon.png',
+			logo: {
+				light: './src/assets/logo-black.png',
+				dark: './src/assets/logo-white.png',
+				replacesTitle: true,
+			},
 			head: [
 				{
 					tag: 'script',
