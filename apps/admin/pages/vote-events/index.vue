@@ -373,10 +373,10 @@ watch(
 								>
 							</cv-data-table-cell>
 							<cv-data-table-cell class="text-nowrap">{{
-								row.start_date
+								formatDate(row.start_date)
 							}}</cv-data-table-cell>
 							<cv-data-table-cell class="text-nowrap">{{
-								dayjs(row.created_at).format('YYYY-MM-DD')
+								formatDate(row.created_at)
 							}}</cv-data-table-cell>
 							<cv-data-table-cell>
 								<div class="flex flex-col justify-evenly">
