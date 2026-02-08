@@ -44,6 +44,7 @@ const app = new Elysia()
 	.use(
 		staticPlugin({
 			prefix: '/',
+			alwaysStatic: false,
 		}),
 	)
 	.onError(({ code, path, set, request }) => {
