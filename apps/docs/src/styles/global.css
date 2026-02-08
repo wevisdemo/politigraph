@@ -1,11 +1,71 @@
-@layer base, starlight, theme, components, utilities;
+@layer base, starlight, carbonized, components, utilities;
 
 @import '@astrojs/starlight-tailwind';
 @import 'tailwindcss/theme.css' layer(theme);
 @import 'tailwindcss/utilities.css' layer(utilities);
 
-:root {
-	--sl-font: 'IBM Plex Sans Thai Looped', serif;
+@theme {
+	--font-sans: 'IBM Plex Sans Thai Looped', serif;
+
+	--color-accent-200: #acc9fe;
+	--color-accent-600: #0159f4;
+	--color-accent-900: #0b2c6f;
+	--color-accent-950: #0c214a;
+	--color-gray-100: #f6f6f6;
+	--color-gray-200: #eeeeee;
+	--color-gray-300: #c2c2c2;
+	--color-gray-400: #8b8b8b;
+	--color-gray-500: #585858;
+	--color-gray-700: #383838;
+	--color-gray-800: #272727;
+	--color-gray-900: #181818;
+}
+
+@layer carbonized {
+	.sl-link-button,
+	site-search > button > kbd,
+	site-search > dialog,
+	.pagefind-ui__result-inner > * {
+		@apply rounded-none;
+	}
+
+	site-search > button,
+	.pagefind-ui__search-input {
+		@apply rounded-none border-x-0 border-t-0;
+	}
+
+	.sidebar-content {
+		@apply p-0;
+	}
+
+	.sidebar-content a,
+	.sidebar-content summary {
+		@apply rounded-none border-l-4 border-transparent px-4;
+	}
+
+	.sidebar-content a[aria-current='page'] {
+		@apply border-accent-600 dark:border-accent-200 border-l-4 bg-gray-200 text-black dark:bg-gray-700 dark:text-white;
+	}
+
+	.pagination-links > a {
+		@apply rounded-none p-3 text-xs shadow-none;
+	}
+
+	.pagination-links > a .link-title {
+		@apply text-lg;
+	}
+
+	.meta {
+		@apply italic;
+	}
+
+	.sl-link-button.primary {
+		@apply hover:brightness-110;
+	}
+
+	.sl-link-button.secondary {
+		@apply hover:bg-gray-100 dark:hover:bg-gray-800;
+	}
 }
 
 starlight-tabs > div {
