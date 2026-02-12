@@ -10,12 +10,12 @@ type Bill implements Motion @node {
 	องค์กรที่มีส่วนเกี่ยวข้องในการพิจารณา เช่น สส. สว. ชุดใด
 	"""
 	organizations: [Organization!]!
-		@relationship(type: "PROPOSED_IN", properties: "Relation", direction: OUT)
+		@relationship(type: "CREATED_IN", properties: "Relation", direction: OUT)
 	"""
 	ผู้เสนอ
 	"""
 	creators: [MotionProposer!]!
-		@relationship(type: "PROPOSED_BY", properties: "Relation", direction: OUT)
+		@relationship(type: "CREATED_BY", properties: "Relation", direction: OUT)
 	"""
 	เลข ID ของหน้าข้อมูลกฎหมายในเว็บไซต์ lis.parliament
 	"""
@@ -72,12 +72,8 @@ type Bill implements Motion @node {
 	"""
 	ผู้ร่วมเสนอ
 	"""
-	co_proposers: [Person!]!
-		@relationship(
-			type: "CO_PROPOSED_BY"
-			properties: "Relation"
-			direction: OUT
-		)
+	co_creators: [Person!]!
+		@relationship(type: "CO_CREATED_BY", properties: "Relation", direction: OUT)
 	"""
 	สถานะของร่างกฎหมาย
 	"""
