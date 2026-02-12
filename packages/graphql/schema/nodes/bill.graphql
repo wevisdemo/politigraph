@@ -17,6 +17,15 @@ type Bill implements Motion @node {
 	creators: [MotionProposer!]!
 		@relationship(type: "CREATED_BY", properties: "Relation", direction: OUT)
 	"""
+	ผู้เสนอ
+	"""
+	creators: [MotionProposer!]!
+		@relationship(type: "CREATED_BY", properties: "Relation", direction: OUT)
+	"""
+	ประเภทผู้เสนอ
+	"""
+	creator_type: BillCreatorType!
+	"""
 	เลข ID ของหน้าข้อมูลกฎหมายในเว็บไซต์ lis.parliament
 	"""
 	lis_id: Int!
