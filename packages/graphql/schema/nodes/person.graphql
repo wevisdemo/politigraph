@@ -114,8 +114,13 @@ type Person
 	"""
 	กฏหมายหรือร่างกฏหมายที่เสนอในนามบุคคล
 	"""
-	proposed_motions: [Motion!]!
-		@relationship(type: "PROPOSED_BY", properties: "Relation", direction: IN)
+	created_motions: [Motion!]!
+		@relationship(type: "CREATED_BY", properties: "Relation", direction: IN)
+	"""
+	กฏหมายหรือร่างกฏหมายที่เสนอในนามบุคคล
+	"""
+	co_created_motions: [Motion!]!
+		@relationship(type: "CO_CREATED_BY", properties: "Relation", direction: IN)
 	"""
 	วันที่เพิ่มลงในฐานข้อมูล
 	"""
