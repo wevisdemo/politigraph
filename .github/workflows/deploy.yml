@@ -61,14 +61,9 @@ jobs:
         uses: oven-sh/setup-bun@v2
       - name: Install Turborepo
         run: bun add -g turbo@^2.6.1
-      - name: Prune unrelated packages
-        run: |
-          turbo prune @politigraph/admin @politigraph/docs
       - name: Install dependencies
-        working-directory: out
         run: bun install --frozen-lockfile --ignore-scripts --production
       - name: Build frontend apps
-        working-directory: out
         run: turbo build
         env:
           NODE_ENV: production
@@ -76,9 +71,9 @@ jobs:
       - name: Join built outputs
         run: |
           mkdir dist
-          cp -r ./out/apps/docs/dist/* ./dist
+          cp -r ./apps/docs/dist/* ./dist
           mkdir dist/admin
-          cp -r ./out/apps/admin/.output/public/* ./dist/admin
+          cp -r ./apps/admin/.output/public/* ./dist/admin
       - name: Upload to server
         uses: burnett01/rsync-deployments@7.0.1
         with:
