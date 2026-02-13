@@ -9,7 +9,7 @@ RUN turbo prune --docker @politigraph/api
 
 FROM base AS build
 COPY --from=prepare /app/out/json/ .
-RUN bun install --ignore-scripts --production --no-cache
+RUN bun install --frozen-lockfile --ignore-scripts --production --no-cache
 COPY --from=prepare /app/out/full/ .
 RUN turbo build
 
