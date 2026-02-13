@@ -14,12 +14,7 @@ type Bill implements Motion @node {
 	"""
 	ผู้เสนอ
 	"""
-	creators: [MotionProposer!]!
-		@relationship(type: "CREATED_BY", properties: "Relation", direction: OUT)
-	"""
-	ผู้เสนอ
-	"""
-	creators: [MotionProposer!]!
+	creators: [MotionCreator!]!
 		@relationship(type: "CREATED_BY", properties: "Relation", direction: OUT)
 	"""
 	ประเภทผู้เสนอ
