@@ -7,12 +7,12 @@ sidebar:
 next: false
 lastUpdated: false
 hero:
-  tagline: Developed and maintained by WeVis
+  tagline: It's time to make sense out of it, together.
   image:
     dark: '../../../assets/banner-white.png'
     light: '../../../assets/banner-black.png'
   actions:
-    - text: Get started
+    - text: Get start with Politigraph
       link: /en/intro
       icon: right-arrow
     - text: GraphQL Playground
@@ -20,3 +20,26 @@ hero:
       icon: seti:graphql
       variant: secondary
 ---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+<CardGrid>
+	<Card title="Interconnected Database" icon="seti:graphql">
+		From politicians, political parties, parliamentary positions, and voting
+		records to the legislative process, all interconnected in a graph format.
+	</Card>
+	<Card title="International Standards" icon="open-book">
+		We use [Popolo](https://www.popoloproject.com) as an international standard
+		for storing open political data and [GraphQL](https://graphql.org/) as the
+		standard for querying data.
+	</Card>
+	<Card title="Regularly Verified and Updated" icon="magnifier">
+		We are doing our best to digitized and regularly verified data from Official
+		government. Found something wrong? Let us know at team@wevis.info
+	</Card>
+	<Card title="Developed and Maintained by WeVis" icon="information">
+		[WeVis](https://wevis.info) is a civic tech group striving to drive society
+		through technology and open data. Our mission is to make Thai democracy
+		open, transparent, and participatory.
+	</Card>
+</CardGrid>

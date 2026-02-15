@@ -7,12 +7,12 @@ sidebar:
 next: false
 lastUpdated: false
 hero:
-  tagline: พัฒนาและดูแลโดย WeVis
+  tagline: ถึงเวลาร่วมกันตั้งคำถาม และร่วมกันหาคำตอบ
   image:
     dark: '../../assets/banner-white.png'
     light: '../../assets/banner-black.png'
   actions:
-    - text: เริ่มต้น
+    - text: เริ่มทำความรู้จัก Politigraph
       link: /intro
       icon: right-arrow
     - text: GraphQL Playground
@@ -20,3 +20,27 @@ hero:
       icon: seti:graphql
       variant: secondary
 ---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+<CardGrid>
+	<Card title="ฐานข้อมูลที่เชื่อมโยงถึงกัน" icon="seti:graphql">
+		ตั้งแต่ข้อมูลนักการเมือง พรรคการเมือง การดำรงตำแหน่งในสภา การลงมติ
+		ไปจนกระบวนการผ่านร่างกฏหมาย ที่เชื่อมโยงกันในรูปแบบกราฟ
+	</Card>
+	<Card title="ใช้มาตราฐานสากล" icon="open-book">
+		เราใช้ [Popolo](https://www.popoloproject.com)
+		เป็นมาตราฐานสากลในการจัดเก็บข้อมูลเปิดทางการเมือง และใช้
+		[GraphQL](https://graphql.org/) เป็นมาตราฐานในการ Query ข้อมูล
+	</Card>
+	<Card title="ตรวจสอบและอัพเดตสม่ำเสมอ" icon="magnifier">
+		ข้อมูลอย่างเป็นทางการของภาครัฐจะถูกแปลงให้อยู่ในรูปแบบดิจิตอล
+		และจะผ่านการตรวจสอบโดยทีมงานอย่างสม่ำเสมอ หากพบข้อผิดพลากโปรดแจ้ง
+		team@wevis.info
+	</Card>
+	<Card title="พัฒนาและดูแลโดย WeVis" icon="information">
+		[WeVis](https://wevis.info) คือกลุ่มเทคโนโลยีภาคประชาชน
+		ที่พยายามขับเคลื่อนสังคมผ่านเทคโนโลยีและข้อมูลเปิด
+		ภารกิจของเราคือการทำให้ประชาธิปไตยไทยเปิดเผย โปร่งใส และมีส่วนร่วมได้
+	</Card>
+</CardGrid>
