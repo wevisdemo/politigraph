@@ -66,7 +66,6 @@ const router = useRouter();
 				<cv-data-table-heading id="sb-party" heading="Party" />
 				<cv-data-table-heading id="sb-vote" heading="Vote" />
 			</template>
-			<div>voter_name_raw ถ้าไม่ match voters ให้ใส่ชื้อสีแดง</div>
 			<template #data>
 				<cv-data-table-row
 					v-for="(row, i) in votes.slice(
