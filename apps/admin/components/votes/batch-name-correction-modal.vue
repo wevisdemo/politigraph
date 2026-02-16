@@ -4,7 +4,7 @@ import { closest } from 'fastest-levenshtein';
 
 const props = defineProps<{
 	visible: boolean;
-	votes: Pick<Vote, 'id' | 'vote_order' | 'badge_number' | 'voter_name'>[];
+	votes: Pick<Vote, 'id' | 'vote_order' | 'badge_number' | 'voter_name_raw'>[];
 	peopleOptions: {
 		value: string;
 		name: string;
@@ -19,10 +19,10 @@ defineEmits<{
 const peopleNames = computed(() => props.peopleOptions.map((p) => p.name));
 const dataTable = computed(() =>
 	props.votes
-		.filter((vote) => vote.voter_name !== null)
+		.filter((vote) => vote.voter_name_raw !== null)
 		.map((vote) => ({
 			...vote,
-			suggestedName: closest(vote.voter_name!, peopleNames.value),
+			suggestedName: closest(vote.voter_name_raw!, peopleNames.value),
 		})),
 );
 
@@ -115,7 +115,7 @@ function getSubmitPayload() {
 						<cv-data-table-cell>{{ row.vote_order }}</cv-data-table-cell>
 						<cv-data-table-cell>{{ row.badge_number }}</cv-data-table-cell>
 						<cv-data-table-cell class="text-[#DA1E28]">{{
-							row.voter_name
+							row.voter_name_raw
 						}}</cv-data-table-cell>
 						<cv-data-table-cell>{{ row.suggestedName }}</cv-data-table-cell>
 					</cv-data-table-row>
