@@ -43,7 +43,7 @@ type Vote
 	"""
 	ชื่อ-สกุล (จากตารางในรายงานการประชุมของ MSBIS)
 	"""
-	voter_name: String
+	voter_name_raw: String
 	"""
 	ชื่อสังกัด (จากตารางในรายงานการประชุมของ MSBIS)
 	"""
