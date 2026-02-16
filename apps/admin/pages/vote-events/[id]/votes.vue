@@ -10,7 +10,7 @@ definePageMeta({
 type EditableVoteFields =
 	| 'vote_order'
 	| 'badge_number'
-	| 'voter_name'
+	| 'voter_name_raw'
 	| 'voter_party'
 	| 'option';
 
@@ -82,7 +82,7 @@ const { data: voteEvent, refresh } = useAsyncData(
 				votes: {
 					id: true,
 					vote_order: true,
-					voter_name: true,
+					voter_name_raw: true,
 					voter_party: true,
 					option: true,
 					badge_number: true,
@@ -159,7 +159,7 @@ const markVoteAsEdited = (rowId: string, cellKey: EditableVoteFields) => {
 			[
 				'vote_order',
 				'badge_number',
-				'voter_name',
+				'voter_name_raw',
 				'voter_party',
 				'option',
 			] as const
@@ -236,7 +236,7 @@ async function onSaveChanges() {
 
 		if (rowsToPatch.length) {
 			const mutationPromises = rowsToPatch.map((vote) => {
-				const voterId = vote.voter_name;
+				const voterId = vote.voter_name_raw;
 
 				if (voterId && existingIds.has(vote.id)) {
 					// Update
@@ -289,7 +289,7 @@ async function onSaveChanges() {
 									{
 										vote_order: vote.vote_order,
 										badge_number: vote.badge_number,
-										voter_name: vote.voter_name,
+										voter_name_raw: vote.voter_name_raw,
 										voter_party: vote.voter_party,
 										option: vote.option,
 										voters: {
@@ -497,8 +497,8 @@ function scrollToRow(id: string) {
 				values.forEach(({ voteId, voterId }) => {
 					const vote = voteEvent?.votes.find((v) => v.id === voteId);
 					if (vote) {
-						vote.voter_name = voterId;
-						markVoteAsEdited(voteId, 'voter_name');
+						vote.voter_name_raw = voterId;
+						markVoteAsEdited(voteId, 'voter_name_raw');
 					}
 				});
 				isShowBatchNameCorrectionModal = false;

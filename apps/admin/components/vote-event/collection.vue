@@ -9,7 +9,7 @@ const props = defineProps<{
 		Vote,
 		| 'id'
 		| 'vote_order'
-		| 'voter_name'
+		| 'voter_name_raw'
 		| 'voter_party'
 		| 'option'
 		| 'badge_number'
@@ -66,7 +66,7 @@ const router = useRouter();
 				<cv-data-table-heading id="sb-party" heading="Party" />
 				<cv-data-table-heading id="sb-vote" heading="Vote" />
 			</template>
-			<div>voter_name ถ้าไม่ match voters ให้ใส่ชื้อสีแดง</div>
+			<div>voter_name_raw ถ้าไม่ match voters ให้ใส่ชื้อสีแดง</div>
 			<template #data>
 				<cv-data-table-row
 					v-for="(row, i) in votes.slice(
@@ -81,7 +81,7 @@ const router = useRouter();
 						firstRowIndexOfPage + i + 1
 					}}</cv-data-table-cell>
 					<cv-data-table-cell>{{
-						row.voters.at(0)?.name || row.voter_name
+						row.voters.at(0)?.name || row.voter_name_raw
 					}}</cv-data-table-cell>
 					<cv-data-table-cell>{{ row.voter_party }}</cv-data-table-cell>
 					<cv-data-table-cell>{{ row.option }}</cv-data-table-cell>
