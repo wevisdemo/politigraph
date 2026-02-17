@@ -26,7 +26,7 @@ export function validateVotes({
 		| 'vote_order'
 		| 'badge_number'
 		| 'option'
-		| 'voter_name'
+		| 'voter_name_raw'
 		| 'voter_party'
 	> & {
 		voters: { id: string }[];
@@ -66,8 +66,8 @@ export function validateVotes({
 			votes.some(
 				(otherVote) =>
 					otherVote.id !== vote.id &&
-					(vote.voters[0]?.id ?? vote.voter_name) ===
-						(otherVote.voters[0]?.id ?? otherVote.voter_name),
+					(vote.voters[0]?.id ?? vote.voter_name_raw) ===
+						(otherVote.voters[0]?.id ?? otherVote.voter_name_raw),
 			)
 		) {
 			console.log(vote.id);

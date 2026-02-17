@@ -77,7 +77,7 @@ type Organization @node {
 	กฏหมายหรือร่างกฏหมายที่เสนอในนามองค์กร
 	"""
 	motions: [Motion!]!
-		@relationship(type: "PROPOSED_IN", properties: "Relation", direction: IN)
+		@relationship(type: "CREATED_IN", properties: "Relation", direction: IN)
 	"""
 	กิจกรรมที่องค์กรนี้เกี่ยวข้อง
 	"""

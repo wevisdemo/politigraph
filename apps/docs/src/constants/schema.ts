@@ -42,7 +42,7 @@ export const nodeIconMap = new Map([
 	['Member', Partnership16],
 	['Membership', Identification16],
 	['Motion', FlowData16],
-	['MotionProposer', UserProfileAlt16],
+	['MotionCreator', UserProfileAlt16],
 	['NamedEntity', Tag16],
 	['Organization', Events16],
 	['OtherNames', Forum16],

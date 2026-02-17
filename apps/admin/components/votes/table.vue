@@ -10,7 +10,7 @@ import { closest } from 'fastest-levenshtein';
 type EditableVoteFields =
 	| 'vote_order'
 	| 'badge_number'
-	| 'voter_name'
+	| 'voter_name_raw'
 	| 'voter_party'
 	| 'option';
 
@@ -19,7 +19,7 @@ type VoteEventProp = Pick<VoteEvent, 'id' | 'title' | 'publish_status'> & {
 		Vote,
 		| 'id'
 		| 'vote_order'
-		| 'voter_name'
+		| 'voter_name_raw'
 		| 'voter_party'
 		| 'option'
 		| 'badge_number'
@@ -63,7 +63,7 @@ const onSearch = (event: string) => {
 const getVoterOptions = (id: string, available: boolean) => {
 	if (!props.peopleOptions) return [];
 
-	const original = props.originalVotesMap[id]?.voter_name;
+	const original = props.originalVotesMap[id]?.voter_name_raw;
 
 	if (original && !available) {
 		const closestName = closest(
@@ -94,7 +94,7 @@ const filteredVotes = computed(() => {
 
 		return (
 			!toDeleteIds.value.has(vote.id) &&
-			(vote.voter_name?.toLowerCase().includes(query) ||
+			(vote.voter_name_raw?.toLowerCase().includes(query) ||
 				vote.voter_party?.toLowerCase().includes(query) ||
 				vote.badge_number?.toString().includes(query))
 		);
@@ -143,7 +143,7 @@ const addNewRow = () => {
 		| 'id'
 		| 'vote_order'
 		| 'badge_number'
-		| 'voter_name'
+		| 'voter_name_raw'
 		| 'voter_party'
 		| 'option'
 		| 'voters'
@@ -151,7 +151,7 @@ const addNewRow = () => {
 		id: crypto.randomUUID(),
 		vote_order: '',
 		badge_number: '',
-		voter_name: '',
+		voter_name_raw: '',
 		voter_party: '',
 		option: '',
 		voters: [],
@@ -187,7 +187,7 @@ const downloadCSV = () => {
 	const headers = [
 		{ key: 'vote_order', label: 'ลำดับ' },
 		{ key: 'badge_number', label: 'เลขที่บัตร' },
-		{ key: 'voter_name', label: 'ชื่อ-สกุล' },
+		{ key: 'voter_name_raw', label: 'ชื่อ-สกุล' },
 		{ key: 'voter_party', label: 'พรรค' },
 		{ key: 'option', label: 'ผลลงคะแนน' },
 	];
@@ -293,47 +293,47 @@ const downloadCSV = () => {
 						/>
 					</cv-data-table-cell>
 					<cv-data-table-cell
-						:key="row.id + '-' + 'voter_name'"
+						:key="row.id + '-' + 'voter_name_raw'"
 						@click="startEditing(i, 2)"
 						:class="[
 							{
 								'text-[#DA1E28]':
 									row.voters.length === 0 &&
-									!isCellEdited(row.id, 'voter_name') &&
+									!isCellEdited(row.id, 'voter_name_raw') &&
 									!isNewRow(row.id),
 							},
 						]"
 					>
 						<div v-if="isActiveEditing(i, 2)">
 							<cv-combo-box
-								:label="row.voter_name || 'Select voter name'"
-								v-model="row.voter_name"
+								:label="row.voter_name_raw || 'Select voter name'"
+								v-model="row.voter_name_raw"
 								:options="getVoterOptions(row.id, row.voters.length > 0)"
 								item-value-key="value"
 								item-text-key="label"
 								autoFilter
 								autoHighlight
-								@change="onOptionChange(row as Vote, 'voter_name')"
+								@change="onOptionChange(row as Vote, 'voter_name_raw')"
 							/>
 						</div>
 						<div v-else class="flex items-center gap-2 pl-[16px]">
 							<p
 								:class="{
-									'text-[#707070]': !row.voter_name,
+									'text-[#707070]': !row.voter_name_raw,
 								}"
 							>
 								{{
 									peopleOptions?.find(
-										(option) => option.value === row.voter_name,
+										(option) => option.value === row.voter_name_raw,
 									)?.label ||
-									row.voter_name ||
+									row.voter_name_raw ||
 									'Select voter name'
 								}}
 							</p>
 							<cv-tooltip
 								v-if="
 									row.voters.length === 0 &&
-									!isCellEdited(row.id, 'voter_name') &&
+									!isCellEdited(row.id, 'voter_name_raw') &&
 									!isNewRow(row.id)
 								"
 								:direction="i === filteredVotes.length - 1 ? 'top' : 'bottom'"
@@ -342,7 +342,7 @@ const downloadCSV = () => {
 								<WarningFilled16 class="inline-block" style="fill: #da1e28" />
 							</cv-tooltip>
 							<cv-tooltip
-								v-if="isCellEdited(row.id, 'voter_name')"
+								v-if="isCellEdited(row.id, 'voter_name_raw')"
 								:direction="i === filteredVotes.length - 1 ? 'top' : 'bottom'"
 								tip="Unsaved change"
 							>
