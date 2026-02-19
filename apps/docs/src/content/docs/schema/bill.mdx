@@ -13,11 +13,11 @@ import QueryTabs from '../../../components/query-tabs.astro';
 2. `BUDGET_BILL` (ร่างพระราชบัญญัติงบประมาณรายจ่ายประจำปีงบประมาณ)
 3. `EMERGENCY_DECREE` (พระราชกำหนด)
 
-ยกตัวอย่างเช่น ร่าง พ.ร.บ. งบประมาณ 2567 ซึ่งจะมี `classification` เป็น `BUDGET_BILL`
+ยกตัวอย่างร่างกฎหมายทั้ง 3 ประเภท
 
 <QueryTabs
-	query="query Bills($where: BillWhere, $limit: Int) { bills(where: $where, limit: $limit) { id title }}"
-	variables='{ "limit": 1, "where": { "classification": { "eq": "BUDGET_BILL" } } }'
+	query="query Bills($limit_a: Int, $where_a: BillWhere, $limit_b: Int, $where_b: BillWhere, $limit_c: Int, $where_c: BillWhere) { normal_bills: bills(limit: $limit_a, where: $where_a) { id title classification } budget_bills: bills(limit: $limit_b, where: $where_b) { id title classification } emergency_decree: bills(limit: $limit_c, where: $where_c) { id title classification }}"
+	variables='{ "limit_a": 1, "where_a": { "classification": { "eq": "NORMAL_BILL" } }, "limit_b": 1, "where_b": { "classification": { "eq": "BUDGET_BILL" } }, "limit_c": 1, "where_c": { "classification": { "eq": "EMERGENCY_DECREE" } }}'
 />
 
 ### ผู้เสนอและผู้ร่วมเสนอร่างกฎหมาย

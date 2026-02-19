@@ -43,6 +43,18 @@ if ('errors' in jsonResponse) {
 	throw new Error(jsonResponse.errors.map((e) => e.message).join('\n'));
 }
 
+const flattenedData = Object.entries(jsonResponse.data).flatMap(
+	([key, value]) => {
+		if (Array.isArray(value)) {
+			return value.map((item) => ({
+				...item,
+				// source_group: key,
+			}));
+		}
+		return value;
+	},
+);
+
 const formattedQuery = await format(query, {
 	parser: 'graphql',
 	plugins: [graphql],
@@ -55,7 +67,7 @@ function formatJson(obj: Object) {
 
 <Tabs>
 	<TabItem label="Visualization">
-		<QueryGraph client:visible data={jsonResponse.data} />
+		<QueryGraph client:visible data={{ flattenedData }} />
 	</TabItem>
 	<TabItem label="Query">
 		<Code
