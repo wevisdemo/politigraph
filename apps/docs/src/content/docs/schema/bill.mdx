@@ -53,3 +53,81 @@ import QueryTabs from '../../../components/query-tabs.astro';
 3. `BillRoyalAssentEvent` ขั้นตอนการนำขึ้นทูลเกล้าทูลกระหม่อมถวาย
 4. `BillEnactEvent` ขั้นตอนการประกาศเป็นกฎหมาย
 5. `BillRejectEvent` ขั้นตอนการประกาศร่างตกไป
+
+##### ขั้นตอนการลงมติ (`BillVoteEvent`)
+
+ขั้นตอนการลงมติคือขั้นตอนการพิจารณาและลงมติผ่านร่างกฎหมาย โดยจะแยกระหว่าง _การพิจารณาของสภาผู้แทนราษฎร_ และ _การพิจารณาของวุฒิสภา_
+และการพิจารณาของแต่ละสภาก็จะถูกแบ่งออกเป็น 3 วาระ (property `classification` ใน **`BillVoteEvent`**) ดังนี้
+
+1. `MP_1` การพิจารณาของสภาผู้แทนราษฎร วาระที่ 1
+2. `MP_2` การพิจารณาของสภาผู้แทนราษฎร วาระที่ 2
+3. `MP_3` การพิจารณาของสภาผู้แทนราษฎร วาระที่ 3
+4. `SENATE_1` การพิจารณาของวุฒิสภา วาระที่ 1
+5. `SENATE_2` การพิจารณาของวุฒิสภา วาระที่ 2
+6. `SENATE_3` การพิจารณาของวุฒิสภา วาระที่ 3
+
+โดย **`BillVoteEvent`** จะเชื่อมไปหาข้อมูลการลงมติ **`VoteEvent`** ได้ (property `vote_events` ใน **`BillVoteEvent`**) ดังนี้
+
+ยกตัวอย่างการพิจารณาของสภาผู้แทนราษฎร ร่างพระราชบัญญัติงบประมาณรายจ่ายประจำปีงบประมาณ พ.ศ. 2568 วาระที่ 3
+
+<QueryTabs
+	query="query BillVoteEvents($where: BillVoteEventWhere) { billVoteEvents(where: $where) { id title classification bills { id title classification } vote_events { id classification classification result } }}"
+	variables='{ "where": { "id": { "eq": "b5813539-007a-47de-b09b-22f127e15aa8" } }}'
+/>
+
+##### ขั้นตอนการรวมร่าง (`BillMergeEvent`)
+
+ขั้นตอนการรวมร่างคือขั้นตอนการพิจารณาของสภาว่าร่างพระราชบัญญัติในทำนองเดียวกันร่างไหน
+ควรถูกใช้เป็นร่างหลักในการพิจารณา
+
+โดยร่างพระราชบัญญัติ **`Bill`** แต่ละร่างในทำนองเดียวกัน จะเชื่อมเขาหา **`BillMergeEvent`** เดียว
+และใน `BillMergeEvent` นั้นๆจะเก็บข้อมูล `id` ของร่างหลักไว้ (property `main_bill_id` ใน **`BillMergeEvent`**)
+
+<QueryTabs
+	query="query BillMergeEvents($where: BillMergeEventWhere) { billMergeEvents(where: $where) { id main_bill_id total_merged_bills bills { id title } }}"
+	variables='{ "where": { "id": { "eq": "d4a88667-5f42-4e81-80ef-d88e3d50c74c" } }}'
+/>
+
+##### ขั้นตอนการนำขึ้นทูลเกล้าทูลกระหม่อมถวาย (`BillRoyalAssentEvent`)
+
+ขั้นตอนการนำขึ้นทูลเกล้าทูลกระหม่อมถวายคือขั้นตอนการนำร่างพระราชบัญญัติขึ้นทูลเกล้าทูลกระหม่อมถวายเพื่อให้พระมหากษัตริย์ทรงลงพระปรมาภิไธย
+
+โดยจะเก็บข้อมูลผลพระบรมราชวินิจฉัย (property `result` ใน **`BillRoyalAssentEvent`**)
+
+ยกตัวอย่างขั้นตอนการนำขึ้นทูลเกล้าทูลกระหม่อมถวายของร่างพระราชบัญญัติควบคุมเครื่องดื่มแอลกอฮอล์
+
+<QueryTabs
+	query="query BillRoyalAssentEvents($where: BillRoyalAssentEventWhere) { billRoyalAssentEvents(where: $where) { id result bills { id title } }}"
+	variables='{ "where": { "id": { "eq": "0beac91b-e207-4476-acc7-09c91741caf9" } }}'
+/>
+
+##### ขั้นตอนการประกาศเป็นกฎหมาย (`BillEnactEvent`)
+
+ขั้นตอนการประกาศเป็นกฎหมายคือขั้นตอนการประกาศบังคับใช้พระราชบัญญัติ
+
+ยกตัวอย่างขั้นตอนการประกาศเป็นกฎหมายของร่างพระราชบัญญัติควบคุมเครื่องดื่มแอลกอฮอล์
+
+<QueryTabs
+	query="query BillEnactEvents($where: BillEnactEventWhere) { billEnactEvents(where: $where) { id start_date bills { id title } }}"
+	variables='{ "where": { "id": { "eq": "775ece1f-79ef-42eb-9412-51edc58fe235" } }}'
+/>
+
+##### ขั้นตอนการประกาศร่างตกไป (`BillRejectEvent`)
+
+ขั้นตอนการประกาศร่างตกไปคือขั้นตอนการประกาศว่าร่างพระราชบัญญัติตกไป
+
+โดยจะเก็บข้อมูลเหตุผลในการตกไป (property `reject_reason` ใน **`BillRejectEvent`**)
+
+ยกตัวอย่างขั้นตอนการประกาศร่างตกไปของร่างพระราชบัญญัติกองทุนการประมงแห่งชาติ ซึ่ง ตกไปเนื่องจากยุบสภา
+
+<QueryTabs
+	query="query BillRejectEvents($where: BillRejectEventWhere) { billRejectEvents(where: $where) { id reject_reason bills { id title } }}"
+	variables='{ "where": { "id": { "eq": "55fa6fde-3ed3-4b4e-9665-bccadc5646f2" } }}'
+/>
+
+## การอัพเดตข้อมูลและสถานะการเผยแพร่
+
+การเสนอและกระบวนการพิจารณาร่างกฎหมาย จะถูก [ระบบ automation](https://github.com/wevisdemo/politigraph-automation) ดึงข้อมูลมาจากเว็บไซต์ [ระบบสารสนเทศด้านนิติบัญญัติ](https://lis.parliament.go.th/index/index.php) ของสำนักงานเลขาธิการสภาผู้แทนราษฎรรายสัปดาห์เข้ามาในระบบ
+
+- ข้อมูลจะถูก scrape และตรวจสอบว่ามีข้อมูลที่ไม่ตรงกันหรือไม่ หากผ่านการตรวจสอบ การลงมตินั้นจะมี `publish_status` เป็น _PUBLISHED_ พร้อมเผยแพร่สู่สาธารณะ
+- แต่หากพบข้อผิดพลาด จะมี `publish_status` เป็น _ERROR_ จะไม่ถูกแสดงให้คนทั่วไปได้เห็นจนกว่าทีมงานจะเข้ามาแก้ไขและปรับสถานะกลับไปเป็น _PUBLISHED_
