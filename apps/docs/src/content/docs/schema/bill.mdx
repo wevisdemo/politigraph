@@ -20,6 +20,8 @@ import QueryTabs from '../../../components/query-tabs.astro';
 	variables='{ "limit": 1, "where": { "classification": { "eq": "BUDGET_BILL" } } }'
 />
 
+### ผู้เสนอและผู้ร่วมเสนอร่างกฎหมาย
+
 ร่างกฎหมายสามารถถูกเสนอได้โดยผู้เสนอจาก 1 ใน 3 กลุ่ม (property `creator_type` ใน **`Bill`**)
 
 1. `POLITICIAN` สมาชิกสภาผู้แทนราษฎร
@@ -28,13 +30,26 @@ import QueryTabs from '../../../components/query-tabs.astro';
 
 และ `UNKNOWN` ในกรณีที่ไม่รู้ว่าผู้เสนอร่างกฎหมายอยู่ในกลุ่มใด
 
+ร่างกฎหมายสามารถเชื่อมไปหา node ของผู้เสนอได้ (property `creators` ใน **`Bill`**)
+ในกรณีที่กฎหมายถูกเสนอโดย _สมาชิกสภาผู้แทนราษฎร_ หรือ _คณะรัฐมนตรี_
+และจะเชื่อมไปหาผู้เสนอที่เป็น **`Person`** หรือ **`Organization`** ตามลำดับ
+
+นอกจากนั้นร่างกฎหมายที่ถูกเสนอโดย*สมาชิกสภาผู้แทนราษฎร* จะสามารถมีผู้ร่วมเสนออื่นๆได้อีก (property `co_creators` ใน **`Bill`**)
+
+ยกตัวอย่างร่างกฎหมายที่ถูกเสนอโดย _สมาชิกสภาผู้แทนราษฎร_
+
+<QueryTabs
+	query="query Bills($limit: Int, $where: BillWhere) { bills(limit: $limit, where: $where) { id title classification creator_type creators { ... on Person { id name } } co_creators { id name } }}"
+	variables='{ "limit": 1, "where": { "creator_type": { "eq": "POLITICIAN" } }}'
+/>
+
 ### กระบวนการพิจารณาร่างกฎหมาย
 
-ร่างกฎหมายแต่ละร่างจะผ่านกระบวนการพิจารณาในสภาเป็นลำดับขั้นตอนต่อกันไป (property `bill_events` ใน **`Bill`**)
+หลังจากที่ร่างกฎหมายแต่ละร่างถูกเสนอเข้าสู่สภาก็จะผ่านกระบวนการพิจารณาในสภาในลำดับขั้นตอนต่างๆต่อกันไป (property `bill_events` ใน **`Bill`**)
 โดยในแต่ละขั้นตอนการพิจารณาก็จะใช้ node แต่ละประเภทแทนขั้นตอนการพิจารณานั้นๆ
 
 1. `BillVoteEvent` ขั้นตอนการลงมติ
-2. `BillMergeEvent` ขั้นตอนการรวมร่างกฎหมายเป็นร่างเดียว
+2. `BillMergeEvent` ขั้นตอนการรวมร่างกฎหมายเป็นร่างหลัก
 3. `BillRoyalAssentEvent` ขั้นตอนการนำขึ้นทูลเกล้าทูลกระหม่อมถวาย
 4. `BillEnactEvent` ขั้นตอนการประกาศเป็นกฎหมาย
 5. `BillRejectEvent` ขั้นตอนการประกาศร่างตกไป
