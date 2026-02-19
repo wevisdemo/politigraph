@@ -1,0 +1,40 @@
+---
+title: การเสนอและกระบวนการพิจารณาร่างกฎหมาย
+sidebar:
+  order: 7
+---
+
+import QueryTabs from '../../../components/query-tabs.astro';
+
+เราทำการเก็บข้อมูลการเสนอร่างกฎหมายในสภา โดยมี **`Bill`** แทนร่างกฎหมายแต่ละร่าง
+ร่างกฎหมายที่เราเก็บข้อมูลจะมีทั้งหมด 3 ประเภท (property `classification` ใน **`Bill`**)
+
+1. `NORMAL_BILL` (ร่างพระราชบัญญัติ)
+2. `BUDGET_BILL` (ร่างพระราชบัญญัติงบประมาณรายจ่ายประจำปีงบประมาณ)
+3. `EMERGENCY_DECREE` (พระราชกำหนด)
+
+ยกตัวอย่างเช่น ร่าง พ.ร.บ. งบประมาณ 2567 ซึ่งจะมี `classification` เป็น `BUDGET_BILL`
+
+<QueryTabs
+	query="query Bills($where: BillWhere, $limit: Int) { bills(where: $where, limit: $limit) { id title }}"
+	variables='{ "limit": 1, "where": { "classification": { "eq": "BUDGET_BILL" } } }'
+/>
+
+ร่างกฎหมายสามารถถูกเสนอได้โดยผู้เสนอจาก 1 ใน 3 กลุ่ม (property `creator_type` ใน **`Bill`**)
+
+1. `POLITICIAN` สมาชิกสภาผู้แทนราษฎร
+2. `ASSEMBLY` คณะรัฐมนตรี
+3. `PEOPLE` ประชาชนผู้มีสิทธิเลือกตั้ง
+
+และ `UNKNOWN` ในกรณีที่ไม่รู้ว่าผู้เสนอร่างกฎหมายอยู่ในกลุ่มใด
+
+### กระบวนการพิจารณาร่างกฎหมาย
+
+ร่างกฎหมายแต่ละร่างจะผ่านกระบวนการพิจารณาในสภาเป็นลำดับขั้นตอนต่อกันไป (property `bill_events` ใน **`Bill`**)
+โดยในแต่ละขั้นตอนการพิจารณาก็จะใช้ node แต่ละประเภทแทนขั้นตอนการพิจารณานั้นๆ
+
+1. `BillVoteEvent` ขั้นตอนการลงมติ
+2. `BillMergeEvent` ขั้นตอนการรวมร่างกฎหมายเป็นร่างเดียว
+3. `BillRoyalAssentEvent` ขั้นตอนการนำขึ้นทูลเกล้าทูลกระหม่อมถวาย
+4. `BillEnactEvent` ขั้นตอนการประกาศเป็นกฎหมาย
+5. `BillRejectEvent` ขั้นตอนการประกาศร่างตกไป
