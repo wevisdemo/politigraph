@@ -43,17 +43,14 @@ if ('errors' in jsonResponse) {
 	throw new Error(jsonResponse.errors.map((e) => e.message).join('\n'));
 }
 
-const flattenedData = Object.entries(jsonResponse.data).flatMap(
-	([key, value]) => {
-		if (Array.isArray(value)) {
-			return value.map((item) => ({
-				...item,
-				// source_group: key,
-			}));
-		}
-		return value;
-	},
-);
+const flattenedData = Object.values(jsonResponse.data).flatMap(([value]) => {
+	if (Array.isArray(value)) {
+		return value.map((item) => ({
+			...item,
+		}));
+	}
+	return value;
+});
 
 const formattedQuery = await format(query, {
 	parser: 'graphql',
