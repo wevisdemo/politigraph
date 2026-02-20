@@ -262,7 +262,11 @@ function getShortDateString(date: unknown) {
 							<span v-if="value === null" class="italic text-gray-400"
 								>null</span
 							>
-							<template v-else-if="typeof value === 'string'">
+							<template
+								v-else-if="
+									typeof value === 'string' || typeof value === 'number'
+								"
+							>
 								{{ value }}
 							</template>
 							<ul v-else class="mt-1 flex list-none flex-col p-0">
