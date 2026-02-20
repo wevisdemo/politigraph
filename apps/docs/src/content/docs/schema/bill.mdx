@@ -79,7 +79,7 @@ import QueryTabs from '../../../components/query-tabs.astro';
 ยกตัวอย่างการพิจารณาของสภาผู้แทนราษฎร ร่างพระราชบัญญัติงบประมาณรายจ่ายประจำปีงบประมาณ พ.ศ. 2568 วาระที่ 3
 
 <QueryTabs
-	query="query BillVoteEvents($where: BillVoteEventWhere) { billVoteEvents(where: $where) { id title classification bills { id title classification } vote_events { id classification classification result } }}"
+	query="query BillVoteEvents($where: BillVoteEventWhere) { billVoteEvents(where: $where) { id title classification bills { id title classification } vote_events { id title classification result } }}"
 	variables='{ "where": { "id": { "eq": "b5813539-007a-47de-b09b-22f127e15aa8" } }}'
 />
 
