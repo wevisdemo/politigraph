@@ -22,8 +22,6 @@ services:
       NEO4J_HOST: $NEO4J_HOST
       NEO4J_USERNAME: $NEO4J_USERNAME
       NEO4J_PASSWORD: $NEO4J_PASSWORD
-    volumes:
-      - /var/htdocs/web:/app/public:Z
 
   beszel-agent:
     image: henrygd/beszel-agent:0.16
@@ -39,15 +37,6 @@ services:
       HUB_URL: $BESZEL_AGENT_HUB_URL
       TOKEN: $BESZEL_AGENT_TOKEN
       KEY: $BESZEL_AGENT_KEY
-
-  do-agent:
-    image: digitalocean/do-agent:stable
-    container_name: do-agent
-    restart: always
-    network_mode: 'host'
-    volumes:
-      - /proc:/host/proc:ro
-      - /sys:/host/sys:ro
 
 volumes:
   beszel_agent:

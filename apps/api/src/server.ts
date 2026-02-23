@@ -1,10 +1,8 @@
-import { staticPlugin } from '@elysiajs/static';
 import { auth } from '@politigraph/auth/auth';
 import { initNeo4jGraphql } from '@politigraph/graphql/neo4j-graphql';
 import { Elysia, type Context } from 'elysia';
 import { apollo } from './apollo';
 
-const adminEntrypoint = Bun.file('public/admin/index.html');
 const port = process.env.PORT ?? 3000;
 const origin = `http://127.0.0.1:${port}`;
 
@@ -41,29 +39,7 @@ const app = new Elysia()
 			},
 		}),
 	)
-	.use(
-		staticPlugin({
-			prefix: '/',
-			alwaysStatic: false,
-		}),
-	)
-	.onError(({ code, path, set, request }) => {
-		// Can't use catch all route with static serve on root
-		if (code === 'NOT_FOUND' && path.startsWith('/auth/')) {
-			set.status = 200;
-			return auth.handler(request);
-		}
-	});
-
-if (await adminEntrypoint.exists()) {
-	app.onError(({ code, path, set }) => {
-		// Bun SPA Workaround https://github.com/elysiajs/elysia/issues/1515#issuecomment-3521899834
-		if (code === 'NOT_FOUND' && path.startsWith('/admin')) {
-			set.status = 200;
-			return adminEntrypoint;
-		}
-	});
-}
+	.all('/auth/*', (ctx) => auth.handler(ctx.request));
 
 if (process.env.NODE_ENV !== 'production') {
 	app.use((await import('@elysiajs/cors')).cors());

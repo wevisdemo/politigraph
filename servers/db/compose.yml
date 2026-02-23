@@ -26,7 +26,7 @@ services:
     restart: always
     network_mode: host
     volumes:
-      - postgres:/var/lib/postgresql
+      - ./postgres:/var/lib/postgresql
     environment:
       POSTGRES_DB: betterauth
       POSTGRES_USER: $POSTGRES_USER
@@ -47,15 +47,6 @@ services:
       HUB_URL: $BESZEL_AGENT_HUB_URL
       TOKEN: $BESZEL_AGENT_TOKEN
       KEY: $BESZEL_AGENT_KEY
-
-  do-agent:
-    image: digitalocean/do-agent:stable
-    container_name: do-agent
-    restart: always
-    network_mode: host
-    volumes:
-      - /proc:/host/proc:ro
-      - /sys:/host/sys:ro
 
   backup:
     image: offen/docker-volume-backup:v2
@@ -79,5 +70,4 @@ services:
       BACKUP_RETENTION_DAYS: 30
 
 volumes:
-  postgres:
   beszel_agent:
