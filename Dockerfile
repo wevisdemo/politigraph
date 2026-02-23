@@ -15,8 +15,6 @@ RUN turbo build
 
 FROM gcr.io/distroless/base AS run
 ENV NODE_ENV=production
-ARG BASE_URL
-ENV BETTER_AUTH_URL=$BASE_URL
 WORKDIR /app
 COPY --from=build /app/apps/api/dist/server .
 

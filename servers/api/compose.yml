@@ -17,6 +17,7 @@ services:
     network_mode: 'host'
     environment:
       BETTER_AUTH_SECRET: $BETTER_AUTH_SECRET
+      BETTER_AUTH_URL: https://politigraph.wevis.info
       DATABASE_URL: $DATABASE_URL
       NEO4J_HOST: $NEO4J_HOST
       NEO4J_USERNAME: $NEO4J_USERNAME
