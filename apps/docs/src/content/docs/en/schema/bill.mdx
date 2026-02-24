@@ -1,0 +1,144 @@
+---
+title: Bill
+sidebar:
+  order: 7
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import QueryTabs from '../../../../components/query-tabs.astro';
+
+We collect data on the legislative process and the status of bills submitted for parliamentary consideration, with **`Bill`** representing each draft law.
+
+Each bill is classified into 3 types (property `classification` in **`Bill`**) as follows:
+
+1. `NORMAL_BILL` (Bill / Draft Act): General bills proposed by the Cabinet, Members of the House of Representatives (MPs), or eligible voters through a public petition.
+2. `BUDGET_BILL` (Annual Appropriation Bill): Bills concerning the allocation of the national budget.
+3. `EMERGENCY_DECREE` (Emergency Decree): Laws enacted by the King upon the advice and consent of the Cabinet, exercising constitutional power in cases of emergency.
+
+Examples of the three bill types:
+
+<QueryTabs
+	query="query Bills($limit_a: Int, $where_a: BillWhere, $limit_b: Int, $where_b: BillWhere, $limit_c: Int, $where_c: BillWhere) { normal_bills: bills(limit: $limit_a, where: $where_a) { id title classification } budget_bills: bills(limit: $limit_b, where: $where_b) { id title classification } emergency_decree: bills(limit: $limit_c, where: $where_c) { id title classification }}"
+	variables='{ "limit_a": 1, "where_a": { "classification": { "eq": "NORMAL_BILL" } }, "limit_b": 1, "where_b": { "classification": { "eq": "BUDGET_BILL" } }, "limit_c": 1, "where_c": { "classification": { "eq": "EMERGENCY_DECREE" } }}'
+/>
+
+### Bill Proposers and Co-proposers
+
+The origin of each bill can be classified into four proposer types (property `creator_type` in **`Bill`**):
+
+1. `POLITICIAN`: Members of the House of Representatives (MPs)
+2. `ASSEMBLY`: The Cabinet
+3. `PEOPLE`: Eligible voters
+4. `UNKNOWN`: Used in cases where the proposer group is unknown
+
+Each bill links to detailed information about its proposers (property `creators` in **`Bill`**) based on the following conditions:
+
+- In cases where the bill is proposed by the _Cabinet_, it links to the _proposing Cabinet_ represented as an **`Organization`**.
+- In cases where the bill is proposed by _Members of the House of Representatives (MPs)_, it links to the _proposing MPs_ represented as a **`Person`**. Additionally, bills proposed by _MPs_ can have **co-proposers** (property `co_creators` in **`Bill`**), which link to the _co-proposing MPs_ represented as a **`Person`**.
+- In cases where the bill is proposed by _eligible voters_, there are **no links** to any specific proposer data.
+
+Example of a bill proposed by _Members of the House of Representatives (MPs)_
+
+<QueryTabs
+	query="query Bills($limit: Int, $where: BillWhere) { bills(limit: $limit, where: $where) { id title classification creator_type creators { ... on Person { id name_en } } co_creators { id name_en } }}"
+	variables='{ "limit": 1, "where": { "creator_type": { "eq": "POLITICIAN" } }}'
+/>
+
+### Legislative Process
+
+After each bill is proposed to Parliament, it enters the legislative process consisting of various sequential stages. These stages are stored as a list of events (property `events` in **`Bill`**).
+
+<Aside>
+	For detailed information regarding the stages of the legislative process, you
+	can study more in the manual:
+	<a
+		href="https://parliamentwatch.wevis.info/legislative-process"
+		target="_blank"
+	>
+		กระบวนการพิจารณาร่างกฎหมาย
+	</a>
+</Aside>
+
+Since each stage is represented by a specific event and requires different data points to be recorded, the system uses distinct Node types for each consideration stage as follows:
+
+1. `BillVoteEvent`: Voting stage
+2. `BillMergeEvent`: Bill merging stage (merging multiple drafts into a primary bill)
+3. `BillRoyalAssentEvent`: Royal Assent stage (submission for Royal signature)
+4. `BillEnactEvent`: Enactment stage (promulgation as law)
+5. `BillRejectEvent`: Rejection stage (when a bill is dropped or fails)
+
+##### Voting Stage (`BillVoteEvent`)
+
+The voting stage is an event that records the parliamentary consideration and voting process to determine whether a bill will be approved or passed. The system separates these processes into the two main chambers: the House of Representatives and the Senate.
+
+The consideration stages of each chamber are divided into three main readings (property `classification` in **`BillVoteEvent`**) as follows:
+
+1. `MP_1`: House of Representatives - First Reading
+2. `MP_2`: House of Representatives - Second Reading
+3. `MP_3`: House of Representatives - Third Reading
+4. `SENATE_1`: Senate - First Reading
+5. `SENATE_2`: Senate - Second Reading
+6. `SENATE_3`: Senate - Third Reading
+
+During each reading, there may be votes on various specific details. This data links to **`VoteEvent`**, which stores the scoring details and individual votes (property `vote_events` in **`BillVoteEvent`**).
+
+Example: The House of Representatives consideration of the Annual Appropriation Bill for Fiscal Year 2025 (Third Reading).
+
+<QueryTabs
+	query="query BillVoteEvents($where: BillVoteEventWhere) { billVoteEvents(where: $where) { id title classification bills { id title classification } vote_events { id title classification result } }}"
+	variables='{ "where": { "id": { "eq": "b5813539-007a-47de-b09b-22f127e15aa8" } }}'
+/>
+
+##### Bill Merging Stage (`BillMergeEvent`)
+
+The bill merging stage is an event that occurs when multiple bills with similar content or principles are proposed to Parliament. The chamber resolves to consider these bills concurrently and designates one specific draft as the **"Primary Bill"** to serve as the basis for consideration in subsequent readings.
+
+In terms of data structure, all **`Bill`** nodes within the same deliberation group link to the same **`BillMergeEvent`**, representing their common point of consideration.
+
+The **`BillMergeEvent`** stores the **ID** (`id`) of the bill that the chamber resolved to use as the primary draft for further consideration (property `main_bill_id` in **`BillMergeEvent`**).
+
+Example of a bill being designated as the Primary Bill by the House of Representatives:
+
+<QueryTabs
+	query="query BillMergeEvents($where: BillMergeEventWhere) { billMergeEvents(where: $where) { id main_bill_id total_merged_bills bills { id title } }}"
+	variables='{ "where": { "id": { "eq": "d4a88667-5f42-4e81-80ef-d88e3d50c74c" } }}'
+/>
+
+##### Royal Assent Submission Stage (`BillRoyalAssentEvent`)
+
+The Royal Assent submission stage is the event occurring after Parliament has approved a bill. The Prime Minister then proceeds to submit the bill to the King for the Royal Signature before it is officially promulgated as law.
+
+The **`BillRoyalAssentEvent`** stores the record of the Royal Decision or the acceptance status of the bill (property `result` in **`BillRoyalAssentEvent`**).
+
+Example of the Royal Assent submission stage for the Alcoholic Beverage Control Bill:
+
+<QueryTabs
+	query="query BillRoyalAssentEvents($where: BillRoyalAssentEventWhere) { billRoyalAssentEvents(where: $where) { id result bills { id title } }}"
+	variables='{ "where": { "id": { "eq": "0beac91b-e207-4476-acc7-09c91741caf9" } }}'
+/>
+
+##### Bill Rejection Stage (`BillRejectEvent`)
+
+The Bill Rejection Stage is an event that records the termination of a bill's legislative process. This occurs when a bill fails to receive approval or when specific circumstances prevent the bill from proceeding through the legislative steps to completion.
+
+**`BillRejectEvent`** stores the reason or cause for the bill being dropped (property `reject_reason` in **`BillRejectEvent`**). Common reasons include: the House of Representatives resolving not to accept the principles, the bill being withdrawn by the proposer, or the bill being dropped due to the dissolution of Parliament.
+
+Example of the rejection stage for the National Fisheries Fund Bill, which was dropped due to the dissolution of Parliament.
+
+<QueryTabs
+	query="query BillRejectEvents($where: BillRejectEventWhere) { billRejectEvents(where: $where) { id reject_reason bills { id title } }}"
+	variables='{ "where": { "id": { "eq": "55fa6fde-3ed3-4b4e-9665-bccadc5646f2" } }}'
+/>
+
+### Current Status of a Bill
+
+Each bill displays a current status, which summarizes the latest event that has occurred in its legislative process (property `status` in **`Bill`**). There are 4 possible status types:
+
+1. `IN_PROGRESS` (**In Progress**): Used for bills still undergoing parliamentary consideration (Readings 1-3) or in the process of being submitted for Royal Assent, where the deliberation is not yet complete or a final outcome has not been reached.
+2. `MERGED` (**Merged**): Used for bills that the chamber has resolved to "merge" into another primary bill. Consequently, tracking for this specific draft ends, and further progress must be followed via the primary bill instead (see more details in **`BillMergeEvent`**).
+3. `ENACTED` (**Enacted**): A positive final status, meaning the bill has received the Royal Signature and has been published in the Royal Gazette to be enforced as law (**`BillEnactEvent`**).
+4. `REJECTED` (**Rejected / Dropped**): A negative final status, meaning the consideration process has ended because the bill was voted down, withdrawn, or dropped according to constitutional conditions (**`BillRejectEvent`**).
+
+## Data Updates and Publish Status
+
+Data on bill proposals and the legislative process is scraped weekly from the <a href="https://lis.parliament.go.th/index/index.php" target="_blank">Legislative Information System</a> website of the Secretariat of the House of Representatives by an <a href="https://github.com/wevisdemo/politigraph-automation" target="_blank">automation system</a> and imported into the database.
