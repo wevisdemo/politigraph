@@ -147,7 +147,7 @@ const { data } = await useLazyAsyncData(
 				title: true,
 				creator_type: true,
 				proposal_date: true,
-				bill_events: {
+				events: {
 					__typename: true,
 
 					on_BillMergeEvent: {
@@ -422,11 +422,11 @@ watch(
 							<cv-data-table-cell class="text-nowrap">
 								<p
 									:class="{
-										'text-sm text-green-500': isComplete(row.bill_events),
-										'text-sm text-red-500': !isComplete(row.bill_events),
+										'text-sm text-green-500': isComplete(row.events),
+										'text-sm text-red-500': !isComplete(row.events),
 									}"
 								>
-									{{ formatCompleteness(row.bill_events) }}
+									{{ formatCompleteness(row.events) }}
 								</p>
 							</cv-data-table-cell>
 						</cv-data-table-row>

@@ -1,11 +1,11 @@
 // @ts-ignore
-import { Event32, Person32, Receipt32 } from '@carbon/icons-vue';
+import { Document32, Event32, Person32 } from '@carbon/icons-vue';
 
 export const ADMIN_NAVIGATIONS = [
 	{
 		label: 'Bills',
 		path: 'bills',
-		icon: Receipt32,
+		icon: Document32,
 	},
 	{
 		label: 'People',
