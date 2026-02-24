@@ -52,6 +52,9 @@ export default defineConfig({
 				'./src/styles/global.css',
 				'@fontsource/ibm-plex-sans-thai-looped',
 			],
+			components: {
+				Footer: './src/components/footer.astro',
+			},
 		}),
 		vue(),
 	],

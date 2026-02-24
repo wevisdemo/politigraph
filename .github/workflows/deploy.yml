@@ -59,12 +59,10 @@ jobs:
       - uses: actions/checkout@v4
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
-      - name: Install Turborepo
-        run: bun add -g turbo@^2.6.1
       - name: Install dependencies
-        run: bun install --frozen-lockfile --ignore-scripts --production
+        run: bun install --ignore-scripts --production
       - name: Build frontend apps
-        run: turbo build
+        run: bun run build --filter=@politigraph/admin --filter=@politigraph/docs
         env:
           NODE_ENV: production
           NUXT_PUBLIC_BASE_URL: https://politigraph.wevis.info
