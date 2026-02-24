@@ -4,6 +4,7 @@ import {
 	enumBillCreatorType,
 	enumBillStatus,
 } from '@politigraph/graphql/genql';
+import { formatDate } from '~/utils/date';
 import { useGraphqlClient } from '~/utils/graphql/client';
 import { ref } from 'vue';
 import type { LocationQueryValue } from 'vue-router';
