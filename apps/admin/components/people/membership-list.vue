@@ -1,4 +1,29 @@
 <script lang="ts">
+export type MembershipProp = {
+	id: string;
+	start_date: string | null;
+	end_date: string | null;
+	label: string | null;
+	district_number: number | null;
+	list_number: number | null;
+	province: string | null;
+	links: Array<{
+		id: string;
+		url: string;
+		note: string | null;
+	}>;
+	posts: Array<{
+		id: string;
+		role: string;
+		organizations: Array<{
+			id: string;
+			name: string;
+			classification: string;
+		}>;
+	}>;
+	mode?: string;
+};
+
 export enum RepresentativeLabel {
 	District = 'แบ่งเขต',
 	Partylist = 'บัญชีรายชื่อ',
@@ -15,7 +40,6 @@ import {
 	// @ts-ignore
 } from '@carbon/icons-vue';
 import LinksForm from '~/components/LinksForm.vue';
-import type { MembershipProp } from '~/types/membership';
 import { formatDate, parseDate } from '~/utils/date';
 import dayjs from 'dayjs';
 
