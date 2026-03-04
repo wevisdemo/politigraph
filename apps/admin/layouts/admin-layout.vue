@@ -46,7 +46,7 @@ const signout = async () => {
 						<cv-side-nav-link
 							v-for="{ label, path } in ADMIN_NAVIGATIONS"
 							:key="label"
-							:href="`/${path}`"
+							:href="`/admin/${path}`"
 							:active="route.path.includes(path)"
 						>
 							{{ label }}
