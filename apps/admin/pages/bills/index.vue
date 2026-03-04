@@ -109,13 +109,7 @@ const { data } = await useLazyAsyncData(
 		if (filters.value.organization !== 'ALL') {
 			const organizationId = filters.value.organization;
 
-			if (filters.value.organization === 'อื่นๆ') {
-				where.organizationsConnection = {
-					aggregate: { count: { nodes: { eq: 0 } } },
-				};
-			} else {
-				where.organizations = { some: { id: { eq: organizationId } } };
-			}
+			where.organizations = { some: { id: { eq: organizationId } } };
 		}
 
 		if (filters.value.status !== 'ALL') {
@@ -216,19 +210,13 @@ const { data: organizations } = await useAsyncData(
 
 const organizationsOption = () => {
 	const singleOptions =
-		organizations.value?.map((o) => ({
-			label: `${o.abbreviation ?? ''} ชุดที่ ${o.term ?? '-'}`,
-			value: o.id,
-			term: o.term ?? 0,
-		})) || [];
-
-	singleOptions.sort((a, b) => b.term - a.term);
-
-	singleOptions.push({
-		label: `อื่นๆ`,
-		value: `อื่นๆ`,
-		term: 0,
-	});
+		organizations.value
+			?.map((o) => ({
+				label: `${o.abbreviation ?? ''} ชุดที่ ${o.term ?? '-'}`,
+				value: o.id,
+				term: o.term ?? 0,
+			}))
+			.sort((a, b) => b.term - a.term) || [];
 
 	return singleOptions;
 };
