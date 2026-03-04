@@ -2,7 +2,6 @@
 // @ts-ignore
 import { Save16, View16, ViewOff16 } from '@carbon/icons-vue';
 import {
-	enumOrganizationType,
 	enumPublishStatus,
 	type Link,
 	type Membership,
@@ -118,7 +117,6 @@ const setMembershipMutation = () => {
 		originalMemberships.value?.find((o) => o.id === m.id),
 	);
 
-	// ✅ รวม deleted จาก mode + ของที่หายไปจาก original
 	const deleteMemberships = [
 		...deletedMemberships,
 		...(originalMemberships.value ?? []).filter(
@@ -364,15 +362,6 @@ const saveChanges = async () => {
 				},
 			}),
 		);
-
-		// const changedMemberships = [
-		// 	...changedPartyMemberships.value,
-		// 	...changedHousesMemberships.value,
-		// 	...changedCabinetMemberships.value,
-		// ];
-
-		// const newMemberships = changedMemberships.filter((m) => !m.id);
-		// const updatedMemberships = changedMemberships.filter((m) => !!m.id);
 
 		await Promise.all([
 			...createLinksPromises,
