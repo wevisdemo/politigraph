@@ -7,6 +7,7 @@ import {
 	type Membership,
 } from '@politigraph/graphql/genql';
 import { PeopleDetail, PeopleMembershipList } from '#components';
+import { RepresentativeLabel } from '~/components/people/membership-list.vue';
 import type { MembershipProp } from '~/types/membership';
 import { useGraphqlClient } from '~/utils/graphql/client';
 
@@ -68,6 +69,7 @@ const { data: peopleData, refresh: refreshPeopleDetail } =
 					district_number: true,
 					label: true,
 					province: true,
+					list_number: true,
 					links: {
 						id: true,
 						url: true,
@@ -133,9 +135,15 @@ const setMembershipMutation = () => {
 					__args: {
 						input: [
 							{
-								district_number: membership.district_number,
-								province: membership.province,
 								label: membership.label,
+								...(membership.label === RepresentativeLabel.District
+									? {
+											district_number: membership.district_number,
+											province: membership.province,
+										}
+									: membership.label === RepresentativeLabel.Partylist
+										? { list_number: membership.list_number }
+										: {}),
 								start_date: membership.start_date,
 								end_date: membership.end_date,
 								links: {
@@ -233,7 +241,24 @@ const setMembershipMutation = () => {
 									]
 								: [],
 							label: { set: membership.label },
-							district_number: { set: membership.district_number },
+							province: {
+								set:
+									membership.label === RepresentativeLabel.District
+										? membership.province
+										: null,
+							},
+							district_number: {
+								set:
+									membership.label === RepresentativeLabel.District
+										? membership.district_number
+										: null,
+							},
+							list_number: {
+								set:
+									membership.label === RepresentativeLabel.Partylist
+										? membership.list_number
+										: null,
+							},
 							links: [
 								...newLinks.map((link) => ({
 									create: [

@@ -4,6 +4,7 @@ export type MembershipProp = {
 	end_date: string | null;
 	label: string | null;
 	district_number: number | null;
+	list_number: number | null;
 	province: string | null;
 	links: Array<{
 		id: string;

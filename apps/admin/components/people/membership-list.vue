@@ -1,4 +1,10 @@
-div
+<script lang="ts">
+export enum RepresentativeLabel {
+	District = 'แบ่งเขต',
+	Partylist = 'บัญชีรายชื่อ',
+}
+</script>
+
 <script lang="ts" setup>
 import {
 	Add16,
@@ -6,6 +12,7 @@ import {
 	Close16,
 	Edit16,
 	TrashCan16,
+	// @ts-ignore
 } from '@carbon/icons-vue';
 import LinksForm from '~/components/LinksForm.vue';
 import type { MembershipProp } from '~/types/membership';
@@ -87,6 +94,7 @@ const handleAddMembership = () => {
 		end_date: null,
 		label: null,
 		district_number: null,
+		list_number: null,
 		province: null,
 		posts: [
 			{
@@ -472,21 +480,18 @@ const currentMembership = computed({
 
 						<cv-radio-group legendText="Label">
 							<cv-radio-button
+								v-for="value in Object.values(RepresentativeLabel)"
 								v-model="currentMembership.label"
-								name="group-1"
-								label="เขต"
-								value="เขต"
-							/>
-
-							<cv-radio-button
-								v-model="currentMembership.label"
-								name="group-1"
-								label="บัญชีรายชื่อ"
-								value="บัญชีรายชื่อ"
+								name="representative-label"
+								:label="value"
+								:value="value"
 							/>
 						</cv-radio-group>
 
-						<div class="flex w-full gap-5">
+						<div
+							class="flex w-full gap-5"
+							v-if="currentMembership.label === RepresentativeLabel.District"
+						>
 							<div class="w-1/2">
 								<cv-text-input
 									v-model="currentMembership.province"
@@ -496,16 +501,22 @@ const currentMembership = computed({
 
 							<div class="flex w-1/2 gap-5">
 								<cv-text-input
-									v-model="currentMembership.district_number"
+									v-model.number="currentMembership.district_number"
 									label="District Number"
 									type="number"
-									@change="
-										currentMembership.district_number = Number(
-											$event.target.value,
-										)
-									"
 								/>
 							</div>
+						</div>
+
+						<div
+							v-if="currentMembership.label === RepresentativeLabel.Partylist"
+							class="flex w-1/2 gap-5"
+						>
+							<cv-text-input
+								v-model.number="currentMembership.list_number"
+								label="List Number"
+								type="number"
+							/>
 						</div>
 					</template>
 
