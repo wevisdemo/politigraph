@@ -1,5 +1,4 @@
 <script setup lang="ts">
-//@ts-ignore
 import {
 	enumBillCreatorType,
 	enumBillStatus,
@@ -17,7 +16,7 @@ useHead({
 	title: 'Bills | Politigraph Admin',
 });
 
-export type BillEvent = {
+type BillEvent = {
 	__typename?: unknown;
 	main_bill_id?: unknown;
 	vote_eventsConnection?: {
@@ -365,15 +364,10 @@ watch(
 							order="ascending"
 							class="w-2xl"
 						/>
-						<cv-data-table-heading
-							id="sb-status"
-							heading="Status"
-							class="text-center"
-						/>
+						<cv-data-table-heading id="sb-status" heading="Status" />
 						<cv-data-table-heading
 							id="sb-creator-type"
 							heading="Creator Type"
-							class="text-center"
 						/>
 						<cv-data-table-heading
 							id="sb-proposal-date"
