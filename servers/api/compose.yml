@@ -9,6 +9,11 @@ services:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
       - ./tls:/var/tls:ro
       - /var/htdocs:/var/htdocs:ro
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '200m'
+        max-file: '5'
 
   elysia:
     image: wevisdemo/politigraph:latest
