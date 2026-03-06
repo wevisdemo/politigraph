@@ -41,6 +41,7 @@ services:
     privileged: true
     network_mode: host
     volumes:
+      - beszel_agent:/var/lib/beszel-agent
       - /var/run/docker.sock:/var/run/docker.sock:ro
     environment:
       LISTEN: 45876
@@ -57,7 +58,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - /var/backup:/archive
-      - postgres:/backup/postgres:ro
+      - ./postgres:/backup/postgres:ro
       - ./neo4j/data:/backup/neo4j:ro
     environment:
       AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
