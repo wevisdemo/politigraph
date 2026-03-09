@@ -46,6 +46,22 @@ export default defineConfig({
 					href: 'https://github.com/wevisdemo/politigraph',
 				},
 			],
+			sidebar: [
+				{
+					label: 'เริ่มต้น',
+					translations: {
+						en: 'Getting Started',
+					},
+					autogenerate: { directory: 'getting-started' },
+				},
+				{
+					label: 'โครงสร้างของข้อมูล',
+					translations: {
+						en: 'Schema',
+					},
+					autogenerate: { directory: 'schema' },
+				},
+			],
 			tableOfContents: false,
 			lastUpdated: true,
 			customCss: [
