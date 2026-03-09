@@ -12,7 +12,7 @@ To ensure the database is organized, standardized, and easy to understand, we ha
 We designed the Politigraph schema based on [Popolo - International open government data specifications](https://www.popoloproject.com/) with adaptations for the context of Thailand. The **schema** consists of:
 
 1. **Object**: Types of actual data nodes, specifying the properties present in each node type.
-2. **Interface**: Basic requirements for object to extend.
+2. **Interface**: Basic requirements for objects to extend.
 3. **Union**: Sets of possible types.
 4. **Relationship**: Possible relationships between different node types.
 
@@ -22,7 +22,7 @@ Feel free to select entities to read the descriptions.
 
 ## Node
 
-For example, we have these people with first-name starting with _"Nat"_ represented with nodes type of **`Person`**. These nodes will only have property and relationship that satisfied **`Person`** **schema** (they don't need to have optional properties, so querying those will have value of _null_)
+For example, we have these people with first-name starting with _"Nat"_ represented with nodes type of **`Person`**. These nodes will only have property and relationship that satisfy **`Person`** **schema** (they don't need to have optional properties, so querying those will have value of _null_)
 
 <QueryTabs
 	query="query People($where: PersonWhere) { people(where: $where) { id prefix name_en image birth_date educations previous_occupations }}"
@@ -31,7 +31,7 @@ For example, we have these people with first-name starting with _"Nat"_ represen
 
 ## Relationship
 
-Relationship in **schema** will have a name with arrow direction for human interpretation such as `Post--IN--> Organization` meaning **`Post`** is "in" an **`Organization`** But in the query process, either nodes at the both end can be queried from each other. For example, **`Post`** has property `organizations` and **`Organization`** has property `posts` that refer to reach other node of this relationship.
+Relationship in **schema** will have a name with arrow direction for human interpretation such as `Post--IN--> Organization` meaning **`Post`** is "in" an **`Organization`** But in the query process, either nodes at the both end can be queried from each other. For example, **`Post`** has property `organizations` and **`Organization`** has property `posts` that refer to each other node of this relationship.
 
 <QueryTabs
 	query="query Organizations($where: OrganizationWhere, $postsWhere2: PostWhere) { organizations(where: $where) { id name_en posts(where: $postsWhere2) { id label role organizations { id name } } } }"
