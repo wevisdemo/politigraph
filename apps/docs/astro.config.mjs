@@ -1,6 +1,7 @@
 import starlight from '@astrojs/starlight';
 import vue from '@astrojs/vue';
 import tailwindcss from '@tailwindcss/vite';
+import mermaid from 'astro-mermaid';
 import { defineConfig, passthroughImageService } from 'astro/config';
 
 export default defineConfig({
@@ -11,6 +12,7 @@ export default defineConfig({
 		service: passthroughImageService(),
 	},
 	integrations: [
+		mermaid(),
 		starlight({
 			title: 'Politigraph',
 			favicon: '/favicon.png',
