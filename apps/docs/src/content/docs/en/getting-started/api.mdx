@@ -15,6 +15,14 @@ Most data from the Politigraph API is publicly accessible and does not require a
 
 Access to both of these exceptions is strictly reserved for the WeVis system administration team.
 
-## Rate Limiting
+## Usage Limitations
 
-We limit API calls to a maximum of 5 requests/second, with a maximum burst quota of 12. If you send more requests than the specified limit, you will receive a 503 error response.
+To ensure fair usage and protect the API from abuse, we enforce the following limits on GraphQL operations:
+
+- **Rate limit**: 30 requests per 10 seconds
+- **Batching**: 5 operations per batched request
+- **Aliases**: 10 aliases per operation
+- **Depth**: 10 levels of nested operation
+- **Tokens**: 1000 tokens per operation
+
+Exceeding these limits will result in an error response.
