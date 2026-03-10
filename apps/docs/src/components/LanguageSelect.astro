@@ -1,0 +1,21 @@
+---
+const { locale } = Astro.locals.starlightRoute;
+const isEnglish = locale === 'en';
+const targetLabel = isEnglish ? 'ไทย' : 'EN';
+const currentPath = Astro.url.pathname.replace(/\/$/, '') || '/';
+
+let finalPath: string;
+if (isEnglish) {
+	finalPath = currentPath.replace(/^\/en/, '') || '/';
+} else {
+	finalPath = `/en${currentPath}`;
+}
+---
+
+<a
+	href={finalPath}
+	class="flex items-center justify-center w-auto pr-3 transition-opacity hover:opacity-60 text-sm font-medium text-black dark:text-white"
+	aria-label={`Switch to ${targetLabel}`}
+>
+	{targetLabel}
+</a>

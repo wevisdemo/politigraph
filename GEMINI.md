@@ -4,6 +4,7 @@
 
 - Always use bun as a package manager and JavaScript runtime
 - The Github owner and repo is wevisdemo/politigraph
+- Do not use CSS style block if not necessary, using Tailwind classes is preferable
 
 ## Folder Structure
 

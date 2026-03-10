@@ -72,6 +72,8 @@ export default defineConfig({
 			],
 			components: {
 				Footer: './src/components/footer.astro',
+				ThemeSelect: './src/components/ThemeSelect.astro',
+				LanguageSelect: './src/components/LanguageSelect.astro',
 			},
 		}),
 		vue(),
