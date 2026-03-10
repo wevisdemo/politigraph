@@ -6,14 +6,15 @@ import {
 } from '@apollo/server';
 import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin/landingPage/default';
 import { type StartStandaloneServerOptions } from '@apollo/server/standalone';
-import { Elysia, t } from 'elysia';
+import { Elysia, t, type Context as ElysiaContext } from 'elysia';
 
 export interface ServerRegistration<
 	Path extends string = '/graphql',
 	TContext extends BaseContext = BaseContext,
 > extends Omit<StartStandaloneServerOptions<any>, 'context'> {
 	path?: Path;
-	context?: (context: TContext) => Promise<TContext>;
+	context?: (context: ElysiaContext) => Promise<TContext>;
+	onLandingPageRequested?: (context: ElysiaContext) => void;
 }
 
 export type ElysiaApolloConfig<
@@ -47,6 +48,7 @@ export class ElysiaApolloServer<
 	public async createHandler<Path extends string = '/graphql'>({
 		path = '/graphql' as Path,
 		context: apolloContext = async () => ({}) as any,
+		onLandingPageRequested,
 	}: ServerRegistration<Path, Context>) {
 		await this.start();
 
@@ -75,15 +77,8 @@ export class ElysiaApolloServer<
 		const app = new Elysia();
 
 		if (landingPage) {
-			app.get(path, ({ server, request }) => {
-				const host = request.headers.get('host');
-
-				if (host && !host.includes('localhost')) {
-					triggerPlausiblePageview(
-						request.headers.get('user-agent') ?? '',
-						server?.requestIP(request)?.address ?? '',
-					);
-				}
+			app.get(path, (context) => {
+				onLandingPageRequested?.(context);
 
 				return new Response(landingPage, {
 					headers: {
@@ -135,25 +130,11 @@ export const apollo = async <
 >({
 	path,
 	context,
+	onLandingPageRequested,
 	...config
 }: ElysiaApolloConfig<Path, TContext>) =>
 	new ElysiaApolloServer<TContext>(config).createHandler<Path>({
 		context,
 		path,
+		onLandingPageRequested,
 	});
-
-function triggerPlausiblePageview(userAgent: string, clientIp: string) {
-	fetch('https://analytics.punchup.world/api/event', {
-		method: 'POST',
-		headers: {
-			'content-type': 'application/json',
-			'user-agent': userAgent,
-			'x-forwarded-for': clientIp,
-		},
-		body: JSON.stringify({
-			name: 'pageview',
-			url: 'https://politigraph.wevis.info/graphql',
-			domain: 'politigraph.wevis.info',
-		}),
-	});
-}

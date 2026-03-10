@@ -2,6 +2,7 @@ import { auth } from '@politigraph/auth/auth';
 import { initNeo4jGraphql } from '@politigraph/graphql/neo4j-graphql';
 import { Elysia, type Context } from 'elysia';
 import { apollo } from './apollo';
+import { triggerPlausiblePageview } from './plausible';
 
 const port = process.env.PORT ?? 3000;
 const origin = `http://127.0.0.1:${port}`;
@@ -35,6 +36,16 @@ const app = new Elysia()
 
 				if (res.ok) {
 					return res.json();
+				}
+			},
+			onLandingPageRequested: ({ server, request }: Context) => {
+				const host = request.headers.get('host');
+
+				if (host && !host.includes('localhost')) {
+					triggerPlausiblePageview(
+						request.headers.get('user-agent') ?? '',
+						server?.requestIP(request)?.address ?? '',
+					);
 				}
 			},
 		}),
