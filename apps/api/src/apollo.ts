@@ -15,6 +15,7 @@ export interface ServerRegistration<
 	path?: Path;
 	context?: (context: ElysiaContext) => Promise<TContext>;
 	onLandingPageRequested?: (context: ElysiaContext) => void;
+	maxBatching?: number;
 }
 
 export type ElysiaApolloConfig<
@@ -49,6 +50,7 @@ export class ElysiaApolloServer<
 		path = '/graphql' as Path,
 		context: apolloContext = async () => ({}) as any,
 		onLandingPageRequested,
+		maxBatching,
 	}: ServerRegistration<Path, Context>) {
 		await this.start();
 
@@ -119,6 +121,19 @@ export class ElysiaApolloServer<
 			},
 			{
 				body: t.Union([BODY, t.Array(BODY)]),
+				beforeHandle: ({ body, set }) => {
+					if (maxBatching && Array.isArray(body) && body.length > maxBatching) {
+						set.status = 400;
+						return {
+							errors: [
+								{
+									message: `Syntax Error: Batch operation limit of ${maxBatching} exceeded, found ${body.length}.`,
+									extensions: { code: 'GRAPHQL_VALIDATION_FAILED' },
+								},
+							],
+						};
+					}
+				},
 			},
 		);
 	}
@@ -131,10 +146,12 @@ export const apollo = async <
 	path,
 	context,
 	onLandingPageRequested,
+	maxBatching,
 	...config
 }: ElysiaApolloConfig<Path, TContext>) =>
 	new ElysiaApolloServer<TContext>(config).createHandler<Path>({
 		context,
 		path,
 		onLandingPageRequested,
+		maxBatching,
 	});
