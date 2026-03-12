@@ -90,3 +90,9 @@ To make local neo4j have up-to-dated data, we have a script to use rsync to down
 ```shell
 bun run db:pull
 ```
+
+## 5. License
+
+Regarding the data, the team intends to open it as Open Data under the [Attribution-NonCommercial 4.0 International](https://creativecommons.org/licenses/by-nc/4.0/) terms. This means you can use, modify, and build upon the data, but it cannot be used for commercial purposes or to seek profit from the work, and credit must be given to WeVis.
+
+Regarding the source code, the team intends to develop every project as Open Source under the [Attribution-NonCommercial-ShareAlike 4.0 International](https://creativecommons.org/licenses/by-nc-sa/4.0/) terms. This means you can use, modify, and build upon the work, but it cannot be used for commercial purposes or to seek profit from the work. You must provide notice and credit to the work's owner, and the resulting work must be under the same Creative Commons license conditions as the original. WeVis Ltd. and Punch Up Ltd. are joint licensors.
