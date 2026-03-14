@@ -27,6 +27,12 @@ To ensure fair usage and protect the API from abuse, we enforce the following li
 
 Exceeding these limits will result in an error response.
 
+## Node Limits
+
+Certain types of data, such as "People" and individual "Votes", contain a large number of nodes within the system.
+We must limit the number of nodes returned to the user to no more than 1,000 nodes per query.
+If you need to retrieve more data than this limit allows, please [read more about using Pagination on GraphQL](<(https://neo4j.com/docs/graphql/current/queries-aggregations/pagination/)>).
+
 ## License
 
 Regarding the data, the team intends to open it as Open Data under the [Attribution-NonCommercial 4.0 International](https://creativecommons.org/licenses/by-nc/4.0/) terms. This means you can use, modify, and build upon the data, but it cannot be used for commercial purposes or to seek profit from the work, and credit must be given to WeVis.

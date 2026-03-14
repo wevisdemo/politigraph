@@ -27,6 +27,11 @@ sidebar:
 
 จะได้รับ Error Response หากใช้งานเกินข้อกำหนด
 
+## การจำกัดจำนวน Node
+
+ข้อมูลบางประเภท ได้แก่ คน (People) และ การลงคะแนนรายบุคคล (Vote) เป็นข้อมูลที่มี Node อยู่จำนวนมากในระบบ
+เราจำเป็นต้องจำกัดจำนวน Node ที่จะส่งกลับมายังผู้ใช้ ไม่เกิน 1,000 Node ต่อการ Query 1 ครั้ง หากต้องการเรียกข้อมูลมากกว่าจำนวนที่จำกัดไว้ [อ่านเพิ่มเติมเกี่ยวกับการใช้ Pagination บน GraphQL](https://neo4j.com/docs/graphql/current/queries-aggregations/pagination/)
+
 ## การอนุญาตใช้งาน (License)
 
 ด้านข้อมูล ทีมงานตั้งใจเปิดข้อมูลเป็น Open Data ภายใต้เงื่อนไข [Attribution-NonCommercial 4.0 International](https://creativecommons.org/licenses/by-nc/4.0/) ซึ่งหมายถึง สามารถนำข้อมูลไปใช้ ดัดแปลง ต่อยอดได้ แต่ห้ามนำไปใช้ทางการค้าหรือแสวงหาผลกำไรจากผลงาน และต้องให้เครดิตกับ WeVis
