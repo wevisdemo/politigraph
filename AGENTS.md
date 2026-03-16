@@ -3,12 +3,12 @@
 ## General Instructions
 
 - Always use bun as a package manager and JavaScript runtime
-- The Github owner and repo is wevisdemo/politigraph
+- The GitHub owner and repo is wevisdemo/politigraph
 - Do not use CSS style block if not necessary, using Tailwind classes is preferable
 
 ## Folder Structure
 
-This project is a monorepo managed by Turborepo
+This project is a monorepo managed by Turborepo.
 
 - /apps/admin : Application repository
 - /apps/api : Backend API for GraphQL, authentication, and static file (web/assets) serving
@@ -17,3 +17,9 @@ This project is a monorepo managed by Turborepo
 - /packages/graphql : Schemas and custom resolvers implementation
 
 More information on tech stack of each project can be found in the respective README.md files.
+
+## Git Commit Message Style
+
+- Use conventional commit format.
+- Don't add body to the commit message. Concisely explain changes to the message title.
+- If the changes specific to any app or package, then add it name to the scope.
