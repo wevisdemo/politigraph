@@ -30,6 +30,20 @@ export default defineConfig({
 						src: 'https://analytics.punchup.world/js/script.js',
 					},
 				},
+				{
+					tag: 'meta',
+					attrs: {
+						property: 'og:image',
+						content: 'https://politigraph.wevis.info/og-image.png',
+					},
+				},
+				{
+					tag: 'meta',
+					attrs: {
+						name: 'twitter:card',
+						content: 'summary_large_image',
+					},
+				},
 			],
 			defaultLocale: 'root',
 			locales: {
