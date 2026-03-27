@@ -399,16 +399,6 @@ const getOrganizationOptions = (classification: string) => {
 
 const billFormStore = billFormInput.useStore();
 
-// const voteValidationResult = computed(
-// 	() =>
-// 		billData.value &&
-// 		voteEventFormStore.value &&
-// 		validateVotes({
-// 			...voteEventFormStore.value.values,
-// 			votes: billData.value?.votes,
-// 		}),
-// );
-
 function openSuccessToastNotification() {
 	isShowSuccessNotification.value = false;
 	isShowSuccessNotification.value = true;
@@ -562,12 +552,6 @@ function openSuccessToastNotification() {
 												)"
 												>{{ item.label }}</cv-select-option
 											>
-
-											<!-- <cv-select-option
-												:value="item.value"
-												v-for="item in getOrganizationOptions('CABINET')"
-												>{{ item.label }}</cv-select-option
-											> -->
 										</cv-select>
 									</template>
 								</billFormInput.Field>
@@ -684,7 +668,6 @@ function openSuccessToastNotification() {
 
 						<div>
 							<h4>References</h4>
-
 							<billFormInput.Field name="links">
 								<template v-slot="{ field }">
 									<RelatedLinksForm
