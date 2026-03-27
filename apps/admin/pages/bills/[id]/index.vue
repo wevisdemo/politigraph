@@ -5,6 +5,7 @@ import type { Link, OrganizationType } from '@politigraph/graphql/genql';
 import { useForm } from '@tanstack/vue-form';
 import RelatedLinksForm from '~/components/LinksForm.vue';
 import { useGraphqlClient } from '~/utils/graphql/client';
+import { usePeopleOptions } from '~/utils/graphql/people';
 import { diff } from 'radash';
 
 definePageMeta({
@@ -375,27 +376,9 @@ const billFormInput = useForm({
 
 const coCreatorKeyword = ref('');
 
-const { data: peopleList } = await useAsyncData(
-	'People',
-	async () => {
-		const { people } = await graphqlClient.query({
-			people: {
-				id: true,
-				name: true,
-			},
-		});
-		return (
-			people?.map((o) => ({
-				label: o.name,
-				value: o.id,
-			})) ?? []
-		);
-	},
-	{ lazy: true },
-);
-
-const { data: OrganizationList } = await useAsyncData(
-	'OrganizationList',
+const { data: peopleList } = await usePeopleOptions();
+const { data: organizationList } = await useAsyncData(
+	'organizationList',
 	async () => {
 		const { organizations } = await graphqlClient.query({
 			organizations: {
@@ -410,7 +393,7 @@ const { data: OrganizationList } = await useAsyncData(
 );
 
 const getOrganizationOptions = (classification: OrganizationType) => {
-	const org = OrganizationList.value?.filter(
+	const org = organizationList.value?.filter(
 		(o) => o.classification === classification,
 	);
 	return (
@@ -474,7 +457,7 @@ function openSuccessToastNotification() {
 					<div class="flex flex-col gap-1">
 						<h4>Bill Details</h4>
 					</div>
-					<template v-if="!billData">
+					<template v-if="!billData || !peopleList || !organizationList">
 						<cv-number-input-skeleton
 							v-for="i in 9"
 							:key="i"
