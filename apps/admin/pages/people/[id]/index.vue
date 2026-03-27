@@ -7,6 +7,7 @@ import {
 	type Membership,
 } from '@politigraph/graphql/genql';
 import { PeopleDetail, PeopleMembershipList } from '#components';
+import { RepresentativeLabel } from '~/components/people/membership-list.vue';
 import type { MembershipProp } from '~/types/membership';
 import { useGraphqlClient } from '~/utils/graphql/client';
 
