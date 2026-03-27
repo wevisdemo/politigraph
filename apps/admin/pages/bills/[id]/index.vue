@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { Save16, View16, ViewOff16 } from '@carbon/icons-vue';
-import type { Link } from '@politigraph/graphql/genql';
+// @ts-ignore
+import { Save16 } from '@carbon/icons-vue';
+import type { Link, OrganizationType } from '@politigraph/graphql/genql';
 import { useForm } from '@tanstack/vue-form';
 import RelatedLinksForm from '~/components/LinksForm.vue';
 import { useGraphqlClient } from '~/utils/graphql/client';
-import { validateVotes } from '~/utils/votes/validator';
 import { diff } from 'radash';
 
 definePageMeta({
@@ -58,7 +58,7 @@ const billStatus = ref([
 	},
 ]);
 
-const creatorTypeDropdown = ref([
+const creatorTypes = ref([
 	{
 		name: 'POLITICIAN',
 		label: 'สมาชิกรัฐสภา',
@@ -81,7 +81,7 @@ const creatorTypeDropdown = ref([
 	},
 ]);
 
-const { data: billData, refresh: refreshBillEvent } = await useLazyAsyncData(
+const { data: billData, refresh: refreshBillData } = await useLazyAsyncData(
 	async () => {
 		const { bills } = await graphqlClient.query({
 			bills: {
@@ -110,6 +110,10 @@ const { data: billData, refresh: refreshBillEvent } = await useLazyAsyncData(
 				},
 				creators: {
 					on_Person: {
+						id: true,
+						name: true,
+					},
+					on_Organization: {
 						id: true,
 						name: true,
 					},
@@ -150,65 +154,65 @@ const defaultValues = reactive({
 		billData?.value?.organizations.map((d) => d.id),
 	),
 	co_creators: computed(() => billData?.value?.co_creators.map((d) => d.id)),
-	creators: computed(
-		() =>
-			billData?.value?.creators
-				?.filter((c: any) => c.id)
-				.map((c: any) => String(c.id)) ?? [],
+	personCreators: computed(() =>
+		billData?.value?.creator_type === 'POLITICIAN' ||
+		billData?.value?.creator_type === 'PEOPLE'
+			? (billData?.value?.creators?.map((creator) => creator.id) ?? [])
+			: [],
+	),
+	organizationCreators: computed(() =>
+		billData?.value?.creator_type === 'ASSEMBLY'
+			? (billData?.value?.creators?.map((creator) => creator.id) ?? [])
+			: [],
 	),
 });
 
 const billFormInput = useForm({
 	defaultValues,
 	onSubmit: async ({ value }) => {
-		let organizationDisconnect: string[] = [],
-			organizationsConnect: string[] = [];
+		const prevOrgs = defaultValues.organizations ?? [];
+		const nextOrgs = value.organizations ?? [];
 
-		const prevOrgs: string[] = (defaultValues.organizations ?? []) as string[];
-		const nextOrgs: string[] = value.organizations
-			? Array.isArray(value.organizations)
-				? value.organizations
-				: [value.organizations]
-			: [];
+		const organizationDisconnect = diff(prevOrgs, nextOrgs);
+		const organizationsConnect = diff(nextOrgs, prevOrgs);
 
-		if (prevOrgs.length || nextOrgs.length) {
-			organizationDisconnect = diff(prevOrgs, nextOrgs);
-			organizationsConnect = diff(nextOrgs, prevOrgs);
-		}
-
-		let creatorDisconnect: string[] = [],
-			creatorConnect: string[] = [];
-
-		const prevCreators: string[] = Array.isArray(defaultValues.creators)
-			? (defaultValues.creators as string[])
-			: [];
-		const nextCreators: string[] = Array.isArray(value.creators)
-			? value.creators
-			: value.creators
-				? [value.creators as string]
+		const prevPersonCreators =
+			billData.value?.creator_type === 'POLITICIAN' ||
+			billData.value?.creator_type === 'PEOPLE'
+				? (billData.value?.creators?.map((creator) => creator.id) ?? [])
 				: [];
-
-		if (prevCreators.length || nextCreators.length) {
-			creatorDisconnect = diff(prevCreators, nextCreators);
-			creatorConnect = diff(nextCreators, prevCreators);
-		}
-
-		let creatorcoDisconnect: string[] = [],
-			creatorcoConnect: string[] = [];
-
-		const prevcoCreators: string[] = Array.isArray(defaultValues.co_creators)
-			? (defaultValues.creators as string[])
-			: [];
-		const nextcoCreators: string[] = Array.isArray(value.co_creators)
-			? value.co_creators
-			: value.co_creators
-				? [value.co_creators as string]
+		const prevOrganizationCreators =
+			billData.value?.creator_type === 'ASSEMBLY'
+				? (billData.value?.creators?.map((creator) => creator.id) ?? [])
 				: [];
+		const nextPersonCreators =
+			value.creator_type === 'POLITICIAN' || value.creator_type === 'PEOPLE'
+				? (value.personCreators ?? [])
+				: [];
+		const nextOrganizationCreators =
+			value.creator_type === 'ASSEMBLY'
+				? (value.organizationCreators ?? [])
+				: [];
+		const creatorPersonDisconnect = diff(
+			prevPersonCreators,
+			nextPersonCreators,
+		);
+		const creatorPersonConnect = diff(nextPersonCreators, prevPersonCreators);
+		const creatorOrganizationDisconnect = diff(
+			prevOrganizationCreators,
+			nextOrganizationCreators,
+		);
+		const creatorOrganizationConnect = diff(
+			nextOrganizationCreators,
+			prevOrganizationCreators,
+		);
 
-		if (prevcoCreators.length || nextcoCreators.length) {
-			creatorcoDisconnect = diff(prevcoCreators, nextcoCreators);
-			creatorcoConnect = diff(nextcoCreators, prevcoCreators);
-		}
+		const prevCoCreators = defaultValues.co_creators ?? [];
+		const nextCoCreators =
+			value.creator_type === 'POLITICIAN' ? (value.co_creators ?? []) : [];
+
+		const coCreatorsDisconnect = diff(prevCoCreators, nextCoCreators);
+		const coCreatorsConnect = diff(nextCoCreators, prevCoCreators);
 
 		const deletedLinkIds: string[] = defaultValues.links
 			.filter(
@@ -225,7 +229,7 @@ const billFormInput = useForm({
 		const originalLinkIds = new Set(originalLinks.value.map((l) => l.id) ?? []);
 
 		const updatedLinks =
-			defaultValues.links?.filter((l) => originalLinkIds.has(l.id)) ?? [];
+			value.links?.filter((l) => originalLinkIds.has(l.id)) ?? [];
 
 		await graphqlClient.mutation({
 			updateBills: {
@@ -278,14 +282,32 @@ const billFormInput = useForm({
 						creators: {
 							Person: [
 								{
-									connect: creatorConnect.map((id) => ({
+									connect: creatorPersonConnect.map((id) => ({
 										where: {
 											node: {
 												id: { eq: id },
 											},
 										},
 									})),
-									disconnect: creatorDisconnect.map((id) => ({
+									disconnect: creatorPersonDisconnect.map((id) => ({
+										where: {
+											node: {
+												id: { eq: id },
+											},
+										},
+									})),
+								},
+							],
+							Organization: [
+								{
+									connect: creatorOrganizationConnect.map((id) => ({
+										where: {
+											node: {
+												id: { eq: id },
+											},
+										},
+									})),
+									disconnect: creatorOrganizationDisconnect.map((id) => ({
 										where: {
 											node: {
 												id: { eq: id },
@@ -301,7 +323,7 @@ const billFormInput = useForm({
 									{
 										where: {
 											node: {
-												id: { in: creatorcoConnect },
+												id: { in: coCreatorsConnect },
 											},
 										},
 									},
@@ -310,7 +332,7 @@ const billFormInput = useForm({
 									{
 										where: {
 											node: {
-												id: { in: creatorcoDisconnect },
+												id: { in: coCreatorsDisconnect },
 											},
 										},
 									},
@@ -347,11 +369,11 @@ const billFormInput = useForm({
 		);
 
 		openSuccessToastNotification();
-		refreshBillEvent();
+		refreshBillData();
 	},
 });
 
-const { data: PeopleList } = await useAsyncData(
+const { data: peopleList } = await useAsyncData(
 	'People',
 	async () => {
 		const { people } = await graphqlClient.query({
@@ -385,7 +407,7 @@ const { data: OrganizationList } = await useAsyncData(
 	{ lazy: true },
 );
 
-const getOrganizationOptions = (classification: string) => {
+const getOrganizationOptions = (classification: OrganizationType) => {
 	const org = OrganizationList.value?.filter(
 		(o) => o.classification === classification,
 	);
@@ -421,21 +443,19 @@ function openSuccessToastNotification() {
 	</cv-breadcrumb>
 
 	<billFormInput.Subscribe>
-		<template v-slot="{ canSubmit }">
-			<div
-				class="my-6 flex items-end justify-end gap-4 md:flex-row md:items-center"
-			>
-				<h2 class="md:min-w-xl">{{ billData?.title }}</h2>
+		<div
+			class="my-6 flex items-end justify-end gap-4 md:flex-row md:items-center"
+		>
+			<h2 class="md:min-w-xl">{{ billData?.title }}</h2>
 
-				<cv-button
-					@click="billFormInput.handleSubmit"
-					class="mt-4"
-					kind="primary"
-					:icon="Save16"
-					>Save Changes</cv-button
-				>
-			</div>
-		</template>
+			<cv-button
+				@click="billFormInput.handleSubmit"
+				class="mt-4"
+				kind="primary"
+				:icon="Save16"
+				>Save Changes</cv-button
+			>
+		</div>
 	</billFormInput.Subscribe>
 
 	<form
@@ -565,8 +585,8 @@ function openSuccessToastNotification() {
 								<template v-slot="{ field }">
 									<cv-radio-group legendText="Type">
 										<cv-radio-button
-											v-for="item in creatorTypeDropdown"
-											name="group-1"
+											v-for="item in creatorTypes"
+											name="creator-type"
 											:label="item.label"
 											:value="item.value"
 											:modelValue="field.state.value"
@@ -578,11 +598,11 @@ function openSuccessToastNotification() {
 						</div>
 
 						<div v-if="billFormStore.values.creator_type == 'POLITICIAN'">
-							<billFormInput.Field name="creators">
+							<billFormInput.Field name="personCreators">
 								<template v-slot="{ field }">
 									<cv-combo-box
 										title="Creator"
-										:options="PeopleList"
+										:options="peopleList"
 										item-value-key="value"
 										item-text-key="label"
 										autoFilter
@@ -602,12 +622,12 @@ function openSuccessToastNotification() {
 												field.state.value
 													?.map(
 														(id) =>
-															PeopleList?.find((org) => org.value === id)
+															peopleList?.find((org) => org.value === id)
 																?.label,
 													)
 													.join(', ')
 											"
-											:options="PeopleList"
+											:options="peopleList"
 											:modelValue="field.state.value"
 											@update:modelValue="field.handleChange"
 										/>
@@ -616,29 +636,30 @@ function openSuccessToastNotification() {
 							</div>
 						</div>
 						<div v-else-if="billFormStore.values.creator_type == 'ASSEMBLY'">
-							<billFormInput.Field name="creators">
+							<billFormInput.Field name="organizationCreators">
 								<template v-slot="{ field }">
-									<cv-combo-box
-										title="Creator"
-										:options="PeopleList"
-										item-value-key="value"
-										item-text-key="label"
-										autoFilter
-										autoHighlight
+									<cv-select
+										label="Creator*"
 										:modelValue="field.state.value?.[0]"
 										@update:modelValue="field.handleChange([$event])"
-									/>
+									>
+										<cv-select-option
+											:value="item.value"
+											v-for="item in getOrganizationOptions('CABINET')"
+											>{{ item.label }}</cv-select-option
+										>
+									</cv-select>
 								</template>
 							</billFormInput.Field>
 						</div>
 						<div v-else-if="billFormStore.values.creator_type == 'PEOPLE'">
 							<div class="flex justify-between">
 								<div>
-									<billFormInput.Field name="creators">
+									<billFormInput.Field name="personCreators">
 										<template v-slot="{ field }">
 											<cv-combo-box
-												title="Creator"
-												:options="PeopleList"
+												title="Creator*"
+												:options="peopleList"
 												item-value-key="value"
 												item-text-key="label"
 												autoFilter
