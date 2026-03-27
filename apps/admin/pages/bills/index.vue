@@ -101,7 +101,13 @@ const { data } = await useLazyAsyncData(
 		if (filters.value.organization !== 'ALL') {
 			const organizationId = filters.value.organization;
 
-			where.organizations = { some: { id: { eq: organizationId } } };
+			if (filters.value.organization === 'อื่นๆ') {
+				where.organizationsConnection = {
+					aggregate: { count: { nodes: { eq: 0 } } },
+				};
+			} else {
+				where.organizations = { some: { id: { eq: organizationId } } };
+			}
 		}
 
 		if (filters.value.status !== 'ALL') {

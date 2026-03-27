@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { Vote } from '@politigraph/graphql/genql';
 import { useGraphqlClient } from '~/utils/graphql/client';
+import { usePeopleOptions } from '~/utils/graphql/people';
 import { validateVotes } from '~/utils/votes/validator';
 
 definePageMeta({
@@ -116,27 +117,7 @@ useHead({
 	title: `Votes - ${voteEvent.value?.title || 'Vote Event'} | Politigraph Admin`,
 });
 
-const { data: peopleOptions } = await useAsyncData(
-	'peopleConnection',
-	async () => {
-		const result = await graphqlClient.query({
-			people: {
-				__args: {
-					sort: [{ id: 'ASC' }],
-				},
-				id: true,
-				name: true,
-			},
-		});
-
-		return result.people.map(({ id, name }) => ({
-			value: id,
-			name,
-			label: name,
-		}));
-	},
-	{ server: false },
-);
+const { data: peopleOptions } = await usePeopleOptions();
 
 const markVoteAsEdited = (rowId: string, cellKey: EditableVoteFields) => {
 	const current = voteEvent.value?.votes.find((v) => v.id === rowId);
