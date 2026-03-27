@@ -373,6 +373,8 @@ const billFormInput = useForm({
 	},
 });
 
+const coCreatorKeyword = ref('');
+
 const { data: peopleList } = await useAsyncData(
 	'People',
 	async () => {
@@ -597,7 +599,10 @@ function openSuccessToastNotification() {
 							</billFormInput.Field>
 						</div>
 
-						<div v-if="billFormStore.values.creator_type == 'POLITICIAN'">
+						<div
+							v-if="billFormStore.values.creator_type == 'POLITICIAN'"
+							class="flex flex-col gap-3"
+						>
 							<billFormInput.Field name="personCreators">
 								<template v-slot="{ field }">
 									<cv-combo-box
@@ -613,27 +618,51 @@ function openSuccessToastNotification() {
 								</template>
 							</billFormInput.Field>
 
-							<div class="mt-3">
-								<billFormInput.Field name="co_creators">
-									<template v-slot="{ field }">
-										<cv-multi-select
+							<billFormInput.Field name="co_creators">
+								<template v-slot="{ field }">
+									<div class="flex flex-col gap-3">
+										<cv-combo-box
+											v-model="coCreatorKeyword"
 											title="Co-Creators"
-											:label="
-												field.state.value
-													?.map(
-														(id) =>
-															peopleList?.find((org) => org.value === id)
-																?.label,
-													)
-													.join(', ')
-											"
 											:options="peopleList"
-											:modelValue="field.state.value"
-											@update:modelValue="field.handleChange"
+											item-value-key="value"
+											item-text-key="label"
+											autoFilter
+											autoHighlight
+											@update:modelValue="
+												(creatorId: string) => {
+													if (!peopleList?.some((p) => p.value === creatorId))
+														return;
+													field.handleChange([
+														...(field.state.value ?? []),
+														creatorId,
+													]);
+													coCreatorKeyword = '';
+												}
+											"
 										/>
-									</template>
-								</billFormInput.Field>
-							</div>
+
+										<div class="flex flex-wrap gap-2">
+											<cv-tag
+												v-for="id in field.state.value ?? []"
+												:key="id"
+												:label="
+													peopleList?.find((person) => person.value === id)
+														?.label ?? id
+												"
+												filter
+												@remove="
+													field.handleChange(
+														(field.state.value ?? []).filter(
+															(value) => value !== id,
+														),
+													)
+												"
+											/>
+										</div>
+									</div>
+								</template>
+							</billFormInput.Field>
 						</div>
 						<div v-else-if="billFormStore.values.creator_type == 'ASSEMBLY'">
 							<billFormInput.Field name="organizationCreators">
