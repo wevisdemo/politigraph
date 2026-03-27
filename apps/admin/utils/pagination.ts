@@ -14,6 +14,14 @@ type PaginationOptions = {
 	watch?: unknown[];
 };
 
+/**
+ * Reads pagination state from the current route query.
+ *
+ * @param query - The current route query object.
+ * @param defaultPage - Fallback page number when the query is missing.
+ * @param defaultPageSize - Fallback page size when the query is missing.
+ * @returns The normalized pagination state.
+ */
 const getPaginationDataFromQuery = (
 	query: LocationQuery,
 	defaultPage: number,
@@ -23,6 +31,16 @@ const getPaginationDataFromQuery = (
 	pageSize: getNumberQueryParam(query.pageSize, defaultPageSize),
 });
 
+/**
+ * Serializes pagination state into query parameters.
+ *
+ * Defaults are omitted so the URL stays clean.
+ *
+ * @param paginationData - The current pagination state.
+ * @param defaultPage - Default page number used for comparison.
+ * @param defaultPageSize - Default page size used for comparison.
+ * @returns Query parameters for the non-default pagination values.
+ */
 const getPaginationQuery = (
 	paginationData: PaginationData,
 	defaultPage: number,
@@ -35,6 +53,12 @@ const getPaginationQuery = (
 			: undefined,
 });
 
+/**
+ * Keeps pagination state in sync with the route query string.
+ *
+ * @param options - Pagination defaults and optional query/watch settings.
+ * @returns Pagination state plus handlers for page and page-size changes.
+ */
 export const usePaginationQuery = (options: PaginationOptions = {}) => {
 	const route = useRoute();
 	const router = useRouter();
@@ -44,10 +68,20 @@ export const usePaginationQuery = (options: PaginationOptions = {}) => {
 		getPaginationDataFromQuery(route.query, defaultPage, defaultPageSize),
 	);
 
+	/**
+	 * Updates the current page.
+	 *
+	 * @param page - The new page number.
+	 */
 	const handlePageChange = (page: number) => {
 		paginationData.value.page = page;
 	};
 
+	/**
+	 * Updates the current page size.
+	 *
+	 * @param pageSize - The new page size.
+	 */
 	const handlePageSizeChange = (pageSize: number) => {
 		paginationData.value.pageSize = pageSize;
 	};

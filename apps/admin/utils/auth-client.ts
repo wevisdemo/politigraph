@@ -6,6 +6,11 @@ import {
 
 export const isValidatingSession = ref(true);
 
+/**
+ * Creates the admin auth client that talks to the backend auth endpoint.
+ *
+ * @returns A configured auth client instance.
+ */
 export function useAuthClient() {
 	const config = useRuntimeConfig();
 
@@ -15,6 +20,15 @@ export function useAuthClient() {
 	});
 }
 
+/**
+ * Creates the auth client and enforces the admin route guard on mount.
+ *
+ * Redirects unauthenticated users to `/login` and authenticated users away
+ * from the login page.
+ *
+ * @param successCallback - Called with the current user after session validation succeeds.
+ * @returns A configured auth client instance.
+ */
 export function useAuthClientWithRouteGuard(
 	successCallback?: (user: User) => void,
 ) {

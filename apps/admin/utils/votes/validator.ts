@@ -13,6 +13,12 @@ export interface VoteIssue {
 	id?: string;
 }
 
+/**
+ * Validates vote rows against the summary header and per-row constraints.
+ *
+ * @param votes - Vote rows plus the summary counts they should match.
+ * @returns Validation errors and warnings for the provided votes.
+ */
 export function validateVotes({
 	votes,
 	...summaryHeader
