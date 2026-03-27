@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useGraphqlClient } from '~/utils/graphql/client';
+import { usePaginationQuery } from '~/utils/pagination';
 
 definePageMeta({
 	layout: 'admin-layout',
@@ -9,10 +10,10 @@ useHead({
 	title: 'People | Politigraph Admin',
 });
 
-const paginationData = ref({
-	page: 1,
-	pageSize: 50,
-});
+const graphqlClient = useGraphqlClient();
+
+const { paginationData, handlePageChange, handlePageSizeChange } =
+	usePaginationQuery();
 
 const numberOfPage = computed(() =>
 	data.value?.totalCount
@@ -20,17 +21,8 @@ const numberOfPage = computed(() =>
 		: 1,
 );
 
-const handlePageChange = (page: number) => {
-	paginationData.value.page = page;
-};
-
-const handlePageSizeChange = (pageSize: number) => {
-	paginationData.value.pageSize = pageSize;
-};
-
 const searchQuery = ref('');
 const debouncedSearch = useDebounce(searchQuery, 1000);
-const graphqlClient = useGraphqlClient();
 
 watch(debouncedSearch, () => {
 	paginationData.value.page = 1;

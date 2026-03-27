@@ -5,8 +5,9 @@ import {
 } from '@politigraph/graphql/genql';
 import { formatDate } from '~/utils/date';
 import { useGraphqlClient } from '~/utils/graphql/client';
+import { usePaginationQuery } from '~/utils/pagination';
+import { getArrayQueryParam, getStringQueryParam } from '~/utils/query';
 import { ref } from 'vue';
-import type { LocationQueryValue } from 'vue-router';
 
 definePageMeta({
 	layout: 'admin-layout',
@@ -39,11 +40,6 @@ const handleSearchChange = (query: string) => {
 	searchQuery.value = query;
 };
 
-const paginationData = ref({
-	page: Number(route.query.page ?? 1),
-	pageSize: Number(route.query.pageSize ?? 50),
-});
-
 const statusOption = Object.values(enumBillStatus);
 const creatorTypeOption = Object.values(enumBillCreatorType);
 const billType: Record<string, string> = {
@@ -60,38 +56,35 @@ const creatorType: Record<string, string> = {
 	UNKNOWN: 'อื่นๆ / ไม่พบข้อมูล',
 };
 
-const getStringQueryParam = (
-	val: LocationQueryValue | LocationQueryValue[] | undefined,
-	fallback: string = '',
-): string => {
-	if (Array.isArray(val)) return val[0] ?? fallback;
-	return val ?? fallback;
-};
-
-const getArrayQueryParam = (
-	val: LocationQueryValue | LocationQueryValue[] | undefined,
-): string[] => {
-	if (!val) return [];
-
-	if (Array.isArray(val)) {
-		if (val.includes('ALL')) {
-			return [...creatorTypeOption];
-		}
-		return val.filter(Boolean) as string[];
-	}
-
-	if (val === 'ALL') {
-		return [...creatorTypeOption];
-	}
-
-	return [val];
-};
-
 const filters = ref({
 	organization: getStringQueryParam(route.query.organization, 'ALL'),
 	status: getStringQueryParam(route.query.status, 'ALL'),
-	creatorType: getArrayQueryParam(route.query.creatorType),
+	creatorType: getArrayQueryParam(route.query.creatorType, creatorTypeOption),
 });
+
+const { paginationData, handlePageChange, handlePageSizeChange } =
+	usePaginationQuery({
+		getExtraQuery: () => ({
+			organization:
+				filters.value.organization !== 'ALL'
+					? filters.value.organization
+					: undefined,
+			status: filters.value.status !== 'ALL' ? filters.value.status : undefined,
+			creatorType:
+				filters.value.creatorType.length === creatorTypeOption.length
+					? 'ALL'
+					: filters.value.creatorType.length > 0
+						? filters.value.creatorType
+						: undefined,
+		}),
+		watch: [filters],
+	});
+
+const numberOfPage = computed(() =>
+	data.value?.totalCount
+		? Math.ceil(data.value.totalCount / paginationData.value.pageSize)
+		: 1,
+);
 
 const { data } = await useLazyAsyncData(
 	'bills',
@@ -220,20 +213,6 @@ const organizationsOption = () => {
 	return singleOptions;
 };
 
-const numberOfPage = computed(() =>
-	data.value?.totalCount
-		? Math.ceil(data.value.totalCount / paginationData.value.pageSize)
-		: 1,
-);
-
-const handlePageChange = (page: number) => {
-	paginationData.value.page = page;
-};
-
-const handlePageSizeChange = (pageSize: number) => {
-	paginationData.value.pageSize = pageSize;
-};
-
 const getEventCompleteness = (data: unknown[]) => {
 	const total = data.length;
 
@@ -280,38 +259,6 @@ onMounted(() => {
 		});
 	}
 });
-
-watch(
-	[filters, paginationData],
-	() => {
-		router.replace({
-			query: {
-				...route.query,
-				organization:
-					filters.value.organization !== 'ALL'
-						? filters.value.organization
-						: undefined,
-				status:
-					filters.value.status !== 'ALL' ? filters.value.status : undefined,
-				creatorType:
-					filters.value.creatorType.length === creatorTypeOption.length
-						? 'ALL'
-						: filters.value.creatorType.length > 0
-							? filters.value.creatorType
-							: undefined,
-				page:
-					paginationData.value.page !== 1
-						? paginationData.value.page
-						: undefined,
-				pageSize:
-					paginationData.value.pageSize !== 50
-						? paginationData.value.pageSize
-						: undefined,
-			},
-		});
-	},
-	{ deep: true },
-);
 </script>
 
 <template>

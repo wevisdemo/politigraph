@@ -6,10 +6,11 @@ import {
 	enumVoteEventType,
 } from '@politigraph/graphql/genql';
 import PublishStatusLabel from '~/components/ui/PublishStatusLabel.vue';
+import { formatDate } from '~/utils/date';
 import { useGraphqlClient } from '~/utils/graphql/client';
-import dayjs from 'dayjs';
+import { usePaginationQuery } from '~/utils/pagination';
+import { getArrayQueryParam, getStringQueryParam } from '~/utils/query';
 import { ref } from 'vue';
-import type { LocationQueryValue } from 'vue-router';
 
 definePageMeta({
 	layout: 'admin-layout',
@@ -23,11 +24,6 @@ const router = useRouter();
 const route = useRoute();
 const graphqlClient = useGraphqlClient();
 
-const paginationData = ref({
-	page: Number(route.query.page ?? 1),
-	pageSize: Number(route.query.pageSize ?? 50),
-});
-
 const statusOption = Object.values(enumPublishStatus);
 const classificationOption = [...Object.values(enumVoteEventType), '__NULL__'];
 const voteEventType: Record<string, string> = {
@@ -40,38 +36,36 @@ const voteEventType: Record<string, string> = {
 	__NULL__: 'ไม่ระบุ',
 };
 
-const getStringQueryParam = (
-	val: LocationQueryValue | LocationQueryValue[] | undefined,
-	fallback: string = '',
-): string => {
-	if (Array.isArray(val)) return val[0] ?? fallback;
-	return val ?? fallback;
-};
-
-const getArrayQueryParam = (
-	val: LocationQueryValue | LocationQueryValue[] | undefined,
-): string[] => {
-	if (!val) return [];
-
-	if (Array.isArray(val)) {
-		if (val.includes('ALL')) {
-			return [...classificationOption];
-		}
-		return val.filter(Boolean) as string[];
-	}
-
-	if (val === 'ALL') {
-		return [...classificationOption];
-	}
-
-	return [val];
-};
-
 const filters = ref({
 	assembly: getStringQueryParam(route.query.assembly, 'ALL'),
 	status: getStringQueryParam(route.query.status, 'ALL'),
-	classification: getArrayQueryParam(route.query.classification),
+	classification: getArrayQueryParam(
+		route.query.classification,
+		classificationOption,
+	),
 });
+
+const { paginationData, handlePageChange, handlePageSizeChange } =
+	usePaginationQuery({
+		getExtraQuery: () => ({
+			assembly:
+				filters.value.assembly !== 'ALL' ? filters.value.assembly : undefined,
+			status: filters.value.status !== 'ALL' ? filters.value.status : undefined,
+			classification:
+				filters.value.classification.length === classificationOption.length
+					? 'ALL'
+					: filters.value.classification.length > 0
+						? filters.value.classification
+						: undefined,
+		}),
+		watch: [filters],
+	});
+
+const numberOfPage = computed(() =>
+	data.value?.totalCount
+		? Math.ceil(data.value.totalCount / paginationData.value.pageSize)
+		: 1,
+);
 
 const { data } = await useLazyAsyncData(
 	'voteEvents',
@@ -239,20 +233,6 @@ const organizationsOption = () => {
 	return allOptions;
 };
 
-const numberOfPage = computed(() =>
-	data.value?.totalCount
-		? Math.ceil(data.value.totalCount / paginationData.value.pageSize)
-		: 1,
-);
-
-const handlePageChange = (page: number) => {
-	paginationData.value.page = page;
-};
-
-const handlePageSizeChange = (pageSize: number) => {
-	paginationData.value.pageSize = pageSize;
-};
-
 onMounted(() => {
 	if (!route.query.classification) {
 		filters.value.classification = [...classificationOption];
@@ -264,36 +244,6 @@ onMounted(() => {
 		});
 	}
 });
-
-watch(
-	[filters, paginationData],
-	() => {
-		router.replace({
-			query: {
-				...route.query,
-				assembly:
-					filters.value.assembly !== 'ALL' ? filters.value.assembly : undefined,
-				status:
-					filters.value.status !== 'ALL' ? filters.value.status : undefined,
-				classification:
-					filters.value.classification.length === classificationOption.length
-						? 'ALL'
-						: filters.value.classification.length > 0
-							? filters.value.classification
-							: undefined,
-				page:
-					paginationData.value.page !== 1
-						? paginationData.value.page
-						: undefined,
-				pageSize:
-					paginationData.value.pageSize !== 50
-						? paginationData.value.pageSize
-						: undefined,
-			},
-		});
-	},
-	{ deep: true },
-);
 </script>
 
 <template>
