@@ -13,7 +13,7 @@ hero:
     light: '../../assets/banner-black.png'
   actions:
     - text: เริ่มทำความรู้จัก Politigraph
-      link: /intro
+      link: /getting-started
       icon: right-arrow
     - text: GraphQL Playground
       link: /graphql
@@ -22,25 +22,38 @@ hero:
 ---
 
 import { Card, CardGrid } from '@astrojs/starlight/components';
+import Sponsors from '../../components/sponsors.astro';
 
 <CardGrid>
 	<Card title="ฐานข้อมูลที่เชื่อมโยงถึงกัน" icon="seti:graphql">
 		ตั้งแต่ข้อมูลนักการเมือง พรรคการเมือง การดำรงตำแหน่งในสภา การลงมติ
-		ไปจนกระบวนการผ่านร่างกฏหมาย ที่เชื่อมโยงกันในรูปแบบกราฟ
+		ไปจนกระบวนการผ่านร่างกฎหมาย ที่เชื่อมโยงกันในรูปแบบกราฟ
 	</Card>
-	<Card title="ใช้มาตราฐานสากล" icon="open-book">
+	<Card title="ใช้มาตรฐานสากล" icon="approve-check-circle">
 		เราใช้ [Popolo](https://www.popoloproject.com)
-		เป็นมาตราฐานสากลในการจัดเก็บข้อมูลเปิดทางการเมือง และใช้
-		[GraphQL](https://graphql.org/) เป็นมาตราฐานในการ Query ข้อมูล
+		เป็นมาตรฐานสากลในการจัดเก็บข้อมูลเปิดทางการเมือง และใช้
+		[GraphQL](https://graphql.org/) เป็นมาตรฐานในการ Query ข้อมูล
 	</Card>
 	<Card title="ตรวจสอบและอัพเดตสม่ำเสมอ" icon="magnifier">
 		ข้อมูลอย่างเป็นทางการของภาครัฐจะถูกแปลงให้อยู่ในรูปแบบดิจิตอล
-		และจะผ่านการตรวจสอบโดยทีมงานอย่างสม่ำเสมอ หากพบข้อผิดพลากโปรดแจ้ง
+		และจะผ่านการตรวจสอบโดยทีมงานอย่างสม่ำเสมอ หากพบข้อผิดพลาดใดๆ โปรดแจ้งมาที่
 		team@wevis.info
 	</Card>
-	<Card title="พัฒนาและดูแลโดย WeVis" icon="information">
+	<Card title="ข้อมูลเปิดภายใต้ CC BY-NC 4.0" icon="open-book">
+		อนุญาตให้นำข้อมูลไปใช้ ดัดแปลง ต่อยอดได้
+		แต่ห้ามนำไปใช้ทางการค้าหรือแสวงหาผลกำไรจากผลงาน
+		และต้องแจ้งทราบและให้เครดิตกับ WeVis
+		[อ่านเพิ่มเติม](/getting-started/usage/#การอนุญาตใช้งาน-license)
+	</Card>
+</CardGrid>
+
+<div class="mx-auto mt-12 max-w-2xl text-center md:mt-24">
+	<h4>พัฒนาและดูแลโดย WeVis</h4>
+	<p>
 		[WeVis](https://wevis.info) คือกลุ่มเทคโนโลยีภาคประชาชน
 		ที่พยายามขับเคลื่อนสังคมผ่านเทคโนโลยีและข้อมูลเปิด
 		ภารกิจของเราคือการทำให้ประชาธิปไตยไทยเปิดเผย โปร่งใส และมีส่วนร่วมได้
-	</Card>
-</CardGrid>
+	</p>
+</div>
+
+<Sponsors title="ได้รับการสนับสนุนจาก" />

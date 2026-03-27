@@ -1,19 +1,18 @@
 # @politigraph/admin
 
-Landing page, admin panel, and document to be rendered as SPA
+Admin dashboard for managing Politigraph data to be built as SPA
 
 ## Tech Stack
 
-- Nuxt + Nuxt Content
+- Nuxt
 - Tailwind
 - Carbon Components
-- v-network-graph
 
 ## Scripts
 
 - `dev` run server in dev mode
-- `build` build web as a static SPA website
+- `build` build web as a SPA
 
 ## Environment Variables
 
-- `NUXT_PUBLIC_BASE_URL` frontend base URL
+- `NUXT_PUBLIC_BASE_URL` - Frontend base URL

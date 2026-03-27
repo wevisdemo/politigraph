@@ -2,7 +2,6 @@
 // @ts-ignore
 import { Save16, View16, ViewOff16 } from '@carbon/icons-vue';
 import {
-	enumOrganizationType,
 	enumPublishStatus,
 	type Link,
 	type Membership,
@@ -69,6 +68,7 @@ const { data: peopleData, refresh: refreshPeopleDetail } =
 					district_number: true,
 					label: true,
 					province: true,
+					list_number: true,
 					links: {
 						id: true,
 						url: true,
@@ -118,7 +118,6 @@ const setMembershipMutation = () => {
 		originalMemberships.value?.find((o) => o.id === m.id),
 	);
 
-	// ✅ รวม deleted จาก mode + ของที่หายไปจาก original
 	const deleteMemberships = [
 		...deletedMemberships,
 		...(originalMemberships.value ?? []).filter(
@@ -135,9 +134,15 @@ const setMembershipMutation = () => {
 					__args: {
 						input: [
 							{
-								district_number: membership.district_number,
-								province: membership.province,
 								label: membership.label,
+								...(membership.label === RepresentativeLabel.District
+									? {
+											district_number: membership.district_number,
+											province: membership.province,
+										}
+									: membership.label === RepresentativeLabel.Partylist
+										? { list_number: membership.list_number }
+										: {}),
 								start_date: membership.start_date,
 								end_date: membership.end_date,
 								links: {
@@ -235,7 +240,24 @@ const setMembershipMutation = () => {
 									]
 								: [],
 							label: { set: membership.label },
-							district_number: { set: membership.district_number },
+							province: {
+								set:
+									membership.label === RepresentativeLabel.District
+										? membership.province
+										: null,
+							},
+							district_number: {
+								set:
+									membership.label === RepresentativeLabel.District
+										? membership.district_number
+										: null,
+							},
+							list_number: {
+								set:
+									membership.label === RepresentativeLabel.Partylist
+										? membership.list_number
+										: null,
+							},
 							links: [
 								...newLinks.map((link) => ({
 									create: [
@@ -364,15 +386,6 @@ const saveChanges = async () => {
 				},
 			}),
 		);
-
-		// const changedMemberships = [
-		// 	...changedPartyMemberships.value,
-		// 	...changedHousesMemberships.value,
-		// 	...changedCabinetMemberships.value,
-		// ];
-
-		// const newMemberships = changedMemberships.filter((m) => !m.id);
-		// const updatedMemberships = changedMemberships.filter((m) => !!m.id);
 
 		await Promise.all([
 			...createLinksPromises,

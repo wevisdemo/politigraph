@@ -9,6 +9,11 @@ services:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
       - ./tls:/var/tls:ro
       - /var/htdocs:/var/htdocs:ro
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '200m'
+        max-file: '5'
 
   elysia:
     image: wevisdemo/politigraph:latest
@@ -17,12 +22,11 @@ services:
     network_mode: 'host'
     environment:
       BETTER_AUTH_SECRET: $BETTER_AUTH_SECRET
+      BETTER_AUTH_URL: https://politigraph.wevis.info
       DATABASE_URL: $DATABASE_URL
       NEO4J_HOST: $NEO4J_HOST
       NEO4J_USERNAME: $NEO4J_USERNAME
       NEO4J_PASSWORD: $NEO4J_PASSWORD
-    volumes:
-      - /var/htdocs/web:/app/public:Z
 
   beszel-agent:
     image: henrygd/beszel-agent:0.16
@@ -38,15 +42,6 @@ services:
       HUB_URL: $BESZEL_AGENT_HUB_URL
       TOKEN: $BESZEL_AGENT_TOKEN
       KEY: $BESZEL_AGENT_KEY
-
-  do-agent:
-    image: digitalocean/do-agent:stable
-    container_name: do-agent
-    restart: always
-    network_mode: 'host'
-    volumes:
-      - /proc:/host/proc:ro
-      - /sys:/host/sys:ro
 
 volumes:
   beszel_agent:

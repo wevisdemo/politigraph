@@ -12,8 +12,9 @@ To learn more about the data and API, visit the [documentations](https://politig
 Managed with [Turborepo](https://turborepo.com/)
 
 - **/apps** : Application repository
+  - **/admin** : Admin dashboard for managing Politigraph data to be built as SPA
   - **/api** : Backend API for GraphQL, authentication, and static file (web/assets) serving
-  - **/web** : Landing page, admin panel, and document to be rendered as SPA
+  - **/docs** : Landing page and documentations to be built as static website
 - **/packages** : Shared packages between app
   - **/auth** : Authentication and related database management
   - **/graphql** : Schemas and custom resolvers implementation
@@ -22,9 +23,8 @@ Managed with [Turborepo](https://turborepo.com/)
 
 Main routes of the final application:
 
-- `/` A landing page for public
+- `/` A landing page and documentation for public
 - `/admin` Admin panel for managing politigraph data (required an account)
-- `/docs` Public documentations. Auto generated from markdown files in `/content/docs` folder.
 - `/graphql` GraphQL endpoint and playground for querying and updating data.
 
 https://politigraph.wevis.info will be deployed through GitHub Actions every time the repository code has updated.
@@ -35,7 +35,7 @@ Following these steps will help you set up Politigraph on your local development
 
 ### 3.1 Environment Variables
 
-Add following variables to the root `.env` (for docker) and `/api/.env` (for API) to config neo4j credential. Both file must be the same.
+Add following variables to the root `.env` (for docker) and `/apps/api/.env` (for API) to config neo4j credential. Both file must be the same.
 
 ```env
 NEO4J_USERNAME=<SOME_USER_NAME>
@@ -60,16 +60,14 @@ Requires [Bun](https://bun.com/)
 
 ```sh
 bun i	# Install dependencies for the first time
-bun dev
+bun run dev
 ```
 
-Web will be started and accessible at `http://localhost:8000` while API will be availabled at `http://localhost:3000`
-
-Web server in dev mode will pass request request from `/api` and `/graphql` in port 8000 to the API at port 3000, so auth cookie will be pass correctly.
+Dependency packages will be built and every apps will run in dev mode in parallel. Following the console to see which app running on which port.
 
 ### 3.4 Create user account (for admin access)
 
-You need to create an account first to login to the admin panel, by making a POST request to `/auth/sign-up/email` with header `Origin: http://localhost:3000` and the following body:
+You need to create an account first to login to the admin panel, by making a POST request to `/auth/sign-up/email` of API URL with header `Origin: http://localhost:3000` and the following body:
 
 ```json
 {
@@ -92,3 +90,9 @@ To make local neo4j have up-to-dated data, we have a script to use rsync to down
 ```shell
 bun run db:pull
 ```
+
+## 5. License
+
+Regarding the data, the team intends to open it as Open Data under the [Attribution-NonCommercial 4.0 International](https://creativecommons.org/licenses/by-nc/4.0/) terms. This means you can use, modify, and build upon the data, but it cannot be used for commercial purposes or to seek profit from the work, and credit must be given to WeVis.
+
+Regarding the source code, the team intends to develop every project as Open Source under the [Attribution-NonCommercial-ShareAlike 4.0 International](https://creativecommons.org/licenses/by-nc-sa/4.0/) terms. This means you can use, modify, and build upon the work, but it cannot be used for commercial purposes or to seek profit from the work. You must provide notice and credit to the work's owner, and the resulting work must be under the same Creative Commons license conditions as the original. WeVis Ltd. and Punch Up Ltd. are joint licensors.

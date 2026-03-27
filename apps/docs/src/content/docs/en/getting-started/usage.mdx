@@ -1,0 +1,40 @@
+---
+title: API Usage
+sidebar:
+  order: 2
+---
+
+We use [Neo4jGraphQL](https://neo4j.com/docs/graphql/) as the primary tool for managing our data. Our API adheres to the [GraphQL](https://graphql.org) standard, which you can call or try building various queries for at https://politigraph.wevis.info/graphql
+
+## Authentication
+
+Most data from the Politigraph API is publicly accessible and does not require authentication, with the following exceptions:
+
+- Data with the field `publish_status` that does not have the value `PUBLISHED` will not be hidden from the response because it is under review and not yet ready for disclosure.
+- Any GraphQL mutation, as we prevent external parties from modifying data on our system.
+
+Access to both of these exceptions is strictly reserved for the WeVis system administration team.
+
+## Usage Limitations
+
+To ensure fair usage and protect the API from abuse, we enforce the following limits on GraphQL operations:
+
+- **Rate limit**: 30 requests per 10 seconds
+- **Batching**: 5 operations per batched request
+- **Aliases**: 10 aliases per operation
+- **Depth**: 10 levels of nested operation
+- **Tokens**: 1000 tokens per operation
+
+Exceeding these limits will result in an error response.
+
+## Node Limits
+
+Certain types of data, such as "People" and individual "Votes", contain a large number of nodes within the system.
+We must limit the number of nodes returned to the user to no more than 1,000 nodes per query.
+If you need to retrieve more data than this limit allows, please [read more about using Pagination on GraphQL](<(https://neo4j.com/docs/graphql/current/queries-aggregations/pagination/)>).
+
+## License
+
+Regarding the data, the team intends to open it as Open Data under the [Attribution-NonCommercial 4.0 International](https://creativecommons.org/licenses/by-nc/4.0/) terms. This means you can use, modify, and build upon the data, but it cannot be used for commercial purposes or to seek profit from the work, and credit must be given to WeVis.
+
+Regarding the source code, the team intends to develop every project as Open Source under the [Attribution-NonCommercial-ShareAlike 4.0 International](https://creativecommons.org/licenses/by-nc-sa/4.0/) terms. This means you can use, modify, and build upon the work, but it cannot be used for commercial purposes or to seek profit from the work. You must provide notice and credit to the work's owner, and the resulting work must be under the same Creative Commons license conditions as the original. WeVis Ltd. and Punch Up Ltd. are joint licensors.

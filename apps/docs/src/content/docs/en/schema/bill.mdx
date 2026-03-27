@@ -4,7 +4,6 @@ sidebar:
   order: 7
 ---
 
-import { Aside } from '@astrojs/starlight/components';
 import QueryTabs from '../../../../components/query-tabs.astro';
 
 We collect data on the legislative process and the status of bills submitted for parliamentary consideration, with **`Bill`** representing each draft law.
@@ -48,16 +47,17 @@ Example of a bill proposed by _Members of the House of Representatives (MPs)_
 
 After each bill is proposed to Parliament, it enters the legislative process consisting of various sequential stages. These stages are stored as a list of events (property `events` in **`Bill`**).
 
-<Aside>
-	For detailed information regarding the stages of the legislative process, you
-	can study more in the manual:
-	<a
-		href="https://parliamentwatch.wevis.info/legislative-process"
-		target="_blank"
-	>
-		กระบวนการพิจารณาร่างกฎหมาย
-	</a>
-</Aside>
+:::note
+For detailed information regarding the stages of the legislative process, you
+can study more in the manual:
+
+<a
+	href="https://parliamentwatch.wevis.info/legislative-process"
+	target="_blank"
+>
+	กระบวนการพิจารณาร่างกฎหมาย
+</a>
+:::
 
 Since each stage is represented by a specific event and requires different data points to be recorded, the system uses distinct Node types for each consideration stage as follows:
 
@@ -101,7 +101,7 @@ Example of a bill being designated as the Primary Bill by the House of Represent
 
 <QueryTabs
 	query="query BillMergeEvents($where: BillMergeEventWhere) { billMergeEvents(where: $where) { id main_bill_id total_merged_bills bills { id title } }}"
-	variables='{ "where": { "id": { "eq": "d4a88667-5f42-4e81-80ef-d88e3d50c74c" } }}'
+	variables='{ "where": { "id": { "eq": "f54b6def-9b4f-41d0-a6f3-72bdc7ae36af" } }}'
 />
 
 ##### Royal Assent Submission Stage (`BillRoyalAssentEvent`)

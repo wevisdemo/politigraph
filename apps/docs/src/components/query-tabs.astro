@@ -2,14 +2,8 @@
 import { Code, TabItem, Tabs } from '@astrojs/starlight/components';
 import * as graphql from 'prettier/plugins/graphql';
 import { format } from 'prettier/standalone';
-import type { GraphqlDataResponse } from '../utils/schema';
+import { fetchGraphql } from '../utils/graphql';
 import QueryGraph from './query-graph.vue';
-
-type GraphqlResponse =
-	| {
-			data: GraphqlDataResponse;
-	  }
-	| { errors: { message: string }[] };
 
 interface Props {
 	query: string;
@@ -18,30 +12,8 @@ interface Props {
 
 const { query, variables } = Astro.props;
 
-const response = await fetch(
-	`${import.meta.env.POLITIGRAPH_URL ?? 'https://politigraph.wevis.info'}/graphql`,
-	{
-		method: 'POST',
-		headers: {
-			'Content-Type': 'application/json',
-		},
-		body: JSON.stringify({
-			// insert __typename field in every object that have an id
-			query: query.replaceAll(' id ', ' __typename id '),
-			variables: variables ? JSON.parse(variables) : {},
-		}),
-	},
-);
-
-if (!response.ok) {
-	throw new Error(response.statusText);
-}
-
-const jsonResponse: GraphqlResponse = await response.json();
-
-if ('errors' in jsonResponse) {
-	throw new Error(jsonResponse.errors.map((e) => e.message).join('\n'));
-}
+const parsedVariables = variables ? JSON.parse(variables) : undefined;
+const jsonResponse = await fetchGraphql(query, parsedVariables);
 
 const flattenedData = Object.values(jsonResponse.data).flatMap(([value]) => {
 	if (Array.isArray(value)) {

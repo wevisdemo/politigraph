@@ -26,7 +26,7 @@ services:
     restart: always
     network_mode: host
     volumes:
-      - postgres:/var/lib/postgresql
+      - ./postgres:/var/lib/postgresql
     environment:
       POSTGRES_DB: betterauth
       POSTGRES_USER: $POSTGRES_USER
@@ -41,21 +41,13 @@ services:
     privileged: true
     network_mode: host
     volumes:
+      - beszel_agent:/var/lib/beszel-agent
       - /var/run/docker.sock:/var/run/docker.sock:ro
     environment:
       LISTEN: 45876
       HUB_URL: $BESZEL_AGENT_HUB_URL
       TOKEN: $BESZEL_AGENT_TOKEN
       KEY: $BESZEL_AGENT_KEY
-
-  do-agent:
-    image: digitalocean/do-agent:stable
-    container_name: do-agent
-    restart: always
-    network_mode: host
-    volumes:
-      - /proc:/host/proc:ro
-      - /sys:/host/sys:ro
 
   backup:
     image: offen/docker-volume-backup:v2
@@ -66,7 +58,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - /var/backup:/archive
-      - postgres:/backup/postgres:ro
+      - ./postgres:/backup/postgres:ro
       - ./neo4j/data:/backup/neo4j:ro
     environment:
       AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
@@ -79,5 +71,4 @@ services:
       BACKUP_RETENTION_DAYS: 30
 
 volumes:
-  postgres:
   beszel_agent:

@@ -1,5 +1,4 @@
 <script setup lang="ts">
-//@ts-ignore
 import {
 	enumBillCreatorType,
 	enumBillStatus,
@@ -17,7 +16,7 @@ useHead({
 	title: 'Bills | Politigraph Admin',
 });
 
-export type BillEvent = {
+type BillEvent = {
 	__typename?: unknown;
 	main_bill_id?: unknown;
 	vote_eventsConnection?: {
@@ -216,19 +215,13 @@ const { data: organizations } = await useAsyncData(
 
 const organizationsOption = () => {
 	const singleOptions =
-		organizations.value?.map((o) => ({
-			label: `${o.abbreviation ?? ''} ชุดที่ ${o.term ?? '-'}`,
-			value: o.id,
-			term: o.term ?? 0,
-		})) || [];
-
-	singleOptions.sort((a, b) => b.term - a.term);
-
-	singleOptions.push({
-		label: `อื่นๆ`,
-		value: `อื่นๆ`,
-		term: 0,
-	});
+		organizations.value
+			?.map((o) => ({
+				label: `${o.abbreviation ?? ''} ชุดที่ ${o.term ?? '-'}`,
+				value: o.id,
+				term: o.term ?? 0,
+			}))
+			.sort((a, b) => b.term - a.term) || [];
 
 	return singleOptions;
 };
@@ -377,15 +370,10 @@ watch(
 							order="ascending"
 							class="w-2xl"
 						/>
-						<cv-data-table-heading
-							id="sb-status"
-							heading="Status"
-							class="text-center"
-						/>
+						<cv-data-table-heading id="sb-status" heading="Status" />
 						<cv-data-table-heading
 							id="sb-creator-type"
 							heading="Creator Type"
-							class="text-center"
 						/>
 						<cv-data-table-heading
 							id="sb-proposal-date"

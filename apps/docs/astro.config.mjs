@@ -1,6 +1,7 @@
 import starlight from '@astrojs/starlight';
 import vue from '@astrojs/vue';
 import tailwindcss from '@tailwindcss/vite';
+import mermaid from 'astro-mermaid';
 import { defineConfig, passthroughImageService } from 'astro/config';
 
 export default defineConfig({
@@ -11,6 +12,7 @@ export default defineConfig({
 		service: passthroughImageService(),
 	},
 	integrations: [
+		mermaid(),
 		starlight({
 			title: 'Politigraph',
 			favicon: '/favicon.png',
@@ -26,6 +28,20 @@ export default defineConfig({
 						defer: true,
 						'data-domain': 'politigraph.wevis.info',
 						src: 'https://analytics.punchup.world/js/script.js',
+					},
+				},
+				{
+					tag: 'meta',
+					attrs: {
+						property: 'og:image',
+						content: 'https://politigraph.wevis.info/og-image.png',
+					},
+				},
+				{
+					tag: 'meta',
+					attrs: {
+						name: 'twitter:card',
+						content: 'summary_large_image',
 					},
 				},
 			],
@@ -46,6 +62,22 @@ export default defineConfig({
 					href: 'https://github.com/wevisdemo/politigraph',
 				},
 			],
+			sidebar: [
+				{
+					label: 'เริ่มต้น',
+					translations: {
+						en: 'Getting Started',
+					},
+					autogenerate: { directory: 'getting-started' },
+				},
+				{
+					label: 'โครงสร้างของข้อมูล',
+					translations: {
+						en: 'Schema',
+					},
+					autogenerate: { directory: 'schema' },
+				},
+			],
 			tableOfContents: false,
 			lastUpdated: true,
 			customCss: [
@@ -54,6 +86,8 @@ export default defineConfig({
 			],
 			components: {
 				Footer: './src/components/footer.astro',
+				ThemeSelect: './src/components/ThemeSelect.astro',
+				LanguageSelect: './src/components/LanguageSelect.astro',
 			},
 		}),
 		vue(),

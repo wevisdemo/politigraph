@@ -7,6 +7,7 @@ on:
       - 'README.md'
       - 'LICENSE'
       - 'servers/db/*'
+      - 'scripts/*'
   workflow_dispatch:
 
 jobs:
@@ -27,7 +28,7 @@ jobs:
           remote_host: ${{ secrets.SSH_HOST }}
           remote_user: bot
           remote_key: ${{ secrets.SSH_KEY }}
-          remote_path: ${{ secrets.SSH_APP_DIR }}
+          remote_path: ${{ secrets.SSH_BACKEND_DIR }}
   update-server:
     name: Update server containers
     runs-on: ubuntu-latest
@@ -43,7 +44,7 @@ jobs:
           script: |
             #!/usr/bin/env bash
             set -e
-            cd ${{ secrets.SSH_APP_DIR }}
+            cd ${{ secrets.SSH_BACKEND_DIR }}
             docker image tag wevisdemo/politigraph:latest wevisdemo/politigraph:previous
             docker load --input politigraph-image.tar.gz
             docker compose up -d --remove-orphans
@@ -66,18 +67,21 @@ jobs:
         env:
           NODE_ENV: production
           NUXT_PUBLIC_BASE_URL: https://politigraph.wevis.info
-      - name: Join built outputs
-        run: |
-          mkdir dist
-          cp -r ./apps/docs/dist/* ./dist
-          mkdir dist/admin
-          cp -r ./apps/admin/.output/public/* ./dist/admin
-      - name: Upload to server
+      - name: Upload admin to server
         uses: burnett01/rsync-deployments@7.0.1
         with:
           switches: -azvP --chown=bot:deployer --chmod=g+w --delete
-          path: ./dist/*
+          path: ./apps/admin/.output/public/*
           remote_host: ${{ secrets.SSH_HOST }}
           remote_user: bot
           remote_key: ${{ secrets.SSH_KEY }}
-          remote_path: /var/htdocs/web
+          remote_path: ${{ secrets.SSH_FRONTEND_DIR }}/admin
+      - name: Upload docs to server
+        uses: burnett01/rsync-deployments@7.0.1
+        with:
+          switches: -azvP --chown=bot:deployer --chmod=g+w --delete
+          path: ./apps/docs/dist/*
+          remote_host: ${{ secrets.SSH_HOST }}
+          remote_user: bot
+          remote_key: ${{ secrets.SSH_KEY }}
+          remote_path: ${{ secrets.SSH_FRONTEND_DIR }}/docs

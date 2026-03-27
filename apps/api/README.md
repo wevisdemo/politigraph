@@ -1,6 +1,6 @@
 # @politigraph/api
 
-Backend API for GraphQL, authentication, and static file (web/assets) serving
+Backend API for GraphQL and authentication
 
 ## Tech Stack
 
@@ -14,7 +14,9 @@ Backend API for GraphQL, authentication, and static file (web/assets) serving
 
 ## Environment Variables
 
-- `DATABASE_URL` postgres connection URL
-- `BETTER_AUTH_URL` better auth URL, should equal to web `PUBLIC_BASE_URL`
-- `BETTER_AUTH_SECRET` better auth secret
-- `SIGN_UP_TOKEN` bearer token to sign up new user on production
+- `BETTER_AUTH_SECRET` - Random string used for better auth token signing
+- `BETTER_AUTH_URL` - Frontend base URL
+- `DATABASE_URL` - Postgres connection URL
+- `NEO4J_HOST` (optional, default to localhost)
+- `NEO4J_USERNAME`
+- `NEO4J_PASSWORD`

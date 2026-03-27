@@ -1,0 +1,93 @@
+---
+import { Icon } from '@astrojs/starlight/components';
+---
+
+<starlight-theme-select>
+	<button
+		type="button"
+		class="theme-toggle flex items-center justify-center w-10 h-10 bg-transparent border-none cursor-pointer transition-opacity hover:opacity-60"
+		aria-label="Toggle theme"
+	>
+		<Icon name="sun" class="w-5 h-5 absolute block sun-icon" />
+		<Icon name="moon" class="w-5 h-5 absolute hidden moon-icon" />
+	</button>
+</starlight-theme-select>
+
+<script is:inline>
+	StarlightThemeProvider.updatePickers();
+</script>
+
+<script>
+	type Theme = 'auto' | 'dark' | 'light';
+
+	const storageKey = 'starlight-theme';
+
+	const parseTheme = (theme: unknown): Theme =>
+		theme === 'auto' || theme === 'dark' || theme === 'light' ? theme : 'auto';
+
+	const loadTheme = (): Theme =>
+		parseTheme(
+			typeof localStorage !== 'undefined' && localStorage.getItem(storageKey),
+		);
+
+	function storeTheme(theme: Theme): void {
+		if (typeof localStorage !== 'undefined') {
+			localStorage.setItem(
+				storageKey,
+				theme === 'light' || theme === 'dark' ? theme : '',
+			);
+		}
+	}
+
+	const getPreferredColorScheme = (): Theme =>
+		matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+
+	function onThemeChange(theme: Theme): void {
+		// @ts-ignore
+		StarlightThemeProvider.updatePickers(theme);
+		document.documentElement.dataset.theme =
+			theme === 'auto' ? getPreferredColorScheme() : theme;
+		storeTheme(theme);
+	}
+
+	matchMedia(`(prefers-color-scheme: light)`).addEventListener('change', () => {
+		if (loadTheme() === 'auto') onThemeChange('auto');
+	});
+
+	class StarlightThemeSelect extends HTMLElement {
+		constructor() {
+			super();
+			onThemeChange(loadTheme());
+
+			const toggle = this.querySelector('.theme-toggle');
+			if (!toggle) return;
+
+			const updateIcons = () => {
+				const theme = loadTheme();
+				const effectiveTheme =
+					theme === 'auto' ? getPreferredColorScheme() : theme;
+
+				const sunIcon = toggle.querySelector('.sun-icon') as HTMLElement;
+				const moonIcon = toggle.querySelector('.moon-icon') as HTMLElement;
+
+				if (sunIcon && moonIcon) {
+					sunIcon.classList.toggle('hidden', effectiveTheme !== 'dark');
+					sunIcon.classList.toggle('block', effectiveTheme === 'dark');
+					moonIcon.classList.toggle('hidden', effectiveTheme !== 'light');
+					moonIcon.classList.toggle('block', effectiveTheme === 'light');
+				}
+			};
+
+			updateIcons();
+
+			toggle.addEventListener('click', () => {
+				const currentTheme = loadTheme();
+				const newTheme: Theme = currentTheme === 'dark' ? 'light' : 'dark';
+				onThemeChange(newTheme);
+				updateIcons();
+			});
+		}
+	}
+
+	customElements.define('starlight-theme-select', StarlightThemeSelect);
+</script>
