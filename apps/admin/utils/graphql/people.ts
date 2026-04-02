@@ -1,5 +1,7 @@
 import { useGraphqlClient } from '~/utils/graphql/client';
 
+const PEOPLE_PAGE_SIZE = 1000;
+
 export type PeopleOption = {
 	label: string;
 	name: string;
@@ -18,7 +20,7 @@ export function usePeopleOptions() {
 			const { peopleConnection } = await graphqlClient.query({
 				peopleConnection: {
 					__args: {
-						first: 100,
+						first: PEOPLE_PAGE_SIZE,
 						after,
 						sort: [{ firstname: 'ASC' }, { lastname: 'ASC' }],
 					},
