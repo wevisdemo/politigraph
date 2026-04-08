@@ -1,3 +1,5 @@
+export type MembershipMode = 'new' | 'edited' | 'deleted';
+
 export type MembershipProp = {
 	id: string;
 	start_date: string | null;
@@ -20,5 +22,5 @@ export type MembershipProp = {
 			classification: string;
 		}>;
 	}>;
-	mode?: string;
+	mode?: MembershipMode;
 };

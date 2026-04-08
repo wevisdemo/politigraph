@@ -1,29 +1,4 @@
 <script lang="ts">
-export type MembershipProp = {
-	id: string;
-	start_date: string | null;
-	end_date: string | null;
-	label: string | null;
-	district_number: number | null;
-	list_number: number | null;
-	province: string | null;
-	links: Array<{
-		id: string;
-		url: string;
-		note: string | null;
-	}>;
-	posts: Array<{
-		id: string;
-		role: string;
-		organizations: Array<{
-			id: string;
-			name: string;
-			classification: string;
-		}>;
-	}>;
-	mode?: string;
-};
-
 export enum RepresentativeLabel {
 	District = 'แบ่งเขต',
 	Partylist = 'บัญชีรายชื่อ',
@@ -40,6 +15,7 @@ import {
 	// @ts-ignore
 } from '@carbon/icons-vue';
 import LinksForm from '~/components/LinksForm.vue';
+import type { MembershipProp } from '~/types/membership';
 import { formatDate, parseDate } from '~/utils/date';
 import dayjs from 'dayjs';
 
@@ -53,7 +29,7 @@ const props = defineProps<{
 }>();
 
 const memberships = defineModel<MembershipProp[] | null>('memberships');
-const mode = ref<'add' | 'edit' | string>('');
+const mode = ref<'add' | 'edit' | ''>('');
 const showMembershipDetails = ref(false);
 const showDeleteModal = ref(false);
 const genId = () => crypto.randomUUID();
@@ -111,6 +87,18 @@ const modalDate = ref<{ start: Date | null; end: Date | null }>({
 	end: null,
 });
 
+const isMembershipAddDisabled = computed(() => {
+	return (
+		mode.value === 'add' &&
+		currentMembership.value &&
+		!(
+			currentMembership.value.posts?.[0]?.organizations?.[0]?.classification &&
+			currentMembership.value.posts?.[0]?.organizations?.[0]?.id &&
+			currentMembership.value.posts?.[0]?.id
+		)
+	);
+});
+
 const handleAddMembership = () => {
 	const newItem: MembershipProp = {
 		id: crypto.randomUUID(),
@@ -161,6 +149,10 @@ const toISODate = (d: Date | string | null): string | null => {
 };
 
 const handleSaveMembership = () => {
+	if (mode.value === 'add' && isMembershipAddDisabled.value) {
+		return;
+	}
+
 	if (mode.value === 'add' && tempMembership.value) {
 		tempMembership.value.start_date = toISODate(modalDate.value.start);
 		tempMembership.value.end_date = toISODate(modalDate.value.end);
@@ -379,6 +371,7 @@ const currentMembership = computed({
 			class="membership-modal"
 			:visible="showMembershipDetails"
 			autoHideOff
+			:primary-button-disabled="isMembershipAddDisabled"
 			@modal-hide-request="handleCancelMembership"
 			@primary-click="handleSaveMembership"
 			@secondary-click="handleCancelMembership"
@@ -422,6 +415,9 @@ const currentMembership = computed({
 										currentMembership.posts[0].organizations[0].classification,
 									)
 								"
+								:disabled="
+									!currentMembership.posts[0].organizations[0].classification
+								"
 								item-value-key="value"
 								item-text-key="label"
 								autoFilter
@@ -446,6 +442,7 @@ const currentMembership = computed({
 								:key="currentMembership.posts[0].organizations[0].id"
 								v-model="currentMembership.posts[0].id"
 								title="Post*"
+								:disabled="!currentMembership.posts[0].organizations[0].id"
 								item-value-key="value"
 								item-text-key="label"
 								autoFilter
