@@ -54,6 +54,9 @@ const { data: peopleData, refresh: refreshPeopleDetail } =
 					note: true,
 				},
 				memberships: {
+					__args: {
+						sort: [{ end_date: 'DESC' }, { start_date: 'DESC' }],
+					},
 					id: true,
 					start_date: true,
 					end_date: true,

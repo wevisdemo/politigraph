@@ -52,8 +52,8 @@ const updateLink = (index: number, key: 'note' | 'url', value: string) => {
 			:model-value="link.url"
 			@update:model-value="(val: string) => updateLink(i, 'url', val)"
 		/>
-		<cv-button default="Add Another Item" kind="tertiary" @click="addLink"
-			>Add a link</cv-button
-		>
 	</div>
+	<cv-button default="Add Another Item" kind="tertiary" @click="addLink"
+		>Add a link</cv-button
+	>
 </template>
