@@ -20,7 +20,6 @@ useHead({
 	title: 'Vote Events | Politigraph Admin',
 });
 
-const router = useRouter();
 const route = useRoute();
 const graphqlClient = useGraphqlClient();
 
@@ -45,6 +44,10 @@ const filters = ref({
 	),
 });
 
+if (filters.value.classification.length === 0) {
+	filters.value.classification = [...classificationOption];
+}
+
 const { paginationData, handlePageChange, handlePageSizeChange } =
 	usePaginationQuery({
 		getExtraQuery: () => ({
@@ -52,11 +55,10 @@ const { paginationData, handlePageChange, handlePageSizeChange } =
 				filters.value.assembly !== 'ALL' ? filters.value.assembly : undefined,
 			status: filters.value.status !== 'ALL' ? filters.value.status : undefined,
 			classification:
-				filters.value.classification.length === classificationOption.length
-					? 'ALL'
-					: filters.value.classification.length > 0
-						? filters.value.classification
-						: undefined,
+				filters.value.classification.length > 0 &&
+				filters.value.classification.length !== classificationOption.length
+					? filters.value.classification
+					: undefined,
 		}),
 		watch: [filters],
 	});
@@ -232,18 +234,6 @@ const organizationsOption = () => {
 	const allOptions = [...singleOptions, ...overlappingOptions];
 	return allOptions;
 };
-
-onMounted(() => {
-	if (!route.query.classification) {
-		filters.value.classification = [...classificationOption];
-		router.replace({
-			query: {
-				...route.query,
-				classification: 'ALL',
-			},
-		});
-	}
-});
 </script>
 
 <template>

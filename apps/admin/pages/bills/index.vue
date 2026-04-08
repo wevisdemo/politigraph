@@ -25,7 +25,6 @@ type BillEvent = {
 	};
 };
 
-const router = useRouter();
 const route = useRoute();
 const graphqlClient = useGraphqlClient();
 
@@ -62,6 +61,10 @@ const filters = ref({
 	creatorType: getArrayQueryParam(route.query.creatorType, creatorTypeOption),
 });
 
+if (filters.value.creatorType.length === 0) {
+	filters.value.creatorType = [...creatorTypeOption];
+}
+
 const { paginationData, handlePageChange, handlePageSizeChange } =
 	usePaginationQuery({
 		getExtraQuery: () => ({
@@ -71,11 +74,10 @@ const { paginationData, handlePageChange, handlePageSizeChange } =
 					: undefined,
 			status: filters.value.status !== 'ALL' ? filters.value.status : undefined,
 			creatorType:
-				filters.value.creatorType.length === creatorTypeOption.length
-					? 'ALL'
-					: filters.value.creatorType.length > 0
-						? filters.value.creatorType
-						: undefined,
+				filters.value.creatorType.length > 0 &&
+				filters.value.creatorType.length !== creatorTypeOption.length
+					? filters.value.creatorType
+					: undefined,
 		}),
 		watch: [filters],
 	});
@@ -253,18 +255,6 @@ const isComplete = (data: unknown[]) => {
 	const { validCount, total } = getEventCompleteness(data);
 	return validCount === total;
 };
-
-onMounted(() => {
-	if (!route.query.creatorType) {
-		filters.value.creatorType = [...creatorTypeOption];
-		router.replace({
-			query: {
-				...route.query,
-				creator_type: 'ALL',
-			},
-		});
-	}
-});
 </script>
 
 <template>
