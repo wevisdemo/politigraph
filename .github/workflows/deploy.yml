@@ -25,20 +25,43 @@ jobs:
         with:
           switches: -azvP --chown=bot:deployer --chmod=g+w
           path: servers/api/compose.yml servers/api/nginx.conf politigraph-image.tar.gz
-          remote_host: ${{ secrets.SSH_HOST }}
+          remote_host: ${{ secrets.SSH_API_HOST }}
           remote_user: bot
           remote_key: ${{ secrets.SSH_KEY }}
           remote_path: ${{ secrets.SSH_BACKEND_DIR }}
+  migrate-database:
+    name: Migrate database
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+      - name: Install dependencies
+        run: bun install --ignore-scripts --production
+      - name: Setup SSH agent
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_KEY }}
+      - name: Open SSH tunnel
+        run: ssh -f -N -M -S /tmp/tunnel-socket -o StrictHostKeyChecking=no -o ControlMaster=yes -L 5432:127.0.0.1:5432 bot@${{ secrets.SSH_DB_HOST }}
+      - name: Run auth migrations
+        working-directory: packages/auth
+        env:
+          DATABASE_URL: 'postgresql://${{ secrets.POSTGRES_CREDENTIAL }}@127.0.0.1:5432/betterauth'
+        run: bun run migrate
+      - name: Close SSH tunnel
+        run: ssh -S /tmp/tunnel-socket -O exit bot@${{ secrets.SSH_DB_HOST }}
   update-server:
     name: Update server containers
     runs-on: ubuntu-latest
     needs:
       - build-api
+      - migrate-database
     steps:
       - name: Update server containers
         uses: appleboy/ssh-action@v1.2.0
         with:
-          host: ${{ secrets.SSH_HOST }}
+          host: ${{ secrets.SSH_API_HOST }}
           username: bot
           key: ${{ secrets.SSH_KEY }}
           script: |
@@ -52,7 +75,7 @@ jobs:
             docker container prune --force
             docker image prune --all --force --filter "until=72h"
   frontend:
-    name: Build and upload frontend
+    name: Build and deploy frontend
     runs-on: ubuntu-latest
     needs:
       - update-server
@@ -72,7 +95,7 @@ jobs:
         with:
           switches: -azvP --chown=bot:deployer --chmod=g+w --delete
           path: ./apps/admin/.output/public/*
-          remote_host: ${{ secrets.SSH_HOST }}
+          remote_host: ${{ secrets.SSH_API_HOST }}
           remote_user: bot
           remote_key: ${{ secrets.SSH_KEY }}
           remote_path: ${{ secrets.SSH_FRONTEND_DIR }}/admin
@@ -81,7 +104,7 @@ jobs:
         with:
           switches: -azvP --chown=bot:deployer --chmod=g+w --delete
           path: ./apps/docs/dist/*
-          remote_host: ${{ secrets.SSH_HOST }}
+          remote_host: ${{ secrets.SSH_API_HOST }}
           remote_user: bot
           remote_key: ${{ secrets.SSH_KEY }}
           remote_path: ${{ secrets.SSH_FRONTEND_DIR }}/docs
