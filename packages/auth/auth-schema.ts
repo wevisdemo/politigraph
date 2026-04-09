@@ -1,3 +1,4 @@
+import { relations } from 'drizzle-orm';
 import {
 	boolean,
 	index,
@@ -5,27 +6,23 @@ import {
 	pgTable,
 	text,
 	timestamp,
-	uniqueIndex,
 } from 'drizzle-orm/pg-core';
 
-export const users = pgTable(
-	'users',
-	{
-		id: text('id').primaryKey(),
-		name: text('name').notNull(),
-		email: text('email').notNull().unique(),
-		emailVerified: boolean('email_verified').default(false).notNull(),
-		image: text('image'),
-		createdAt: timestamp('created_at')
-			.$defaultFn(() => new Date())
-			.notNull(),
-		updatedAt: timestamp('updated_at')
-			.$defaultFn(() => new Date())
-			.$onUpdate(() => new Date())
-			.notNull(),
-	},
-	(user) => [uniqueIndex('user_email_idx').on(user.email)],
-);
+export const users = pgTable('users', {
+	id: text('id').primaryKey(),
+	name: text('name').notNull(),
+	email: text('email').notNull().unique(),
+	emailVerified: boolean('email_verified').default(false).notNull(),
+	image: text('image'),
+	createdAt: timestamp('created_at').notNull(),
+	updatedAt: timestamp('updated_at')
+		.$onUpdate(() => new Date())
+		.notNull(),
+	role: text('role').default('user').notNull(),
+	banned: boolean('banned').default(false),
+	banReason: text('ban_reason'),
+	banExpires: timestamp('ban_expires'),
+});
 
 export const sessions = pgTable(
 	'sessions',
@@ -33,9 +30,7 @@ export const sessions = pgTable(
 		id: text('id').primaryKey(),
 		expiresAt: timestamp('expires_at').notNull(),
 		token: text('token').notNull().unique(),
-		createdAt: timestamp('created_at')
-			.$defaultFn(() => new Date())
-			.notNull(),
+		createdAt: timestamp('created_at').notNull(),
 		updatedAt: timestamp('updated_at')
 			.$onUpdate(() => new Date())
 			.notNull(),
@@ -44,11 +39,9 @@ export const sessions = pgTable(
 		userId: text('user_id')
 			.notNull()
 			.references(() => users.id, { onDelete: 'cascade' }),
+		impersonatedBy: text('impersonated_by'),
 	},
-	(session) => [
-		uniqueIndex('session_token_idx').on(session.token),
-		index('session_userid_idx').on(session.userId),
-	],
+	(table) => [index('sessions_userId_idx').on(table.userId)],
 );
 
 export const accounts = pgTable(
@@ -67,14 +60,12 @@ export const accounts = pgTable(
 		refreshTokenExpiresAt: timestamp('refresh_token_expires_at'),
 		scope: text('scope'),
 		password: text('password'),
-		createdAt: timestamp('created_at')
-			.$defaultFn(() => new Date())
-			.notNull(),
+		createdAt: timestamp('created_at').notNull(),
 		updatedAt: timestamp('updated_at')
 			.$onUpdate(() => new Date())
 			.notNull(),
 	},
-	(account) => [index('account_userid_idx').on(account.userId)],
+	(table) => [index('accounts_userId_idx').on(table.userId)],
 );
 
 export const verifications = pgTable(
@@ -84,17 +75,12 @@ export const verifications = pgTable(
 		identifier: text('identifier').notNull(),
 		value: text('value').notNull(),
 		expiresAt: timestamp('expires_at').notNull(),
-		createdAt: timestamp('created_at')
-			.$defaultFn(() => new Date())
-			.notNull(),
+		createdAt: timestamp('created_at').notNull(),
 		updatedAt: timestamp('updated_at')
-			.$defaultFn(() => new Date())
 			.$onUpdate(() => new Date())
 			.notNull(),
 	},
-	(verification) => [
-		index('verification_identifier_idx').on(verification.identifier),
-	],
+	(table) => [index('verifications_identifier_idx').on(table.identifier)],
 );
 
 export const apikeys = pgTable(
@@ -124,9 +110,9 @@ export const apikeys = pgTable(
 		permissions: text('permissions'),
 		metadata: text('metadata'),
 	},
-	(apikey) => [
-		index('apikey_userid_idx').on(apikey.userId),
-		index('apikey_key_idx').on(apikey.key),
+	(table) => [
+		index('apikeys_key_idx').on(table.key),
+		index('apikeys_userId_idx').on(table.userId),
 	],
 );
 
@@ -135,4 +121,32 @@ export const jwkss = pgTable('jwkss', {
 	publicKey: text('public_key').notNull(),
 	privateKey: text('private_key').notNull(),
 	createdAt: timestamp('created_at').notNull(),
+	expiresAt: timestamp('expires_at'),
 });
+
+export const usersRelations = relations(users, ({ many }) => ({
+	sessions: many(sessions),
+	accounts: many(accounts),
+	apikeys: many(apikeys),
+}));
+
+export const sessionsRelations = relations(sessions, ({ one }) => ({
+	users: one(users, {
+		fields: [sessions.userId],
+		references: [users.id],
+	}),
+}));
+
+export const accountsRelations = relations(accounts, ({ one }) => ({
+	users: one(users, {
+		fields: [accounts.userId],
+		references: [users.id],
+	}),
+}));
+
+export const apikeysRelations = relations(apikeys, ({ one }) => ({
+	users: one(users, {
+		fields: [apikeys.userId],
+		references: [users.id],
+	}),
+}));

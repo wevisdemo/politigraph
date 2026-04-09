@@ -15,6 +15,13 @@
 			"when": 1769583740123,
 			"tag": "0001_optimal_leader",
 			"breakpoints": true
+		},
+		{
+			"idx": 2,
+			"version": "7",
+			"when": 1775720642592,
+			"tag": "0002_fantastic_morbius",
+			"breakpoints": true
 		}
 	]
 }

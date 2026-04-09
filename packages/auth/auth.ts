@@ -1,6 +1,6 @@
 import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
-import { apiKey, jwt, openAPI } from 'better-auth/plugins';
+import { admin, apiKey, jwt, openAPI } from 'better-auth/plugins';
 import { drizzle } from 'drizzle-orm/bun-sql';
 import * as schema from './auth-schema';
 
@@ -24,6 +24,7 @@ export const auth = betterAuth({
 		schema,
 	}),
 	plugins: [
+		admin(),
 		apiKey({
 			enableSessionForAPIKeys: true,
 			rateLimit: {

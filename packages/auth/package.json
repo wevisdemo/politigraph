@@ -3,7 +3,7 @@
 	"type": "module",
 	"private": true,
 	"scripts": {
-		"generate": "bunx --bun @better-auth/cli generate -y && bunx --bun drizzle-kit generate",
+		"generate": "bun run --bun better-auth generate -y && bun run --bun drizzle-kit generate",
 		"migrate": "bun migrate.ts"
 	},
 	"dependencies": {
