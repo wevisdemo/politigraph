@@ -1,7 +1,8 @@
 import {
+	adminClient,
 	apiKeyClient,
 	createAuthClient,
-	type User,
+	type UserWithRole,
 } from '@politigraph/auth/betterauth';
 
 export const isValidatingSession = ref(true);
@@ -16,7 +17,7 @@ export function useAuthClient() {
 
 	return createAuthClient({
 		baseURL: `${config.public.baseUrl}/auth`,
-		plugins: [apiKeyClient()],
+		plugins: [adminClient(), apiKeyClient()],
 	});
 }
 
@@ -30,7 +31,7 @@ export function useAuthClient() {
  * @returns A configured auth client instance.
  */
 export function useAuthClientWithRouteGuard(
-	successCallback?: (user: User) => void,
+	successCallback?: (user: UserWithRole) => void,
 ) {
 	const client = useAuthClient();
 	const router = useRouter();

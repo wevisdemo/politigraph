@@ -2,8 +2,9 @@
 import {
 	ApiKey16,
 	Logout16,
+	Settings16,
 	UserAvatar24,
-	UserSettings16,
+	UserMultiple16,
 	//@ts-ignore
 } from '@carbon/icons-vue';
 import { ADMIN_NAVIGATIONS } from '~/constants/navigation';
@@ -11,12 +12,14 @@ import { ADMIN_NAVIGATIONS } from '~/constants/navigation';
 const { signOut } = useAuthClientWithRouteGuard((user) => {
 	username.value = user.name;
 	email.value = user.email;
+	role.value = user.role ?? '';
 });
 
 const router = useRouter();
 const route = useRoute();
 const username = ref('');
 const email = ref('');
+const role = ref('');
 const showSettings = ref(false);
 
 const signout = async () => {
@@ -74,18 +77,20 @@ const signout = async () => {
 					<p class="text-xs text-[#525252]">{{ email }}</p>
 				</div>
 				<a href="/admin/api-keys">
-					<cv-overflow-menu-item
-						value="API Keys"
-						class="flex items-center"
-						@click="() => {}"
+					<cv-overflow-menu-item value="API Keys" class="flex items-center"
 						>API Keys <ApiKey16 />
+					</cv-overflow-menu-item>
+				</a>
+				<a v-if="role === 'admin'" href="/admin/users">
+					<cv-overflow-menu-item value="Users" class="flex items-center"
+						>Manage Users <UserMultiple16 />
 					</cv-overflow-menu-item>
 				</a>
 				<cv-overflow-menu-item
 					value="Settings"
 					class="flex items-center"
 					@click="showSettings = true"
-					>Settings <UserSettings16
+					>Settings <Settings16
 				/></cv-overflow-menu-item>
 				<cv-overflow-menu-item
 					value="item 3"
@@ -116,7 +121,7 @@ const signout = async () => {
 				</div>
 				<div class="mb-6">
 					<p class="font-bold">Role</p>
-					<p>Admin</p>
+					<p>{{ role }}</p>
 				</div>
 				<hr class="border-[#C6C6C6]" />
 				<div class="mt-6">
