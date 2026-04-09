@@ -48,26 +48,26 @@ if (filters.value.classification.length === 0) {
 	filters.value.classification = [...classificationOption];
 }
 
-const { paginationData, handlePageChange, handlePageSizeChange } =
-	usePaginationQuery({
-		getExtraQuery: () => ({
-			assembly:
-				filters.value.assembly !== 'ALL' ? filters.value.assembly : undefined,
-			status: filters.value.status !== 'ALL' ? filters.value.status : undefined,
-			classification:
-				filters.value.classification.length > 0 &&
-				filters.value.classification.length !== classificationOption.length
-					? filters.value.classification
-					: undefined,
-		}),
-		watch: [filters],
-	});
-
-const numberOfPage = computed(() =>
-	data.value?.totalCount
-		? Math.ceil(data.value.totalCount / paginationData.value.pageSize)
-		: 1,
-);
+const {
+	offset,
+	numberOfPage,
+	paginationData,
+	handlePageChange,
+	handlePageSizeChange,
+} = usePaginationQuery({
+	getExtraQuery: () => ({
+		assembly:
+			filters.value.assembly !== 'ALL' ? filters.value.assembly : undefined,
+		status: filters.value.status !== 'ALL' ? filters.value.status : undefined,
+		classification:
+			filters.value.classification.length > 0 &&
+			filters.value.classification.length !== classificationOption.length
+				? filters.value.classification
+				: undefined,
+	}),
+	totalCount: () => data.value?.totalCount,
+	watch: [filters],
+});
 
 const { data } = await useLazyAsyncData(
 	'voteEvents',
@@ -114,8 +114,7 @@ const { data } = await useLazyAsyncData(
 					where,
 					sort: [{ start_date: 'DESC' }, { created_at: 'DESC' }],
 					limit: paginationData.value.pageSize,
-					offset:
-						(paginationData.value.page - 1) * paginationData.value.pageSize,
+					offset: offset.value,
 				},
 				id: true,
 				title: true,

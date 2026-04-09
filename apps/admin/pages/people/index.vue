@@ -12,14 +12,15 @@ useHead({
 
 const graphqlClient = useGraphqlClient();
 
-const { paginationData, handlePageChange, handlePageSizeChange } =
-	usePaginationQuery();
-
-const numberOfPage = computed(() =>
-	data.value?.totalCount
-		? Math.ceil(data.value.totalCount / paginationData.value.pageSize)
-		: 1,
-);
+const {
+	offset,
+	numberOfPage,
+	paginationData,
+	handlePageChange,
+	handlePageSizeChange,
+} = usePaginationQuery({
+	totalCount: () => data.value?.totalCount,
+});
 
 const searchQuery = ref('');
 const debouncedSearch = useDebounce(searchQuery, 1000);
@@ -49,8 +50,7 @@ const { data } = await useLazyAsyncData(
 				__args: {
 					where,
 					limit: paginationData.value.pageSize,
-					offset:
-						(paginationData.value.page - 1) * paginationData.value.pageSize,
+					offset: offset.value,
 				},
 				id: true,
 				name: true,

@@ -30,16 +30,16 @@ const newUserRole = ref<'user' | 'admin'>('user');
 const userToRemove = ref<UserWithRole | null>(null);
 const userToChangePassword = ref<UserWithRole | null>(null);
 
-const { paginationData, handlePageChange, handlePageSizeChange } =
-	usePaginationQuery({
-		defaultPageSize: 20,
-	});
-
-const numberOfPage = computed(() =>
-	users.value?.total
-		? Math.ceil(users.value.total / paginationData.value.pageSize)
-		: 1,
-);
+const {
+	offset,
+	numberOfPage,
+	paginationData,
+	handlePageChange,
+	handlePageSizeChange,
+} = usePaginationQuery({
+	defaultPageSize: 20,
+	totalCount: () => users.value?.total,
+});
 
 const {
 	data: users,
@@ -49,13 +49,10 @@ const {
 } = await useLazyAsyncData(
 	'admin-users',
 	async () => {
-		const offset =
-			(paginationData.value.page - 1) * paginationData.value.pageSize;
-
 		const { data, error } = await admin.listUsers({
 			query: {
 				limit: paginationData.value.pageSize,
-				offset,
+				offset: offset.value,
 				sortBy: 'createdAt',
 				sortDirection: 'desc',
 			},

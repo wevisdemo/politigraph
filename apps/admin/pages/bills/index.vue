@@ -65,28 +65,28 @@ if (filters.value.creatorType.length === 0) {
 	filters.value.creatorType = [...creatorTypeOption];
 }
 
-const { paginationData, handlePageChange, handlePageSizeChange } =
-	usePaginationQuery({
-		getExtraQuery: () => ({
-			organization:
-				filters.value.organization !== 'ALL'
-					? filters.value.organization
-					: undefined,
-			status: filters.value.status !== 'ALL' ? filters.value.status : undefined,
-			creatorType:
-				filters.value.creatorType.length > 0 &&
-				filters.value.creatorType.length !== creatorTypeOption.length
-					? filters.value.creatorType
-					: undefined,
-		}),
-		watch: [filters],
-	});
-
-const numberOfPage = computed(() =>
-	data.value?.totalCount
-		? Math.ceil(data.value.totalCount / paginationData.value.pageSize)
-		: 1,
-);
+const {
+	offset,
+	numberOfPage,
+	paginationData,
+	handlePageChange,
+	handlePageSizeChange,
+} = usePaginationQuery({
+	getExtraQuery: () => ({
+		organization:
+			filters.value.organization !== 'ALL'
+				? filters.value.organization
+				: undefined,
+		status: filters.value.status !== 'ALL' ? filters.value.status : undefined,
+		creatorType:
+			filters.value.creatorType.length > 0 &&
+			filters.value.creatorType.length !== creatorTypeOption.length
+				? filters.value.creatorType
+				: undefined,
+	}),
+	totalCount: () => data.value?.totalCount,
+	watch: [filters],
+});
 
 const { data } = await useLazyAsyncData(
 	'bills',
@@ -133,8 +133,7 @@ const { data } = await useLazyAsyncData(
 					where,
 					sort: [{ updated_at: 'DESC' }, { created_at: 'DESC' }],
 					limit: paginationData.value.pageSize,
-					offset:
-						(paginationData.value.page - 1) * paginationData.value.pageSize,
+					offset: offset.value,
 				},
 				id: true,
 				nickname: true,

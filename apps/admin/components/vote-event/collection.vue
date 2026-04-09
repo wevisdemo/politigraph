@@ -2,6 +2,7 @@
 //@ts-ignore
 import { Edit16 } from '@carbon/icons-vue';
 import type { Person, Vote } from '@politigraph/graphql/genql';
+import { usePaginationQuery } from '~/utils/pagination';
 
 const props = defineProps<{
 	voteEventId?: string;
@@ -18,28 +19,17 @@ const props = defineProps<{
 	})[];
 }>();
 
-const paginationData = reactive({
-	page: 1,
-	pageSize: 10,
+const {
+	offset: firstRowIndexOfPage,
+	numberOfPage,
+	paginationData,
+	handlePageChange,
+	handlePageSizeChange,
+} = usePaginationQuery({
+	defaultPageSize: 10,
+	totalCount: () => props.votes?.length,
 });
 
-const numberOfPage = computed(() =>
-	props.votes?.length
-		? Math.ceil(props.votes.length / paginationData.pageSize)
-		: 1,
-);
-
-const firstRowIndexOfPage = computed(
-	() => (paginationData.page - 1) * paginationData.pageSize,
-);
-
-const handlePageChange = (page: number) => {
-	paginationData.page = page;
-};
-
-const handlePageSizeChange = (pageSize: number) => {
-	paginationData.pageSize = pageSize;
-};
 const router = useRouter();
 </script>
 

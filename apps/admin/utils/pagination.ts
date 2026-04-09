@@ -1,5 +1,6 @@
 import { getNumberQueryParam } from '~/utils/query';
-import { ref, watch } from 'vue';
+import { computed, ref, toValue, watch } from 'vue';
+import type { MaybeRefOrGetter } from 'vue';
 import type { LocationQuery, LocationQueryRaw } from 'vue-router';
 
 type PaginationData = {
@@ -11,6 +12,7 @@ type PaginationOptions = {
 	defaultPage?: number;
 	defaultPageSize?: number;
 	getExtraQuery?: () => LocationQueryRaw;
+	totalCount?: MaybeRefOrGetter<number | null | undefined>;
 	watch?: unknown[];
 };
 
@@ -67,6 +69,16 @@ export const usePaginationQuery = (options: PaginationOptions = {}) => {
 	const paginationData = ref(
 		getPaginationDataFromQuery(route.query, defaultPage, defaultPageSize),
 	);
+	const offset = computed(
+		() => (paginationData.value.page - 1) * paginationData.value.pageSize,
+	);
+	const numberOfPage = computed(() => {
+		const totalCount = toValue(options.totalCount) ?? 0;
+
+		return totalCount > 0
+			? Math.ceil(totalCount / paginationData.value.pageSize)
+			: 1;
+	});
 
 	/**
 	 * Updates the current page.
@@ -105,6 +117,8 @@ export const usePaginationQuery = (options: PaginationOptions = {}) => {
 	);
 
 	return {
+		offset,
+		numberOfPage,
 		paginationData,
 		handlePageChange,
 		handlePageSizeChange,
