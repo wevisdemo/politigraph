@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { enumOrganizationType } from '@politigraph/graphql/genql';
+import { organizationTypeLabel } from '~/constants/organization';
 import { formatDate } from '~/utils/date';
 import { useGraphqlClient } from '~/utils/graphql/client';
 import { usePaginationQuery } from '~/utils/pagination';
@@ -18,14 +19,9 @@ useHead({
 const route = useRoute();
 const graphqlClient = useGraphqlClient();
 
-const organizationTypeLabel: Record<string, string> = {
+const organizationTypeLabelWithAll: Record<string, string> = {
 	ALL: 'ทั้งหมด',
-	[enumOrganizationType.PARLIAMENT]: 'รัฐสภา',
-	[enumOrganizationType.HOUSE_OF_REPRESENTATIVE]: 'สภาผู้แทนราษฎร (สส.)',
-	[enumOrganizationType.HOUSE_OF_SENATE]: 'วุฒิสภา (สว.)',
-	[enumOrganizationType.CABINET]: 'คณะรัฐมนตรี (ครม.)',
-	[enumOrganizationType.POLITICAL_PARTY]: 'พรรคการเมือง',
-	[enumOrganizationType.PRIVATE_ORGANIZATION]: 'หน่วยงานเอกชน',
+	...organizationTypeLabel,
 };
 
 const classificationOptions = ['ALL', ...Object.values(enumOrganizationType)];
@@ -89,6 +85,8 @@ const { data } = await useLazyAsyncData(
 					},
 					id: true,
 					name: true,
+					image: true,
+					color: true,
 					classification: true,
 					founding_date: true,
 					dissolution_date: true,
@@ -138,7 +136,8 @@ const { data } = await useLazyAsyncData(
 						v-model="filters.classification"
 						name="organization-classification"
 						:label="
-							organizationTypeLabel[classification as string] ?? classification
+							organizationTypeLabelWithAll[classification as string] ??
+							classification
 						"
 						:value="classification"
 					/>
@@ -151,7 +150,9 @@ const { data } = await useLazyAsyncData(
 					@search="handleSearchChange"
 				>
 					<template #headings>
-						<cv-data-table-heading id="sb-name" heading="Name" class="w-2xl" />
+						<cv-data-table-heading id="sb-name" heading="Name" class="w-md" />
+						<cv-data-table-heading id="sb-image" heading="Image" />
+						<cv-data-table-heading id="sb-color" heading="Color" />
 						<cv-data-table-heading
 							id="sb-classification"
 							heading="Classification"
@@ -173,7 +174,29 @@ const { data } = await useLazyAsyncData(
 							:value="row.id"
 						>
 							<cv-data-table-cell>
-								{{ row.name }}
+								<a
+									:href="`/admin/organizations/${row.id}`"
+									class="w-full text-inherit hover:underline"
+									>{{ row.name }}</a
+								>
+							</cv-data-table-cell>
+							<cv-data-table-cell>
+								<div
+									v-if="row.image"
+									class="flex size-8 items-center justify-center overflow-hidden rounded-full border border-gray-300 bg-[#F4F4F4]"
+								>
+									<img
+										:src="row.image"
+										class="size-8 rounded-full object-cover"
+									/>
+								</div>
+							</cv-data-table-cell>
+							<cv-data-table-cell>
+								<div
+									v-if="row.color"
+									class="size-8 rounded-full border border-gray-300"
+									:style="{ backgroundColor: row.color }"
+								/>
 							</cv-data-table-cell>
 							<cv-data-table-cell>
 								{{

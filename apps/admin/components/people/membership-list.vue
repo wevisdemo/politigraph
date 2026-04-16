@@ -16,8 +16,7 @@ import {
 } from '@carbon/icons-vue';
 import LinksForm from '~/components/LinksForm.vue';
 import type { MembershipProp } from '~/types/membership';
-import { formatDate, parseDate } from '~/utils/date';
-import dayjs from 'dayjs';
+import { formatDate, parseDate, serializeDate } from '~/utils/date';
 
 const props = defineProps<{
 	organizationsOptions?: Array<{
@@ -142,28 +141,22 @@ const handleEditMembership = (data: MembershipProp) => {
 	showMembershipDetails.value = true;
 };
 
-const toISODate = (d: Date | string | null): string | null => {
-	if (!d) return null;
-	if (d instanceof Date) return dayjs(d).format('YYYY-MM-DD');
-	return dayjs(d, 'MM/DD/YYYY').format('YYYY-MM-DD');
-};
-
 const handleSaveMembership = () => {
 	if (mode.value === 'add' && isMembershipAddDisabled.value) {
 		return;
 	}
 
 	if (mode.value === 'add' && tempMembership.value) {
-		tempMembership.value.start_date = toISODate(modalDate.value.start);
-		tempMembership.value.end_date = toISODate(modalDate.value.end);
+		tempMembership.value.start_date = serializeDate(modalDate.value.start);
+		tempMembership.value.end_date = serializeDate(modalDate.value.end);
 		tempMembership.value.mode = 'new';
 		memberships.value = [...(memberships.value || []), tempMembership.value];
 	} else if (mode.value === 'edit' && memberships.value) {
 		const current = currentMembership.value;
 		if (!current) return;
 
-		current.start_date = toISODate(modalDate.value.start);
-		current.end_date = toISODate(modalDate.value.end);
+		current.start_date = serializeDate(modalDate.value.start);
+		current.end_date = serializeDate(modalDate.value.end);
 		current.mode = 'edited';
 
 		const index = memberships.value.findIndex((m) => m.id === current.id);

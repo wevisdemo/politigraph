@@ -28,3 +28,22 @@ export const formatDate = (d: Date | string | null): string | null => {
 		day: 'numeric',
 	});
 };
+
+/**
+ * Converts a Date object (or string) to a string in YYYY-MM-DD format for persistence
+ * @param d - Date object, string, or null
+ * @returns string in 'YYYY-MM-DD' format or null
+ */
+export const serializeDate = (d: Date | string | null): string | null => {
+	if (!d) return null;
+
+	const date =
+		typeof d === 'string' ? new Date(d.length === 10 ? `${d}T00:00:00` : d) : d;
+
+	if (isNaN(date.getTime())) return null;
+
+	const year = date.getFullYear();
+	const month = String(date.getMonth() + 1).padStart(2, '0');
+	const day = String(date.getDate()).padStart(2, '0');
+	return `${year}-${month}-${day}`;
+};
