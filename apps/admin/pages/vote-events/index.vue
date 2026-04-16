@@ -281,16 +281,8 @@ const organizationsOption = () => {
 							order="ascending"
 							class="w-2xl"
 						/>
-						<cv-data-table-heading
-							id="sb-votingdate"
-							heading="Voting Date"
-							class="text-center"
-						/>
-						<cv-data-table-heading
-							id="sb-createdat"
-							heading="Created At"
-							class="text-center"
-						/>
+						<cv-data-table-heading id="sb-votingdate" heading="Voting Date" />
+						<cv-data-table-heading id="sb-createdat" heading="Created At" />
 						<cv-data-table-heading id="sb-assembly" heading="Assemblies" />
 						<cv-data-table-heading id="sb-result" heading="Result" />
 						<cv-data-table-heading id="sb-link" heading="Links" />

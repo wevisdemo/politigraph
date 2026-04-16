@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useGraphqlClient } from '~/utils/graphql/client';
 import { usePaginationQuery } from '~/utils/pagination';
+import { useDebouncedSearch } from '~/utils/search';
 
 definePageMeta({
 	layout: 'admin-layout',
@@ -22,16 +23,11 @@ const {
 	totalCount: () => data.value?.totalCount,
 });
 
-const searchQuery = ref('');
-const debouncedSearch = useDebounce(searchQuery, 1000);
-
-watch(debouncedSearch, () => {
-	paginationData.value.page = 1;
+const { debouncedSearch, handleSearchChange } = useDebouncedSearch({
+	onDebouncedChange: () => {
+		paginationData.value.page = 1;
+	},
 });
-
-const handleSearchChange = (query: string) => {
-	searchQuery.value = query;
-};
 
 const { data } = await useLazyAsyncData(
 	'people',
