@@ -1,16 +1,9 @@
 <script lang="ts" setup>
 // @ts-ignore
-import { Enterprise32, Save16 } from '@carbon/icons-vue';
-import {
-	enumOrganizationType,
-	type Link,
-	type OrganizationType,
-} from '@politigraph/graphql/genql';
-import LinksForm from '~/components/LinksForm.vue';
-import { organizationTypeLabel } from '~/constants/organization';
-import { parseDate, serializeDate } from '~/utils/date';
+import { Save16 } from '@carbon/icons-vue';
+import { type Link, type Organization } from '@politigraph/graphql/genql';
+import type { OrganizationDetailProps } from '~/components/organization/detail.vue';
 import { diff } from 'radash';
-import PickColors from 'vue-pick-colors';
 
 definePageMeta({
 	layout: 'admin-layout',
@@ -20,31 +13,14 @@ const route = useRoute();
 const graphqlClient = useGraphqlClient();
 const organizationId = route.params.id as string;
 
-type OrganizationRelation = {
-	id: string;
-	name: string;
-	classification: OrganizationType;
-};
+type OrganizationRelation = Pick<
+	Organization,
+	'id' | 'name' | 'classification'
+>;
 
-type OrganizationDetail = {
-	id: string;
-	name: string;
-	name_en?: string | null;
-	description?: string | null;
-	classification: OrganizationType;
-	founding_date?: string | null;
-	dissolution_date?: string | null;
-	image?: string | null;
-	color?: string | null;
+type OrganizationDetail = OrganizationDetailProps & {
 	parents: OrganizationRelation[];
 	children: OrganizationRelation[];
-	links: Pick<Link, 'id' | 'note' | 'url'>[];
-};
-
-const toDatePickerValue = (value?: string | Date | null) => {
-	if (!value) return null;
-	if (value instanceof Date) return value;
-	return parseDate(value);
 };
 
 const originalParentIds = ref<string[]>([]);
@@ -126,25 +102,6 @@ watch(
 	{ immediate: true },
 );
 
-const foundingDateLocal = ref<Date | null>(null);
-const dissolutionDateLocal = ref<Date | null>(null);
-
-watch(
-	() => organizationData.value?.founding_date,
-	(value) => {
-		foundingDateLocal.value = toDatePickerValue(value ?? null);
-	},
-	{ immediate: true },
-);
-
-watch(
-	() => organizationData.value?.dissolution_date,
-	(value) => {
-		dissolutionDateLocal.value = toDatePickerValue(value ?? null);
-	},
-	{ immediate: true },
-);
-
 const { data: organizationOptions } = await useAsyncData(
 	'organization-options',
 	async () => {
@@ -163,40 +120,13 @@ const { data: organizationOptions } = await useAsyncData(
 			organizations
 				.filter((org) => org.id !== organizationId)
 				.map((org) => ({
-					label: `${org.name} (${
-						organizationTypeLabel[org.classification] ?? org.classification
-					})`,
+					label: org.name,
 					value: org.id,
 				})) ?? []
 		);
 	},
 	{ lazy: true },
 );
-
-const getSelectedOrganizationLabels = (ids: string[]) =>
-	ids
-		.map(
-			(id) =>
-				organizationOptions.value?.find((option) => option.value === id)
-					?.label ?? id,
-		)
-		.join(', ');
-
-const selectedParentLabels = computed(() =>
-	getSelectedOrganizationLabels(selectedParentIds.value),
-);
-
-const selectedChildLabels = computed(() =>
-	getSelectedOrganizationLabels(selectedChildIds.value),
-);
-
-const organizationColor = computed<string>({
-	get: () => organizationData.value?.color ?? '',
-	set: (value) => {
-		if (!organizationData.value) return;
-		organizationData.value.color = value || null;
-	},
-});
 
 const toast = useToastNotification();
 
@@ -227,10 +157,8 @@ const saveChanges = async () => {
 						name_en: { set: organizationData.value.name_en },
 						description: { set: organizationData.value.description },
 						classification: { set: organizationData.value.classification },
-						founding_date: { set: serializeDate(foundingDateLocal.value) },
-						dissolution_date: {
-							set: serializeDate(dissolutionDateLocal.value),
-						},
+						founding_date: { set: organizationData.value.founding_date },
+						dissolution_date: { set: organizationData.value.dissolution_date },
 						color: { set: organizationData.value.color },
 						parents: [
 							{
@@ -401,117 +329,12 @@ const saveChanges = async () => {
 	>
 		<div class="mt-4 flex flex-col items-start gap-8 md:flex-row">
 			<div class="basis-2/4 bg-white p-4">
-				<div class="flex flex-col gap-6">
-					<div class="flex flex-col gap-1">
-						<h4>Organization Details</h4>
-						<p class="text-xs opacity-70">ID: {{ organizationData?.id }}</p>
-					</div>
-
-					<template v-if="!organizationData || !organizationOptions">
-						<cv-text-input-skeleton />
-						<cv-text-input-skeleton />
-						<cv-text-input-skeleton />
-						<cv-text-input-skeleton />
-						<cv-text-input-skeleton />
-						<cv-text-area-skeleton />
-						<cv-text-input-skeleton />
-						<cv-text-input-skeleton />
-						<cv-text-input-skeleton />
-					</template>
-
-					<template v-else>
-						<div
-							class="flex size-32 flex-none items-center justify-center rounded-full border border-gray-400 bg-[#F4F4F4]"
-						>
-							<img
-								v-if="organizationData.image"
-								:src="organizationData.image"
-								class="size-32 rounded-full object-cover"
-							/>
-							<Enterprise32 v-else class="size-12 text-[#A8A8A8]" />
-						</div>
-
-						<div class="flex items-center gap-3 text-[#525252]">
-							<p class="text-xs font-medium">Color</p>
-							<PickColors
-								v-model:value="organizationColor"
-								format="hex"
-								:colors="[]"
-							/>
-							<span class="font-mono text-sm">
-								{{ organizationColor || '-' }}
-							</span>
-						</div>
-
-						<cv-text-input
-							v-model="organizationData.name"
-							label="Name*"
-							placeholder=""
-							required
-						/>
-
-						<cv-text-input
-							v-model="organizationData.name_en"
-							label="Name (Eng)"
-							placeholder=""
-						/>
-
-						<cv-text-area
-							v-model="organizationData.description"
-							label="Description"
-							placeholder=""
-							rows="5"
-						/>
-
-						<FilterOptions
-							v-model="organizationData.classification"
-							label="Classification*"
-							type="radio"
-							name="organization-classification"
-							:options="
-								Object.values(enumOrganizationType).map((item) => ({
-									label: organizationTypeLabel[item] ?? item,
-									value: item,
-								}))
-							"
-						/>
-
-						<div class="flex flex-row">
-							<cv-date-picker
-								v-model="foundingDateLocal"
-								dateLabel="Founding Date"
-								kind="single"
-								:calOptions="{ dateFormat: 'Y-m-d' }"
-							/>
-
-							<cv-date-picker
-								v-model="dissolutionDateLocal"
-								dateLabel="Dissolution Date"
-								kind="single"
-								:calOptions="{ dateFormat: 'Y-m-d' }"
-							/>
-						</div>
-
-						<cv-multi-select
-							title="Parents"
-							:label="selectedParentLabels"
-							:options="organizationOptions"
-							v-model="selectedParentIds"
-						/>
-
-						<cv-multi-select
-							title="Children"
-							:label="selectedChildLabels"
-							:options="organizationOptions"
-							v-model="selectedChildIds"
-						/>
-
-						<div>
-							<h4 class="mb-3">References</h4>
-							<LinksForm v-model:links="organizationData.links" />
-						</div>
-					</template>
-				</div>
+				<OrganizationDetail
+					v-model="organizationData"
+					v-model:selected-parent-ids="selectedParentIds"
+					v-model:selected-child-ids="selectedChildIds"
+					:organization-options="organizationOptions"
+				/>
 			</div>
 
 			<div class="basis-2/4" />
