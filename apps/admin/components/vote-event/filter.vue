@@ -21,30 +21,33 @@ const resetFilter = () => {
 </script>
 
 <template>
-	<div class="flex flex-col">
+	<div class="flex flex-col gap-4">
 		<div class="pb-4">
 			<button @click="resetFilter" class="text-[#0F62FE] hover:cursor-pointer">
 				Reset Filters
 			</button>
 		</div>
-		<VoteEventFilterControl
+		<FilterOptions
 			v-model="filters.assembly"
 			label="Assembly"
 			type="radio"
+			name="vote-event-assembly-filter"
 			:options="props.assembliesOption"
 		/>
 
-		<VoteEventFilterControl
+		<FilterOptions
 			v-model="filters.status"
 			label="Status"
 			type="radio"
+			name="vote-event-status-filter"
 			:options="props.statusOptions"
 		/>
 
-		<VoteEventFilterControl
+		<FilterOptions
 			v-model="filters.classification"
 			label="Classification"
 			type="multi-select"
+			name="vote-event-classification-filter"
 			:options="props.classificationOption"
 		/>
 	</div>

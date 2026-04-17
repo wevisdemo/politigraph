@@ -463,18 +463,18 @@ const saveChanges = async () => {
 							rows="5"
 						/>
 
-						<cv-select
+						<FilterOptions
 							v-model="organizationData.classification"
 							label="Classification*"
-						>
-							<cv-select-option
-								v-for="item in Object.values(enumOrganizationType)"
-								:key="item"
-								:value="item"
-							>
-								{{ organizationTypeLabel[item] ?? item }}
-							</cv-select-option>
-						</cv-select>
+							type="radio"
+							name="organization-classification"
+							:options="
+								Object.values(enumOrganizationType).map((item) => ({
+									label: organizationTypeLabel[item] ?? item,
+									value: item,
+								}))
+							"
+						/>
 
 						<div class="flex flex-row">
 							<cv-date-picker

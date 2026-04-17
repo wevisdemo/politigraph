@@ -122,11 +122,7 @@ const { data } = await useLazyAsyncData(
 	<div v-else class="relative">
 		<div class="flex flex-col items-start gap-12 md:flex-row">
 			<div class="w-xs sticky top-16 flex flex-col">
-				<cv-radio-group
-					legendText="Classification"
-					class="flex flex-col"
-					vertical
-				>
+				<cv-radio-group legendText="Classification" vertical>
 					<cv-radio-button
 						v-for="classification in classificationOptions"
 						:key="classification"
