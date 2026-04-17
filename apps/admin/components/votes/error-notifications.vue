@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import type { VoteIssue, VoteIssueType } from '~/utils/votes/validator';
+import type { VoteIssue, VoteIssueType } from '~/utils/votes';
 import { group } from 'radash';
 
 const props = defineProps<{

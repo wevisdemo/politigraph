@@ -3,7 +3,7 @@
 import { Add16, Download16, WarningFilled16 } from '@carbon/icons-vue';
 import type { Person, Vote, VoteEvent } from '@politigraph/graphql/genql';
 import { standardVoteOptions } from '~/constants/votes';
-import type { VoteIssue } from '~/utils/votes/validator';
+import type { VoteIssue } from '~/utils/votes';
 import { csvFormat } from 'd3-dsv';
 import { closest } from 'fastest-levenshtein';
 

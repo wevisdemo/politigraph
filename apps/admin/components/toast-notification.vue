@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { ToastNotificationState } from '~/composables/toast-notification';
+import type { ToastNotificationState } from '~/composables/use-toast-notification';
 
 defineProps<{
 	notification: Ref<ToastNotificationState | null>;

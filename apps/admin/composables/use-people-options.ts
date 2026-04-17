@@ -1,5 +1,3 @@
-import { useGraphqlClient } from '~/utils/graphql/client';
-
 const PEOPLE_PAGE_SIZE = 1000;
 
 export type PeopleOption = {

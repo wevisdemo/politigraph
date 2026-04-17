@@ -9,7 +9,6 @@ import {
 import LinksForm from '~/components/LinksForm.vue';
 import { organizationTypeLabel } from '~/constants/organization';
 import { parseDate, serializeDate } from '~/utils/date';
-import { useGraphqlClient } from '~/utils/graphql/client';
 import { diff } from 'radash';
 import PickColors from 'vue-pick-colors';
 

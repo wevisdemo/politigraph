@@ -1,8 +1,4 @@
 <script setup lang="ts">
-import { useGraphqlClient } from '~/utils/graphql/client';
-import { usePaginationQuery } from '~/utils/pagination';
-import { useDebouncedSearch } from '~/utils/search';
-
 definePageMeta({
 	layout: 'admin-layout',
 });

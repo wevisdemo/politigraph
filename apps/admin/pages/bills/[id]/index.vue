@@ -4,8 +4,6 @@ import { Save16 } from '@carbon/icons-vue';
 import type { Link, OrganizationType } from '@politigraph/graphql/genql';
 import { useForm } from '@tanstack/vue-form';
 import RelatedLinksForm from '~/components/LinksForm.vue';
-import { useGraphqlClient } from '~/utils/graphql/client';
-import { usePeopleOptions } from '~/utils/graphql/people';
 import { diff } from 'radash';
 
 definePageMeta({

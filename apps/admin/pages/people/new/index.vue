@@ -7,7 +7,6 @@ import {
 } from '@politigraph/graphql/genql';
 import { PeopleDetail, PeopleMemberDetail } from '#components';
 import type { PeopleDetailProps } from '~/components/people/detail.vue';
-import { useGraphqlClient } from '~/utils/graphql/client';
 
 definePageMeta({
 	layout: 'admin-layout',

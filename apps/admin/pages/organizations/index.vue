@@ -2,10 +2,7 @@
 import { enumOrganizationType } from '@politigraph/graphql/genql';
 import { organizationTypeLabel } from '~/constants/organization';
 import { formatDate } from '~/utils/date';
-import { useGraphqlClient } from '~/utils/graphql/client';
-import { usePaginationQuery } from '~/utils/pagination';
 import { getStringQueryParam } from '~/utils/query';
-import { useDebouncedSearch } from '~/utils/search';
 import { ref } from 'vue';
 
 definePageMeta({

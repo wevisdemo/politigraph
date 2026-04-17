@@ -9,7 +9,6 @@ import {
 } from '@carbon/icons-vue';
 import type { UserWithRole } from '@politigraph/auth/betterauth';
 import { formatDate } from '~/utils/date';
-import { usePaginationQuery } from '~/utils/pagination';
 
 definePageMeta({
 	layout: 'admin-layout',

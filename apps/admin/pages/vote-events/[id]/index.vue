@@ -2,8 +2,7 @@
 import type { Link } from '@politigraph/graphql/genql';
 import { useForm } from '@tanstack/vue-form';
 import RelatedLinksForm from '~/components/LinksForm.vue';
-import { useGraphqlClient } from '~/utils/graphql/client';
-import { validateVotes } from '~/utils/votes/validator';
+import { validateVotes } from '~/utils/votes';
 import { diff } from 'radash';
 
 definePageMeta({

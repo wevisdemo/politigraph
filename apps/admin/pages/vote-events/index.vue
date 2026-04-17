@@ -7,8 +7,6 @@ import {
 } from '@politigraph/graphql/genql';
 import PublishStatusLabel from '~/components/ui/PublishStatusLabel.vue';
 import { formatDate } from '~/utils/date';
-import { useGraphqlClient } from '~/utils/graphql/client';
-import { usePaginationQuery } from '~/utils/pagination';
 import { getArrayQueryParam, getStringQueryParam } from '~/utils/query';
 import { ref } from 'vue';
 

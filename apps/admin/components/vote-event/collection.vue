@@ -2,7 +2,6 @@
 //@ts-ignore
 import { Edit16 } from '@carbon/icons-vue';
 import type { Person, Vote } from '@politigraph/graphql/genql';
-import { usePaginationQuery } from '~/utils/pagination';
 
 const props = defineProps<{
 	voteEventId?: string;

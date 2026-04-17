@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import type { Vote } from '@politigraph/graphql/genql';
-import { useGraphqlClient } from '~/utils/graphql/client';
-import { usePeopleOptions } from '~/utils/graphql/people';
-import { validateVotes } from '~/utils/votes/validator';
+import { validateVotes } from '~/utils/votes';
 
 definePageMeta({
 	layout: 'admin-layout',

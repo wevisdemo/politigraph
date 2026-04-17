@@ -9,7 +9,6 @@ import {
 import { PeopleDetail, PeopleMembershipList } from '#components';
 import { RepresentativeLabel } from '~/components/people/membership-list.vue';
 import type { MembershipProp } from '~/types/membership';
-import { useGraphqlClient } from '~/utils/graphql/client';
 
 definePageMeta({
 	layout: 'admin-layout',
