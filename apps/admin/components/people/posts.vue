@@ -207,19 +207,6 @@ const loadRelatedMemberships = async (postId: string) => {
 	}
 };
 
-const relatedMembershipRows = computed(() =>
-	relatedMemberships.value.flatMap((membership) =>
-		membership.members
-			.filter((person) => !!person)
-			.map((person) => ({
-				id: `${membership.id}-${person.id}`,
-				name: person.name,
-				start_date: membership.start_date,
-				end_date: membership.end_date,
-			})),
-	),
-);
-
 watch(
 	() => [showPostDetails.value, mode.value, currentPost.value?.id] as const,
 	async ([visible, currentMode, postId]) => {
@@ -433,9 +420,16 @@ watch(
 								/>
 							</template>
 
-							<template v-else-if="relatedMembershipRows.length">
+							<template v-else-if="relatedMemberships.length">
 								<cv-data-table-row
-									v-for="row in relatedMembershipRows"
+									v-for="row in relatedMemberships.flatMap((membership) =>
+										membership.members.map((member) => ({
+											id: `${membership.id}-${member.id}`,
+											name: member.name,
+											start_date: membership.start_date,
+											end_date: membership.end_date,
+										})),
+									)"
 									:key="row.id"
 									:id="row.id"
 									:value="row.id"
