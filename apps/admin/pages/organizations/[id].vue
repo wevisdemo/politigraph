@@ -1,7 +1,11 @@
 <script lang="ts" setup>
 // @ts-ignore
 import { Save16 } from '@carbon/icons-vue';
-import { type Link, type Organization } from '@politigraph/graphql/genql';
+import {
+	type Link,
+	type Organization,
+	type Post,
+} from '@politigraph/graphql/genql';
 import type { OrganizationDetailProps } from '~/components/organization/detail.vue';
 import { diff } from 'radash';
 
@@ -21,10 +25,22 @@ type OrganizationRelation = Pick<
 type OrganizationDetail = OrganizationDetailProps & {
 	parents: OrganizationRelation[];
 	children: OrganizationRelation[];
+	posts: OrganizationPost[];
+};
+
+type OrganizationPost = Pick<
+	Post,
+	'id' | 'role' | 'start_date' | 'end_date'
+> & {
+	mode?: 'new' | 'edited' | 'deleted';
+	membershipCount?: number;
 };
 
 const originalParentIds = ref<string[]>([]);
 const originalChildIds = ref<string[]>([]);
+const originalPosts = ref<
+	Pick<Post, 'id' | 'role' | 'start_date' | 'end_date'>[]
+>([]);
 const originalLinks = ref<Pick<Link, 'id' | 'note' | 'url'>[]>([]);
 
 const { data: organizationData, refresh: refreshOrganizationDetail } =
@@ -55,6 +71,22 @@ const { data: organizationData, refresh: refreshOrganizationDetail } =
 						name: true,
 						classification: true,
 					},
+					posts: {
+						__args: {
+							sort: [{ end_date: 'DESC' }, { start_date: 'DESC' }],
+						},
+						id: true,
+						role: true,
+						start_date: true,
+						end_date: true,
+						membershipsConnection: {
+							aggregate: {
+								count: {
+									nodes: true,
+								},
+							},
+						},
+					},
 					links: {
 						id: true,
 						note: true,
@@ -70,9 +102,17 @@ const { data: organizationData, refresh: refreshOrganizationDetail } =
 
 			originalParentIds.value = organization.parents.map((parent) => parent.id);
 			originalChildIds.value = organization.children.map((child) => child.id);
+			originalPosts.value = JSON.parse(JSON.stringify(organization.posts));
 			originalLinks.value = JSON.parse(JSON.stringify(organization.links));
 
-			return organization;
+			return {
+				...organization,
+				posts: organization.posts.map((post) => ({
+					...post,
+					membershipCount:
+						post.membershipsConnection?.aggregate?.count?.nodes ?? 0,
+				})),
+			};
 		},
 	);
 
@@ -85,6 +125,13 @@ useHead({
 
 const selectedParentIds = ref<string[]>([]);
 const selectedChildIds = ref<string[]>([]);
+const organizationPosts = computed<OrganizationPost[] | null>({
+	get: () => organizationData.value?.posts ?? null,
+	set: (value) => {
+		if (!organizationData.value) return;
+		organizationData.value.posts = value ?? [];
+	},
+});
 
 watch(
 	() => organizationData.value?.parents,
@@ -220,6 +267,29 @@ const saveChanges = async () => {
 			},
 		});
 
+		const activePosts = organizationData.value.posts.filter(
+			(post) => post.mode !== 'deleted',
+		);
+		const postsToCreate = activePosts.filter(
+			(post) =>
+				post.mode === 'new' ||
+				!originalPosts.value.some((orig) => orig.id === post.id),
+		);
+		const postsToUpdate = activePosts.filter((post) => {
+			const original = originalPosts.value.find((orig) => orig.id === post.id);
+			if (!original) return false;
+
+			return (
+				post.mode === 'edited' ||
+				post.role !== original.role ||
+				post.start_date !== original.start_date ||
+				post.end_date !== original.end_date
+			);
+		});
+		const postsToDelete = originalPosts.value.filter(
+			(orig) => !activePosts.some((post) => post.id === orig.id),
+		);
+
 		const linksToCreate = organizationData.value.links.filter(
 			(link) => !link.id,
 		);
@@ -231,6 +301,74 @@ const saveChanges = async () => {
 		);
 
 		await Promise.all([
+			...postsToCreate.map((post) =>
+				graphqlClient.mutation({
+					createPosts: {
+						__args: {
+							input: [
+								{
+									role: post.role,
+									start_date: post.start_date,
+									end_date: post.end_date,
+									organizations: {
+										connect: [
+											{
+												where: {
+													node: {
+														id: { eq: organizationData.value?.id },
+													},
+												},
+											},
+										],
+									},
+								},
+							],
+						},
+						posts: { id: true },
+					},
+				}),
+			),
+			...postsToUpdate.map((post) =>
+				graphqlClient.mutation({
+					updatePosts: {
+						__args: {
+							where: { id: { eq: post.id } },
+							update: {
+								role: { set: post.role },
+								start_date: { set: post.start_date },
+								end_date: { set: post.end_date },
+							},
+						},
+						posts: { id: true },
+					},
+				}),
+			),
+			...postsToDelete.map((post) =>
+				graphqlClient.mutation({
+					deletePosts: {
+						__args: {
+							where: { id: { eq: post.id } },
+							delete: {
+								memberships: [
+									{
+										where: {
+											node: {
+												posts: {
+													single: {
+														id: { eq: post.id },
+													},
+												},
+											},
+										},
+									},
+								],
+							},
+						},
+						nodesDeleted: true,
+						relationshipsDeleted: true,
+					},
+				}),
+			),
 			...linksToCreate.map((link) =>
 				graphqlClient.mutation({
 					createLinks: {
@@ -337,7 +475,9 @@ const saveChanges = async () => {
 				/>
 			</div>
 
-			<div class="basis-2/4" />
+			<div class="basis-2/4">
+				<PeoplePosts v-model:posts="organizationPosts" />
+			</div>
 		</div>
 	</form>
 </template>
