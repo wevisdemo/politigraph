@@ -398,10 +398,17 @@ const saveChanges = async () => {
 			...setMembershipMutation(),
 		]);
 		await refreshPeopleDetail();
-		openSuccessToastNotification();
+		toast.show({
+			kind: 'success',
+			title: 'ข้อมูลถูกบันทึกเรียบร้อย',
+		});
 	} catch (error) {
 		console.error('Failed to save changes:', error);
-		openFailureToastNotification();
+		toast.show({
+			kind: 'warning',
+			title: 'เกิดข้อผิดพลาดในการบันทึกข้อมูล',
+			subTitle: 'กรุณาลองใหม่อีกครั้ง',
+		});
 	}
 };
 
@@ -432,30 +439,15 @@ const togglePublishStatus = async () => {
 	});
 
 	if (updatePeople.people) {
-		openSuccessToastNotification();
+		toast.show({
+			kind: 'success',
+			title: 'ข้อมูลถูกบันทึกเรียบร้อย',
+		});
 		refreshPeopleDetail();
 	}
 };
 
-const isShowSuccessNotification = ref(false);
-const openSuccessToastNotification = () => {
-	isShowSuccessNotification.value = false;
-	isShowSuccessNotification.value = true;
-
-	setTimeout(() => {
-		isShowSuccessNotification.value = false;
-	}, 5000);
-};
-
-const isShowFailureNotification = ref(false);
-const openFailureToastNotification = () => {
-	isShowFailureNotification.value = false;
-	isShowFailureNotification.value = true;
-
-	setTimeout(() => {
-		isShowFailureNotification.value = false;
-	}, 5000);
-};
+const toast = useToastNotification();
 
 const { data: organizationsOptions } = await useAsyncData(
 	'organizations-with-posts',
@@ -516,22 +508,7 @@ watch(
 		<cv-breadcrumb-item>{{ peopleData?.name }}</cv-breadcrumb-item>
 	</cv-breadcrumb>
 
-	<cv-toast-notification
-		v-if="isShowSuccessNotification"
-		kind="success"
-		title="ข้อมูลถูกบันทึกเรียบร้อย"
-		@close="isShowSuccessNotification = false"
-		class="top-15 fixed right-1 z-50"
-	/>
-
-	<cv-toast-notification
-		v-if="isShowFailureNotification"
-		title="เกิดข้อผิดพลาดในการบันทึกข้อมูล"
-		kind="warning"
-		@close="isShowFailureNotification = false"
-		subTitle="กรุณาลองใหม่อีกครั้ง"
-		class="top-15 fixed right-1 z-50"
-	/>
+	<ToastNotification :notification="toast.notification" @close="toast.hide" />
 
 	<div class="flex flex-wrap justify-between">
 		<div class="flex flex-wrap items-center gap-4">

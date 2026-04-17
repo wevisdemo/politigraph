@@ -13,7 +13,7 @@ definePageMeta({
 const route = useRoute();
 const graphqlClient = useGraphqlClient();
 
-const isShowSuccessNotification = ref(false);
+const successToast = useToastNotification();
 
 const { data: voteEventData, refresh: refreshVoteEvent } =
 	await useLazyAsyncData(async () => {
@@ -213,7 +213,10 @@ const voteEventFormInput = useForm({
 			),
 		);
 
-		openSuccessToastNotification();
+		successToast.show({
+			kind: 'success',
+			title: 'ข้อมูลถูกบันทึกเรียบร้อย',
+		});
 		refreshVoteEvent();
 	},
 });
@@ -275,18 +278,12 @@ async function togglePublishStatus() {
 	});
 
 	if (updateVoteEvents.voteEvents) {
-		openSuccessToastNotification();
+		successToast.show({
+			kind: 'success',
+			title: 'ข้อมูลถูกบันทึกเรียบร้อย',
+		});
 		refreshVoteEvent();
 	}
-}
-
-function openSuccessToastNotification() {
-	isShowSuccessNotification.value = false;
-	isShowSuccessNotification.value = true;
-
-	setTimeout(() => {
-		isShowSuccessNotification.value = false;
-	}, 5000);
 }
 </script>
 
@@ -541,11 +538,8 @@ function openSuccessToastNotification() {
 		</div>
 	</form>
 
-	<cv-toast-notification
-		v-if="isShowSuccessNotification"
-		kind="success"
-		title="ข้อมูลถูกบันทึกเรียบร้อย"
-		@close="isShowSuccessNotification = false"
-		class="fixed right-[4px] top-[60px] z-50"
+	<ToastNotification
+		:notification="successToast.notification"
+		@close="successToast.hide"
 	/>
 </template>

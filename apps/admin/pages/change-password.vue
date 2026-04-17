@@ -16,15 +16,14 @@ const confirmNewPassword = ref('');
 const isErrorPassword = ref('');
 const isErrorNewPassword = ref('');
 const isErrorConfirmNewPassword = ref('');
-const errorMsg = ref('');
-const isShowErrorMsg = ref(false);
+const toast = useToastNotification();
 const isSuccessChangePassword = ref(false);
 
 const changepassword = async () => {
 	isErrorPassword.value = '';
 	isErrorNewPassword.value = '';
 	isErrorConfirmNewPassword.value = '';
-	isShowErrorMsg.value = false;
+	toast.hide();
 
 	if (currentPassword.value == '') {
 		isErrorPassword.value = 'Please enter current password';
@@ -56,8 +55,11 @@ const changepassword = async () => {
 				isSuccessChangePassword.value = true;
 			},
 			onError: () => {
-				isShowErrorMsg.value = true;
-				errorMsg.value = 'Double-check your current password and try again.';
+				toast.show({
+					kind: 'error',
+					title: 'Incorrect Password',
+					subTitle: 'Double-check your current password and try again.',
+				});
 			},
 		},
 	);
@@ -113,14 +115,10 @@ const signout = async () => {
 				>
 					<template v-if="isErrorConfirmNewPassword" v-slot:invalid-message />
 				</cv-text-input>
-				<cv-toast-notification
-					kind="error"
-					title="Incorrect Password"
-					:subTitle="errorMsg"
-					@close="isShowErrorMsg = false"
-					v-if="isShowErrorMsg"
-				>
-				</cv-toast-notification>
+				<ToastNotification
+					:notification="toast.notification"
+					@close="toast.hide"
+				/>
 				<cv-button class="w-full max-w-full">Change Password</cv-button>
 			</cv-form>
 		</template>

@@ -21,11 +21,7 @@ const graphqlClient = useGraphqlClient();
 const isSaving = ref(false);
 const isShowBatchNameCorrectionModal = ref(false);
 const isShowNotificationError = ref(false);
-const isShowNotification = ref(false);
-const titleNotification = ref({
-	title: '',
-	subtitle: '',
-});
+const successToast = useToastNotification();
 const originalVotesMap = ref<Record<string, Partial<Vote>>>({});
 const originalCount = reactive<
 	Record<
@@ -325,10 +321,6 @@ async function onSaveChanges() {
 		}
 
 		const rowChange = rowsToPatch.length + toDeleteIds.value.size;
-		titleNotification.value.title = 'Changes Saved';
-		titleNotification.value.subtitle = rowChange
-			? `Changes to ${rowChange} rows have been saved.`
-			: '';
 
 		// reset state
 		editedRows.value.clear();
@@ -337,10 +329,13 @@ async function onSaveChanges() {
 		activeEditingCell.value = { columnId: null, rowId: null };
 		await refresh();
 
-		isShowNotification.value = true;
-		setTimeout(() => {
-			isShowNotification.value = false;
-		}, 5000);
+		successToast.show({
+			kind: 'success',
+			title: 'Changes Saved',
+			subTitle: rowChange
+				? `Changes to ${rowChange} rows have been saved.`
+				: '',
+		});
 	} catch (error) {
 		console.error('Error saving changes:', error);
 	} finally {
@@ -376,12 +371,11 @@ async function togglePublishStatus() {
 }
 
 function showRowDeleteNotification(count: number) {
-	titleNotification.value.title = `${count} row(s) will be deleted`;
-	titleNotification.value.subtitle = `Don't save changes if you want to undo this.`;
-	isShowNotification.value = true;
-	setTimeout(() => {
-		isShowNotification.value = false;
-	}, 3000);
+	successToast.show({
+		kind: 'success',
+		title: `${count} row(s) will be deleted`,
+		subTitle: `Don't save changes if you want to undo this.`,
+	});
 }
 
 function scrollToRow(id: string) {
@@ -408,13 +402,9 @@ function scrollToRow(id: string) {
 			<cv-breadcrumb-item>Votes</cv-breadcrumb-item>
 		</cv-breadcrumb>
 
-		<cv-toast-notification
-			v-if="isShowNotification"
-			kind="success"
-			:title="titleNotification.title"
-			:subTitle="titleNotification.subtitle"
-			@close="isShowNotification = false"
-			class="fixed right-[4px] top-[60px] z-50"
+		<ToastNotification
+			:notification="successToast.notification"
+			@close="successToast.hide"
 		/>
 
 		<VoteEventHeader

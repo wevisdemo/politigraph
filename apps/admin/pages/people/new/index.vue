@@ -41,28 +41,7 @@ const cabinetMemberships = ref([]);
 
 const router = useRouter();
 const graphqlClient = useGraphqlClient();
-const isShowSuccessNotification = ref(false);
-const isShowFailureNotification = ref(false);
-const failMessage = ref('');
-
-const openSuccessToastNotification = () => {
-	isShowSuccessNotification.value = false;
-	isShowSuccessNotification.value = true;
-
-	setTimeout(() => {
-		isShowSuccessNotification.value = false;
-	}, 5000);
-};
-
-const openFailureToastNotification = (message: string) => {
-	failMessage.value = message;
-	isShowFailureNotification.value = false;
-	isShowFailureNotification.value = true;
-
-	setTimeout(() => {
-		isShowFailureNotification.value = false;
-	}, 5000);
-};
+const toast = useToastNotification();
 
 const savePeople = async () => {
 	const mandatoryFields = [
@@ -74,9 +53,11 @@ const savePeople = async () => {
 	const emptyFields = mandatoryFields.filter((f) => !f.value?.trim());
 
 	if (emptyFields.length > 0) {
-		openFailureToastNotification(
-			`กรุณากรอก: ${emptyFields.map((f) => f.name).join(', ')}`,
-		);
+		toast.show({
+			kind: 'warning',
+			title: 'เกิดข้อผิดพลาดในการบันทึกข้อมูล',
+			subTitle: `กรุณากรอก: ${emptyFields.map((f) => f.name).join(', ')}`,
+		});
 		return;
 	}
 
@@ -133,11 +114,18 @@ const savePeople = async () => {
 		await Promise.all(createLinksPromises);
 
 		console.log('New person created successfully:', newPersonId);
-		openSuccessToastNotification();
+		toast.show({
+			kind: 'success',
+			title: 'ข้อมูลถูกบันทึกเรียบร้อย',
+		});
 		router.push(`/admin/people/${newPersonId}`);
 	} catch (error) {
 		console.error('Failed to create new person:', error);
-		openFailureToastNotification('กรุณาลองใหม่อีกครั้ง');
+		toast.show({
+			kind: 'warning',
+			title: 'เกิดข้อผิดพลาดในการบันทึกข้อมูล',
+			subTitle: 'กรุณาลองใหม่อีกครั้ง',
+		});
 	}
 };
 </script>
@@ -148,22 +136,7 @@ const savePeople = async () => {
 		<cv-breadcrumb-item><a href="/admin/people">People</a></cv-breadcrumb-item>
 	</cv-breadcrumb>
 
-	<cv-toast-notification
-		v-if="isShowSuccessNotification"
-		kind="success"
-		title="ข้อมูลถูกบันทึกเรียบร้อย"
-		@close="isShowSuccessNotification = false"
-		class="fixed right-1 top-[60px] z-50"
-	/>
-
-	<cv-toast-notification
-		v-if="isShowFailureNotification"
-		title="เกิดข้อผิดพลาดในการบันทึกข้อมูล"
-		kind="warning"
-		@close="isShowFailureNotification = false"
-		:subTitle="failMessage"
-		class="fixed right-1 top-[60px] z-50"
-	/>
+	<ToastNotification :notification="toast.notification" @close="toast.hide" />
 
 	<div class="flex flex-wrap justify-between">
 		<h1 class="mb-8 mt-4 font-normal">

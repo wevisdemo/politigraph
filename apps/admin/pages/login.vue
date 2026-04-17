@@ -11,17 +11,15 @@ const email = ref('');
 const password = ref('');
 const isErrorEmail = ref('');
 const isErrorPassword = ref('');
-const errorMsg = ref('');
 const logoutTime = ref('');
-const isShowErrorMsg = ref(false);
-const isShowLogoutMsg = ref(false);
+const toast = useToastNotification();
 
 const { signIn } = useAuthClient();
 
 const login = async () => {
 	isErrorEmail.value = '';
 	isErrorPassword.value = '';
-	isShowErrorMsg.value = false;
+	toast.hide();
 
 	if (email.value == '') {
 		isErrorEmail.value = 'Please enter email address';
@@ -40,8 +38,11 @@ const login = async () => {
 		},
 		{
 			onError: (ctx) => {
-				isShowErrorMsg.value = true;
-				errorMsg.value = ctx.error.message;
+				toast.show({
+					kind: 'error',
+					title: 'Error',
+					subTitle: ctx.error.message,
+				});
 			},
 		},
 	);
@@ -57,7 +58,12 @@ onMounted(async () => {
 			minute: 'numeric',
 			hour12: true,
 		});
-		isShowLogoutMsg.value = true;
+		toast.show({
+			kind: 'success',
+			title: 'Logged Out',
+			subTitle: 'You have been successfully logged out.',
+			caption: logoutTime.value,
+		});
 		localStorage.removeItem('isLogout');
 	}
 });
@@ -102,25 +108,7 @@ onMounted(async () => {
 		</div>
 	</div>
 
-	<cv-toast-notification
-		kind="error"
-		title="Error"
-		:subTitle="errorMsg"
-		@close="isShowErrorMsg = false"
-		v-if="isShowErrorMsg"
-	>
-	</cv-toast-notification>
-
-	<cv-toast-notification
-		v-if="isShowLogoutMsg"
-		kind="success"
-		title="Logged Out"
-		subTitle="You have been successfully logged out."
-		:caption="logoutTime"
-		@close="isShowLogoutMsg = false"
-		class="absolute bottom-0 right-0 z-10"
-	>
-	</cv-toast-notification>
+	<ToastNotification :notification="toast.notification" @close="toast.hide" />
 </template>
 
 <style scoped>
