@@ -36,6 +36,7 @@ export default defineNuxtConfig({
 			? {
 					'/auth/**': { proxy: 'http://localhost:3000/auth/**' },
 					'/graphql': { proxy: 'http://localhost:3000/graphql' },
+					'/upload-image': { proxy: 'http://localhost:3000/upload-image' },
 				}
 			: {},
 	runtimeConfig: {

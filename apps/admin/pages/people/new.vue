@@ -42,6 +42,8 @@ const router = useRouter();
 const graphqlClient = useGraphqlClient();
 const toast = useToastNotification();
 
+const { images, preview, upload } = useImageUpload();
+
 const savePeople = async () => {
 	const mandatoryFields = [
 		{ value: peopleDetailData.value.prefix, name: 'Title' },
@@ -56,6 +58,27 @@ const savePeople = async () => {
 			kind: 'warning',
 			title: 'เกิดข้อผิดพลาดในการบันทึกข้อมูล',
 			subTitle: `กรุณากรอก: ${emptyFields.map((f) => f.name).join(', ')}`,
+		});
+		return;
+	}
+
+	try {
+		const { firstname, middlename, lastname } = peopleDetailData.value;
+
+		const imageUrl = await upload(
+			middlename
+				? `${firstname}-${middlename}-${lastname}`
+				: `${firstname}-${lastname}`,
+			'people',
+		);
+
+		if (imageUrl) {
+			peopleDetailData.value.image = imageUrl;
+		}
+	} catch (error) {
+		toast.show({
+			kind: 'warning',
+			title: 'เกิดข้อผิดพลาดในการอัปโหลดรูปภาพ',
 		});
 		return;
 	}
@@ -77,7 +100,7 @@ const savePeople = async () => {
 							birth_date: peopleDetailData.value.birth_date,
 							educations: peopleDetailData.value.educations,
 							previous_occupations: peopleDetailData.value.previous_occupations,
-							image: peopleDetailData.value.image,
+							image: null,
 							publish_status: enumPublishStatus.UNPUBLISHED,
 						},
 					],
@@ -156,7 +179,11 @@ const savePeople = async () => {
 		</div>
 	</div>
 	<div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
-		<PeopleDetail v-model="peopleDetailData" />
+		<PeopleDetail
+			v-model="peopleDetailData"
+			:preview="preview"
+			v-model:images="images"
+		/>
 		<div class="flex flex-col gap-6">
 			<PeopleMemberDetail
 				title="Party"

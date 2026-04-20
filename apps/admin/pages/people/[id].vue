@@ -17,6 +17,8 @@ definePageMeta({
 const route = useRoute();
 const graphqlClient = useGraphqlClient();
 
+const { images, preview, upload } = useImageUpload();
+
 useHead({
 	title: 'People | Politigraph Admin',
 });
@@ -304,6 +306,27 @@ const saveChanges = async () => {
 	if (!peopleData.value) return;
 
 	try {
+		try {
+			const { firstname, middlename, lastname } = peopleData.value;
+
+			const imageUrl = await upload(
+				middlename
+					? `${firstname}-${middlename}-${lastname}`
+					: `${firstname}-${lastname}`,
+				'people',
+			);
+
+			if (imageUrl) {
+				peopleData.value.image = imageUrl;
+			}
+		} catch {
+			toast.show({
+				kind: 'warning',
+				title: 'เกิดข้อผิดพลาดในการอัปโหลดรูปภาพ',
+			});
+			return;
+		}
+
 		await graphqlClient.mutation({
 			updatePeople: {
 				__args: {
@@ -324,7 +347,7 @@ const saveChanges = async () => {
 						previous_occupations: {
 							set: peopleData.value?.previous_occupations,
 						},
-						image: { set: peopleData.value?.image },
+						image: { set: peopleData.value.image },
 					},
 				},
 				people: {
@@ -532,7 +555,11 @@ watch(
 	</div>
 
 	<div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
-		<PeopleDetail v-model="peopleData" />
+		<PeopleDetail
+			v-model="peopleData"
+			:preview="preview"
+			v-model:images="images"
+		/>
 		<div v-if="peopleData" class="flex flex-col gap-6">
 			<PeopleMembershipList
 				v-model:memberships="editableMemberships"
