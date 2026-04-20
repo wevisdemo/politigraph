@@ -1,6 +1,7 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { Elysia, t } from 'elysia';
+import { transform } from 'imgkit';
 import { getJwtToken } from '../utils/auth';
 
 const UPLOAD_BASE_DIR = 'uploads';
@@ -23,12 +24,16 @@ export const upload = (origin: string) =>
 				return 'No filename provided';
 			}
 
-			const filePath = join(uploadPath, filename);
-			const arrayBuffer = await file.arrayBuffer();
-			const buffer = Buffer.from(arrayBuffer);
-			await writeFile(filePath, buffer);
+			const inputBuffer = Buffer.from(await file.arrayBuffer());
+			const outputBuffer = await transform(inputBuffer, {
+				output: { format: 'webp', webp: { quality: 90 } },
+			});
 
-			return filename;
+			const outputFilename = `${filename}.webp`;
+			const filePath = join(uploadPath, outputFilename);
+			await writeFile(filePath, outputBuffer);
+
+			return outputFilename;
 		},
 		{
 			body: t.Object({

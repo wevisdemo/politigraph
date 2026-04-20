@@ -43,18 +43,10 @@ export function useImageUpload() {
 		if (images.value.length === 0 || !images.value[0].file) return null;
 
 		const originalFile = images.value[0].file;
-		let finalFilename = filename;
-
-		if (filename && !filename.includes('.')) {
-			const dotIndex = originalFile.name?.lastIndexOf('.');
-			if (dotIndex && dotIndex > 0) {
-				finalFilename = `${filename}.${originalFile.name!.substring(dotIndex + 1)}`;
-			}
-		}
 
 		const formData = new FormData();
 		formData.append('file', originalFile);
-		formData.append('filename', finalFilename);
+		formData.append('filename', filename);
 		formData.append('path', path);
 
 		isUploading.value = true;
