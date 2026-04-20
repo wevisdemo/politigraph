@@ -1,6 +1,6 @@
 import { ref, watch } from 'vue';
 
-interface FileItem {
+export interface FileItem {
 	file: File;
 	status: string;
 }
@@ -66,10 +66,9 @@ export function useImageUpload() {
 
 		isUploading.value = false;
 
-		if (response.ok) {
-			return `${config.public.baseUrl}/assets/${path}/${finalFilename}`;
-		}
-		return null;
+		return response.ok
+			? `${config.public.baseUrl}/assets/${path}/${await response.text()}`
+			: null;
 	}
 
 	return {

@@ -2,7 +2,7 @@
 // @ts-ignore
 import { UserFilled32 } from '@carbon/icons-vue';
 import { enumGender, type Gender, type Link } from '@politigraph/graphql/genql';
-import LinksForm from '~/components/LinksForm.vue';
+import type { FileItem } from '~/composables/use-image-upload';
 import { formatDate, parseDate } from '~/utils/date';
 
 export interface PeopleDetailProps {
@@ -30,7 +30,7 @@ const props = defineProps<{
 	preview?: string | null;
 }>();
 
-const images = defineModel<any[]>('images', { default: [] });
+const images = defineModel<FileItem[]>('images', { required: true });
 
 const birthDateLocal = ref<Date | null>(
 	parseDate(modelValue.value?.birth_date ?? null),
@@ -49,8 +49,6 @@ watch(
 );
 
 const genderOptions = Object.values(enumGender);
-
-const imageUrl = computed(() => props.preview || modelValue.value?.image);
 </script>
 
 <template>
@@ -60,30 +58,11 @@ const imageUrl = computed(() => props.preview || modelValue.value?.image);
 			<cv-number-input-skeleton v-for="i in 9" :key="i" />
 		</template>
 		<template v-else>
-			<div class="flex flex-row gap-4">
-				<div
-					class="flex size-32 flex-none items-center justify-center rounded-full border border-gray-400 bg-[#F4F4F4]"
-				>
-					<img
-						v-if="imageUrl"
-						:src="imageUrl"
-						class="size-32 rounded-full object-cover"
-					/>
-					<UserFilled32
-						v-else
-						class="text-[#A8A8A8]"
-						style="width: 48px; height: 48px"
-					/>
-				</div>
-				<cv-file-uploader
-					v-model="images"
-					accept=".jpg,.png,.webp"
-					:multiple="false"
-					label="Image"
-					helperText="อัปโหลดรูปภาพ"
-				>
-				</cv-file-uploader>
-			</div>
+			<UploadedImageDisplay
+				:image-url="props.preview || modelValue?.image"
+				:placeholder-icon="UserFilled32"
+				v-model="images"
+			/>
 			<cv-text-input
 				v-model="modelValue.prefix"
 				label="Title*"

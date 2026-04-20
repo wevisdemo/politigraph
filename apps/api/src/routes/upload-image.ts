@@ -28,7 +28,7 @@ export const upload = (origin: string) =>
 			const buffer = Buffer.from(arrayBuffer);
 			await writeFile(filePath, buffer);
 
-			return 'Success';
+			return filename;
 		},
 		{
 			body: t.Object({

@@ -17,6 +17,8 @@ const route = useRoute();
 const graphqlClient = useGraphqlClient();
 const organizationId = route.params.id as string;
 
+const { images, preview, upload } = useImageUpload();
+
 type OrganizationRelation = Pick<
 	Organization,
 	'id' | 'name' | 'classification'
@@ -181,6 +183,20 @@ const saveChanges = async () => {
 	if (!organizationData.value) return;
 
 	try {
+		const imageUrl = await upload(organizationData.value.name, 'organizations');
+
+		if (imageUrl) {
+			organizationData.value.image = imageUrl;
+		}
+	} catch {
+		toast.show({
+			kind: 'warning',
+			title: 'เกิดข้อผิดพลาดในการอัปโหลดรูปภาพ',
+		});
+		return;
+	}
+
+	try {
 		const nextParentIds = selectedParentIds.value.filter(
 			(id) => id && id !== organizationData.value?.id,
 		);
@@ -207,6 +223,7 @@ const saveChanges = async () => {
 						founding_date: { set: organizationData.value.founding_date },
 						dissolution_date: { set: organizationData.value.dissolution_date },
 						color: { set: organizationData.value.color },
+						image: { set: organizationData.value.image },
 						parents: [
 							{
 								connect: parentConnectIds.length
@@ -471,7 +488,9 @@ const saveChanges = async () => {
 					v-model="organizationData"
 					v-model:selected-parent-ids="selectedParentIds"
 					v-model:selected-child-ids="selectedChildIds"
+					v-model:images="images"
 					:organization-options="organizationOptions"
+					:preview="preview"
 				/>
 			</div>
 
