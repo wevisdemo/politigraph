@@ -27,6 +27,7 @@
 		"radash": "^12.1.0",
 		"tailwindcss": "^4.0.0",
 		"vue": "latest",
+		"vue-advanced-cropper": "^2.8.9",
 		"vue-pick-colors": "^1.8.0",
 		"vue-router": "latest"
 	},

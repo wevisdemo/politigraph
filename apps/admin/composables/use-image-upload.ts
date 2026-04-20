@@ -1,62 +1,42 @@
-import { ref, watch } from 'vue';
-
-export interface FileItem {
-	file: File;
-	status: string;
-}
+import { ref } from 'vue';
 
 export function useImageUpload() {
-	const images = ref<FileItem[]>([]);
-	const preview = ref<string | null>(null);
-	const isUploading = ref(false);
+	const imageBlob = ref<Blob | null>(null);
+	const previewImage = ref<string | null>(null);
 
 	const config = useRuntimeConfig();
 
-	watch(
-		images,
-		(newFiles) => {
-			if (preview.value) {
-				URL.revokeObjectURL(preview.value);
-			}
-			if (newFiles.length > 0 && newFiles[0].file) {
-				preview.value = URL.createObjectURL(newFiles[0].file);
-			} else {
-				preview.value = null;
-			}
-		},
-		{ deep: true },
-	);
+	function setImageBlob(blob: Blob) {
+		if (previewImage.value) {
+			URL.revokeObjectURL(previewImage.value);
+		}
+		imageBlob.value = blob;
+		previewImage.value = URL.createObjectURL(blob);
+	}
 
 	function reset() {
-		if (preview.value) {
-			URL.revokeObjectURL(preview.value);
+		if (previewImage.value) {
+			URL.revokeObjectURL(previewImage.value);
 		}
-		images.value = [];
-		preview.value = null;
-		isUploading.value = false;
+		imageBlob.value = null;
+		previewImage.value = null;
 	}
 
 	async function upload(
 		filename: string,
-		path: string = 'people',
+		path: string = '',
 	): Promise<string | null> {
-		if (images.value.length === 0 || !images.value[0].file) return null;
-
-		const originalFile = images.value[0].file;
+		if (!imageBlob.value) return null;
 
 		const formData = new FormData();
-		formData.append('file', originalFile);
+		formData.append('file', imageBlob.value);
 		formData.append('filename', filename);
 		formData.append('path', path);
-
-		isUploading.value = true;
 
 		const response = await fetch(`${config.public.baseUrl}/upload-image`, {
 			method: 'POST',
 			body: formData,
 		});
-
-		isUploading.value = false;
 
 		return response.ok
 			? `${config.public.baseUrl}/assets/${path}/${await response.text()}`
@@ -64,9 +44,9 @@ export function useImageUpload() {
 	}
 
 	return {
-		images,
-		preview,
-		isUploading,
+		previewImage,
+		imageBlob,
+		setImageBlob,
 		upload,
 		reset,
 	};

@@ -2,7 +2,6 @@
 // @ts-ignore
 import { UserFilled32 } from '@carbon/icons-vue';
 import { enumGender, type Gender, type Link } from '@politigraph/graphql/genql';
-import type { FileItem } from '~/composables/use-image-upload';
 import { formatDate, parseDate } from '~/utils/date';
 
 export interface PeopleDetailProps {
@@ -27,10 +26,12 @@ export interface PeopleDetailProps {
 const modelValue = defineModel<PeopleDetailProps | null>();
 
 const props = defineProps<{
-	preview?: string | null;
+	previewImage?: string | null;
 }>();
 
-const images = defineModel<FileItem[]>('images', { required: true });
+defineEmits<{
+	(e: 'crop', blob: Blob): void;
+}>();
 
 const birthDateLocal = ref<Date | null>(
 	parseDate(modelValue.value?.birth_date ?? null),
@@ -59,9 +60,9 @@ const genderOptions = Object.values(enumGender);
 		</template>
 		<template v-else>
 			<UploadedImageDisplay
-				:image-url="props.preview || modelValue?.image"
+				:image-url="previewImage || modelValue?.image"
 				:placeholder-icon="UserFilled32"
-				v-model="images"
+				@crop="$emit('crop', $event)"
 			/>
 			<cv-text-input
 				v-model="modelValue.prefix"

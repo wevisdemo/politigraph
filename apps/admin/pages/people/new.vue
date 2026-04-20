@@ -42,7 +42,7 @@ const router = useRouter();
 const graphqlClient = useGraphqlClient();
 const toast = useToastNotification();
 
-const { images, preview, upload } = useImageUpload();
+const { setImageBlob, upload } = useImageUpload();
 
 const savePeople = async () => {
 	const mandatoryFields = [
@@ -179,11 +179,7 @@ const savePeople = async () => {
 		</div>
 	</div>
 	<div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
-		<PeopleDetail
-			v-model="peopleDetailData"
-			:preview="preview"
-			v-model:images="images"
-		/>
+		<PeopleDetail v-model="peopleDetailData" @crop="setImageBlob" />
 		<div class="flex flex-col gap-6">
 			<PeopleMemberDetail
 				title="Party"

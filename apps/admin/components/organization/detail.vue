@@ -7,7 +7,6 @@ import {
 	type Organization,
 	type OrganizationType,
 } from '@politigraph/graphql/genql';
-import type { FileItem } from '~/composables/use-image-upload';
 import { organizationTypeLabel } from '~/constants/organization';
 import { parseDate, serializeDate } from '~/utils/date';
 import PickColors from 'vue-pick-colors';
@@ -35,11 +34,14 @@ export interface OrganizationDetailProps extends Pick<
 const modelValue = defineModel<OrganizationDetailProps | null>();
 const selectedParentIds = defineModel<string[]>('selectedParentIds');
 const selectedChildIds = defineModel<string[]>('selectedChildIds');
-const images = defineModel<FileItem[]>('images', { required: true });
 
 const props = defineProps<{
 	organizationOptions: OrganizationOption[] | null;
-	preview?: string | null;
+	previewImage?: string | null;
+}>();
+
+defineEmits<{
+	(e: 'crop', blob: Blob): void;
 }>();
 
 const getSelectedOrganizationLabels = (ids: string[] | undefined) =>
@@ -127,9 +129,9 @@ const organizationTypeOptions = Object.values(enumOrganizationType).map(
 
 		<template v-else>
 			<UploadedImageDisplay
-				:image-url="props.preview || modelValue?.image"
+				:image-url="previewImage || modelValue?.image"
 				:placeholder-icon="Enterprise32"
-				v-model="images"
+				@crop="$emit('crop', $event)"
 			/>
 
 			<div class="flex items-center gap-3 text-[#525252]">

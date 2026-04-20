@@ -1,8 +1,14 @@
 <script setup lang="ts">
 // @ts-ignore
 import { UserFilled32 } from '@carbon/icons-vue';
-import type { FileItem } from '~/composables/use-image-upload';
 import type { Component } from 'vue';
+import { CircleStencil, Cropper } from 'vue-advanced-cropper';
+import 'vue-advanced-cropper/dist/style.css';
+
+export interface ImageFile {
+	file: File;
+	status: string;
+}
 
 const props = withDefaults(
 	defineProps<{
@@ -14,7 +20,44 @@ const props = withDefaults(
 	},
 );
 
-const images = defineModel<FileItem[]>({ default: [] });
+const emit = defineEmits<{
+	(e: 'crop', blob: Blob): void;
+}>();
+
+const files = ref<ImageFile[]>([]);
+const cropperRef = ref<InstanceType<typeof Cropper> | null>(null);
+const selectedFileUrl = ref<string | null>(null);
+
+watch(files, (newFiles) => {
+	if (newFiles.length > 0 && newFiles[0].file) {
+		selectedFileUrl.value = URL.createObjectURL(newFiles[0].file);
+	}
+});
+
+async function saveCroppedImage() {
+	if (!cropperRef.value) return;
+
+	const { canvas } = cropperRef.value.getResult();
+	if (!canvas) return;
+
+	const blob = await new Promise<Blob>((resolve, reject) => {
+		canvas.toBlob((b: Blob) => {
+			if (b) resolve(b);
+			else reject(new Error('Failed to create blob'));
+		}, 'image/jpeg');
+	});
+
+	emit('crop', blob);
+	clearSelectedFile();
+}
+
+function clearSelectedFile() {
+	if (selectedFileUrl.value) {
+		URL.revokeObjectURL(selectedFileUrl.value);
+		selectedFileUrl.value = null;
+	}
+	files.value = [];
+}
 </script>
 
 <template>
@@ -30,13 +73,41 @@ const images = defineModel<FileItem[]>({ default: [] });
 			<component :is="placeholderIcon" v-else class="size-12 text-[#A8A8A8]" />
 		</div>
 		<cv-file-uploader
-			v-model="images"
+			v-model="files"
 			accept=".jpg,.png,.webp"
 			:multiple="false"
 			label="Image"
 			helperText="อัปโหลดรูปภาพ"
 			removable
-		>
-		</cv-file-uploader>
+			clearOnReselect
+		/>
 	</div>
+
+	<ClientOnly>
+		<cv-modal
+			:visible="selectedFileUrl !== null"
+			autoHideOff
+			size="lg"
+			@primary-click="saveCroppedImage"
+			@secondary-click="clearSelectedFile"
+			@modal-hide-request="clearSelectedFile"
+		>
+			<template v-slot:title>Crop Image</template>
+			<template v-slot:content>
+				<div class="h-96 w-full">
+					<Cropper
+						ref="cropperRef"
+						:src="selectedFileUrl"
+						:stencil-component="CircleStencil"
+						:stencil-props="{
+							aspectRatio: 1,
+						}"
+						class="h-full w-full"
+					/>
+				</div>
+			</template>
+			<template v-slot:secondary-button>Cancel</template>
+			<template v-slot:primary-button>Save</template>
+		</cv-modal>
+	</ClientOnly>
 </template>

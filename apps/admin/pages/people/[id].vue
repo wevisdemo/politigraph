@@ -17,7 +17,7 @@ definePageMeta({
 const route = useRoute();
 const graphqlClient = useGraphqlClient();
 
-const { images, preview, upload } = useImageUpload();
+const { previewImage, setImageBlob, upload } = useImageUpload();
 
 useHead({
 	title: 'People | Politigraph Admin',
@@ -557,8 +557,8 @@ watch(
 	<div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
 		<PeopleDetail
 			v-model="peopleData"
-			:preview="preview"
-			v-model:images="images"
+			:preview-image="previewImage"
+			@crop="setImageBlob"
 		/>
 		<div v-if="peopleData" class="flex flex-col gap-6">
 			<PeopleMembershipList

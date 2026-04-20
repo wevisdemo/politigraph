@@ -17,7 +17,7 @@ const route = useRoute();
 const graphqlClient = useGraphqlClient();
 const organizationId = route.params.id as string;
 
-const { images, preview, upload } = useImageUpload();
+const { previewImage, setImageBlob, upload } = useImageUpload();
 
 type OrganizationRelation = Pick<
 	Organization,
@@ -488,9 +488,9 @@ const saveChanges = async () => {
 					v-model="organizationData"
 					v-model:selected-parent-ids="selectedParentIds"
 					v-model:selected-child-ids="selectedChildIds"
-					v-model:images="images"
 					:organization-options="organizationOptions"
-					:preview="preview"
+					:preview-image="previewImage"
+					@crop="setImageBlob"
 				/>
 			</div>
 
