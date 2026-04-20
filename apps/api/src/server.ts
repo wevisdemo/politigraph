@@ -3,6 +3,7 @@ import { auth } from '@politigraph/auth/auth';
 import { initNeo4jGraphql } from '@politigraph/graphql/neo4j-graphql';
 import { Elysia, type Context } from 'elysia';
 import { apollo } from './routes/graphql';
+import { upload } from './routes/upload-image';
 import { getJwtToken } from './utils/auth';
 import { triggerPlausiblePageview } from './utils/plausible';
 
@@ -51,6 +52,7 @@ const app = new Elysia()
 			},
 		}),
 	)
+	.use(upload(origin))
 	.all('/auth/*', (ctx) => auth.handler(ctx.request));
 
 if (process.env.NODE_ENV !== 'production') {
