@@ -2,8 +2,9 @@ import { ApolloArmor } from '@escape.tech/graphql-armor';
 import { auth } from '@politigraph/auth/auth';
 import { initNeo4jGraphql } from '@politigraph/graphql/neo4j-graphql';
 import { Elysia, type Context } from 'elysia';
-import { apollo } from './apollo';
-import { triggerPlausiblePageview } from './plausible';
+import { apollo } from './routes/graphql';
+import { getJwtToken } from './utils/auth';
+import { triggerPlausiblePageview } from './utils/plausible';
 
 const port = process.env.PORT ?? 3000;
 const origin = `http://127.0.0.1:${port}`;
@@ -36,26 +37,8 @@ const app = new Elysia()
 			allowBatchedHttpRequests: true,
 			maxBatching: 5,
 			introspection: true,
-			context: async ({ request: { headers } }: Context) => {
-				const apiKey = headers.get('x-api-key');
-				const cookie = headers.get('cookie');
-
-				if (!apiKey && !cookie?.includes('better-auth.session_token')) return;
-
-				const res = await auth.handler(
-					new Request(`${origin}/auth/token`, {
-						headers: apiKey
-							? {
-									'x-api-key': apiKey,
-								}
-							: ({ cookie } as { cookie: string }),
-					}),
-				);
-
-				if (res.ok) {
-					return res.json();
-				}
-			},
+			context: async ({ request: { headers } }) =>
+				(await getJwtToken(headers, origin)) ?? {},
 			onLandingPageRequested: ({ server, request }: Context) => {
 				const host = request.headers.get('host');
 
