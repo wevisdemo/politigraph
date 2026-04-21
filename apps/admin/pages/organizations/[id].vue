@@ -180,13 +180,18 @@ const { data: organizationOptions } = await useAsyncData(
 
 const toast = useToastNotification();
 
+function getOrganizationTypePlural(type: string): string {
+	const lower = type.toLowerCase().replaceAll('_', '-');
+	return lower.endsWith('y') ? lower.slice(0, -1) + 'ies' : lower + 's';
+}
+
 const saveChanges = async () => {
 	if (!organizationData.value) return;
 
 	try {
 		const imageUrl = await uploadImage(
 			organizationData.value.name,
-			'organizations',
+			`organizations/${getOrganizationTypePlural(organizationData.value.classification)}`,
 		);
 
 		if (imageUrl) {
