@@ -42,6 +42,7 @@ const props = defineProps<{
 
 defineEmits<{
 	(e: 'crop', blob: Blob): void;
+	(e: 'delete'): void;
 }>();
 
 const getSelectedOrganizationLabels = (ids: string[] | undefined) =>
@@ -150,6 +151,7 @@ const organizationTypeOptions = Object.values(enumOrganizationType).map(
 					}
 				"
 				@crop="$emit('crop', $event)"
+				@delete="$emit('delete')"
 			/>
 
 			<div class="flex items-center gap-3 text-[#525252]">

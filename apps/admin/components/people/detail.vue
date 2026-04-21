@@ -33,6 +33,7 @@ const props = defineProps<{
 
 defineEmits<{
 	(e: 'crop', blob: Blob): void;
+	(e: 'delete'): void;
 }>();
 
 const birthDateLocal = ref<Date | null>(
@@ -90,6 +91,7 @@ const genderOptions = Object.values(enumGender);
 					}
 				"
 				@crop="$emit('crop', $event)"
+				@delete="$emit('delete')"
 			/>
 			<cv-text-input
 				v-model="modelValue.prefix"

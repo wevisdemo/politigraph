@@ -14,7 +14,7 @@ export function useImageUpload() {
 		previewImage.value = URL.createObjectURL(blob);
 	}
 
-	function reset() {
+	function clearImage() {
 		if (previewImage.value) {
 			URL.revokeObjectURL(previewImage.value);
 		}
@@ -22,7 +22,7 @@ export function useImageUpload() {
 		previewImage.value = null;
 	}
 
-	async function upload(
+	async function uploadImage(
 		filename: string,
 		path: string = '',
 	): Promise<string | null> {
@@ -47,7 +47,7 @@ export function useImageUpload() {
 		previewImage,
 		imageBlob,
 		setImageBlob,
-		upload,
-		reset,
+		uploadImage,
+		clearImage,
 	};
 }

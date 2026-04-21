@@ -1,4 +1,6 @@
 <script setup lang="ts">
+// @ts-ignore
+import { TrashCan32 } from '@carbon/icons-vue';
 import type { Component } from 'vue';
 import { CircleStencil, Cropper } from 'vue-advanced-cropper';
 import type {
@@ -46,6 +48,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
 	(e: 'crop', blob: Blob): void;
+	(e: 'delete'): void;
 }>();
 
 const files = ref<ImageFile[]>([]);
@@ -87,13 +90,20 @@ function clearSelectedFile() {
 <template>
 	<div class="flex flex-row gap-4">
 		<div
-			class="flex size-32 flex-none items-center justify-center rounded-full border border-gray-400 bg-[#F4F4F4]"
+			class="group relative flex size-32 flex-none items-center justify-center rounded-full border border-gray-400 bg-[#F4F4F4]"
 		>
 			<img
 				v-if="imageUrl"
 				:src="imageUrl"
 				class="size-32 rounded-full object-cover"
 			/>
+			<button
+				v-if="imageUrl"
+				class="absolute inset-0 hidden cursor-pointer items-center justify-center rounded-full bg-black/50 group-hover:flex"
+				@click.stop="emit('delete')"
+			>
+				<TrashCan32 class="size-8 text-white" />
+			</button>
 			<component
 				v-else-if="placeholderIcon"
 				:is="placeholderIcon"

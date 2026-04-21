@@ -17,7 +17,8 @@ const route = useRoute();
 const graphqlClient = useGraphqlClient();
 const organizationId = route.params.id as string;
 
-const { previewImage, setImageBlob, upload } = useImageUpload();
+const { previewImage, setImageBlob, uploadImage, clearImage } =
+	useImageUpload();
 
 type OrganizationRelation = Pick<
 	Organization,
@@ -183,7 +184,10 @@ const saveChanges = async () => {
 	if (!organizationData.value) return;
 
 	try {
-		const imageUrl = await upload(organizationData.value.name, 'organizations');
+		const imageUrl = await uploadImage(
+			organizationData.value.name,
+			'organizations',
+		);
 
 		if (imageUrl) {
 			organizationData.value.image = imageUrl;
@@ -223,7 +227,9 @@ const saveChanges = async () => {
 						founding_date: { set: organizationData.value.founding_date },
 						dissolution_date: { set: organizationData.value.dissolution_date },
 						color: { set: organizationData.value.color },
-						image: { set: organizationData.value.image },
+						image: {
+							set: organizationData.value.image,
+						},
 						parents: [
 							{
 								connect: parentConnectIds.length
@@ -491,6 +497,13 @@ const saveChanges = async () => {
 					:organization-options="organizationOptions"
 					:preview-image="previewImage"
 					@crop="setImageBlob"
+					@delete="
+						() => {
+							if (!organizationData) return;
+							organizationData.image = null;
+							clearImage();
+						}
+					"
 				/>
 			</div>
 

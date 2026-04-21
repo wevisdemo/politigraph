@@ -17,7 +17,8 @@ definePageMeta({
 const route = useRoute();
 const graphqlClient = useGraphqlClient();
 
-const { previewImage, setImageBlob, upload } = useImageUpload();
+const { previewImage, setImageBlob, uploadImage, clearImage } =
+	useImageUpload();
 
 useHead({
 	title: 'People | Politigraph Admin',
@@ -309,7 +310,7 @@ const saveChanges = async () => {
 		try {
 			const { firstname, middlename, lastname } = peopleData.value;
 
-			const imageUrl = await upload(
+			const imageUrl = await uploadImage(
 				middlename
 					? `${firstname}-${middlename}-${lastname}`
 					: `${firstname}-${lastname}`,
@@ -347,7 +348,9 @@ const saveChanges = async () => {
 						previous_occupations: {
 							set: peopleData.value?.previous_occupations,
 						},
-						image: { set: peopleData.value.image },
+						image: {
+							set: peopleData.value.image,
+						},
 					},
 				},
 				people: {
@@ -559,6 +562,13 @@ watch(
 			v-model="peopleData"
 			:preview-image="previewImage"
 			@crop="setImageBlob"
+			@delete="
+				() => {
+					if (!peopleData) return;
+					peopleData.image = null;
+					clearImage();
+				}
+			"
 		/>
 		<div v-if="peopleData" class="flex flex-col gap-6">
 			<PeopleMembershipList
