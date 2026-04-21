@@ -13,9 +13,9 @@ RUN bun install --frozen-lockfile --ignore-scripts --production --no-cache
 COPY --from=prepare /app/out/full/ .
 RUN turbo build
 
-FROM gcr.io/distroless/base AS run
+FROM gcr.io/distroless/cc AS run
 ENV NODE_ENV=production
 WORKDIR /app
-COPY --from=build /app/apps/api/dist/server .
+COPY --from=build /app/apps/api/dist/ .
 
 CMD ["./server"]

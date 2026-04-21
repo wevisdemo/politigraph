@@ -3,13 +3,14 @@
 	"version": "1.0.0",
 	"scripts": {
 		"dev": "bun run --watch --no-clear-screen src/index.ts",
-		"build": "bun build --compile --minify-whitespace --minify-syntax --target bun --outfile dist/server src/index.ts"
+		"build": "bun build --compile --minify --outfile dist/server src/index.ts && cp node_modules/bun-image-turbo-linux-x64-gnu/*.node dist"
 	},
 	"dependencies": {
 		"@apollo/server": "^4.11.2",
 		"@escape.tech/graphql-armor": "^3.2.0",
 		"@politigraph/auth": "workspace:*",
 		"@politigraph/graphql": "workspace:*",
+		"bun-image-turbo-linux-x64-gnu": "^1.9.0",
 		"elysia": "^1.4.16",
 		"imgkit": "^2.2.1"
 	},
