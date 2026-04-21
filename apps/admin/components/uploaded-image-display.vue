@@ -1,8 +1,14 @@
 <script setup lang="ts">
-// @ts-ignore
-import { UserFilled32 } from '@carbon/icons-vue';
 import type { Component } from 'vue';
 import { CircleStencil, Cropper } from 'vue-advanced-cropper';
+import type {
+	AspectRatio,
+	Coordinates,
+	ImageSize,
+	Size,
+	SizeRestrictions,
+	VisibleArea,
+} from 'vue-advanced-cropper';
 import 'vue-advanced-cropper/dist/style.css';
 
 export interface ImageFile {
@@ -10,15 +16,33 @@ export interface ImageFile {
 	status: string;
 }
 
-const props = withDefaults(
-	defineProps<{
-		imageUrl?: string | null;
-		placeholderIcon?: Component;
-	}>(),
-	{
-		placeholderIcon: UserFilled32,
-	},
-);
+interface DefaultSizeParams {
+	boundaries: Size;
+	imageSize: ImageSize;
+	aspectRatio: AspectRatio;
+	sizeRestrictions: SizeRestrictions;
+	stencilSize: Size;
+	visibleArea: VisibleArea;
+}
+
+interface DefaultPositionParams {
+	coordinates: Coordinates;
+	imageSize: ImageSize;
+	visibleArea: VisibleArea;
+}
+
+type CropperSizeFn = (params: DefaultSizeParams) => Size;
+type CropperPositionFn = (params: DefaultPositionParams) => {
+	left: number;
+	top: number;
+};
+
+const props = defineProps<{
+	imageUrl?: string | null;
+	placeholderIcon?: Component;
+	cropperSize?: CropperSizeFn;
+	cropperPosition?: CropperPositionFn;
+}>();
 
 const emit = defineEmits<{
 	(e: 'crop', blob: Blob): void;
@@ -70,7 +94,11 @@ function clearSelectedFile() {
 				:src="imageUrl"
 				class="size-32 rounded-full object-cover"
 			/>
-			<component :is="placeholderIcon" v-else class="size-12 text-[#A8A8A8]" />
+			<component
+				v-else-if="placeholderIcon"
+				:is="placeholderIcon"
+				class="size-12 text-[#A8A8A8]"
+			/>
 		</div>
 		<cv-file-uploader
 			v-model="files"
@@ -102,6 +130,8 @@ function clearSelectedFile() {
 						:stencil-props="{
 							aspectRatio: 1,
 						}"
+						:default-size="cropperSize"
+						:default-position="cropperPosition"
 						class="h-full w-full"
 					/>
 				</div>

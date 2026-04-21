@@ -131,6 +131,24 @@ const organizationTypeOptions = Object.values(enumOrganizationType).map(
 			<UploadedImageDisplay
 				:image-url="previewImage || modelValue?.image"
 				:placeholder-icon="Enterprise32"
+				:cropperSize="
+					({ imageSize }) => {
+						const size = Math.min(imageSize.width, imageSize.height);
+						return {
+							width: size,
+							height: size,
+						};
+					}
+				"
+				:cropperPosition="
+					({ imageSize }) => {
+						const size = Math.min(imageSize.width, imageSize.height);
+						return {
+							left: (imageSize.width - size) / 2,
+							top: (imageSize.height - size) / 2,
+						};
+					}
+				"
 				@crop="$emit('crop', $event)"
 			/>
 

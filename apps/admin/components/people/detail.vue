@@ -4,6 +4,8 @@ import { UserFilled32 } from '@carbon/icons-vue';
 import { enumGender, type Gender, type Link } from '@politigraph/graphql/genql';
 import { formatDate, parseDate } from '~/utils/date';
 
+const PORTRAIT_ZOOM = 0.7;
+
 export interface PeopleDetailProps {
 	id: string;
 	name: string;
@@ -62,6 +64,31 @@ const genderOptions = Object.values(enumGender);
 			<UploadedImageDisplay
 				:image-url="previewImage || modelValue?.image"
 				:placeholder-icon="UserFilled32"
+				:cropper-size="
+					({ imageSize }) => {
+						if (imageSize.height === imageSize.width) {
+							return { width: imageSize.width, height: imageSize.height };
+						}
+						const size = imageSize.width * PORTRAIT_ZOOM;
+						return { width: size, height: size };
+					}
+				"
+				:cropper-position="
+					({ imageSize }) => {
+						if (imageSize.height === imageSize.width) {
+							const size = Math.min(imageSize.width, imageSize.height);
+							return {
+								left: (imageSize.width - size) / 2,
+								top: (imageSize.height - size) / 2,
+							};
+						}
+						const size = imageSize.width * PORTRAIT_ZOOM;
+						return {
+							left: (imageSize.width - size) / 2,
+							top: imageSize.height * 0.1,
+						};
+					}
+				"
 				@crop="$emit('crop', $event)"
 			/>
 			<cv-text-input
