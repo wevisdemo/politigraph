@@ -13,6 +13,7 @@ interface BillMergeEventForm {
 const props = defineProps<{
 	event: BillMergeEventForm;
 	currentBillId: string;
+	incomplete?: boolean;
 }>();
 
 const sortedBills = computed(() => {
@@ -33,6 +34,7 @@ const emit = defineEmits<{
 	<div class="flex flex-col gap-4">
 		<cv-radio-group
 			:legendText="`Select main bill from ${event.bills?.length ?? 0} merged bills`"
+			:class="{ 'radio-group--incomplete': props.incomplete }"
 			vertical
 		>
 			<radio-input-with-details
@@ -79,3 +81,9 @@ const emit = defineEmits<{
 		</cv-radio-group>
 	</div>
 </template>
+
+<style scoped>
+.radio-group--incomplete :deep(.bx--label) {
+	color: #da1e28 !important;
+}
+</style>

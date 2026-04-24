@@ -1,4 +1,6 @@
 <script setup lang="ts">
+// @ts-ignore
+import { CheckmarkFilled16, WarningFilled16 } from '@carbon/icons-vue';
 import {
 	type BillEnactEvent,
 	type BillMergeEvent,
@@ -34,6 +36,7 @@ export type BillEventForm =
 const props = defineProps<{
 	currentBillId: string;
 	loading?: boolean;
+	originalEvents?: BillEventForm[];
 }>();
 
 const events = defineModel<BillEventForm[]>({ required: true });
@@ -43,13 +46,29 @@ const updateEvent = (index: number, key: string, value: unknown) => {
 		i === index ? ({ ...e, [key]: value } as BillEventForm) : e,
 	);
 };
+
+const hasChanges = (event: BillEventForm): boolean => {
+	const original = props.originalEvents?.find((e) => e.id === event.id);
+	if (!original) return false;
+	return JSON.stringify(original) !== JSON.stringify(event);
+};
+
+const isEventComplete = (event: BillEventForm): boolean => {
+	if (event.__typename === 'BillMergeEvent') {
+		return event.main_bill_id !== null;
+	}
+	if (event.__typename === 'BillVoteEvent') {
+		return event.vote_events !== undefined && event.vote_events.length > 0;
+	}
+	return true;
+};
 </script>
 
 <template>
 	<div class="flex flex-col gap-4">
 		<cv-data-table-skeleton
 			v-if="props.loading"
-			:columns="2"
+			:columns="3"
 			:rows="3"
 			expandable
 		/>
@@ -63,9 +82,14 @@ const updateEvent = (index: number, key: string, value: unknown) => {
 				<template #headings>
 					<cv-data-table-heading heading="Name" />
 					<cv-data-table-heading heading="Date" />
+					<cv-data-table-heading heading="Completed" />
 				</template>
 				<template #data>
-					<cv-data-table-row v-for="(event, index) in events" :key="event.id">
+					<cv-data-table-row
+						v-for="(event, index) in events"
+						:key="event.id"
+						:class="{ 'unsaved-row': hasChanges(event) }"
+					>
 						<cv-data-table-cell>
 							<span class="font-medium">
 								{{ eventTypeLabels[event.__typename] ?? event.__typename }}
@@ -93,6 +117,13 @@ const updateEvent = (index: number, key: string, value: unknown) => {
 												: '-'
 								}}
 							</span>
+						</cv-data-table-cell>
+						<cv-data-table-cell>
+							<CheckmarkFilled16
+								v-if="isEventComplete(event)"
+								class="text-green-600"
+							/>
+							<WarningFilled16 v-else class="text-red-600" />
 						</cv-data-table-cell>
 						<template #expandedContent>
 							<div class="flex flex-col gap-4">
@@ -153,6 +184,7 @@ const updateEvent = (index: number, key: string, value: unknown) => {
 									<bills-form-merge-event
 										:event="event"
 										:current-bill-id="currentBillId"
+										:incomplete="!isEventComplete(event)"
 										@update="(key, value) => updateEvent(index, key, value)"
 									/>
 								</template>
@@ -183,6 +215,7 @@ const updateEvent = (index: number, key: string, value: unknown) => {
 								<template v-if="event.__typename === 'BillVoteEvent'">
 									<bills-form-vote-event
 										:event="event"
+										:incomplete="!isEventComplete(event)"
 										@update="(key, value) => updateEvent(index, key, value)"
 									/>
 								</template>
@@ -202,13 +235,17 @@ const updateEvent = (index: number, key: string, value: unknown) => {
 </template>
 
 <style scoped>
-::v-deep(.bx--data-table tbody tr:hover),
-::v-deep(.bx--data-table tbody tr:hover td) {
+::v-deep(.bx--data-table tbody tr:not(.unsaved-row):hover),
+::v-deep(.bx--data-table tbody tr:not(.unsaved-row):hover td) {
 	background-color: transparent !important;
 }
 
 ::v-deep(.bx--data-table tbody tr.bx--expandable-row),
 ::v-deep(.bx--data-table tbody tr.bx--expandable-row td) {
 	background-color: transparent !important;
+}
+
+::v-deep(.unsaved-row) td {
+	background-color: #fff8e1 !important;
 }
 </style>

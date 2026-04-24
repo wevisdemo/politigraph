@@ -573,6 +573,7 @@ const { data: organizationList } = await useAsyncData(
 					v-model="events"
 					:current-bill-id="route.params.id as string"
 					:loading="billPending"
+					:original-events="billData?.events"
 				/>
 			</div>
 		</div>

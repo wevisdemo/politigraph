@@ -9,6 +9,7 @@ type BillVoteEventForm = Pick<
 
 const props = defineProps<{
 	event: BillVoteEventForm;
+	incomplete?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -82,6 +83,7 @@ watch(() => props.event.start_date, refresh);
 			</div>
 			<cv-radio-group
 				legendText="Select matched vote events from the same date"
+				:class="{ 'radio-group--incomplete': props.incomplete }"
 				vertical
 			>
 				<radio-input-with-details
@@ -145,3 +147,9 @@ watch(() => props.event.start_date, refresh);
 		</div>
 	</div>
 </template>
+
+<style scoped>
+.radio-group--incomplete :deep(.bx--label) {
+	color: #da1e28 !important;
+}
+</style>
