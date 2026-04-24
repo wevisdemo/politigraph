@@ -3,6 +3,7 @@
 import { Save16 } from '@carbon/icons-vue';
 import type { Link } from '@politigraph/graphql/genql';
 import type { BillForm } from '~/components/bills/detail.vue';
+import type { BillEventForm } from '~/components/bills/events.vue';
 import { diff } from 'radash';
 
 definePageMeta({
@@ -13,61 +14,136 @@ const route = useRoute();
 const graphqlClient = useGraphqlClient();
 
 const successToast = useToastNotification();
-const originalLinks = ref<Pick<Link, 'id' | 'note' | 'url'>[]>([]);
 
-const { data: billData, refresh: refreshBillData } = await useLazyAsyncData(
-	async () => {
-		const { bills } = await graphqlClient.query({
-			bills: {
-				__args: {
-					limit: 20,
-					offset: 0,
-					where: {
-						id: { eq: route.params.id as string },
-					},
+const events = ref<BillEventForm[]>([]);
+
+const {
+	data: billData,
+	refresh: refreshBillData,
+	pending: billPending,
+} = await useLazyAsyncData(async () => {
+	const { bills } = await graphqlClient.query({
+		bills: {
+			__args: {
+				limit: 1,
+				where: {
+					id: { eq: route.params.id as string },
 				},
+			},
+			id: true,
+			title: true,
+			nickname: true,
+			classification: true,
+			creator_type: true,
+			status: true,
+			proposal_date: true,
+			people_signature_count: true,
+			organizations: {
 				id: true,
-				title: true,
-				nickname: true,
-				classification: true,
-				creator_type: true,
-				status: true,
-				proposal_date: true,
-				people_signature_count: true,
-				organizations: {
+				name: true,
+			},
+			co_creators: {
+				id: true,
+				name: true,
+			},
+			creators: {
+				on_Person: {
 					id: true,
 					name: true,
 				},
-				co_creators: {
+				on_Organization: {
 					id: true,
 					name: true,
 				},
-				creators: {
-					on_Person: {
+			},
+			links: {
+				id: true,
+				note: true,
+				url: true,
+				__args: {
+					sort: [{ note: 'ASC' }],
+				},
+			},
+			events: {
+				__typename: true,
+				on_BillEnactEvent: {
+					id: true,
+					title: true,
+					description: true,
+					start_date: true,
+					end_date: true,
+					publish_status: true,
+				},
+				on_BillMergeEvent: {
+					id: true,
+					description: true,
+					start_date: true,
+					end_date: true,
+					main_bill_id: true,
+					publish_status: true,
+					bills: {
 						id: true,
-						name: true,
-					},
-					on_Organization: {
-						id: true,
-						name: true,
+						title: true,
+						creators: {
+							on_Person: {
+								id: true,
+								name: true,
+							},
+							on_Organization: {
+								id: true,
+								name: true,
+							},
+						},
+						links: {
+							__args: {
+								sort: [{ note: 'ASC' }],
+							},
+							note: true,
+							url: true,
+						},
 					},
 				},
-				links: {
+				on_BillRejectEvent: {
 					id: true,
-					note: true,
-					url: true,
-					__args: {
-						sort: [{ note: 'ASC' }],
+					description: true,
+					start_date: true,
+					end_date: true,
+					reject_reason: true,
+					publish_status: true,
+				},
+				on_BillRoyalAssentEvent: {
+					id: true,
+					description: true,
+					start_date: true,
+					end_date: true,
+					result: true,
+					publish_status: true,
+				},
+				on_BillVoteEvent: {
+					id: true,
+					classification: true,
+					description: true,
+					start_date: true,
+					end_date: true,
+					title: true,
+					nickname: true,
+					result: true,
+					publish_status: true,
+					vote_events: {
+						id: true,
 					},
 				},
 			},
-		});
+		},
+	});
 
-		originalLinks.value = JSON.parse(JSON.stringify(bills[0].links));
+	bills[0].events =
+		bills[0].events?.sort((a, b) =>
+			(a.start_date ?? '').localeCompare(b.start_date ?? ''),
+		) ?? [];
 
-		return bills[0];
-	},
-);
+	return bills[0];
+});
 
 useHead({
 	title: `${billData.value?.title || 'Bills'} | Politigraph Admin`,
@@ -110,6 +186,12 @@ watch(
 			data.creator_type === 'ASSEMBLY'
 				? (data.creators?.map((creator) => creator.id) ?? [])
 				: [];
+
+		events.value.splice(
+			0,
+			events.value.length,
+			...(data.events?.map((e) => ({ ...e })) ?? []),
+		);
 	},
 	{ immediate: true },
 );
@@ -166,7 +248,7 @@ async function handleSave() {
 		)
 		.map(({ note, url }) => ({ node: { note, url } }));
 
-	const originalLinkIds = new Set(originalLinks.value.map((l) => l.id) ?? []);
+	const originalLinkIds = new Set(billData.value?.links.map((l) => l.id) ?? []);
 
 	const updatedLinks =
 		form.links?.filter((l) => originalLinkIds.has(l.id)) ?? [];
@@ -308,6 +390,124 @@ async function handleSave() {
 		),
 	);
 
+	for (const event of events.value) {
+		const baseUpdate = {
+			description: { set: event.description },
+			start_date: { set: event.start_date },
+			end_date: { set: event.end_date },
+			publish_status: { set: event.publish_status },
+		};
+		const where = { id: { eq: event.id } };
+
+		if (event.__typename === 'BillEnactEvent') {
+			await graphqlClient.mutation({
+				updateBillEnactEvents: {
+					__args: {
+						where,
+						update: {
+							...baseUpdate,
+							title: { set: event.title },
+						},
+					},
+					billEnactEvents: { id: true },
+				},
+			});
+		} else if (event.__typename === 'BillMergeEvent') {
+			await graphqlClient.mutation({
+				updateBillMergeEvents: {
+					__args: {
+						where,
+						update: {
+							...baseUpdate,
+							main_bill_id: { set: event.main_bill_id },
+						},
+					},
+					billMergeEvents: { id: true },
+				},
+			});
+		} else if (event.__typename === 'BillRejectEvent') {
+			await graphqlClient.mutation({
+				updateBillRejectEvents: {
+					__args: {
+						where,
+						update: {
+							...baseUpdate,
+							reject_reason: { set: event.reject_reason },
+						},
+					},
+					billRejectEvents: { id: true },
+				},
+			});
+		} else if (event.__typename === 'BillRoyalAssentEvent') {
+			await graphqlClient.mutation({
+				updateBillRoyalAssentEvents: {
+					__args: {
+						where,
+						update: {
+							...baseUpdate,
+							result: { set: event.result },
+						},
+					},
+					billRoyalAssentEvents: { id: true },
+				},
+			});
+		} else if (event.__typename === 'BillVoteEvent') {
+			const originalEvent = billData.value?.events?.find(
+				(e) => e.id === event.id,
+			);
+			const originalVoteEventId =
+				originalEvent?.__typename === 'BillVoteEvent'
+					? originalEvent.vote_events?.[0]?.id
+					: undefined;
+			const newVoteEventId = event.vote_events?.[0]?.id;
+
+			await graphqlClient.mutation({
+				updateBillVoteEvents: {
+					__args: {
+						where,
+						update: {
+							...baseUpdate,
+							vote_events: [
+								{
+									connect:
+										newVoteEventId && newVoteEventId !== originalVoteEventId
+											? [
+													{
+														where: {
+															node: {
+																id: {
+																	eq: newVoteEventId,
+																},
+															},
+														},
+													},
+												]
+											: [],
+									disconnect:
+										originalVoteEventId &&
+										originalVoteEventId !== newVoteEventId
+											? [
+													{
+														where: {
+															node: {
+																id: {
+																	eq: originalVoteEventId,
+																},
+															},
+														},
+													},
+												]
+											: [],
+								},
+							],
+						},
+					},
+					billVoteEvents: { id: true },
+				},
+			});
+		}
+	}
+
 	successToast.show({
 		kind: 'success',
 		title: 'ข้อมูลถูกบันทึกเรียบร้อย',
@@ -343,9 +543,7 @@ const { data: organizationList } = await useAsyncData(
 		>
 	</cv-breadcrumb>
 
-	<div
-		class="my-6 flex items-end justify-end gap-4 md:flex-row md:items-center"
-	>
+	<div class="my-6 flex justify-between gap-4 md:flex-row md:items-center">
 		<h2 class="md:min-w-xl">{{ billData?.title }}</h2>
 
 		<cv-button @click="handleSave" class="mt-4" kind="primary" :icon="Save16"
@@ -362,12 +560,19 @@ const { data: organizationList } = await useAsyncData(
 		"
 	>
 		<div class="mt-4 flex flex-col items-start gap-8 md:flex-row">
-			<div class="basis-2/4 bg-white p-4">
+			<div class="flex-1 bg-white p-4">
 				<BillsDetail
 					:form="form"
 					:bill-data="billData"
 					:people-list="peopleList"
 					:organization-list="organizationList"
+				/>
+			</div>
+			<div class="flex-1 bg-white">
+				<BillsEvents
+					v-model="events"
+					:current-bill-id="route.params.id as string"
+					:loading="billPending"
 				/>
 			</div>
 		</div>
