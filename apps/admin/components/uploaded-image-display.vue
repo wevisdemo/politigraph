@@ -1,6 +1,6 @@
 <script setup lang="ts">
 // @ts-ignore
-import { TrashCan32 } from '@carbon/icons-vue';
+import { Crop32, Download32, TrashCan32 } from '@carbon/icons-vue';
 import type { Component } from 'vue';
 import { CircleStencil, Cropper } from 'vue-advanced-cropper';
 import type {
@@ -54,6 +54,9 @@ const emit = defineEmits<{
 const files = ref<ImageFile[]>([]);
 const cropperRef = ref<InstanceType<typeof Cropper> | null>(null);
 const selectedFileUrl = ref<string | null>(null);
+const editImageUrl = ref<string | null>(null);
+
+const cropperSrc = computed(() => selectedFileUrl.value || editImageUrl.value);
 
 watch(files, (newFiles) => {
 	if (newFiles.length > 0 && newFiles[0].file) {
@@ -75,15 +78,26 @@ async function saveCroppedImage() {
 	});
 
 	emit('crop', blob);
-	clearSelectedFile();
+	clearCropper();
 }
 
-function clearSelectedFile() {
+function clearCropper() {
 	if (selectedFileUrl.value) {
 		URL.revokeObjectURL(selectedFileUrl.value);
 		selectedFileUrl.value = null;
 	}
+	editImageUrl.value = null;
 	files.value = [];
+}
+
+function openEditModal() {
+	if (!props.imageUrl) return;
+	editImageUrl.value = props.imageUrl;
+}
+
+function downloadImage() {
+	if (!props.imageUrl) return;
+	window.open(props.imageUrl, '_blank');
 }
 </script>
 
@@ -97,13 +111,32 @@ function clearSelectedFile() {
 				:src="imageUrl"
 				class="size-32 rounded-full object-cover"
 			/>
-			<button
+			<div
 				v-if="imageUrl"
-				class="absolute inset-0 hidden cursor-pointer items-center justify-center rounded-full bg-black/50 group-hover:flex"
-				@click.stop="emit('delete')"
+				class="absolute inset-0 hidden items-center justify-center gap-1 rounded-full bg-black/50 group-hover:flex"
 			>
-				<TrashCan32 class="size-8 text-white" />
-			</button>
+				<button
+					class="cursor-pointer rounded-full p-1 hover:bg-white/20"
+					@click.stop="openEditModal()"
+					title="Edit"
+				>
+					<Crop32 class="size-6 text-white" />
+				</button>
+				<button
+					class="cursor-pointer rounded-full p-1 hover:bg-white/20"
+					@click.stop="downloadImage()"
+					title="Download"
+				>
+					<Download32 class="size-6 text-white" />
+				</button>
+				<button
+					class="cursor-pointer rounded-full p-1 hover:bg-white/20"
+					@click.stop="emit('delete')"
+					title="Remove"
+				>
+					<TrashCan32 class="size-6 text-white" />
+				</button>
+			</div>
 			<component
 				v-else-if="placeholderIcon"
 				:is="placeholderIcon"
@@ -123,19 +156,19 @@ function clearSelectedFile() {
 
 	<ClientOnly>
 		<cv-modal
-			:visible="selectedFileUrl !== null"
+			:visible="cropperSrc"
 			autoHideOff
 			size="lg"
 			@primary-click="saveCroppedImage"
-			@secondary-click="clearSelectedFile"
-			@modal-hide-request="clearSelectedFile"
+			@secondary-click="clearCropper"
+			@modal-hide-request="clearCropper"
 		>
 			<template v-slot:title>Crop Image</template>
 			<template v-slot:content>
 				<div class="h-96 w-full">
 					<Cropper
 						ref="cropperRef"
-						:src="selectedFileUrl"
+						:src="cropperSrc"
 						:stencil-component="CircleStencil"
 						:stencil-props="{
 							aspectRatio: 1,
