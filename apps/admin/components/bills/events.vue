@@ -78,11 +78,23 @@ const isEventComplete = (event: BillEventForm): boolean => {
 				helperText="เหตุการณ์ที่เกี่ยวข้องกับร่างกฏหมาย"
 				expandable
 				hasExpandAll
+				zebra="false"
 			>
 				<template #headings>
 					<cv-data-table-heading heading="Name" />
 					<cv-data-table-heading heading="Date" />
-					<cv-data-table-heading heading="Completed" />
+					<cv-data-table-heading>
+						<div class="flex flex-row items-center gap-1">
+							Status
+							<cv-tooltip alignment="end" direction="bottom">
+								<template #content>
+									A bill merge event is incomplete if no main bill is specified;
+									a bill vote event is incomplete if no vote event is linked;
+									other types are always complete.
+								</template>
+							</cv-tooltip>
+						</div>
+					</cv-data-table-heading>
 				</template>
 				<template #data>
 					<cv-data-table-row
@@ -162,6 +174,7 @@ const isEventComplete = (event: BillEventForm): boolean => {
 
 								<cv-text-input
 									label="Description"
+									class="bg-neutral-100"
 									:modelValue="event.description ?? ''"
 									@update:modelValue="
 										updateEvent(index, 'description', $event || null)
@@ -222,14 +235,20 @@ const isEventComplete = (event: BillEventForm): boolean => {
 							</div>
 						</template>
 					</cv-data-table-row>
+					<template v-if="!events.length">
+						<tr></tr>
+						<tr>
+							<td
+								colspan="4"
+								class="border-0 bg-white text-center text-sm text-neutral-500"
+							>
+								No events
+							</td>
+						</tr>
+						<tr></tr>
+					</template>
 				</template>
 			</cv-data-table>
-			<p
-				v-if="!events.length"
-				class="mb-4 text-center text-sm text-neutral-500"
-			>
-				No events
-			</p>
 		</template>
 	</div>
 </template>

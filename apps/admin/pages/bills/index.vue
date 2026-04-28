@@ -313,10 +313,30 @@ const isComplete = (data: unknown[]) => {
 							id="sb-proposal-date"
 							heading="Proposal Date"
 						/>
-						<cv-data-table-heading
-							id="sb-events-completeness"
-							heading="Events Completeness"
-						/>
+						<cv-data-table-heading id="sb-events-completeness">
+							<div class="flex flex-row items-center gap-1">
+								Events
+								<cv-tooltip alignment="end" direction="bottom">
+									<template #content>
+										<div class="-ml-2 flex flex-col py-1">
+											Events with complete data (complete/total).
+											<ul class="ml-4 list-disc">
+												<li>
+													A bill merge event is incomplete if no main bill is
+													specified
+												</li>
+												<li>
+													A bill vote event is incomplete if no vote event is
+												</li>
+												<li>
+													Other types of events are always considered complete
+												</li>
+											</ul>
+										</div>
+									</template>
+								</cv-tooltip>
+							</div>
+						</cv-data-table-heading>
 					</template>
 					<template #data>
 						<cv-data-table-row
