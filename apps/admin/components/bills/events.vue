@@ -88,9 +88,7 @@ const isEventComplete = (event: BillEventForm): boolean => {
 							Status
 							<cv-tooltip alignment="end" direction="bottom">
 								<template #content>
-									A bill merge event is incomplete if no main bill is specified;
-									a bill vote event is incomplete if no vote event is linked;
-									other types are always complete.
+									<bills-event-completeness-remark class="ml-2" />
 								</template>
 							</cv-tooltip>
 						</div>

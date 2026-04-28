@@ -7,7 +7,7 @@ import {
 	type BillWhere,
 } from '@politigraph/graphql/genql';
 import { formatDate } from '~/utils/date';
-import { getArrayQueryParam, getStringQueryParam } from '~/utils/query';
+import { getStringQueryParam } from '~/utils/query';
 import { ref } from 'vue';
 
 const allOption = { label: 'ทั้งหมด', value: 'ALL' };
@@ -59,8 +59,8 @@ const creatorType: Record<string, string> = {
 };
 
 const eventCompletenessType: Record<string, string> = {
-	DONE: 'ครบถ้วน',
-	NEED_ACTIONS: 'ต้องแก้ไข',
+	DONE: 'มีข้อมูลครบถ้วน',
+	NEED_ACTIONS: 'ต้องแก้ไขเพิ่มเติม',
 };
 
 const filters = ref({
@@ -373,19 +373,8 @@ const isComplete = (data: unknown[]) => {
 								<cv-tooltip alignment="end" direction="bottom">
 									<template #content>
 										<div class="-ml-2 flex flex-col py-1">
-											Events with complete data (complete/total).
-											<ul class="ml-4 list-disc">
-												<li>
-													A bill merge event is incomplete if no main bill is
-													specified
-												</li>
-												<li>
-													A bill vote event is incomplete if no vote event is
-												</li>
-												<li>
-													Other types of events are always considered complete
-												</li>
-											</ul>
+											Event ที่มีข้อมูลครบถ้วน / ทั้งหมด
+											<bills-event-completeness-remark class="ml-4" />
 										</div>
 									</template>
 								</cv-tooltip>
