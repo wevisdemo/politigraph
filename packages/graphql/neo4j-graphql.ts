@@ -1,6 +1,7 @@
 import { Neo4jGraphQL } from '@neo4j/graphql';
 import neo4j from 'neo4j-driver';
 import { resolvers } from './custom-resolvers';
+import { excludeDeprecatedFields } from './deprecated-fields';
 // @ts-ignore
 import typeDefs from './dist/typedefs.graphql' with { type: 'text' };
 import { getGraphqlCreateIndexQueries } from './schema';
@@ -21,13 +22,7 @@ export function initNeo4jGraphql(jwksUrl: string) {
 					url: jwksUrl,
 				},
 			},
-			excludeDeprecatedFields: {
-				mutationOperations: true,
-				aggregationFilters: true,
-				aggregationFiltersOutsideConnection: true,
-				relationshipFilters: true,
-				attributeFilters: true,
-			},
+			excludeDeprecatedFields,
 		},
 	});
 }
