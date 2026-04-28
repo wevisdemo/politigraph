@@ -3,18 +3,21 @@ const props = defineProps<{
 	statusOptions: { label: string; value: string }[];
 	creatorTypeOptions: { label: string; value: string }[];
 	organizationOption: { label: string; value: string }[];
+	eventCompletenessOptions: { label: string; value: string }[];
 }>();
 
 const filters = defineModel<{
 	organization: string;
 	status: string;
-	creatorType: string[];
+	creatorType: string;
+	eventCompleteness: string;
 }>('filters', { required: true });
 
 const resetFilter = () => {
 	filters.value.organization = 'ALL';
 	filters.value.status = 'ALL';
-	filters.value.creatorType = [...props.creatorTypeOptions.map((c) => c.value)];
+	filters.value.creatorType = 'ALL';
+	filters.value.eventCompleteness = 'ALL';
 };
 </script>
 
@@ -44,9 +47,17 @@ const resetFilter = () => {
 		<FilterOptions
 			v-model="filters.creatorType"
 			label="Creator Type"
-			type="multi-select"
+			type="radio"
 			name="bills-creator-type-filter"
 			:options="props.creatorTypeOptions"
+		/>
+
+		<FilterOptions
+			v-model="filters.eventCompleteness"
+			label="Event Completeness"
+			type="radio"
+			name="bills-event-completeness-filter"
+			:options="props.eventCompletenessOptions"
 		/>
 	</div>
 </template>

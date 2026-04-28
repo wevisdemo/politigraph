@@ -2,10 +2,15 @@
 import {
 	enumBillCreatorType,
 	enumBillStatus,
+	type BillCreatorType,
+	type BillStatus,
+	type BillWhere,
 } from '@politigraph/graphql/genql';
 import { formatDate } from '~/utils/date';
 import { getArrayQueryParam, getStringQueryParam } from '~/utils/query';
 import { ref } from 'vue';
+
+const allOption = { label: 'ทั้งหมด', value: 'ALL' };
 
 definePageMeta({
 	layout: 'admin-layout',
@@ -53,15 +58,17 @@ const creatorType: Record<string, string> = {
 	UNKNOWN: 'อื่นๆ / ไม่พบข้อมูล',
 };
 
+const eventCompletenessType: Record<string, string> = {
+	DONE: 'ครบถ้วน',
+	NEED_ACTIONS: 'ต้องแก้ไข',
+};
+
 const filters = ref({
 	organization: getStringQueryParam(route.query.organization, 'ALL'),
 	status: getStringQueryParam(route.query.status, 'ALL'),
-	creatorType: getArrayQueryParam(route.query.creatorType, creatorTypeOption),
+	creatorType: getStringQueryParam(route.query.creatorType, 'ALL'),
+	eventCompleteness: getStringQueryParam(route.query.eventCompleteness, 'ALL'),
 });
-
-if (filters.value.creatorType.length === 0) {
-	filters.value.creatorType = [...creatorTypeOption];
-}
 
 const {
 	offset,
@@ -77,9 +84,12 @@ const {
 				: undefined,
 		status: filters.value.status !== 'ALL' ? filters.value.status : undefined,
 		creatorType:
-			filters.value.creatorType.length > 0 &&
-			filters.value.creatorType.length !== creatorTypeOption.length
+			filters.value.creatorType !== 'ALL'
 				? filters.value.creatorType
+				: undefined,
+		eventCompleteness:
+			filters.value.eventCompleteness !== 'ALL'
+				? filters.value.eventCompleteness
 				: undefined,
 	}),
 	totalCount: () => data.value?.totalCount,
@@ -89,40 +99,78 @@ const {
 const { data } = await useLazyAsyncData(
 	'bills',
 	async () => {
-		const where: Record<string, any> = {};
+		const where = {
+			AND: [] as BillWhere[],
+		};
 
 		if (debouncedSearch.value) {
-			where.OR = [
-				{ title: { contains: debouncedSearch.value } },
-				{ nickname: { contains: debouncedSearch.value } },
-			];
+			where.AND.push({
+				OR: [
+					{ title: { contains: debouncedSearch.value } },
+					{ nickname: { contains: debouncedSearch.value } },
+				],
+			});
 		}
 
 		if (filters.value.organization !== 'ALL') {
-			const organizationId = filters.value.organization;
-
 			if (filters.value.organization === 'อื่นๆ') {
-				where.organizationsConnection = {
-					aggregate: { count: { nodes: { eq: 0 } } },
-				};
+				where.AND.push({
+					organizationsConnection: {
+						aggregate: { count: { nodes: { eq: 0 } } },
+					},
+				});
 			} else {
-				where.organizations = { some: { id: { eq: organizationId } } };
+				where.AND.push({
+					organizations: { some: { id: { eq: filters.value.organization } } },
+				});
 			}
 		}
 
 		if (filters.value.status !== 'ALL') {
-			where.status = { eq: filters.value.status };
+			where.AND.push({ status: { eq: filters.value.status as BillStatus } });
 		}
 
-		const selectedClassifications = filters.value.creatorType || [];
+		if (filters.value.creatorType !== 'ALL') {
+			where.AND.push({
+				creator_type: { eq: filters.value.creatorType as BillCreatorType },
+			});
+		}
 
-		if (selectedClassifications.length > 0) {
-			where.creator_type = { in: selectedClassifications };
-		} else {
-			return {
-				bills: [],
-				totalCount: 0,
+		const selectedCompleteness = filters.value.eventCompleteness;
+
+		if (selectedCompleteness !== 'ALL') {
+			const needActionsEvent: BillWhere = {
+				OR: [
+					{
+						events: {
+							some: { BillMergeEvent: { main_bill_id: { eq: null } } },
+						},
+					},
+					{
+						events: {
+							some: {
+								BillVoteEvent: {
+									vote_eventsConnection: {
+										aggregate: {
+											count: {
+												nodes: {
+													eq: 0,
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				],
 			};
+
+			if (selectedCompleteness === 'NEED_ACTIONS') {
+				where.AND.push(needActionsEvent);
+			} else if (selectedCompleteness === 'DONE') {
+				where.AND.push({ NOT: needActionsEvent });
+			}
 		}
 
 		const { bills, billsConnection } = await graphqlClient.query({
@@ -205,18 +253,16 @@ const { data: organizations } = await useAsyncData(
 	{ server: false },
 );
 
-const organizationsOption = () => {
-	const singleOptions =
+const organizationsOption = computed(
+	() =>
 		organizations.value
 			?.map((o) => ({
 				label: `${o.abbreviation ?? ''} ชุดที่ ${o.term ?? '-'}`,
 				value: o.id,
 				term: o.term ?? 0,
 			}))
-			.sort((a, b) => b.term - a.term) || [];
-
-	return singleOptions;
-};
+			.sort((a, b) => b.term - a.term) || [],
+);
 
 const getEventCompleteness = (data: unknown[]) => {
 	const total = data.length;
@@ -271,23 +317,31 @@ const isComplete = (data: unknown[]) => {
 				class="w-xs sticky top-16"
 				v-model:filters="filters"
 				:organizationOption="[
-					{ label: 'ทั้งหมด', value: 'ALL' },
-					...(organizationsOption() ?? []).map((o) => ({
+					allOption,
+					...organizationsOption.map((o) => ({
 						label: o.label,
 						value: o.value,
 					})),
 				]"
 				:statusOptions="[
-					{ label: 'ทั้งหมด', value: 'ALL' },
+					allOption,
 					...statusOption.map((s) => ({
 						label: billType[s],
 						value: s,
 					})),
 				]"
 				:creatorTypeOptions="[
+					allOption,
 					...creatorTypeOption.map((c) => ({
 						label: creatorType[c],
 						value: c,
+					})),
+				]"
+				:eventCompletenessOptions="[
+					allOption,
+					...Object.entries(eventCompletenessType).map(([value, label]) => ({
+						value,
+						label,
 					})),
 				]"
 			></BillsFilter>
