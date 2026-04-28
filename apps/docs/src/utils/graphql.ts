@@ -6,7 +6,7 @@ type GraphqlResponse =
 	  }
 	| { errors: { message: string }[] };
 
-const RATE_LIMIT_DELAY = 1000 / 3;
+const RATE_LIMIT_DELAY = 1000 / 2.9;
 
 let lastRequestTime = 0;
 
