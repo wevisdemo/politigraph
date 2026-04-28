@@ -1,7 +1,7 @@
 FROM oven/bun:1 AS base
 ENV NODE_ENV=production
 WORKDIR /app
-RUN bun add -g turbo@^2.6.1
+RUN bun add -g turbo@2.9.6
 
 FROM base AS prepare
 COPY . .
