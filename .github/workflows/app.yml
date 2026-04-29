@@ -7,6 +7,7 @@ on:
       - 'README.md'
       - 'LICENSE'
       - 'servers/db/*'
+      - '.github/workflows/db.yml'
       - 'scripts/*'
   workflow_dispatch:
 
@@ -24,8 +25,8 @@ jobs:
         uses: burnett01/rsync-deployments@7.0.1
         with:
           switches: -azvP --chown=bot:deployer --chmod=g+w
-          path: servers/api/compose.yml servers/api/nginx.conf politigraph-image.tar.gz
-          remote_host: ${{ secrets.SSH_API_HOST }}
+          path: servers/app/compose.yml servers/app/nginx.conf politigraph-image.tar.gz
+          remote_host: ${{ secrets.SSH_APP_HOST }}
           remote_user: bot
           remote_key: ${{ secrets.SSH_KEY }}
           remote_path: ${{ secrets.SSH_BACKEND_DIR }}
@@ -61,7 +62,7 @@ jobs:
       - name: Update server containers
         uses: appleboy/ssh-action@v1.2.0
         with:
-          host: ${{ secrets.SSH_API_HOST }}
+          host: ${{ secrets.SSH_APP_HOST }}
           username: bot
           key: ${{ secrets.SSH_KEY }}
           script: |
@@ -95,7 +96,7 @@ jobs:
         with:
           switches: -azvP --chown=bot:deployer --chmod=g+w --delete
           path: ./apps/admin/.output/public/*
-          remote_host: ${{ secrets.SSH_API_HOST }}
+          remote_host: ${{ secrets.SSH_APP_HOST }}
           remote_user: bot
           remote_key: ${{ secrets.SSH_KEY }}
           remote_path: ${{ secrets.SSH_FRONTEND_DIR }}/admin
@@ -104,7 +105,7 @@ jobs:
         with:
           switches: -azvP --chown=bot:deployer --chmod=g+w --delete
           path: ./apps/docs/dist/*
-          remote_host: ${{ secrets.SSH_API_HOST }}
+          remote_host: ${{ secrets.SSH_APP_HOST }}
           remote_user: bot
           remote_key: ${{ secrets.SSH_KEY }}
           remote_path: ${{ secrets.SSH_FRONTEND_DIR }}/docs

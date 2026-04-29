@@ -1,0 +1,36 @@
+name: Update database server
+
+on:
+  push:
+    branches: ['main']
+    paths:
+      - 'servers/db/**'
+      - '.github/workflows/db.yml'
+  workflow_dispatch:
+
+jobs:
+  update:
+    name: Update database server
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Upload compose files to server
+        uses: burnett01/rsync-deployments@7.0.1
+        with:
+          switches: -azvP --chown=bot:deployer --chmod=g+w
+          path: servers/db/
+          remote_host: ${{ secrets.SSH_DB_HOST }}
+          remote_user: bot
+          remote_key: ${{ secrets.SSH_KEY }}
+          remote_path: ${{ secrets.SSH_DB_DIR }}
+      - name: Update DB containers
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.SSH_DB_HOST }}
+          username: bot
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            cd ${{ secrets.SSH_DB_DIR }}
+            docker compose up -d --remove-orphans
+            docker container prune --force
+            docker image prune --all --force --filter "until=72h"
