@@ -1,11 +1,8 @@
 <script lang="ts" setup>
 // @ts-ignore
-import { Save16 } from '@carbon/icons-vue';
-import {
-	enumOrganizationType,
-	enumPublishStatus,
-} from '@politigraph/graphql/genql';
-import { PeopleDetail, PeopleMemberDetail } from '#components';
+import { Add16 } from '@carbon/icons-vue';
+import { enumPublishStatus } from '@politigraph/graphql/genql';
+import { PeopleDetail } from '#components';
 import type { PeopleDetailProps } from '~/components/people/detail.vue';
 
 definePageMeta({
@@ -13,7 +10,7 @@ definePageMeta({
 });
 
 useHead({
-	title: 'New People | Politigraph Admin',
+	title: 'New Person | Politigraph Admin',
 });
 
 const peopleDetailData = ref<PeopleDetailProps>({
@@ -34,15 +31,11 @@ const peopleDetailData = ref<PeopleDetailProps>({
 	links: [],
 });
 
-const partyMemberships = ref([]);
-const housesMemberships = ref([]);
-const cabinetMemberships = ref([]);
-
 const router = useRouter();
 const graphqlClient = useGraphqlClient();
 const toast = useToastNotification();
 
-const { setImageBlob, upload } = useImageUpload();
+const { setImageBlob, uploadImage } = useImageUpload();
 
 const savePeople = async () => {
 	const mandatoryFields = [
@@ -65,7 +58,7 @@ const savePeople = async () => {
 	try {
 		const { firstname, middlename, lastname } = peopleDetailData.value;
 
-		const imageUrl = await upload(
+		const imageUrl = await uploadImage(
 			middlename
 				? `${firstname}-${middlename}-${lastname}`
 				: `${firstname}-${lastname}`,
@@ -135,12 +128,11 @@ const savePeople = async () => {
 
 		await Promise.all(createLinksPromises);
 
-		console.log('New person created successfully:', newPersonId);
 		toast.show({
 			kind: 'success',
-			title: 'ข้อมูลถูกบันทึกเรียบร้อย',
+			title: 'บุคคลใหม่ถูกสร้างเรียบร้อยแล้ว',
 		});
-		router.push(`/admin/people/${newPersonId}`);
+		router.replace(`/people/${newPersonId}`);
 	} catch (error) {
 		console.error('Failed to create new person:', error);
 		toast.show({
@@ -169,33 +161,25 @@ const savePeople = async () => {
 					peopleDetailData.lastname,
 				]
 					.filter(Boolean)
-					.join(' ') || 'New People'
+					.join(' ') || 'New Person'
 			}}
 		</h1>
 		<div class="flex flex-wrap items-start gap-4">
-			<cv-button @click="savePeople" class="mt-4" kind="primary" :icon="Save16"
-				>Save Changes</cv-button
+			<cv-button @click="savePeople" class="mt-4" kind="primary" :icon="Add16"
+				>Create</cv-button
 			>
 		</div>
 	</div>
-	<div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
-		<PeopleDetail v-model="peopleDetailData" @crop="setImageBlob" />
-		<div class="flex flex-col gap-6">
-			<PeopleMemberDetail
-				title="Party"
-				:classification="enumOrganizationType.POLITICAL_PARTY"
-				v-model:memberships="partyMemberships"
-			/>
-			<PeopleMemberDetail
-				title="Houses"
-				:classification="enumOrganizationType.HOUSE_OF_REPRESENTATIVE"
-				v-model:memberships="housesMemberships"
-			/>
-			<PeopleMemberDetail
-				title="Cabinet"
-				:classification="enumOrganizationType.CABINET"
-				v-model:memberships="cabinetMemberships"
-			/>
+	<div class="flex flex-col items-start gap-4 md:flex-row">
+		<div class="flex-1">
+			<PeopleDetail v-model="peopleDetailData" @crop="setImageBlob" />
+		</div>
+		<div class="flex flex-1 flex-col space-y-4 bg-white p-4">
+			<h4 class="mb-1 pt-2">Membership</h4>
+			<p class="text-sm text-neutral-600">การเป็นสมาชิกในองค์กรต่างๆ</p>
+			<p class="py-12 text-center text-sm">
+				ต้องสร้างบุคคลใหม่ให้เสร็จเรียบร้อยก่อนถึงจะสามารถเพิ่มการเป็นสมาชิกได้
+			</p>
 		</div>
 	</div>
 </template>

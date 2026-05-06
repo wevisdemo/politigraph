@@ -166,7 +166,7 @@ const showModalDeleteMembership = (id: string, name: string | undefined) => {
 <template>
 	<div class="h-fit w-full space-y-4 bg-white p-4">
 		<h4 class="mb-1 pt-2">Membership</h4>
-		<p>การเป็นสมาชิกในองค์กรต่างๆ</p>
+		<p class="text-sm text-neutral-600">การเป็นสมาชิกในองค์กรต่างๆ</p>
 
 		<cv-data-table-skeleton
 			v-if="!memberships"

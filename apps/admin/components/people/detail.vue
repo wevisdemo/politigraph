@@ -98,7 +98,7 @@ const genderOptions = Object.values(enumGender);
 				label="Title*"
 				placeholder=""
 				required
-				class="w-fit"
+				class="w-72"
 			/>
 			<div class="flex gap-6">
 				<cv-text-input
@@ -142,7 +142,7 @@ const genderOptions = Object.values(enumGender);
 				:placeholder="modelValue.gender"
 				v-model="modelValue.gender"
 				label="Sex"
-				class="w-fit"
+				class="w-72"
 			>
 				<cv-dropdown-item
 					v-for="item in genderOptions"
