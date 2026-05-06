@@ -1,0 +1,44 @@
+<script lang="ts" setup>
+const props = defineProps<{
+	visible: boolean;
+	membershipName: string | null;
+}>();
+
+const emit = defineEmits<{
+	'update:visible': [value: boolean];
+	confirm: [];
+}>();
+
+const handleCancel = () => {
+	emit('update:visible', false);
+};
+</script>
+
+<template>
+	<cv-modal
+		class="delete-membership-modal"
+		:visible="visible"
+		kind="danger"
+		size="sm"
+		@primary-click="emit('confirm')"
+		@secondary-click="handleCancel"
+		@modal-hide-request="handleCancel"
+	>
+		<template v-slot:title>Delete Membership</template>
+
+		<template v-slot:content>
+			<p class="p-0">
+				Are you sure you want to remove a membership of "{{ membershipName }}"?
+			</p>
+		</template>
+
+		<template v-slot:secondary-button>Cancel</template>
+		<template v-slot:primary-button>Delete</template>
+	</cv-modal>
+</template>
+
+<style>
+.delete-membership-modal .bx--modal-content {
+	overflow: hidden;
+}
+</style>

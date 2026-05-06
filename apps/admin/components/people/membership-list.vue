@@ -9,14 +9,15 @@ export enum RepresentativeLabel {
 import {
 	Add16,
 	CheckmarkFilled16,
-	Close16,
 	Edit16,
 	TrashCan16,
 	// @ts-ignore
 } from '@carbon/icons-vue';
-import LinksForm from '~/components/LinksForm.vue';
+import { enumOrganizationType } from '@politigraph/graphql/genql';
 import type { MembershipProp } from '~/types/membership';
-import { formatDate, parseDate, serializeDate } from '~/utils/date';
+import { formatDate } from '~/utils/date';
+import DeleteMembershipModal from './delete-membership-modal.vue';
+import MembershipModal from './membership-modal.vue';
 
 const props = defineProps<{
 	organizationsOptions?: Array<{
@@ -28,7 +29,7 @@ const props = defineProps<{
 }>();
 
 const memberships = defineModel<MembershipProp[] | null>('memberships');
-const mode = ref<'add' | 'edit' | ''>('');
+const mode = ref<'add' | 'edit' | null>(null);
 const showMembershipDetails = ref(false);
 const showDeleteModal = ref(false);
 const genId = () => crypto.randomUUID();
@@ -38,69 +39,32 @@ const editingMembership = ref<MembershipProp | null>(null);
 const pendingDeleteMembershipId = ref<string | null>(null);
 const pendingDeleteMembershipName = ref<string | null>(null);
 
-const organizationClassification = ref([
-	{
-		name: 'HOUSE_OF_REPRESENTATIVE',
-		label: 'สส.',
-		value: 'HOUSE_OF_REPRESENTATIVE',
-	},
-	{
-		name: 'HOUSE_OF_SENATE',
-		label: 'สว.',
-		value: 'HOUSE_OF_SENATE',
-	},
-	{
-		name: 'CABINET',
-		label: 'ครม.',
-		value: 'CABINET',
-	},
-	{
-		name: 'POLITICAL_PARTY',
-		label: 'พรรคการเมือง',
-		value: 'POLITICAL_PARTY',
-	},
-]);
-
-const getOrganizationOptions = (classification: string) => {
-	const org = props.organizationsOptions?.filter(
-		(o) => o.classification === classification,
-	);
-	return (
-		org?.map((o) => ({
-			label: o.label,
-			value: o.value,
-			classification: o.classification,
-			posts: o.posts,
-		})) || []
-	);
-};
-
-const getPostOptionsForOrg = (orgId: string) => {
-	if (!orgId || !props.organizationsOptions) return [];
-	const org = props.organizationsOptions.find((o) => o.value === orgId);
-	return org?.posts || [];
-};
-
-const modalDate = ref<{ start: Date | null; end: Date | null }>({
-	start: null,
-	end: null,
+const currentMembership = computed(() => {
+	if (mode.value === 'add' && tempMembership.value) {
+		return tempMembership.value;
+	}
+	if (mode.value === 'edit' && editingMembership.value) {
+		return editingMembership.value;
+	}
+	return null;
 });
 
-const isMembershipAddDisabled = computed(() => {
-	return (
-		mode.value === 'add' &&
-		currentMembership.value &&
-		!(
-			currentMembership.value.posts?.[0]?.organizations?.[0]?.classification &&
-			currentMembership.value.posts?.[0]?.organizations?.[0]?.id &&
-			currentMembership.value.posts?.[0]?.id
-		)
+const isFormValid = (m: MembershipProp): boolean => {
+	return !!(
+		m.posts?.[0]?.organizations?.[0]?.classification &&
+		m.posts?.[0]?.organizations?.[0]?.id &&
+		m.posts?.[0]?.id
 	);
+};
+
+const isMembershipAddDisabled = computed(() => {
+	if (mode.value !== 'add' || !currentMembership.value) return false;
+	return !isFormValid(currentMembership.value);
 });
 
 const handleAddMembership = () => {
 	const newItem: MembershipProp = {
-		id: crypto.randomUUID(),
+		id: genId(),
 		start_date: null,
 		end_date: null,
 		label: null,
@@ -117,7 +81,6 @@ const handleAddMembership = () => {
 		links: [],
 	};
 	tempMembership.value = newItem;
-	modalDate.value = { start: null, end: null };
 	mode.value = 'add';
 	showMembershipDetails.value = true;
 };
@@ -126,14 +89,7 @@ const handleEditMembership = (data: MembershipProp) => {
 	const index = memberships.value?.findIndex((m) => m.id === data.id) ?? null;
 
 	if (index !== null && memberships.value) {
-		editingMembership.value = JSON.parse(
-			JSON.stringify(toRaw(memberships.value[index])),
-		);
-
-		modalDate.value = {
-			start: parseDate(editingMembership.value!.start_date ?? ''),
-			end: parseDate(editingMembership.value!.end_date ?? ''),
-		};
+		editingMembership.value = structuredClone(toRaw(memberships.value[index]));
 	}
 
 	tempMembership.value = null;
@@ -141,38 +97,39 @@ const handleEditMembership = (data: MembershipProp) => {
 	showMembershipDetails.value = true;
 };
 
-const handleSaveMembership = () => {
+const handleSaveMembership = (dates: {
+	start: string | null;
+	end: string | null;
+}) => {
 	if (mode.value === 'add' && isMembershipAddDisabled.value) {
 		return;
 	}
 
 	if (mode.value === 'add' && tempMembership.value) {
-		tempMembership.value.start_date = serializeDate(modalDate.value.start);
-		tempMembership.value.end_date = serializeDate(modalDate.value.end);
+		tempMembership.value.start_date = dates.start || null;
+		tempMembership.value.end_date = dates.end || null;
 		tempMembership.value.mode = 'new';
 		memberships.value = [...(memberships.value || []), tempMembership.value];
 	} else if (mode.value === 'edit' && memberships.value) {
 		const current = currentMembership.value;
 		if (!current) return;
 
-		current.start_date = serializeDate(modalDate.value.start);
-		current.end_date = serializeDate(modalDate.value.end);
+		current.start_date = dates.start || null;
+		current.end_date = dates.end || null;
 		current.mode = 'edited';
 
 		const index = memberships.value.findIndex((m) => m.id === current.id);
 		if (index === -1) return;
 
-		memberships.value[index] = JSON.parse(JSON.stringify(toRaw(current)));
+		memberships.value[index] = structuredClone(toRaw(current));
 		memberships.value = [...memberships.value];
 	}
 
-	showMembershipDetails.value = false;
 	tempMembership.value = null;
 	editingMembership.value = null;
 };
 
 const handleCancelMembership = () => {
-	showMembershipDetails.value = false;
 	tempMembership.value = null;
 	editingMembership.value = null;
 };
@@ -199,70 +156,11 @@ const handleDeleteMembership = () => {
 	showDeleteModal.value = false;
 };
 
-const showModalDeleteMembership = (id: string, name: string) => {
+const showModalDeleteMembership = (id: string, name: string | undefined) => {
 	pendingDeleteMembershipId.value = id;
-	pendingDeleteMembershipName.value = name;
+	pendingDeleteMembershipName.value = name ?? null;
 	showDeleteModal.value = true;
 };
-
-const onClassificationChange = (
-	newClassification: string,
-	m: MembershipProp,
-) => {
-	if (!currentMembership.value) return;
-
-	m.posts[0].organizations[0].classification = newClassification;
-	m.posts[0].id = '';
-	m.posts[0].role = '';
-	m.posts[0].organizations[0].id = '';
-	m.posts[0].organizations[0].name = '';
-};
-
-const handleOrgNameChange = (selectedValue: string, m: MembershipProp) => {
-	const options = getOrganizationOptions(
-		currentMembership.value!.posts[0].organizations[0].classification,
-	);
-	const selected = options.find((opt) => opt.value === selectedValue);
-
-	m.posts[0].organizations[0].id = selected?.value ?? '';
-	m.posts[0].organizations[0].name = selected?.label ?? '';
-};
-
-const handleRoleInput = (selectedValue: string, m: MembershipProp) => {
-	const options = getPostOptionsForOrg(m.posts[0].organizations[0].id);
-	const selected = options.find((opt) => opt.value === selectedValue);
-
-	m.posts[0].id = selected?.value ?? '';
-	m.posts[0].role = selected?.label ?? '';
-};
-
-const getRowClass = (mode: string): string => {
-	if (mode != null) {
-		return '[&>td]:bg-[#FFF8E1]';
-	}
-
-	return '';
-};
-
-const currentMembership = computed({
-	get: () => {
-		if (mode.value === 'add' && tempMembership.value) {
-			return tempMembership.value;
-		}
-		if (mode.value === 'edit' && editingMembership.value) {
-			return editingMembership.value;
-		}
-		return null;
-	},
-	set: (value) => {
-		if (!value) return;
-		if (mode.value === 'add') {
-			tempMembership.value = value;
-		} else if (mode.value === 'edit') {
-			editingMembership.value = value;
-		}
-	},
-});
 </script>
 
 <template>
@@ -299,17 +197,17 @@ const currentMembership = computed({
 				/>
 			</template>
 
-			<template #data class="relative">
+			<template #data>
 				<cv-data-table-row
 					v-for="(m, i) in memberships"
 					:key="m.id"
-					:class="m?.mode ? getRowClass(m.mode) : ''"
+					:class="m?.mode ? '[&>td]:bg-[#FFF8E1]' : ''"
 				>
 					<cv-data-table-cell>
 						<p :class="m.mode == 'deleted' ? 'line-through' : ''">
 							{{
 								m.posts?.[0]?.organizations?.[0]?.classification ==
-								'POLITICAL_PARTY'
+								enumOrganizationType.POLITICAL_PARTY
 									? 'พรรค'
 									: ''
 							}}{{ m.posts?.[0]?.organizations?.[0]?.name ?? '-' }}
@@ -360,275 +258,28 @@ const currentMembership = computed({
 			</template>
 		</cv-data-table>
 
-		<cv-modal
-			class="membership-modal"
+		<MembershipModal
 			:visible="showMembershipDetails"
-			autoHideOff
-			:primary-button-disabled="isMembershipAddDisabled"
-			@modal-hide-request="handleCancelMembership"
-			@primary-click="handleSaveMembership"
-			@secondary-click="handleCancelMembership"
-			size="md"
-		>
-			<template v-slot:title
-				><span class="capitalize">{{ mode ?? '' }}</span> Membership</template
-			>
+			:mode="mode"
+			:membership="currentMembership"
+			:organizations-options="organizationsOptions"
+			:disabled="isMembershipAddDisabled"
+			@update:visible="showMembershipDetails = false"
+			@save="handleSaveMembership"
+			@cancel="handleCancelMembership"
+		/>
 
-			<template v-slot:content>
-				<div class="flex flex-col gap-5" v-if="currentMembership">
-					<div class="flex justify-between gap-5">
-						<div class="relative w-1/2">
-							<cv-combo-box
-								v-model="
-									currentMembership.posts[0].organizations[0].classification
-								"
-								title="Organization Classification*"
-								:options="organizationClassification"
-								item-value-key="value"
-								item-text-key="label"
-								autoFilter
-								autoHighlight
-								@change="
-									(event: string) =>
-										currentMembership &&
-										onClassificationChange(event, currentMembership)
-								"
-							/>
-						</div>
-
-						<div class="relative w-1/2">
-							<cv-combo-box
-								:key="
-									currentMembership.posts[0].organizations[0].classification
-								"
-								v-model="currentMembership.posts[0].organizations[0].id"
-								title="Organization Name*"
-								:options="
-									getOrganizationOptions(
-										currentMembership.posts[0].organizations[0].classification,
-									)
-								"
-								:disabled="
-									!currentMembership.posts[0].organizations[0].classification
-								"
-								item-value-key="value"
-								item-text-key="label"
-								autoFilter
-								autoHighlight
-								@change="
-									(event: string) =>
-										currentMembership &&
-										handleOrgNameChange(event, currentMembership)
-								"
-							/>
-						</div>
-					</div>
-
-					<div class="flex w-full gap-5">
-						<div class="w-1/2">
-							<cv-combo-box
-								:options="
-									getPostOptionsForOrg(
-										currentMembership.posts[0].organizations[0].id,
-									)
-								"
-								:key="currentMembership.posts[0].organizations[0].id"
-								v-model="currentMembership.posts[0].id"
-								title="Post*"
-								:disabled="!currentMembership.posts[0].organizations[0].id"
-								item-value-key="value"
-								item-text-key="label"
-								autoFilter
-								autoHighlight
-								@change="
-									(event: string) =>
-										currentMembership &&
-										handleRoleInput(event, currentMembership)
-								"
-							/>
-						</div>
-
-						<div class="flex w-1/2 gap-5">
-							<div class="relative">
-								<cv-date-picker
-									dateLabel="Start"
-									v-model="modalDate.start"
-									kind="single"
-									class="membership-datepicker"
-								/>
-								<button
-									v-if="modalDate.start"
-									@click="modalDate.start = null"
-									class="absolute bottom-4 right-0 m-auto size-fit cursor-pointer"
-								>
-									<Close16 />
-								</button>
-							</div>
-
-							<div class="relative">
-								<cv-date-picker
-									dateLabel="End"
-									v-model="modalDate.end"
-									kind="single"
-									class="membership-datepicker"
-								/>
-								<button
-									v-if="modalDate.end"
-									@click="modalDate.end = null"
-									class="absolute bottom-4 right-0 m-auto size-fit cursor-pointer"
-								>
-									<Close16 />
-								</button>
-							</div>
-						</div>
-					</div>
-
-					<template
-						v-if="
-							currentMembership &&
-							currentMembership.posts[0].organizations[0].classification ===
-								'HOUSE_OF_REPRESENTATIVE'
-						"
-					>
-						<h4 class="font-normal">Representative Details</h4>
-
-						<cv-radio-group legendText="Label">
-							<cv-radio-button
-								v-for="value in Object.values(RepresentativeLabel)"
-								v-model="currentMembership.label"
-								name="representative-label"
-								:label="value"
-								:value="value"
-							/>
-						</cv-radio-group>
-
-						<div
-							class="flex w-full gap-5"
-							v-if="currentMembership.label === RepresentativeLabel.District"
-						>
-							<div class="w-1/2">
-								<cv-text-input
-									v-model="currentMembership.province"
-									label="Province"
-								/>
-							</div>
-
-							<div class="flex w-1/2 gap-5">
-								<cv-text-input
-									v-model.number="currentMembership.district_number"
-									label="District Number"
-									type="number"
-								/>
-							</div>
-						</div>
-
-						<div
-							v-if="currentMembership.label === RepresentativeLabel.Partylist"
-							class="flex w-1/2 gap-5"
-						>
-							<cv-text-input
-								v-model.number="currentMembership.list_number"
-								label="List Number"
-								type="number"
-							/>
-						</div>
-					</template>
-
-					<template
-						v-else-if="
-							currentMembership &&
-							currentMembership.posts[0].organizations[0].classification ===
-								'HOUSE_OF_SENATE'
-						"
-					>
-						<h4 class="font-normal">Senates Details</h4>
-
-						<div class="flex w-1/2 gap-5">
-							<cv-text-input
-								v-model="currentMembership.label"
-								label="Label"
-								helperText="ประเภทที่ถูกแบ่ง เช่น วิธีการจัดตั้งหรือกลุ่มอาชีพของ สว."
-							/>
-						</div>
-					</template>
-
-					<h4 class="font-normal">References</h4>
-
-					<LinksForm
-						:links="currentMembership?.links ?? []"
-						@update:links="
-							(val) => {
-								if (currentMembership) {
-									currentMembership.links = val.map((l) => ({
-										...l,
-										id: l.id || genId(),
-									}));
-								}
-							}
-						"
-					/>
-				</div>
-			</template>
-
-			<template v-slot:secondary-button>Cancel</template>
-			<template v-slot:primary-button>{{
-				mode == 'add' ? 'Add' : 'Save'
-			}}</template>
-		</cv-modal>
-
-		<cv-modal
-			class="delete-membership-modal"
+		<DeleteMembershipModal
 			:visible="showDeleteModal"
-			kind="danger"
-			size="sm"
-			@primary-click="handleDeleteMembership"
-			@secondary-click="showDeleteModal = false"
-			@modal-hide-request="showDeleteModal = false"
-		>
-			<template v-slot:title>Delete Membership</template>
-
-			<template v-slot:content
-				><p class="p-0">
-					Are you sure you want to remove a membership of “{{
-						pendingDeleteMembershipName
-					}}”?
-				</p></template
-			>
-
-			<template v-slot:secondary-button>Cancel</template>
-			<template v-slot:primary-button>Delete</template>
-		</cv-modal>
+			:membership-name="pendingDeleteMembershipName"
+			@update:visible="showDeleteModal = $event"
+			@confirm="handleDeleteMembership"
+		/>
 	</div>
 </template>
 
 <style scoped>
 ::v-deep(.bx--table-toolbar) {
 	background-color: white;
-}
-
-:deep(.membership-modal .bx--modal-header) {
-	padding-bottom: 10px;
-}
-
-:deep(.membership-modal .bx--modal-header) {
-	padding-bottom: 10px;
-}
-
-:deep(.membership-datepicker .bx--date-picker__input) {
-	width: 100% !important;
-}
-
-.bx--modal-content p {
-	padding: 0;
-}
-</style>
-
-<style>
-.membership-modal .bx--modal-container {
-	background-color: white !important;
-}
-
-.delete-membership-modal .bx--modal-content {
-	overflow: hidden;
 }
 </style>
