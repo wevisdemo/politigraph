@@ -10,6 +10,8 @@ export function useGraphqlClient() {
 
 	return createClient({
 		url: `${config.public.baseUrl}/graphql`,
-		batch: true,
+		batch: {
+			maxBatchSize: 5,
+		},
 	});
 }
