@@ -1,4 +1,8 @@
 <script setup lang="ts">
+import { enumPublishStatus } from '@politigraph/graphql/genql';
+import { getStringQueryParam } from '~/utils/query';
+import { ref } from 'vue';
+
 definePageMeta({
 	layout: 'admin-layout',
 });
@@ -7,7 +11,18 @@ useHead({
 	title: 'People | Politigraph Admin',
 });
 
+const route = useRoute();
 const graphqlClient = useGraphqlClient();
+
+const statusOption = [
+	enumPublishStatus.PUBLISHED,
+	enumPublishStatus.UNPUBLISHED,
+];
+
+const filters = ref({
+	status: getStringQueryParam(route.query.status, 'ALL'),
+	membership: getStringQueryParam(route.query.membership, 'ALL'),
+});
 
 const {
 	offset,
@@ -16,7 +31,13 @@ const {
 	handlePageChange,
 	handlePageSizeChange,
 } = usePaginationQuery({
+	getExtraQuery: () => ({
+		status: filters.value.status !== 'ALL' ? filters.value.status : undefined,
+		membership:
+			filters.value.membership !== 'ALL' ? filters.value.membership : undefined,
+	}),
 	totalCount: () => data.value?.totalCount,
+	watch: [filters],
 });
 
 const { debouncedSearch, handleSearchChange } = useDebouncedSearch({
@@ -25,22 +46,81 @@ const { debouncedSearch, handleSearchChange } = useDebouncedSearch({
 	},
 });
 
+const partyMembershipCondition = {
+	end_date: { eq: null },
+	posts: {
+		some: {
+			organizations: {
+				some: { classification: { eq: 'POLITICAL_PARTY' as const } },
+			},
+		},
+	},
+};
+
 const { data } = await useLazyAsyncData(
 	'people',
 	async () => {
 		const where: Record<string, any> = {};
+		const andClauses: Record<string, any>[] = [];
 
 		if (debouncedSearch.value) {
-			where.OR = [
-				{ firstname: { contains: debouncedSearch.value } },
-				{ lastname: { contains: debouncedSearch.value } },
-			];
+			andClauses.push({
+				OR: [
+					{ firstname: { contains: debouncedSearch.value } },
+					{ lastname: { contains: debouncedSearch.value } },
+				],
+			});
+		}
+
+		if (filters.value.status !== 'ALL') {
+			andClauses.push({
+				publish_status: { eq: filters.value.status },
+			});
+		}
+
+		if (filters.value.membership === 'PARTY_CONFLICT') {
+			andClauses.push({
+				memberships: { some: partyMembershipCondition },
+			});
+			andClauses.push({
+				NOT: {
+					memberships: { single: partyMembershipCondition },
+				},
+			});
+		}
+
+		if (filters.value.membership === 'NO_PARTY_REPRESENTATIVE') {
+			andClauses.push({
+				memberships: {
+					some: {
+						end_date: { eq: null },
+						posts: {
+							some: {
+								organizations: {
+									some: {
+										classification: {
+											eq: 'HOUSE_OF_REPRESENTATIVE' as const,
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			});
+			andClauses.push({
+				memberships: { none: partyMembershipCondition },
+			});
+		}
+
+		if (andClauses.length > 0) {
+			where.AND = andClauses;
 		}
 
 		const { people, peopleConnection } = await graphqlClient.query({
 			people: {
 				__args: {
-					where,
+					where: andClauses.length > 0 ? where : undefined,
 					limit: paginationData.value.pageSize,
 					offset: offset.value,
 				},
@@ -61,7 +141,9 @@ const { data } = await useLazyAsyncData(
 				},
 			},
 			peopleConnection: {
-				__args: { where },
+				__args: {
+					where: andClauses.length > 0 ? where : undefined,
+				},
 				aggregate: {
 					count: {
 						nodes: true,
@@ -75,9 +157,21 @@ const { data } = await useLazyAsyncData(
 		};
 	},
 	{
-		watch: [paginationData.value, debouncedSearch],
+		watch: [paginationData.value, filters.value, debouncedSearch],
 	},
 );
+
+const membershipOptions = [
+	{ label: 'ทั้งหมด', value: 'ALL' },
+	{
+		label: 'ปัจจุบันสังกัดมากกว่า 1 พรรค (ข้อมูลผิด)',
+		value: 'PARTY_CONFLICT',
+	},
+	{
+		label: 'เป็นสส.อยู่แต่ไม่ได้สังกัดพรรค (ข้อมูลขาด)',
+		value: 'NO_PARTY_REPRESENTATIVE',
+	},
+];
 </script>
 
 <template>
@@ -91,16 +185,32 @@ const { data } = await useLazyAsyncData(
 		title="People"
 		helperText="ข้อมูลบุคคลทางการเมืองทั้งหมด"
 	></cv-data-table-skeleton>
-	<div v-else>
-		<PeopleTable
-			:people="data.people"
-			:total-count="data.totalCount"
-			:page="paginationData.page"
-			:page-size="paginationData.pageSize"
-			:number-of-page="numberOfPage"
-			@page-change="handlePageChange"
-			@page-size-change="handlePageSizeChange"
-			@search="handleSearchChange"
-		/>
+	<div v-else class="relative">
+		<div class="flex flex-col items-start gap-12 md:flex-row">
+			<PeopleFilter
+				class="w-xs sticky top-16"
+				v-model:filters="filters"
+				:membershipOptions
+				:statusOptions="[
+					{ label: 'ทั้งหมด', value: 'ALL' },
+					...statusOption.map((status) => ({
+						label: status,
+						value: status,
+					})),
+				]"
+			></PeopleFilter>
+			<div class="w-full">
+				<PeopleTable
+					:people="data.people"
+					:total-count="data.totalCount"
+					:page="paginationData.page"
+					:page-size="paginationData.pageSize"
+					:number-of-page="numberOfPage"
+					@page-change="handlePageChange"
+					@page-size-change="handlePageSizeChange"
+					@search="handleSearchChange"
+				/>
+			</div>
+		</div>
 	</div>
 </template>
