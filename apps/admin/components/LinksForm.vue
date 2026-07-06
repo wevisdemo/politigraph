@@ -1,6 +1,6 @@
 <script setup lang="ts">
 // @ts-ignore
-import { TrashCan16 } from '@carbon/icons-vue';
+import { Launch16, TrashCan16 } from '@carbon/icons-vue';
 import type { Link } from '@politigraph/graphql/genql';
 import { watch } from 'vue';
 
@@ -38,9 +38,24 @@ const updateLink = (index: number, key: 'note' | 'url', value: string) => {
 	>
 		<div class="flex flex-row items-center justify-between">
 			<h6>{{ `Link ${i + 1}` }}</h6>
-			<cv-button @click="removeLink(i)" kind="danger--ghost" :icon="TrashCan16"
-				>Delete</cv-button
-			>
+			<div class="flex flex-row items-center">
+				<a
+					v-if="link.url"
+					:href="link.url"
+					target="_blank"
+					rel="noopener noreferrer"
+					class="inline-flex min-h-12 items-center gap-2 bg-transparent px-4 text-[0.875rem] leading-[1.28572] text-[#0f62fe] no-underline hover:bg-[#e5e5e5] hover:text-[#0043ce]"
+				>
+					Open <Launch16 />
+				</a>
+				<cv-button
+					@click="removeLink(i)"
+					kind="danger--ghost"
+					:icon="TrashCan16"
+				>
+					Delete
+				</cv-button>
+			</div>
 		</div>
 		<cv-text-input
 			label="Notes"
