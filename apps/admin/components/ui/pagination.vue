@@ -46,15 +46,16 @@ const handlePageChange = (value: number) => {
 					<cv-dropdown
 						class="w-24 border-b-0"
 						:light="true"
-						:modelValue="`${pageSize}`"
+						:model-value="`${pageSize}`"
 						@change="handlePageSizeChange"
 					>
 						<cv-dropdown-item
-							:key="`pagesize-${item}`"
 							v-for="item in pageSizeList"
+							:key="`pagesize-${item}`"
 							:value="`${item}`"
-							><span style="color: darkred">{{ item }}</span></cv-dropdown-item
 						>
+							<span style="color: darkred">{{ item }}</span>
+						</cv-dropdown-item>
 					</cv-dropdown>
 				</div>
 				<div>
@@ -69,15 +70,16 @@ const handlePageChange = (value: number) => {
 				<cv-dropdown
 					:light="true"
 					class="w-24 border-b-0"
-					:modelValue="`${page}`"
+					:model-value="`${page}`"
 					@change="handlePageChange"
 				>
 					<cv-dropdown-item
-						:key="`page-${item}`"
 						v-for="item in pageList"
+						:key="`page-${item}`"
 						:value="`${item}`"
-						><span style="color: darkred">{{ item }}</span></cv-dropdown-item
 					>
+						<span style="color: darkred">{{ item }}</span>
+					</cv-dropdown-item>
 				</cv-dropdown>
 				<div class="px-4">
 					{{ `of ${pageList.at(-1)} Pages` }}

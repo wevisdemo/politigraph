@@ -24,16 +24,16 @@ const handleCancel = () => {
 		@secondary-click="handleCancel"
 		@modal-hide-request="handleCancel"
 	>
-		<template v-slot:title>Delete Membership</template>
+		<template #title> Delete Membership </template>
 
-		<template v-slot:content>
+		<template #content>
 			<p class="p-0">
 				Are you sure you want to remove a membership of "{{ membershipName }}"?
 			</p>
 		</template>
 
-		<template v-slot:secondary-button>Cancel</template>
-		<template v-slot:primary-button>Delete</template>
+		<template #secondary-button> Cancel </template>
+		<template #primary-button> Delete </template>
 	</cv-modal>
 </template>
 

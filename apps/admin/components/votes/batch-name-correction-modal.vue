@@ -53,14 +53,14 @@ function getSubmitPayload() {
 	<cv-modal
 		:visible
 		size="lg"
-		autoHideOff
-		:primaryButtonDisabled="selectedIds.length === 0"
+		auto-hide-off
+		:primary-button-disabled="selectedIds.length === 0"
 		@primary-click="$emit('submit', getSubmitPayload())"
 		@secondary-click="$emit('cancel')"
 		@modal-hide-request="$emit('cancel')"
 	>
-		<template v-slot:title>Review Suggested Name Corrections</template>
-		<template v-slot:content>
+		<template #title> Review Suggested Name Corrections </template>
+		<template #content>
 			<p class="mb-4">
 				We found {{ dataTable.length }} potential matches for the unrecognized
 				names. Please review the suggestions and uncheck any that are incorrect.
@@ -99,8 +99,8 @@ function getSubmitPayload() {
 								: '[&>td]:bg-[#fff]'
 						"
 					>
-						<cv-data-table-cell
-							><cv-checkbox
+						<cv-data-table-cell>
+							<cv-checkbox
 								:label="row.suggestedName"
 								hide-label
 								:checked="selectedIds.includes(row.id)"
@@ -111,20 +111,21 @@ function getSubmitPayload() {
 											: selectedIds.filter((id) => id !== row.id);
 									}
 								"
-						/></cv-data-table-cell>
+							/>
+						</cv-data-table-cell>
 						<cv-data-table-cell>{{ row.vote_order }}</cv-data-table-cell>
 						<cv-data-table-cell>{{ row.badge_number }}</cv-data-table-cell>
-						<cv-data-table-cell class="text-[#DA1E28]">{{
-							row.voter_name_raw
-						}}</cv-data-table-cell>
+						<cv-data-table-cell class="text-[#DA1E28]">
+							{{ row.voter_name_raw }}
+						</cv-data-table-cell>
 						<cv-data-table-cell>{{ row.suggestedName }}</cv-data-table-cell>
 					</cv-data-table-row>
 				</template>
 			</cv-data-table>
 		</template>
-		<template v-slot:secondary-button>Cancel</template>
-		<template v-slot:primary-button
-			>Replace {{ selectedIds.length }} selections</template
-		>
+		<template #secondary-button> Cancel </template>
+		<template #primary-button>
+			Replace {{ selectedIds.length }} selections
+		</template>
 	</cv-modal>
 </template>

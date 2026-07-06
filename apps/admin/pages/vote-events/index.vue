@@ -234,7 +234,7 @@ const organizationsOption = () => {
 </script>
 
 <template>
-	<cv-breadcrumb noTrailingSlash>
+	<cv-breadcrumb no-trailing-slash>
 		<cv-breadcrumb-item><a href="/admin">Datasets</a></cv-breadcrumb-item>
 		<cv-breadcrumb-item>Vote Events</cv-breadcrumb-item>
 	</cv-breadcrumb>
@@ -242,13 +242,13 @@ const organizationsOption = () => {
 	<cv-data-table-skeleton
 		v-if="!data"
 		title="Vote Events"
-		helperText="การลงมติทั้งหมด"
-	></cv-data-table-skeleton>
+		helper-text="การลงมติทั้งหมด"
+	/>
 	<div v-else class="relative">
 		<div class="flex flex-col items-start gap-12 md:flex-row">
 			<VoteEventFilter
-				class="w-xs sticky top-16"
 				v-model:filters="filters"
+				class="w-xs sticky top-16"
 				:assemblies-option="[
 					{ label: 'All assemblies', value: 'ALL' },
 					...(organizationsOption() ?? []).map((o) => ({
@@ -269,9 +269,9 @@ const organizationsOption = () => {
 						value: c,
 					})),
 				]"
-			></VoteEventFilter>
+			/>
 			<div class="w-full">
-				<cv-data-table title="Vote Events" helperText="การลงมติทั้งหมด">
+				<cv-data-table title="Vote Events" helper-text="การลงมติทั้งหมด">
 					<template #headings>
 						<cv-data-table-heading
 							id="sb-title"
@@ -288,10 +288,10 @@ const organizationsOption = () => {
 					</template>
 					<template #data>
 						<cv-data-table-row
+							v-for="row in data.voteEvents"
 							:id="row.id"
 							:key="row.id"
 							:value="row.id"
-							v-for="row in data.voteEvents"
 							class="cursor-pointer"
 						>
 							<cv-data-table-cell>
@@ -301,12 +301,12 @@ const organizationsOption = () => {
 									>{{ row.title }}</a
 								>
 							</cv-data-table-cell>
-							<cv-data-table-cell class="text-nowrap">{{
-								formatDate(row.start_date)
-							}}</cv-data-table-cell>
-							<cv-data-table-cell class="text-nowrap">{{
-								formatDate(row.created_at)
-							}}</cv-data-table-cell>
+							<cv-data-table-cell class="text-nowrap">
+								{{ formatDate(row.start_date) }}
+							</cv-data-table-cell>
+							<cv-data-table-cell class="text-nowrap">
+								{{ formatDate(row.created_at) }}
+							</cv-data-table-cell>
 							<cv-data-table-cell>
 								<div class="flex flex-col justify-evenly">
 									<span v-for="org in row.organizations"
@@ -316,8 +316,9 @@ const organizationsOption = () => {
 							</cv-data-table-cell>
 							<cv-data-table-cell
 								class="max-w-26 overflow-hidden text-ellipsis whitespace-nowrap"
-								>{{ row.result }}</cv-data-table-cell
 							>
+								{{ row.result }}
+							</cv-data-table-cell>
 							<cv-data-table-cell>
 								<div class="flex flex-row gap-1">
 									<a
@@ -336,7 +337,7 @@ const organizationsOption = () => {
 											"
 											size="sm"
 											:label="note"
-										></cv-icon-button>
+										/>
 									</a>
 								</div>
 							</cv-data-table-cell>

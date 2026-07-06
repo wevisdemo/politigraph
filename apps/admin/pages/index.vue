@@ -17,7 +17,7 @@ useHead({
 			<div v-for="{ label, path, icon } in ADMIN_NAVIGATIONS" :key="label">
 				<cv-tile kind="clickable" class="bg-white hover:bg-neutral-200">
 					<a :href="`/admin/${path}`">
-						<component :is="icon"></component>
+						<component :is="icon" />
 						<p class="mt-2">{{ label }}</p>
 					</a>
 				</cv-tile>

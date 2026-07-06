@@ -109,7 +109,7 @@ const { data } = await useLazyAsyncData(
 </script>
 
 <template>
-	<cv-breadcrumb noTrailingSlash>
+	<cv-breadcrumb no-trailing-slash>
 		<cv-breadcrumb-item><a href="/admin">Datasets</a></cv-breadcrumb-item>
 		<cv-breadcrumb-item>Organizations</cv-breadcrumb-item>
 	</cv-breadcrumb>
@@ -117,12 +117,12 @@ const { data } = await useLazyAsyncData(
 	<cv-data-table-skeleton
 		v-if="!data"
 		title="Organizations"
-		helperText="ข้อมูลองค์กรทั้งหมด"
-	></cv-data-table-skeleton>
+		helper-text="ข้อมูลองค์กรทั้งหมด"
+	/>
 	<div v-else class="relative">
 		<div class="flex flex-col items-start gap-12 md:flex-row">
 			<div class="w-xs sticky top-16 flex flex-col">
-				<cv-radio-group legendText="Classification" vertical>
+				<cv-radio-group legend-text="Classification" vertical>
 					<cv-radio-button
 						v-for="classification in classificationOptions"
 						:key="classification"
@@ -139,7 +139,7 @@ const { data } = await useLazyAsyncData(
 			<div class="w-full">
 				<cv-data-table
 					title="Organizations"
-					helperText="ข้อมูลองค์กรทั้งหมด"
+					helper-text="ข้อมูลองค์กรทั้งหมด"
 					@search="handleSearchChange"
 				>
 					<template #headings>

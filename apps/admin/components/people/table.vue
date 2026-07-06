@@ -35,7 +35,7 @@ const router = useRouter();
 	<div>
 		<cv-data-table
 			title="Persons"
-			helperText="ข้อมูลบุคคลทางการเมืองทั้งหมด"
+			helper-text="ข้อมูลบุคคลทางการเมืองทั้งหมด"
 			@search="emit('search', $event)"
 		>
 			<template #actions>
@@ -76,8 +76,8 @@ const router = useRouter();
 					</cv-data-table-cell>
 					<cv-data-table-cell>
 						<div
-							class="flex flex-wrap gap-1 py-2"
 							v-if="row.memberships.length > 0"
+							class="flex flex-wrap gap-1 py-2"
 						>
 							<div v-for="memberships in row.memberships" :key="memberships.id">
 								<div

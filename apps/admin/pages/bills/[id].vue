@@ -533,22 +533,24 @@ const { data: organizationList } = await useAsyncData(
 </script>
 
 <template>
-	<cv-breadcrumb noTrailingSlash>
+	<cv-breadcrumb no-trailing-slash>
 		<cv-breadcrumb-item><a href="/admin">Datasets</a></cv-breadcrumb-item>
 		<cv-breadcrumb-item><a href="/admin/bills">Bills</a></cv-breadcrumb-item>
-		<cv-breadcrumb-item
-			><span class="max-w-sm overflow-hidden text-ellipsis whitespace-nowrap">{{
+		<cv-breadcrumb-item>
+			<span class="max-w-sm overflow-hidden text-ellipsis whitespace-nowrap">{{
 				billData?.title
-			}}</span></cv-breadcrumb-item
-		>
+			}}</span>
+		</cv-breadcrumb-item>
 	</cv-breadcrumb>
 
 	<div class="my-6 flex justify-between gap-4 md:flex-row md:items-center">
-		<h2 class="md:min-w-xl">{{ billData?.title }}</h2>
+		<h2 class="md:min-w-xl">
+			{{ billData?.title }}
+		</h2>
 
-		<cv-button @click="handleSave" class="mt-4" kind="primary" :icon="Save16"
-			>Save Changes</cv-button
-		>
+		<cv-button class="mt-4" kind="primary" :icon="Save16" @click="handleSave">
+			Save Changes
+		</cv-button>
 	</div>
 
 	<form

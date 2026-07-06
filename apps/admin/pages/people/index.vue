@@ -175,7 +175,7 @@ const membershipOptions = [
 </script>
 
 <template>
-	<cv-breadcrumb noTrailingSlash>
+	<cv-breadcrumb no-trailing-slash>
 		<cv-breadcrumb-item><a href="/admin">Datasets</a></cv-breadcrumb-item>
 		<cv-breadcrumb-item>People</cv-breadcrumb-item>
 	</cv-breadcrumb>
@@ -183,22 +183,22 @@ const membershipOptions = [
 	<cv-data-table-skeleton
 		v-if="!data"
 		title="People"
-		helperText="ข้อมูลบุคคลทางการเมืองทั้งหมด"
-	></cv-data-table-skeleton>
+		helper-text="ข้อมูลบุคคลทางการเมืองทั้งหมด"
+	/>
 	<div v-else class="relative">
 		<div class="flex flex-col items-start gap-12 md:flex-row">
 			<PeopleFilter
-				class="w-xs sticky top-16"
 				v-model:filters="filters"
-				:membershipOptions
-				:statusOptions="[
+				class="w-xs sticky top-16"
+				:membership-options
+				:status-options="[
 					{ label: 'ทั้งหมด', value: 'ALL' },
 					...statusOption.map((status) => ({
 						label: status,
 						value: status,
 					})),
 				]"
-			></PeopleFilter>
+			/>
 			<div class="w-full">
 				<PeopleTable
 					:people="data.people"

@@ -230,7 +230,7 @@ watch(
 		<cv-data-table-skeleton
 			v-if="!posts"
 			title="Posts"
-			helperText="ตำแหน่งในองค์กรทั้งหมด"
+			helper-text="ตำแหน่งในองค์กรทั้งหมด"
 			:rows="3"
 		/>
 
@@ -238,7 +238,7 @@ watch(
 			v-else
 			:key="posts.length"
 			title="Posts"
-			helperText="ตำแหน่งในองค์กรทั้งหมด"
+			helper-text="ตำแหน่งในองค์กรทั้งหมด"
 		>
 			<template #actions>
 				<cv-button :icon="Add16" aria-label="Add" @click="handleAddPost">
@@ -270,8 +270,8 @@ watch(
 				<template v-if="posts.length">
 					<cv-data-table-row
 						v-for="post in posts"
-						:key="post.id"
 						:id="post.id"
+						:key="post.id"
 						:value="post.id"
 						:class="getRowClass(post.mode)"
 					>
@@ -333,32 +333,32 @@ watch(
 		<cv-modal
 			class="post-modal"
 			:visible="showPostDetails"
-			autoHideOff
+			auto-hide-off
 			:primary-button-disabled="isPostAddDisabled"
+			size="md"
 			@modal-hide-request="handleCancelPost"
 			@primary-click="handleSavePost"
 			@secondary-click="handleCancelPost"
-			size="md"
 		>
-			<template v-slot:title>
+			<template #title>
 				<span class="capitalize">{{ mode ?? '' }}</span> Post
 			</template>
 
-			<template v-slot:content>
+			<template #content>
 				<div v-if="currentPost" class="flex flex-col gap-5">
 					<cv-text-input
 						v-model="currentPost.role"
 						label="Role*"
-						helperText="ชื่อตำแหน่งแบบสั้น"
+						helper-text="ชื่อตำแหน่งแบบสั้น"
 					/>
 
 					<div class="flex flex-row gap-5">
 						<cv-date-picker
-							dateLabel="Start"
 							v-model="modalDate.start"
+							date-label="Start"
 							kind="single"
 							class="post-datepicker"
-							:calOptions="{ dateFormat: 'Y-m-d' }"
+							:cal-options="{ dateFormat: 'Y-m-d' }"
 						/>
 						<button
 							v-if="modalDate.start"
@@ -370,11 +370,11 @@ watch(
 						</button>
 
 						<cv-date-picker
-							dateLabel="End"
 							v-model="modalDate.end"
+							date-label="End"
 							kind="single"
 							class="post-datepicker"
-							:calOptions="{ dateFormat: 'Y-m-d' }"
+							:cal-options="{ dateFormat: 'Y-m-d' }"
 						/>
 						<button
 							v-if="modalDate.end"
@@ -388,9 +388,9 @@ watch(
 
 					<cv-data-table
 						title="Memberships"
-						:helperText="`มี ${relatedMemberships.length} คนหรือองค์กรที่เชื่อมกับตำแหน่งนี้`"
-						rowSize="compact"
-						stickyHeader
+						:helper-text="`มี ${relatedMemberships.length} คนหรือองค์กรที่เชื่อมกับตำแหน่งนี้`"
+						row-size="compact"
+						sticky-header
 						class="max-h-96 overflow-y-scroll"
 					>
 						<template #headings>
@@ -415,7 +415,7 @@ watch(
 							<template v-if="relatedMembershipsLoading">
 								<cv-data-table-skeleton
 									title="Memberships"
-									helperText="คนหรือองค์กรที่เชื่อมกับตำแหน่งนี้"
+									helper-text="คนหรือองค์กรที่เชื่อมกับตำแหน่งนี้"
 									:rows="3"
 								/>
 							</template>
@@ -430,8 +430,8 @@ watch(
 											end_date: membership.end_date,
 										})),
 									)"
-									:key="row.id"
 									:id="row.id"
+									:key="row.id"
 									:value="row.id"
 								>
 									<cv-data-table-cell class="w-1/2">
@@ -450,8 +450,8 @@ watch(
 				</div>
 			</template>
 
-			<template v-slot:secondary-button>Cancel</template>
-			<template v-slot:primary-button>
+			<template #secondary-button> Cancel </template>
+			<template #primary-button>
 				{{ mode == 'add' ? 'Add' : 'Save' }}
 			</template>
 		</cv-modal>
@@ -465,9 +465,9 @@ watch(
 			@secondary-click="showDeleteModal = false"
 			@modal-hide-request="showDeleteModal = false"
 		>
-			<template v-slot:title>Delete Post</template>
+			<template #title> Delete Post </template>
 
-			<template v-slot:content>
+			<template #content>
 				<div class="space-y-3">
 					<p class="p-0">
 						Are you sure you want to remove a post of “{{
@@ -484,8 +484,8 @@ watch(
 				</div>
 			</template>
 
-			<template v-slot:secondary-button>Cancel</template>
-			<template v-slot:primary-button>Delete</template>
+			<template #secondary-button> Cancel </template>
+			<template #primary-button> Delete </template>
 		</cv-modal>
 	</div>
 </template>

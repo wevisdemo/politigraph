@@ -132,7 +132,7 @@ const organizationTypeOptions = Object.values(enumOrganizationType).map(
 			<UploadedImageDisplay
 				:image-url="previewImage || modelValue?.image"
 				:placeholder-icon="Enterprise32"
-				:cropperSize="
+				:cropper-size="
 					({ imageSize }) => {
 						const size = Math.min(imageSize.width, imageSize.height);
 						return {
@@ -141,7 +141,7 @@ const organizationTypeOptions = Object.values(enumOrganizationType).map(
 						};
 					}
 				"
-				:cropperPosition="
+				:cropper-position="
 					({ imageSize }) => {
 						const size = Math.min(imageSize.width, imageSize.height);
 						return {
@@ -188,8 +188,8 @@ const organizationTypeOptions = Object.values(enumOrganizationType).map(
 
 			<cv-select
 				label="Classification*"
-				:modelValue="modelValue.classification"
-				@update:modelValue="
+				:model-value="modelValue.classification"
+				@update:model-value="
 					(value) => {
 						if (!modelValue) return;
 						modelValue.classification = value as OrganizationType;
@@ -208,31 +208,31 @@ const organizationTypeOptions = Object.values(enumOrganizationType).map(
 			<div class="flex flex-row">
 				<cv-date-picker
 					v-model="foundingDateLocal"
-					dateLabel="Founding Date"
+					date-label="Founding Date"
 					kind="single"
-					:calOptions="{ dateFormat: 'Y-m-d' }"
+					:cal-options="{ dateFormat: 'Y-m-d' }"
 				/>
 
 				<cv-date-picker
 					v-model="dissolutionDateLocal"
-					dateLabel="Dissolution Date"
+					date-label="Dissolution Date"
 					kind="single"
-					:calOptions="{ dateFormat: 'Y-m-d' }"
+					:cal-options="{ dateFormat: 'Y-m-d' }"
 				/>
 			</div>
 
 			<cv-multi-select
+				v-model="selectedParentIds"
 				title="Parents"
 				:label="selectedParentLabels"
 				:options="organizationOptions"
-				v-model="selectedParentIds"
 			/>
 
 			<cv-multi-select
+				v-model="selectedChildIds"
 				title="Children"
 				:label="selectedChildLabels"
 				:options="organizationOptions"
-				v-model="selectedChildIds"
 			/>
 
 			<div>

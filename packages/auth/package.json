@@ -4,7 +4,9 @@
 	"private": true,
 	"scripts": {
 		"generate": "bun run --bun better-auth generate -y && bun run --bun drizzle-kit generate",
-		"migrate": "bun migrate.ts"
+		"migrate": "bun migrate.ts",
+		"lint": "eslint . --fix",
+		"check": "tsc --noEmit"
 	},
 	"dependencies": {
 		"@better-auth/cli": "^1.3.34",

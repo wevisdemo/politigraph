@@ -3,7 +3,9 @@
 	"version": "1.0.0",
 	"scripts": {
 		"dev": "bun run --watch --no-clear-screen src/index.ts",
-		"build": "bun build --compile --minify --outfile dist/server src/index.ts && cp node_modules/bun-image-turbo-linux-x64-gnu/*.node dist"
+		"build": "bun build --compile --minify --outfile dist/server src/index.ts && cp node_modules/bun-image-turbo-linux-x64-gnu/*.node dist",
+		"lint": "eslint . --fix",
+		"check": "bunx --bun tsc --noEmit"
 	},
 	"dependencies": {
 		"@apollo/server": "^4.11.2",

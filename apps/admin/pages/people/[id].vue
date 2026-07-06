@@ -527,7 +527,7 @@ watch(
 </script>
 
 <template>
-	<cv-breadcrumb noTrailingSlash>
+	<cv-breadcrumb no-trailing-slash>
 		<cv-breadcrumb-item><a href="/admin">Datasets</a></cv-breadcrumb-item>
 		<cv-breadcrumb-item><a href="/admin/people">People</a></cv-breadcrumb-item>
 		<cv-breadcrumb-item>{{ peopleData?.name }}</cv-breadcrumb-item>
@@ -537,23 +537,31 @@ watch(
 
 	<div class="flex flex-wrap justify-between">
 		<div class="flex flex-wrap items-center gap-4">
-			<h1 class="mb-8 mt-4 font-normal">{{ peopleData?.name }}</h1>
+			<h1 class="mb-8 mt-4 font-normal">
+				{{ peopleData?.name }}
+			</h1>
 			<div class="pb-2">
 				<UiPublishStatusTag :status="peopleData?.publish_status" />
 			</div>
 		</div>
 		<div class="flex flex-wrap items-start gap-4">
-			<cv-button @click="saveChanges" class="mt-4" kind="primary" :icon="Save16"
-				>Save Changes</cv-button
+			<cv-button
+				class="mt-4"
+				kind="primary"
+				:icon="Save16"
+				@click="saveChanges"
 			>
+				Save Changes
+			</cv-button>
 			<cv-button
 				default="Unpublished"
 				:icon="isPublished ? ViewOff16 : View16"
 				class="mt-4"
 				kind="tertiary"
 				@click="togglePublishStatus"
-				>{{ isPublished ? 'Unpublished' : 'Published' }}</cv-button
 			>
+				{{ isPublished ? 'Unpublished' : 'Published' }}
+			</cv-button>
 		</div>
 	</div>
 
@@ -573,7 +581,7 @@ watch(
 		<div v-if="peopleData" class="flex flex-col gap-6">
 			<PeopleMembershipList
 				v-model:memberships="editableMemberships"
-				:organizationsOptions="organizationsOptions"
+				:organizations-options="organizationsOptions"
 			/>
 		</div>
 	</div>

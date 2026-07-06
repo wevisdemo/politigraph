@@ -82,16 +82,16 @@ watch(() => props.event.start_date, refresh);
 				<span>{{ event.result ?? '-' }}</span>
 			</div>
 			<cv-radio-group
-				legendText="Select matched vote events from the same date"
+				legend-text="Select matched vote events from the same date"
 				:class="{ 'radio-group--incomplete': props.incomplete }"
 				vertical
 			>
 				<radio-input-with-details
 					v-for="ve in matchingVoteEvents"
 					:key="ve.id"
+					v-model="selectedVoteEventId"
 					:value="ve.id"
 					:name="`vote-event-selection-${event.id}`"
-					v-model="selectedVoteEventId"
 					:disabled="
 						(ve.bill_vote_events?.length ?? 0) > 0 &&
 						ve.id !== selectedVoteEventId

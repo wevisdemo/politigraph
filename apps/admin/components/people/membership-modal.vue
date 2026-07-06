@@ -142,19 +142,19 @@ const handleRoleInput = (selectedValue: string) => {
 	<cv-modal
 		class="membership-modal"
 		:visible="visible"
-		autoHideOff
+		auto-hide-off
 		:primary-button-disabled="disabled"
+		size="md"
 		@modal-hide-request="handleCancel"
 		@primary-click="handleSave"
 		@secondary-click="handleCancel"
-		size="md"
 	>
-		<template v-slot:title
-			><span class="capitalize">{{ mode ?? '' }}</span> Membership</template
-		>
+		<template #title>
+			<span class="capitalize">{{ mode ?? '' }}</span> Membership
+		</template>
 
-		<template v-slot:content>
-			<div class="flex flex-col gap-5" v-if="membership">
+		<template #content>
+			<div v-if="membership" class="flex flex-col gap-5">
 				<div class="flex justify-between gap-5">
 					<div class="relative w-1/2">
 						<cv-combo-box
@@ -163,8 +163,8 @@ const handleRoleInput = (selectedValue: string) => {
 							:options="organizationClassification"
 							item-value-key="value"
 							item-text-key="label"
-							autoFilter
-							autoHighlight
+							auto-filter
+							auto-highlight
 							@change="(event: string) => onClassificationChange(event)"
 						/>
 					</div>
@@ -182,8 +182,8 @@ const handleRoleInput = (selectedValue: string) => {
 							:disabled="!membership.posts[0].organizations[0].classification"
 							item-value-key="value"
 							item-text-key="label"
-							autoFilter
-							autoHighlight
+							auto-filter
+							auto-highlight
 							@change="(event: string) => handleOrgNameChange(event)"
 						/>
 					</div>
@@ -192,17 +192,17 @@ const handleRoleInput = (selectedValue: string) => {
 				<div class="flex w-full gap-5">
 					<div class="w-1/2">
 						<cv-combo-box
+							:key="membership.posts[0].organizations[0].id"
+							v-model="membership.posts[0].id"
 							:options="
 								getPostOptionsForOrg(membership.posts[0].organizations[0].id)
 							"
-							:key="membership.posts[0].organizations[0].id"
-							v-model="membership.posts[0].id"
 							title="Post*"
 							:disabled="!membership.posts[0].organizations[0].id"
 							item-value-key="value"
 							item-text-key="label"
-							autoFilter
-							autoHighlight
+							auto-filter
+							auto-highlight
 							@change="(event: string) => handleRoleInput(event)"
 						/>
 					</div>
@@ -210,16 +210,16 @@ const handleRoleInput = (selectedValue: string) => {
 					<div class="flex w-1/2 gap-5">
 						<div v-for="field in dateFields" :key="field.key" class="relative">
 							<cv-date-picker
-								:dateLabel="field.label"
 								v-model="modalDate[field.key]"
+								:date-label="field.label"
 								kind="single"
 								class="membership-datepicker"
-								:calOptions="{ dateFormat: 'Y-m-d' }"
+								:cal-options="{ dateFormat: 'Y-m-d' }"
 							/>
 							<button
 								v-if="modalDate[field.key]"
-								@click="modalDate[field.key] = null"
 								class="absolute bottom-4 right-0 m-auto size-fit cursor-pointer"
+								@click="modalDate[field.key] = null"
 							>
 								<Close16 />
 							</button>
@@ -235,7 +235,7 @@ const handleRoleInput = (selectedValue: string) => {
 				>
 					<h4 class="font-normal">Representative Details</h4>
 
-					<cv-radio-group legendText="Label">
+					<cv-radio-group legend-text="Label">
 						<cv-radio-button
 							v-for="label in Object.values(RepresentativeLabel)"
 							v-model="membership.label"
@@ -246,8 +246,8 @@ const handleRoleInput = (selectedValue: string) => {
 					</cv-radio-group>
 
 					<div
-						class="flex w-full gap-5"
 						v-if="membership.label === RepresentativeLabel.District"
+						class="flex w-full gap-5"
 					>
 						<div class="w-1/2">
 							<cv-text-input v-model="membership.province" label="Province" />
@@ -286,7 +286,7 @@ const handleRoleInput = (selectedValue: string) => {
 						<cv-text-input
 							v-model="membership.label"
 							label="Label"
-							helperText="ประเภทที่ถูกแบ่ง เช่น วิธีการจัดตั้งหรือกลุ่มอาชีพของ สว."
+							helper-text="ประเภทที่ถูกแบ่ง เช่น วิธีการจัดตั้งหรือกลุ่มอาชีพของ สว."
 						/>
 					</div>
 				</template>
@@ -309,10 +309,10 @@ const handleRoleInput = (selectedValue: string) => {
 			</div>
 		</template>
 
-		<template v-slot:secondary-button>Cancel</template>
-		<template v-slot:primary-button>{{
-			mode == 'add' ? 'Add' : 'Save'
-		}}</template>
+		<template #secondary-button> Cancel </template>
+		<template #primary-button>
+			{{ mode == 'add' ? 'Add' : 'Save' }}
+		</template>
 	</cv-modal>
 </template>
 

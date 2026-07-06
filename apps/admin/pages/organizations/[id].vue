@@ -464,11 +464,11 @@ const saveChanges = async () => {
 </script>
 
 <template>
-	<cv-breadcrumb noTrailingSlash>
+	<cv-breadcrumb no-trailing-slash>
 		<cv-breadcrumb-item><a href="/admin">Datasets</a></cv-breadcrumb-item>
-		<cv-breadcrumb-item
-			><a href="/admin/organizations">Organizations</a></cv-breadcrumb-item
-		>
+		<cv-breadcrumb-item>
+			<a href="/admin/organizations">Organizations</a>
+		</cv-breadcrumb-item>
 		<cv-breadcrumb-item>{{ organizationData?.name }}</cv-breadcrumb-item>
 	</cv-breadcrumb>
 
@@ -476,12 +476,19 @@ const saveChanges = async () => {
 
 	<div class="flex flex-wrap justify-between">
 		<div class="flex flex-wrap items-center gap-4">
-			<h1 class="mb-8 mt-4 font-normal">{{ organizationData?.name }}</h1>
+			<h1 class="mb-8 mt-4 font-normal">
+				{{ organizationData?.name }}
+			</h1>
 		</div>
 		<div class="flex flex-wrap items-start gap-4">
-			<cv-button @click="saveChanges" class="mt-4" kind="primary" :icon="Save16"
-				>Save Changes</cv-button
+			<cv-button
+				class="mt-4"
+				kind="primary"
+				:icon="Save16"
+				@click="saveChanges"
 			>
+				Save Changes
+			</cv-button>
 		</div>
 	</div>
 

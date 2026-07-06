@@ -145,7 +145,7 @@ const savePeople = async () => {
 </script>
 
 <template>
-	<cv-breadcrumb noTrailingSlash>
+	<cv-breadcrumb no-trailing-slash>
 		<cv-breadcrumb-item><a href="/admin">Datasets</a></cv-breadcrumb-item>
 		<cv-breadcrumb-item><a href="/admin/people">People</a></cv-breadcrumb-item>
 	</cv-breadcrumb>
@@ -165,9 +165,9 @@ const savePeople = async () => {
 			}}
 		</h1>
 		<div class="flex flex-wrap items-start gap-4">
-			<cv-button @click="savePeople" class="mt-4" kind="primary" :icon="Add16"
-				>Create</cv-button
-			>
+			<cv-button class="mt-4" kind="primary" :icon="Add16" @click="savePeople">
+				Create
+			</cv-button>
 		</div>
 	</div>
 	<div class="flex flex-col items-start gap-4 md:flex-row">

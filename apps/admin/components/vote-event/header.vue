@@ -22,12 +22,7 @@ const isPublished = computed(() => props.publishStatus === 'PUBLISHED');
 </script>
 
 <template>
-	<cv-skeleton-text
-		v-if="!title"
-		class="my-6"
-		heading
-		:line-count="2"
-	></cv-skeleton-text>
+	<cv-skeleton-text v-if="!title" class="my-6" heading :line-count="2" />
 	<div
 		v-else
 		class="my-6 flex flex-col flex-wrap items-end justify-end gap-4 md:flex-row md:items-center"
@@ -57,10 +52,11 @@ const isPublished = computed(() => props.publishStatus === 'PUBLISHED');
 				default="Unpublished"
 				:icon="isPublished ? ViewOff16 : View16"
 				kind="tertiary"
-				@click="$emit('togglePublishStatus')"
 				:disabled="isPublishingDisabled"
-				>{{ isPublished ? 'Unpublished' : 'Published' }}</cv-button
+				@click="$emit('togglePublishStatus')"
 			>
+				{{ isPublished ? 'Unpublished' : 'Published' }}
+			</cv-button>
 
 			<cv-button
 				default="Save Changes"
@@ -68,17 +64,18 @@ const isPublished = computed(() => props.publishStatus === 'PUBLISHED');
 				:disabled="isSaveDisabled"
 				type="submit"
 				@click="$emit('save')"
-				>Save Changes</cv-button
 			>
+				Save Changes
+			</cv-button>
 		</div>
 	</div>
 
 	<cv-inline-notification
 		v-if="!isPublished"
-		lowContrast
+		low-contrast
 		kind="warning"
 		title="This item is unpublished"
-		subTitle="It is not visible in public view."
-		hideCloseButton
+		sub-title="It is not visible in public view."
+		hide-close-button
 	/>
 </template>

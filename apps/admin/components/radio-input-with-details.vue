@@ -28,7 +28,7 @@ const emit = defineEmits<{
 			class="cds--radio-button__label"
 			:class="{ 'opacity-50': disabled }"
 		>
-			<span class="cds--radio-button__appearance"></span>
+			<span class="cds--radio-button__appearance" />
 			<span class="flex flex-col leading-snug">
 				<slot />
 			</span>

@@ -38,7 +38,7 @@ const signout = async () => {
 <template>
 	<ClientOnly>
 		<cv-header aria-label="Header">
-			<template v-slot:left-panels>
+			<template #left-panels>
 				<cv-side-nav
 					id="side-nav"
 					rail
@@ -59,22 +59,28 @@ const signout = async () => {
 			</template>
 			<div class="flex items-center">
 				<cv-header-menu-button
+					v-show="username"
 					aria-label="Header menu"
 					aria-controls="side-nav"
-					v-show="username"
 				/>
-				<cv-header-name href="/admin"
-					><p class="text-black">
+				<cv-header-name href="/admin">
+					<p class="text-black">
 						WeVis <span class="font-bold">Politigraph Admin</span>
-					</p></cv-header-name
-				>
+					</p>
+				</cv-header-name>
 			</div>
-			<cv-overflow-menu flipMenu v-if="username">
-				<template v-slot:trigger><UserAvatar24 /></template>
+			<cv-overflow-menu v-if="username" flip-menu>
+				<template #trigger>
+					<UserAvatar24 />
+				</template>
 				<div class="p-4">
-					<p class="text-sm">{{ username }}</p>
+					<p class="text-sm">
+						{{ username }}
+					</p>
 
-					<p class="text-xs text-[#525252]">{{ email }}</p>
+					<p class="text-xs text-[#525252]">
+						{{ email }}
+					</p>
 				</div>
 				<a href="/admin/api-keys">
 					<cv-overflow-menu-item value="API Keys" class="flex items-center"
@@ -90,28 +96,30 @@ const signout = async () => {
 					value="Settings"
 					class="flex items-center"
 					@click="showSettings = true"
-					>Settings <Settings16
-				/></cv-overflow-menu-item>
+				>
+					Settings <Settings16 />
+				</cv-overflow-menu-item>
 				<cv-overflow-menu-item
 					value="item 3"
 					danger
 					class="flex items-center"
 					@click="signout"
-					>Log out <Logout16
-				/></cv-overflow-menu-item>
+				>
+					Log out <Logout16 />
+				</cv-overflow-menu-item>
 			</cv-overflow-menu>
 		</cv-header>
 		<cv-modal
 			:visible="showSettings"
-			autoHideOff
-			primaryButtonDisabled
-			disableTeleport
-			@modal-hide-request="showSettings = false"
+			auto-hide-off
+			primary-button-disabled
+			disable-teleport
 			size="sm"
+			@modal-hide-request="showSettings = false"
 		>
-			<template v-slot:title>Account Settings</template>
-			<template v-slot:content
-				><div class="mb-6">
+			<template #title> Account Settings </template>
+			<template #content>
+				<div class="mb-6">
 					<p class="font-bold">Name</p>
 					<p>{{ username }}</p>
 				</div>
@@ -127,8 +135,8 @@ const signout = async () => {
 				<div class="mt-6">
 					<p class="mb-1 font-bold">Password</p>
 					<a href="/admin/change-password" class="text-xs">Change Password</a>
-				</div></template
-			>
+				</div>
+			</template>
 		</cv-modal>
 	</ClientOnly>
 	<div

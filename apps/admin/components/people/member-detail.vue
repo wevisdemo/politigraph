@@ -128,9 +128,9 @@ const handleRoleInput = (event: InputEvent, m: MemberShipProp) => {
 				<template #actions>
 					<cv-button
 						hidden
-						@click="handleAddMembership"
 						:icon="Add16"
 						aria-label="Add"
+						@click="handleAddMembership"
 					>
 						Add
 					</cv-button>
@@ -167,8 +167,8 @@ const handleRoleInput = (event: InputEvent, m: MemberShipProp) => {
 										: `Select ${title}`
 								"
 								aria-label="classification"
-								autoFilter
-								autoHighlight
+								auto-filter
+								auto-highlight
 								:options="organizationsOptions"
 								class="no-style-combo absolute -ml-1.5 -mt-2.5 w-1/2 text-sm"
 								item-value-key="value"
@@ -183,14 +183,14 @@ const handleRoleInput = (event: InputEvent, m: MemberShipProp) => {
 						<!-- Role -->
 						<cv-data-table-cell>
 							<cv-combo-box
+								:key="m.posts[0].organizations[0].id"
 								v-model="m.posts[0].id"
 								:disabled="!m.posts[0].organizations[0].id"
 								:options="getPostOptionsForOrg(m.posts[0].organizations[0].id)"
 								:label="m.posts[0].id ? m.posts[0].role : `Select Post`"
-								:key="m.posts[0].organizations[0].id"
 								aria-label="post"
-								autoFilter
-								autoHighlight
+								auto-filter
+								auto-highlight
 								class="no-style-combo absolute -ml-1.5 -mt-2.5 w-1/2 text-sm"
 								item-value-key="value"
 								item-text-key="label"
@@ -203,7 +203,7 @@ const handleRoleInput = (event: InputEvent, m: MemberShipProp) => {
 						<cv-data-table-cell>
 							<cv-date-picker
 								v-model="localDates[i].start"
-								dateLabel=""
+								date-label=""
 								placeholder="Select date"
 								kind="single"
 								class="full-width-date-picker"
@@ -214,7 +214,7 @@ const handleRoleInput = (event: InputEvent, m: MemberShipProp) => {
 						<cv-data-table-cell>
 							<cv-date-picker
 								v-model="localDates[i].end"
-								dateLabel=""
+								date-label=""
 								placeholder="Select date"
 								kind="single"
 								class="full-width-date-picker"
@@ -227,12 +227,12 @@ const handleRoleInput = (event: InputEvent, m: MemberShipProp) => {
 		<cv-inline-notification
 			v-if="editedMembershipsId && editedMembershipsId.size > 0"
 			kind="warning"
-			lowContrast
+			low-contrast
 			title="Unsaved changes"
-			subTitle="Click 'Save Changes' to apply your edits."
+			sub-title="Click 'Save Changes' to apply your edits."
 			class="w-full"
-			hideCloseButton
-			actionLabel="Save Changes"
+			hide-close-button
+			action-label="Save Changes"
 			@action="$emit('savechanges')"
 		/>
 	</div>

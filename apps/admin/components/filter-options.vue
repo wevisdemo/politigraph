@@ -10,7 +10,7 @@ const model = defineModel<string | string[]>();
 </script>
 
 <template>
-	<cv-radio-group :legendText="label" vertical>
+	<cv-radio-group :legend-text="label" vertical>
 		<template v-if="type === 'radio'">
 			<cv-radio-button
 				v-for="opt in options"

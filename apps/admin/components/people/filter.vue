@@ -18,7 +18,7 @@ const resetFilter = () => {
 <template>
 	<div class="flex flex-col gap-4">
 		<div class="pb-4">
-			<button @click="resetFilter" class="text-[#0F62FE] hover:cursor-pointer">
+			<button class="text-[#0F62FE] hover:cursor-pointer" @click="resetFilter">
 				Reset Filters
 			</button>
 		</div>

@@ -217,21 +217,21 @@ const showModalDeleteMembership = (id: string, name: string | undefined) => {
 							/>
 						</p>
 					</cv-data-table-cell>
-					<cv-data-table-cell
-						><p :class="m.mode == 'deleted' ? 'line-through' : ''">
+					<cv-data-table-cell>
+						<p :class="m.mode == 'deleted' ? 'line-through' : ''">
 							{{ m.posts[0]?.role ?? '-' }}
-						</p></cv-data-table-cell
-					>
-					<cv-data-table-cell
-						><p :class="m.mode == 'deleted' ? 'line-through' : ''">
+						</p>
+					</cv-data-table-cell>
+					<cv-data-table-cell>
+						<p :class="m.mode == 'deleted' ? 'line-through' : ''">
 							{{ formatDate(m.start_date ?? '') ?? '-' }}
-						</p></cv-data-table-cell
-					>
-					<cv-data-table-cell
-						><p :class="m.mode == 'deleted' ? 'line-through' : ''">
+						</p>
+					</cv-data-table-cell>
+					<cv-data-table-cell>
+						<p :class="m.mode == 'deleted' ? 'line-through' : ''">
 							{{ formatDate(m.end_date ?? '') ?? '-' }}
-						</p></cv-data-table-cell
-					>
+						</p>
+					</cv-data-table-cell>
 					<cv-data-table-cell>
 						<div class="flex gap-2">
 							<cv-icon-button
@@ -240,8 +240,7 @@ const showModalDeleteMembership = (id: string, name: string | undefined) => {
 								:icon="Edit16"
 								class="p-0"
 								@click="handleEditMembership(m)"
-							></cv-icon-button
-							><cv-icon-button
+							/><cv-icon-button
 								label="ลบ"
 								kind="ghost"
 								:icon="TrashCan16"
@@ -252,8 +251,9 @@ const showModalDeleteMembership = (id: string, name: string | undefined) => {
 										m.posts?.[0]?.organizations?.[0]?.name,
 									)
 								"
-							></cv-icon-button></div
-					></cv-data-table-cell>
+							/>
+						</div>
+					</cv-data-table-cell>
 				</cv-data-table-row>
 			</template>
 		</cv-data-table>

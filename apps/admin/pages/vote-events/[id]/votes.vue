@@ -385,18 +385,18 @@ function scrollToRow(id: string) {
 
 <template>
 	<div class="relative">
-		<cv-breadcrumb noTrailingSlash>
+		<cv-breadcrumb no-trailing-slash>
 			<cv-breadcrumb-item><a href="/admin">Datasets</a></cv-breadcrumb-item>
-			<cv-breadcrumb-item
-				><a href="/admin/vote-events">Vote Events</a></cv-breadcrumb-item
-			>
-			<cv-breadcrumb-item
-				><a
+			<cv-breadcrumb-item>
+				<a href="/admin/vote-events">Vote Events</a>
+			</cv-breadcrumb-item>
+			<cv-breadcrumb-item>
+				<a
 					:href="`/admin/vote-events/${voteEvent?.id}`"
 					class="max-w-sm overflow-hidden text-ellipsis whitespace-nowrap"
 					>{{ voteEvent?.title }}</a
-				></cv-breadcrumb-item
-			>
+				>
+			</cv-breadcrumb-item>
 			<cv-breadcrumb-item>Votes</cv-breadcrumb-item>
 		</cv-breadcrumb>
 
@@ -419,7 +419,7 @@ function scrollToRow(id: string) {
 			v-if="voteValidationResult"
 			:errors="voteValidationResult.errors"
 			:warnings="voteValidationResult.warnings"
-			:getActionLabel="
+			:get-action-label="
 				(type, ids) =>
 					type === 'COUNT_MISMATCHED'
 						? undefined
@@ -440,19 +440,19 @@ function scrollToRow(id: string) {
 
 		<div class="relative flex flex-col-reverse items-start gap-4 md:flex-row">
 			<VotesTable
+				v-model:active-editing-cell="activeEditingCell"
+				v-model:to-delete-ids="toDeleteIds"
 				class="flex-1"
-				:voteEvent
-				:originalVotesMap
-				:peopleOptions
+				:vote-event
+				:original-votes-map
+				:people-options
 				:errors="voteValidationResult?.errors ?? []"
-				:editedCells
-				:editedRows
-				v-model:activeEditingCell="activeEditingCell"
-				v-model:toDeleteIds="toDeleteIds"
+				:edited-cells
+				:edited-rows
 				@edited="(arg) => markVoteAsEdited(...arg)"
 				@deleted="showRowDeleteNotification"
 			/>
-			<VotesSummary class="sticky top-16 max-w-xs" :voteEvent />
+			<VotesSummary class="sticky top-16 max-w-xs" :vote-event />
 		</div>
 	</div>
 
@@ -460,7 +460,7 @@ function scrollToRow(id: string) {
 		v-if="voteEvent && peopleOptions"
 		:visible="isShowBatchNameCorrectionModal"
 		:votes="voteEvent.votes.filter((v) => v.voters.length === 0)"
-		:peopleOptions
+		:people-options
 		@submit="
 			(values) => {
 				values.forEach(({ voteId, voterId }) => {

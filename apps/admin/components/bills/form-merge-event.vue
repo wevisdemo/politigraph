@@ -33,7 +33,7 @@ const emit = defineEmits<{
 <template>
 	<div class="flex flex-col gap-4">
 		<cv-radio-group
-			:legendText="`Select main bill from ${event.bills?.length ?? 0} merged bills`"
+			:legend-text="`Select main bill from ${event.bills?.length ?? 0} merged bills`"
 			:class="{ 'radio-group--incomplete': props.incomplete }"
 			vertical
 		>

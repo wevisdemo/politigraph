@@ -222,24 +222,24 @@ const downloadCSV = () => {
 		<cv-data-table-skeleton
 			v-if="!voteEvent"
 			title="Votes"
-			helperText="การลงมติรายบุคคล"
-		></cv-data-table-skeleton>
+			helper-text="การลงมติรายบุคคล"
+		/>
 		<cv-data-table
 			v-else
+			v-model:selected-rows="selectedRows"
 			title="Votes"
-			helperText="การลงมติรายบุคคล"
+			helper-text="การลงมติรายบุคคล"
 			:rows="filteredVotes"
-			v-model:selectedRows="selectedRows"
-			@update:rows-selected="onSelectRow"
-			useBatchActions
+			use-batch-actions
 			class="w-full table-fixed"
+			@update:rows-selected="onSelectRow"
 			@search="onSearch"
 		>
 			<template #actions>
 				<cv-button
 					:icon="Download16"
 					kind="ghost"
-					hasIconOnly
+					has-icon-only
 					class="text-black"
 					@click="downloadCSV"
 				/>
@@ -273,8 +273,8 @@ const downloadCSV = () => {
 						@click="startEditing(i, 0)"
 					>
 						<cv-text-input
-							placeholder="Enter Order No."
 							v-model="row.vote_order"
+							placeholder="Enter Order No."
 							type="text"
 							style="background: transparent; border: none"
 							@change="emit('edited', [row.id, 'vote_order'])"
@@ -285,8 +285,8 @@ const downloadCSV = () => {
 						@click="startEditing(i, 1)"
 					>
 						<cv-text-input
-							placeholder="Enter ID No."
 							v-model="row.badge_number"
+							placeholder="Enter ID No."
 							type="text"
 							style="background: transparent; border: none"
 							@change="emit('edited', [row.id, 'badge_number'])"
@@ -294,7 +294,6 @@ const downloadCSV = () => {
 					</cv-data-table-cell>
 					<cv-data-table-cell
 						:key="row.id + '-' + 'voter_name_raw'"
-						@click="startEditing(i, 2)"
 						:class="[
 							{
 								'text-[#DA1E28]':
@@ -303,16 +302,17 @@ const downloadCSV = () => {
 									!isNewRow(row.id),
 							},
 						]"
+						@click="startEditing(i, 2)"
 					>
 						<div v-if="isActiveEditing(i, 2)">
 							<cv-combo-box
-								:label="row.voter_name_raw || 'Select voter name'"
 								v-model="row.voter_name_raw"
+								:label="row.voter_name_raw || 'Select voter name'"
 								:options="getVoterOptions(row.id, row.voters.length > 0)"
 								item-value-key="value"
 								item-text-key="label"
-								autoFilter
-								autoHighlight
+								auto-filter
+								auto-highlight
 								@change="onOptionChange(row as Vote, 'voter_name_raw')"
 							/>
 						</div>
@@ -355,8 +355,8 @@ const downloadCSV = () => {
 						@click="startEditing(i, 3)"
 					>
 						<cv-text-input
-							placeholder="Enter Party"
 							v-model="row.voter_party"
+							placeholder="Enter Party"
 							type="text"
 							style="background: transparent; border: none"
 							@change="emit('edited', [row.id, 'voter_party'])"
@@ -369,13 +369,13 @@ const downloadCSV = () => {
 						<div v-if="isActiveEditing(i, 4)">
 							<cv-dropdown
 								v-model="row.option"
-								@change="onOptionChange(row as Vote, 'option')"
 								:up="i >= filteredVotes.length - 5 ? true : false"
 								light
+								@change="onOptionChange(row as Vote, 'option')"
 							>
 								<cv-dropdown-item
-									:key="`${item}`"
 									v-for="item in standardVoteOptions"
+									:key="`${item}`"
 									:value="`${item}`"
 								>
 									{{ item }}

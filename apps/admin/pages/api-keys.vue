@@ -41,17 +41,15 @@ const Form = useForm({
 <template>
 	<div class="flex justify-center">
 		<div class="mx-auto w-full max-w-2xl">
-			<cv-data-table-skeleton
-				v-if="status === 'pending'"
-				title="API Keys"
-			></cv-data-table-skeleton>
+			<cv-data-table-skeleton v-if="status === 'pending'" title="API Keys" />
 			<div v-else-if="apiKeys?.data" class="flex flex-col gap-4">
-				<cv-data-table title="API Keys"
-					><template #headings
-						><cv-data-table-heading heading="Name" />
+				<cv-data-table title="API Keys">
+					<template #headings>
+						<cv-data-table-heading heading="Name" />
 						<cv-data-table-heading heading="Created On" /><cv-data-table-heading
 							heading="Actions"
-					/></template>
+						/>
+					</template>
 					<template #data>
 						<cv-data-table-row
 							v-for="key in apiKeys.data.sort(
@@ -65,6 +63,11 @@ const Form = useForm({
 								{{ key.createdAt.toLocaleDateString() }} </cv-data-table-cell
 							><cv-data-table-cell>
 								<cv-icon-button
+									size="sm"
+									label="Delete"
+									kind="danger--ghost"
+									tip-position="left"
+									:icon="TrashCan16"
 									@click="
 										async () => {
 											await apiKey.delete({
@@ -73,13 +76,9 @@ const Form = useForm({
 											refresh();
 										}
 									"
-									size="sm"
-									label="Delete"
-									kind="danger--ghost"
-									tipPosition="left"
-									:icon="TrashCan16"
-								/> </cv-data-table-cell
-						></cv-data-table-row>
+								/>
+							</cv-data-table-cell>
+						</cv-data-table-row>
 					</template>
 				</cv-data-table>
 				<p
@@ -94,13 +93,13 @@ const Form = useForm({
 					@submit.prevent.stop="Form.handleSubmit"
 				>
 					<Form.Field name="name">
-						<template v-slot="{ field }">
+						<template #default="{ field }">
 							<cv-text-input
 								label="Create a new key"
 								placeholder="Key name"
 								:name="field.name"
-								:modelValue="field.state.value"
-								@update:modelValue="field.handleChange"
+								:model-value="field.state.value"
+								@update:model-value="field.handleChange"
 							/>
 						</template>
 					</Form.Field>
@@ -113,13 +112,14 @@ const Form = useForm({
 				:visible="createdKey.length > 0"
 				@modal-hidden="createdKey = ''"
 				@primary-click="createdKey = ''"
-				><template v-slot:title>API Key was created</template>
-				<template v-slot:content
-					><div class="flex flex-col gap-2 overflow-hidden">
+			>
+				<template #title> API Key was created </template>
+				<template #content>
+					<div class="flex flex-col gap-2 overflow-hidden">
 						<p>The key will be shown only once! Keep it in the safe place.</p>
-						<cv-code-snippet kind="multiline" light copyFeedback="Copied">{{
-							createdKey
-						}}</cv-code-snippet>
+						<cv-code-snippet kind="multiline" light copy-feedback="Copied">
+							{{ createdKey }}
+						</cv-code-snippet>
 						<h6>Usage</h6>
 
 						<p>
@@ -128,8 +128,8 @@ const Form = useForm({
 						</p>
 					</div>
 				</template>
-				<template v-slot:primary-button>OK</template></cv-modal
-			></ClientOnly
-		>
+				<template #primary-button> OK </template>
+			</cv-modal>
+		</ClientOnly>
 	</div>
 </template>

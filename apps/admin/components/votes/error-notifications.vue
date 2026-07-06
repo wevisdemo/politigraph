@@ -55,14 +55,14 @@ function getErrorTitle(type: VoteIssueType): string {
 <template>
 	<div class="flex flex-col">
 		<cv-inline-notification
-			class="mb-2 mt-0 pr-2"
 			v-for="{ kind, type, title, subTitle, ids } in issueGroups"
-			lowContrast
-			hideCloseButton
+			class="mb-2 mt-0 pr-2"
+			low-contrast
+			hide-close-button
 			:kind
 			:title
-			:subTitle
-			:actionLabel="getActionLabel(type, ids)"
+			:sub-title
+			:action-label="getActionLabel(type, ids)"
 			@action="$emit('action', { type, ids })"
 		/>
 	</div>

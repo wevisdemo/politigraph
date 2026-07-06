@@ -75,9 +75,9 @@ const isEventComplete = (event: BillEventForm): boolean => {
 		<template v-else>
 			<cv-data-table
 				title="Events"
-				helperText="เหตุการณ์ที่เกี่ยวข้องกับร่างกฏหมาย"
+				helper-text="เหตุการณ์ที่เกี่ยวข้องกับร่างกฏหมาย"
 				expandable
-				hasExpandAll
+				has-expand-all
 				zebra="false"
 			>
 				<template #headings>
@@ -137,34 +137,34 @@ const isEventComplete = (event: BillEventForm): boolean => {
 						</cv-data-table-cell>
 						<template #expandedContent>
 							<div class="flex flex-col gap-4">
-								<cv-radio-group legendText="Publish Status*">
+								<cv-radio-group legend-text="Publish Status*">
 									<cv-radio-button
 										v-for="item in publishStatusOptions"
 										:key="item.value"
+										v-model="event.publish_status"
 										:label="item.label"
 										:value="item.value"
 										:name="`publish-status-${event.id}`"
-										v-model="event.publish_status"
 									/>
 								</cv-radio-group>
 
 								<div class="flex flex-row gap-5">
 									<cv-date-picker
-										dateLabel="Start Date"
+										date-label="Start Date"
 										kind="single"
-										:calOptions="{ dateFormat: 'Y-m-d' }"
-										:modelValue="event.start_date ?? ''"
-										@update:modelValue="
+										:cal-options="{ dateFormat: 'Y-m-d' }"
+										:model-value="event.start_date ?? ''"
+										@update:model-value="
 											updateEvent(index, 'start_date', $event || null)
 										"
 									/>
 
 									<cv-date-picker
-										dateLabel="End Date"
+										date-label="End Date"
 										kind="single"
-										:calOptions="{ dateFormat: 'Y-m-d' }"
-										:modelValue="event.end_date ?? ''"
-										@update:modelValue="
+										:cal-options="{ dateFormat: 'Y-m-d' }"
+										:model-value="event.end_date ?? ''"
+										@update:model-value="
 											updateEvent(index, 'end_date', $event || null)
 										"
 									/>
@@ -173,8 +173,8 @@ const isEventComplete = (event: BillEventForm): boolean => {
 								<cv-text-input
 									label="Description"
 									class="bg-neutral-100"
-									:modelValue="event.description ?? ''"
-									@update:modelValue="
+									:model-value="event.description ?? ''"
+									@update:model-value="
 										updateEvent(index, 'description', $event || null)
 									"
 								/>
@@ -183,8 +183,8 @@ const isEventComplete = (event: BillEventForm): boolean => {
 								<template v-if="event.__typename === 'BillEnactEvent'">
 									<cv-text-input
 										label="Title"
-										:modelValue="event.title ?? ''"
-										@update:modelValue="
+										:model-value="event.title ?? ''"
+										@update:model-value="
 											updateEvent(index, 'title', $event || null)
 										"
 									/>
@@ -204,8 +204,8 @@ const isEventComplete = (event: BillEventForm): boolean => {
 								<template v-if="event.__typename === 'BillRejectEvent'">
 									<cv-text-input
 										label="Reject Reason"
-										:modelValue="event.reject_reason"
-										@update:modelValue="
+										:model-value="event.reject_reason"
+										@update:model-value="
 											updateEvent(index, 'reject_reason', $event)
 										"
 									/>
@@ -215,8 +215,8 @@ const isEventComplete = (event: BillEventForm): boolean => {
 								<template v-if="event.__typename === 'BillRoyalAssentEvent'">
 									<cv-text-input
 										label="Result"
-										:modelValue="event.result ?? ''"
-										@update:modelValue="
+										:model-value="event.result ?? ''"
+										@update:model-value="
 											updateEvent(index, 'result', $event || null)
 										"
 									/>
@@ -234,7 +234,7 @@ const isEventComplete = (event: BillEventForm): boolean => {
 						</template>
 					</cv-data-table-row>
 					<template v-if="!events.length">
-						<tr></tr>
+						<tr />
 						<tr>
 							<td
 								colspan="4"
@@ -243,7 +243,7 @@ const isEventComplete = (event: BillEventForm): boolean => {
 								No events
 							</td>
 						</tr>
-						<tr></tr>
+						<tr />
 					</template>
 				</template>
 			</cv-data-table>

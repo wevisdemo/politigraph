@@ -45,7 +45,7 @@ const options = computed(() => [
 			ว่าถูกต้องตรงกันหรือไม่ กับผลรวมที่สรุปจากตาราง
 		</p>
 		<div class="grid grid-cols-3 gap-3">
-			<div></div>
+			<div />
 			<strong>สรุปจากหัวเอกสาร</strong>
 			<strong class="pr-4">สรุปจากตาราง</strong>
 
@@ -58,14 +58,14 @@ const options = computed(() => [
 					<cv-number-input
 						v-else-if="headingCountKey"
 						class="min-w-0 pr-2"
-						:modelValue="voteEvent[headingCountKey] ?? 0"
-						@update:modelValue="
+						:model-value="voteEvent[headingCountKey] ?? 0"
+						@update:model-value="
 							(value: string) => {
 								// @ts-ignore
 								voteEvent[headingCountKey] = value;
 							}
 						"
-					></cv-number-input>
+					/>
 					<span v-else>-</span>
 				</div>
 				<div class="flex flex-row gap-1">

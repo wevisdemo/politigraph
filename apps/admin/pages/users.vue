@@ -201,10 +201,7 @@ const handleCreateUser = async () => {
 <template>
 	<div class="flex justify-center">
 		<div class="mx-auto w-full max-w-5xl">
-			<cv-data-table-skeleton
-				v-if="status === 'pending'"
-				title="Users"
-			></cv-data-table-skeleton>
+			<cv-data-table-skeleton v-if="status === 'pending'" title="Users" />
 			<div v-else-if="error" class="rounded bg-red-50 p-4 text-red-700">
 				{{ error.message || 'Failed to load users' }}
 			</div>
@@ -251,7 +248,7 @@ const handleCreateUser = async () => {
 									<cv-icon-button
 										:icon="Password16"
 										label="Change password"
-										tipPosition="top"
+										tip-position="top"
 										size="sm"
 										kind="ghost"
 										:disabled="updatingUserId === user.id"
@@ -268,7 +265,7 @@ const handleCreateUser = async () => {
 												? 'Remove admin role'
 												: 'Assign admin role'
 										"
-										tipPosition="top"
+										tip-position="top"
 										size="sm"
 										kind="ghost"
 										:disabled="updatingUserId === user.id"
@@ -277,7 +274,7 @@ const handleCreateUser = async () => {
 									<cv-icon-button
 										:icon="TrashCan16"
 										label="Remove user"
-										tipPosition="top"
+										tip-position="top"
 										size="sm"
 										kind="danger--ghost"
 										:disabled="updatingUserId === user.id"
@@ -310,7 +307,7 @@ const handleCreateUser = async () => {
 	<ClientOnly>
 		<cv-modal
 			:visible="userToCreate"
-			autoHideOff
+			auto-hide-off
 			@modal-hidden="
 				userToCreate = false;
 				newUserName = '';
@@ -325,27 +322,27 @@ const handleCreateUser = async () => {
 			"
 			@primary-click="handleCreateUser"
 		>
-			<template v-slot:title>Create user</template>
-			<template v-slot:content>
+			<template #title> Create user </template>
+			<template #content>
 				<div class="flex flex-col gap-4">
 					<cv-text-input
 						label="Name"
-						:modelValue="newUserName"
-						@update:modelValue="newUserName = $event"
+						:model-value="newUserName"
+						@update:model-value="newUserName = $event"
 					/>
 					<cv-text-input
 						label="Email"
 						type="email"
-						:modelValue="newUserEmail"
-						@update:modelValue="newUserEmail = $event"
+						:model-value="newUserEmail"
+						@update:model-value="newUserEmail = $event"
 					/>
 					<cv-text-input
 						label="Password"
 						type="password"
-						:modelValue="newUserPassword"
-						@update:modelValue="newUserPassword = $event"
+						:model-value="newUserPassword"
+						@update:model-value="newUserPassword = $event"
 					/>
-					<cv-radio-group legendText="Role">
+					<cv-radio-group legend-text="Role">
 						<cv-radio-button
 							v-model="newUserRole"
 							name="new-user-role"
@@ -361,12 +358,12 @@ const handleCreateUser = async () => {
 					</cv-radio-group>
 				</div>
 			</template>
-			<template v-slot:primary-button>Create</template>
-			<template v-slot:secondary-button>Cancel</template>
+			<template #primary-button> Create </template>
+			<template #secondary-button> Cancel </template>
 		</cv-modal>
 		<cv-modal
 			:visible="userToChangePassword !== null"
-			autoHideOff
+			auto-hide-off
 			@modal-hidden="
 				userToChangePassword = null;
 				newUserPassword = '';
@@ -377,8 +374,8 @@ const handleCreateUser = async () => {
 			"
 			@primary-click="handleChangePassword"
 		>
-			<template v-slot:title>Change password</template>
-			<template v-slot:content>
+			<template #title> Change password </template>
+			<template #content>
 				<div class="flex flex-col gap-4">
 					<p>
 						Set a new password for
@@ -392,24 +389,24 @@ const handleCreateUser = async () => {
 					<cv-text-input
 						label="New password"
 						type="password"
-						:modelValue="newUserPassword"
-						@update:modelValue="newUserPassword = $event"
+						:model-value="newUserPassword"
+						@update:model-value="newUserPassword = $event"
 					/>
 				</div>
 			</template>
-			<template v-slot:primary-button>Change password</template>
-			<template v-slot:secondary-button>Cancel</template>
+			<template #primary-button> Change password </template>
+			<template #secondary-button> Cancel </template>
 		</cv-modal>
 		<cv-modal
 			:visible="userToRemove !== null"
 			kind="danger"
-			autoHideOff
+			auto-hide-off
 			@modal-hidden="userToRemove = null"
 			@modal-hide-request="userToRemove = null"
 			@primary-click="handleRemoveUser"
 		>
-			<template v-slot:title>Remove user</template>
-			<template v-slot:content>
+			<template #title> Remove user </template>
+			<template #content>
 				<div class="flex flex-col gap-2">
 					<p>
 						Remove
@@ -421,8 +418,8 @@ const handleCreateUser = async () => {
 					<p class="text-sm text-neutral-600">This action cannot be undone.</p>
 				</div>
 			</template>
-			<template v-slot:primary-button>Remove</template>
-			<template v-slot:secondary-button>Cancel</template>
+			<template #primary-button> Remove </template>
+			<template #secondary-button> Cancel </template>
 		</cv-modal>
 	</ClientOnly>
 </template>

@@ -5,7 +5,13 @@
 - Always use bun as a package manager and JavaScript runtime
 - The GitHub owner and repo is wevisdemo/politigraph
 - Do not use CSS style block if not necessary, using Tailwind classes is preferable
-- Human will get in the loop and edit some file along the way. If you spot it, please respect those changes.
+- Always name source code in kebab-case
+- Avoid mutating variables, prefer functional approach when possible
+- After finishing any task, run the following commands:
+  - Check type with `bun run check`
+  - Lint with `bun run lint`, all errors and warnings must be fixed
+  - Format code with `bun run format` before declaring task as done
+- Human will get in the loop and edit some file along the way. If you spot it, please respect those changes
 
 ## Folder Structure
 
@@ -17,10 +23,10 @@ This project is a monorepo managed by Turborepo.
 - /packages/auth : Authentication and related database management
 - /packages/graphql : Schemas and custom resolvers implementation
 
-More information on tech stack of each project can be found in the respective README.md files.
+More information on tech stack of each project can be found in the respective README.md files
 
 ## Git Commit Message Style
 
-- Use conventional commit format.
-- Don't add body to the commit message. Concisely explain changes to the message title.
-- If the changes specific to any app or package, then add it name to the scope.
+- Use conventional commit format
+- Don't add body to the commit message. Concisely explain changes to the message title
+- If the changes specific to any app or package, then add it name to the scope

@@ -287,20 +287,20 @@ async function togglePublishStatus() {
 </script>
 
 <template>
-	<cv-breadcrumb noTrailingSlash>
+	<cv-breadcrumb no-trailing-slash>
 		<cv-breadcrumb-item><a href="/admin">Datasets</a></cv-breadcrumb-item>
-		<cv-breadcrumb-item
-			><a href="/admin/vote-events">Vote Events</a></cv-breadcrumb-item
-		>
-		<cv-breadcrumb-item
-			><span class="max-w-sm overflow-hidden text-ellipsis whitespace-nowrap">{{
+		<cv-breadcrumb-item>
+			<a href="/admin/vote-events">Vote Events</a>
+		</cv-breadcrumb-item>
+		<cv-breadcrumb-item>
+			<span class="max-w-sm overflow-hidden text-ellipsis whitespace-nowrap">{{
 				voteEventData?.title
-			}}</span></cv-breadcrumb-item
-		>
+			}}</span>
+		</cv-breadcrumb-item>
 	</cv-breadcrumb>
 
 	<voteEventFormInput.Subscribe>
-		<template v-slot="{ canSubmit }">
+		<template #default="{ canSubmit }">
 			<VoteEventHeader
 				:title="voteEventData?.title"
 				:publish-status="voteEventData?.publish_status"
@@ -321,7 +321,7 @@ async function togglePublishStatus() {
 		v-if="voteValidationResult"
 		:errors="voteValidationResult.errors"
 		:warnings="voteValidationResult.warnings"
-		:getActionLabel="() => 'Review'"
+		:get-action-label="() => 'Review'"
 		@action="
 			() => $router.push(`/admin/vote-events/${voteEventData?.id}/votes`)
 		"
@@ -344,42 +344,39 @@ async function togglePublishStatus() {
 						<p class="text-xs opacity-70">ID: {{ voteEventData?.id }}</p>
 					</div>
 					<template v-if="!voteEventData">
-						<cv-number-input-skeleton
-							v-for="i in 9"
-							:key="i"
-						></cv-number-input-skeleton>
+						<cv-number-input-skeleton v-for="i in 9" :key="i" />
 					</template>
 					<template v-else>
 						<voteEventFormInput.Field name="title">
-							<template v-slot="{ field }">
+							<template #default="{ field }">
 								<cv-text-input
 									label="Title"
 									:name="field.name"
 									invalid-message=""
-									:modelValue="field.state.value"
-									@update:modelValue="field.handleChange"
+									:model-value="field.state.value"
+									@update:model-value="field.handleChange"
 								/>
 							</template>
 						</voteEventFormInput.Field>
 						<voteEventFormInput.Field name="nickname">
-							<template v-slot="{ field }">
+							<template #default="{ field }">
 								<cv-text-input
 									label="Nickname"
 									:name="field.name"
-									:modelValue="field.state.value"
-									@update:modelValue="field.handleChange"
+									:model-value="field.state.value"
+									@update:model-value="field.handleChange"
 								/>
 							</template>
 						</voteEventFormInput.Field>
 						<voteEventFormInput.Field name="start_date">
-							<template v-slot="{ field }">
+							<template #default="{ field }">
 								<cv-date-picker
 									kind="single"
-									dateLabel="Start Date"
+									date-label="Start Date"
 									:name="field.name"
-									:modelValue="field.state.value"
-									@update:modelValue="field.handleChange"
-									:calOptions="{ dateFormat: 'Y-m-d' }"
+									:model-value="field.state.value"
+									:cal-options="{ dateFormat: 'Y-m-d' }"
+									@update:model-value="field.handleChange"
 								/>
 							</template>
 						</voteEventFormInput.Field>
@@ -387,7 +384,7 @@ async function togglePublishStatus() {
 							v-if="OrganizationList"
 							name="organizations"
 						>
-							<template v-slot="{ field }">
+							<template #default="{ field }">
 								<cv-multi-select
 									title="Involving Assemblies"
 									:label="
@@ -404,32 +401,32 @@ async function togglePublishStatus() {
 											value: d.id,
 										}))
 									"
-									:modelValue="field.state.value"
-									@update:modelValue="field.handleChange"
+									:model-value="field.state.value"
+									@update:model-value="field.handleChange"
 								/>
 							</template>
 						</voteEventFormInput.Field>
 						<voteEventFormInput.Field name="result">
-							<template v-slot="{ field }">
+							<template #default="{ field }">
 								<cv-select
 									label="Result"
-									:modelValue="field.state.value"
-									@update:modelValue="field.handleChange"
+									:model-value="field.state.value"
+									@update:model-value="field.handleChange"
 								>
-									<cv-select-option :value="null"></cv-select-option>
-									<cv-select-option value="ผ่าน">ผ่าน</cv-select-option>
-									<cv-select-option value="ไม่ผ่าน">ไม่ผ่าน</cv-select-option>
+									<cv-select-option :value="null" />
+									<cv-select-option value="ผ่าน"> ผ่าน </cv-select-option>
+									<cv-select-option value="ไม่ผ่าน"> ไม่ผ่าน </cv-select-option>
 								</cv-select>
 							</template>
 						</voteEventFormInput.Field>
 						<voteEventFormInput.Field name="description">
-							<template v-slot="{ field }">
+							<template #default="{ field }">
 								<cv-text-area
 									label="Description"
 									class="min-h-48"
 									placeholder=""
-									:modelValue="field.state.value"
-									@update:modelValue="field.handleChange"
+									:model-value="field.state.value"
+									@update:model-value="field.handleChange"
 								/>
 							</template>
 						</voteEventFormInput.Field>
@@ -442,7 +439,7 @@ async function togglePublishStatus() {
 							</div>
 						</div>
 						<voteEventFormInput.Field name="links">
-							<template v-slot="{ field }">
+							<template #default="{ field }">
 								<RelatedLinksForm
 									v-model:links="field.state.value"
 									@update:links="field.handleChange"
@@ -464,23 +461,19 @@ async function togglePublishStatus() {
 					</p>
 
 					<div v-if="!voteEventData" class="grid grid-cols-2 gap-2">
-						<cv-button-skeleton
-							v-for="i in 4"
-							:key="i"
-							size="field"
-						></cv-button-skeleton>
+						<cv-button-skeleton v-for="i in 4" :key="i" size="field" />
 					</div>
 
 					<div v-else class="grid grid-cols-2 gap-x-12 gap-y-4">
 						<div class="flex flex-row items-center gap-4">
 							<div class="basis-1/2">เห็นด้วย</div>
 							<voteEventFormInput.Field name="agree_count">
-								<template v-slot="{ field }">
+								<template #default="{ field }">
 									<cv-number-input
 										placeholder=""
-										:modelValue="field.state.value"
+										:model-value="field.state.value"
 										type="number"
-										@update:modelValue="field.handleChange"
+										@update:model-value="field.handleChange"
 									/>
 								</template>
 							</voteEventFormInput.Field>
@@ -489,12 +482,12 @@ async function togglePublishStatus() {
 						<div class="flex flex-row items-center gap-4">
 							<div class="basis-1/2">ไม่เห็นด้วย</div>
 							<voteEventFormInput.Field name="disagree_count">
-								<template v-slot="{ field }">
+								<template #default="{ field }">
 									<cv-number-input
 										placeholder=""
-										:modelValue="field.state.value"
+										:model-value="field.state.value"
 										type="number"
-										@update:modelValue="field.handleChange"
+										@update:model-value="field.handleChange"
 									/>
 								</template>
 							</voteEventFormInput.Field>
@@ -503,12 +496,12 @@ async function togglePublishStatus() {
 						<div class="flex flex-row items-center gap-4">
 							<div class="basis-1/2">งดออกเสียง</div>
 							<voteEventFormInput.Field name="abstain_count">
-								<template v-slot="{ field }">
+								<template #default="{ field }">
 									<cv-number-input
 										placeholder=""
 										type="number"
-										:modelValue="field.state.value"
-										@update:modelValue="field.handleChange"
+										:model-value="field.state.value"
+										@update:model-value="field.handleChange"
 									/>
 								</template>
 							</voteEventFormInput.Field>
@@ -517,12 +510,12 @@ async function togglePublishStatus() {
 						<div class="flex flex-row items-center gap-4">
 							<div class="basis-1/2">ไม่ลงคะแนนเสียง</div>
 							<voteEventFormInput.Field name="novote_count">
-								<template v-slot="{ field }">
+								<template #default="{ field }">
 									<cv-number-input
 										placeholder=""
-										:modelValue="field.state.value"
+										:model-value="field.state.value"
 										type="number"
-										@update:modelValue="field.handleChange"
+										@update:model-value="field.handleChange"
 									/>
 								</template>
 							</voteEventFormInput.Field>

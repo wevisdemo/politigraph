@@ -37,17 +37,18 @@ const router = useRouter();
 		v-if="!votes"
 		class="bg-white"
 		title="Votes"
-		helperText="การลงมติรายคน"
-	></cv-data-table-skeleton>
+		helper-text="การลงมติรายคน"
+	/>
 	<template v-else>
-		<cv-data-table class="bg-white" title="Votes" helperText="การลงมติรายคน">
+		<cv-data-table class="bg-white" title="Votes" helper-text="การลงมติรายคน">
 			<template #actions>
 				<cv-button
 					kind="ghost"
 					:icon="Edit16"
 					@click="() => router.push(`/vote-events/${voteEventId}/votes`)"
-					>Edit</cv-button
 				>
+					Edit
+				</cv-button>
 			</template>
 			<template #headings>
 				<cv-data-table-heading id="sb-title" heading="#" />
@@ -65,12 +66,12 @@ const router = useRouter();
 					:key="row.id"
 					:value="row.id"
 				>
-					<cv-data-table-cell>{{
-						firstRowIndexOfPage + i + 1
-					}}</cv-data-table-cell>
-					<cv-data-table-cell>{{
-						row.voters.at(0)?.name || row.voter_name_raw
-					}}</cv-data-table-cell>
+					<cv-data-table-cell>
+						{{ firstRowIndexOfPage + i + 1 }}
+					</cv-data-table-cell>
+					<cv-data-table-cell>
+						{{ row.voters.at(0)?.name || row.voter_name_raw }}
+					</cv-data-table-cell>
 					<cv-data-table-cell>{{ row.voter_party }}</cv-data-table-cell>
 					<cv-data-table-cell>{{ row.option }}</cv-data-table-cell>
 				</cv-data-table-row>

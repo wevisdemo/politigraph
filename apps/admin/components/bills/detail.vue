@@ -85,9 +85,9 @@ const getOrganizationOptions = (classification: OrganizationType) => {
 			<cv-number-input-skeleton v-for="i in 9" :key="i" />
 		</template>
 		<template v-else>
-			<cv-text-input label="Title*" v-model="form.title" />
+			<cv-text-input v-model="form.title" label="Title*" />
 
-			<cv-text-input label="Nickname" v-model="form.nickname" />
+			<cv-text-input v-model="form.nickname" label="Nickname" />
 
 			<div class="flex justify-between gap-5">
 				<div class="relative w-1/2">
@@ -118,17 +118,17 @@ const getOrganizationOptions = (classification: OrganizationType) => {
 				<div class="relative w-1/2">
 					<cv-date-picker
 						v-model="form.proposal_date"
-						dateLabel="Proposal Date*"
+						date-label="Proposal Date*"
 						kind="single"
 						class="membership-datepicker"
-						:calOptions="{ dateFormat: 'Y-m-d' }"
+						:cal-options="{ dateFormat: 'Y-m-d' }"
 					/>
 				</div>
 				<div class="relative w-1/2">
 					<cv-select
-						:modelValue="form.organizations[0]"
-						@update:modelValue="form.organizations = [$event]"
+						:model-value="form.organizations[0]"
 						label="Proposed in Representative Term"
+						@update:model-value="form.organizations = [$event]"
 					>
 						<cv-select-option
 							v-for="item in getOrganizationOptions('HOUSE_OF_REPRESENTATIVE')"
@@ -143,15 +143,15 @@ const getOrganizationOptions = (classification: OrganizationType) => {
 
 			<div>
 				<h4 class="mb-3">Creator</h4>
-				<cv-radio-group legendText="Type">
+				<cv-radio-group legend-text="Type">
 					<cv-radio-button
 						v-for="item in creatorTypes"
 						:key="item.value"
 						name="creator-type"
 						:label="item.label"
 						:value="item.value"
-						:modelValue="form.creator_type"
-						@update:modelValue="form.creator_type = $event"
+						:model-value="form.creator_type"
+						@update:model-value="form.creator_type = $event"
 					/>
 				</cv-radio-group>
 			</div>
@@ -165,10 +165,10 @@ const getOrganizationOptions = (classification: OrganizationType) => {
 					:options="peopleList"
 					item-value-key="value"
 					item-text-key="label"
-					autoFilter
-					autoHighlight
-					:modelValue="form.personCreators?.[0]"
-					@update:modelValue="form.personCreators = [$event]"
+					auto-filter
+					auto-highlight
+					:model-value="form.personCreators?.[0]"
+					@update:model-value="form.personCreators = [$event]"
 				/>
 
 				<div class="flex flex-col gap-3">
@@ -178,9 +178,9 @@ const getOrganizationOptions = (classification: OrganizationType) => {
 						:options="peopleList"
 						item-value-key="value"
 						item-text-key="label"
-						autoFilter
-						autoHighlight
-						@update:modelValue="
+						auto-filter
+						auto-highlight
+						@update:model-value="
 							(creatorId: string) => {
 								if (!peopleList?.some((p) => p.value === creatorId)) return;
 								form.co_creators = [...(form.co_creators ?? []), creatorId];
@@ -210,8 +210,8 @@ const getOrganizationOptions = (classification: OrganizationType) => {
 			<div v-else-if="form.creator_type === 'ASSEMBLY'">
 				<cv-select
 					label="Creator*"
-					:modelValue="form.organizationCreators?.[0]"
-					@update:modelValue="form.organizationCreators = [$event]"
+					:model-value="form.organizationCreators?.[0]"
+					@update:model-value="form.organizationCreators = [$event]"
 				>
 					<cv-select-option
 						v-for="item in getOrganizationOptions('CABINET')"
@@ -231,10 +231,10 @@ const getOrganizationOptions = (classification: OrganizationType) => {
 							:options="peopleList"
 							item-value-key="value"
 							item-text-key="label"
-							autoFilter
-							autoHighlight
-							:modelValue="form.personCreators?.[0]"
-							@update:modelValue="form.personCreators = [$event]"
+							auto-filter
+							auto-highlight
+							:model-value="form.personCreators?.[0]"
+							@update:model-value="form.personCreators = [$event]"
 						/>
 					</div>
 					<div>

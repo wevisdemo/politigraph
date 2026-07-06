@@ -117,29 +117,29 @@ function downloadImage() {
 			>
 				<button
 					class="cursor-pointer rounded-full p-1 hover:bg-white/20"
-					@click.stop="openEditModal()"
 					title="Edit"
+					@click.stop="openEditModal()"
 				>
 					<Crop32 class="size-6 text-white" />
 				</button>
 				<button
 					class="cursor-pointer rounded-full p-1 hover:bg-white/20"
-					@click.stop="downloadImage()"
 					title="Download"
+					@click.stop="downloadImage()"
 				>
 					<Download32 class="size-6 text-white" />
 				</button>
 				<button
 					class="cursor-pointer rounded-full p-1 hover:bg-white/20"
-					@click.stop="emit('delete')"
 					title="Remove"
+					@click.stop="emit('delete')"
 				>
 					<TrashCan32 class="size-6 text-white" />
 				</button>
 			</div>
 			<component
-				v-else-if="placeholderIcon"
 				:is="placeholderIcon"
+				v-else-if="placeholderIcon"
 				class="size-12 text-[#A8A8A8]"
 			/>
 		</div>
@@ -148,23 +148,23 @@ function downloadImage() {
 			accept=".jpg,.png,.webp"
 			:multiple="false"
 			label="Image"
-			helperText="อัปโหลดรูปภาพ"
+			helper-text="อัปโหลดรูปภาพ"
 			removable
-			clearOnReselect
+			clear-on-reselect
 		/>
 	</div>
 
 	<ClientOnly>
 		<cv-modal
 			:visible="cropperSrc"
-			autoHideOff
+			auto-hide-off
 			size="lg"
 			@primary-click="saveCroppedImage"
 			@secondary-click="clearCropper"
 			@modal-hide-request="clearCropper"
 		>
-			<template v-slot:title>Crop Image</template>
-			<template v-slot:content>
+			<template #title> Crop Image </template>
+			<template #content>
 				<div class="h-96 w-full">
 					<Cropper
 						ref="cropperRef"
@@ -179,8 +179,8 @@ function downloadImage() {
 					/>
 				</div>
 			</template>
-			<template v-slot:secondary-button>Cancel</template>
-			<template v-slot:primary-button>Save</template>
+			<template #secondary-button> Cancel </template>
+			<template #primary-button> Save </template>
 		</cv-modal>
 	</ClientOnly>
 </template>

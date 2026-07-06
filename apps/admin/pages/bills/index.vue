@@ -301,7 +301,7 @@ const isComplete = (data: unknown[]) => {
 </script>
 
 <template>
-	<cv-breadcrumb noTrailingSlash>
+	<cv-breadcrumb no-trailing-slash>
 		<cv-breadcrumb-item><a href="/admin">Datasets</a></cv-breadcrumb-item>
 		<cv-breadcrumb-item>Bills</cv-breadcrumb-item>
 	</cv-breadcrumb>
@@ -309,46 +309,46 @@ const isComplete = (data: unknown[]) => {
 	<cv-data-table-skeleton
 		v-if="!data"
 		title="Bills"
-		helperText="กฏหมายและร่างกฏหมาย"
-	></cv-data-table-skeleton>
+		helper-text="กฏหมายและร่างกฏหมาย"
+	/>
 	<div v-else class="relative">
 		<div class="flex flex-col items-start gap-12 md:flex-row">
 			<BillsFilter
-				class="w-xs sticky top-16"
 				v-model:filters="filters"
-				:organizationOption="[
+				class="w-xs sticky top-16"
+				:organization-option="[
 					allOption,
 					...organizationsOption.map((o) => ({
 						label: o.label,
 						value: o.value,
 					})),
 				]"
-				:statusOptions="[
+				:status-options="[
 					allOption,
 					...statusOption.map((s) => ({
 						label: billType[s],
 						value: s,
 					})),
 				]"
-				:creatorTypeOptions="[
+				:creator-type-options="[
 					allOption,
 					...creatorTypeOption.map((c) => ({
 						label: creatorType[c],
 						value: c,
 					})),
 				]"
-				:eventCompletenessOptions="[
+				:event-completeness-options="[
 					allOption,
 					...Object.entries(eventCompletenessType).map(([value, label]) => ({
 						value,
 						label,
 					})),
 				]"
-			></BillsFilter>
+			/>
 			<div class="w-full">
 				<cv-data-table
 					title="Bills"
-					helperText="กฏหมายและร่างกฏหมาย"
+					helper-text="กฏหมายและร่างกฏหมาย"
 					@search="handleSearchChange"
 				>
 					<template #headings>
@@ -383,10 +383,10 @@ const isComplete = (data: unknown[]) => {
 					</template>
 					<template #data>
 						<cv-data-table-row
+							v-for="row in data.bills"
 							:id="row.id"
 							:key="row.id"
 							:value="row.id"
-							v-for="row in data.bills"
 							class="cursor-pointer"
 						>
 							<cv-data-table-cell>
@@ -396,15 +396,15 @@ const isComplete = (data: unknown[]) => {
 									>{{ row.nickname != null ? row.nickname : row.title }}</a
 								>
 							</cv-data-table-cell>
-							<cv-data-table-cell class="text-nowrap">{{
-								billType[row.status]
-							}}</cv-data-table-cell>
-							<cv-data-table-cell class="text-nowrap">{{
-								creatorType[row.creator_type]
-							}}</cv-data-table-cell>
-							<cv-data-table-cell class="text-nowrap">{{
-								formatDate(row.proposal_date)
-							}}</cv-data-table-cell>
+							<cv-data-table-cell class="text-nowrap">
+								{{ billType[row.status] }}
+							</cv-data-table-cell>
+							<cv-data-table-cell class="text-nowrap">
+								{{ creatorType[row.creator_type] }}
+							</cv-data-table-cell>
+							<cv-data-table-cell class="text-nowrap">
+								{{ formatDate(row.proposal_date) }}
+							</cv-data-table-cell>
 							<cv-data-table-cell class="text-nowrap">
 								<p
 									:class="{

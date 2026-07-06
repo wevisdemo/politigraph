@@ -49,9 +49,9 @@ const updateLink = (index: number, key: 'note' | 'url', value: string) => {
 					Open <Launch16 />
 				</a>
 				<cv-button
-					@click="removeLink(i)"
 					kind="danger--ghost"
 					:icon="TrashCan16"
+					@click="removeLink(i)"
 				>
 					Delete
 				</cv-button>
@@ -73,6 +73,7 @@ const updateLink = (index: number, key: 'note' | 'url', value: string) => {
 		default="Add Another Item"
 		kind="tertiary"
 		@click="addLink"
-		>Add a link</cv-button
 	>
+		Add a link
+	</cv-button>
 </template>

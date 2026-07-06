@@ -4,7 +4,9 @@
 	"private": true,
 	"scripts": {
 		"dev": "bun run build.ts --watch",
-		"build": "bun run build.ts"
+		"build": "bun run build.ts",
+		"lint": "eslint . --fix",
+		"check": "tsc --noEmit"
 	},
 	"dependencies": {
 		"@genql/cli": "^6.3.3",

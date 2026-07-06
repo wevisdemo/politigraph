@@ -71,10 +71,10 @@ onMounted(async () => {
 
 <template>
 	<div class="-m-3 flex h-full flex-1 md:-m-10">
-		<div class="parliament-bg basis-3/3 lg:basis-2/3"></div>
+		<div class="parliament-bg basis-3/3 lg:basis-2/3" />
 		<div class="login-box p-7.5 relative bg-white sm:basis-1/3 lg:pt-20">
 			<h1 class="mb-12 font-normal">Log in</h1>
-			<cv-form @submit.prevent="login" class="flex flex-col gap-y-4">
+			<cv-form class="flex flex-col gap-y-4" @submit.prevent="login">
 				<template v-if="isValidatingSession">
 					<cv-text-input-skeleton />
 					<cv-text-input-skeleton />
@@ -82,12 +82,12 @@ onMounted(async () => {
 				</template>
 				<template v-else>
 					<cv-text-input
+						v-model="email"
 						label="Email"
 						placeholder="username@wevis.info"
-						v-model="email"
 						:invalid-message="isErrorEmail"
 					>
-						<template v-if="isErrorEmail" v-slot:invalid-message />
+						<template v-if="isErrorEmail" #invalid-message />
 					</cv-text-input>
 					<cv-text-input
 						v-model="password"
@@ -95,14 +95,14 @@ onMounted(async () => {
 						label="Password"
 						placeholder="Password"
 						autocomplete="password"
-						passwordHideLabel=""
-						passwordShowLabel=""
+						password-hide-label=""
+						password-show-label=""
 						:invalid-message="isErrorPassword"
 					>
-						<template v-if="isErrorPassword" v-slot:invalid-message />
+						<template v-if="isErrorPassword" #invalid-message />
 					</cv-text-input>
 
-					<cv-button class="w-full max-w-full">Log in</cv-button>
+					<cv-button class="w-full max-w-full"> Log in </cv-button>
 				</template>
 			</cv-form>
 		</div>

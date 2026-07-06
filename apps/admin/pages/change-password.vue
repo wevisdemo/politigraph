@@ -83,7 +83,7 @@ const signout = async () => {
 	>
 		<template v-if="!isSuccessChangePassword">
 			<h1 class="mb-12 font-normal">Change Password</h1>
-			<cv-form @submit.prevent="changepassword" class="flex flex-col gap-y-4">
+			<cv-form class="flex flex-col gap-y-4" @submit.prevent="changepassword">
 				<cv-text-input
 					v-model="currentPassword"
 					type="password"
@@ -92,7 +92,7 @@ const signout = async () => {
 					autocomplete="password"
 					:invalid-message="isErrorPassword"
 				>
-					<template v-if="isErrorPassword" v-slot:invalid-message />
+					<template v-if="isErrorPassword" #invalid-message />
 				</cv-text-input>
 				<cv-text-input
 					v-model="newPassword"
@@ -101,9 +101,9 @@ const signout = async () => {
 					placeholder="Password"
 					autocomplete="password"
 					:invalid-message="isErrorNewPassword"
-					helperText="Your new password must be at least 8 characters long."
+					helper-text="Your new password must be at least 8 characters long."
 				>
-					<template v-if="isErrorNewPassword" v-slot:invalid-message />
+					<template v-if="isErrorNewPassword" #invalid-message />
 				</cv-text-input>
 				<cv-text-input
 					v-model="confirmNewPassword"
@@ -113,25 +113,25 @@ const signout = async () => {
 					autocomplete="password"
 					:invalid-message="isErrorConfirmNewPassword"
 				>
-					<template v-if="isErrorConfirmNewPassword" v-slot:invalid-message />
+					<template v-if="isErrorConfirmNewPassword" #invalid-message />
 				</cv-text-input>
 				<ToastNotification
 					:notification="toast.notification"
 					@close="toast.hide"
 				/>
-				<cv-button class="w-full max-w-full">Change Password</cv-button>
+				<cv-button class="w-full max-w-full"> Change Password </cv-button>
 			</cv-form>
 		</template>
-		<template v-else
-			><h1 class="font-normal">You're all set!</h1>
+		<template v-else>
+			<h1 class="font-normal">You're all set!</h1>
 
 			<p class="my-12">
 				Your password has been updated successfully. You can now sign in with
 				your new password.
 			</p>
-			<cv-button class="w-full max-w-full" kind="secondary" @click="signout"
-				>Go to Sign In</cv-button
-			>
+			<cv-button class="w-full max-w-full" kind="secondary" @click="signout">
+				Go to Sign In
+			</cv-button>
 		</template>
 	</div>
 </template>

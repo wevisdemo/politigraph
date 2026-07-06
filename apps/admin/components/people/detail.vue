@@ -139,8 +139,8 @@ const genderOptions = Object.values(enumGender);
 				/>
 			</div>
 			<cv-dropdown
-				:placeholder="modelValue.gender"
 				v-model="modelValue.gender"
+				:placeholder="modelValue.gender"
 				label="Sex"
 				class="w-72"
 			>
@@ -154,7 +154,7 @@ const genderOptions = Object.values(enumGender);
 			</cv-dropdown>
 			<cv-date-picker
 				v-model="birthDateLocal"
-				dateLabel="ฺBirthdate (yyyy/mm/dd)"
+				date-label="ฺBirthdate (yyyy/mm/dd)"
 				placeholder=""
 				kind="single"
 			/>
@@ -171,8 +171,8 @@ const genderOptions = Object.values(enumGender);
 				rows="6"
 			/>
 			<template
-				class="flex flex-col gap-8"
 				v-if="modelValue && modelValue.links"
+				class="flex flex-col gap-8"
 			>
 				<h6>Social Media</h6>
 				<LinksForm v-model:links="modelValue.links" />

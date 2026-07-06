@@ -7,7 +7,9 @@
 		"dev": "bunx --bun nuxt dev",
 		"build": "bunx --bun nuxt build",
 		"preview": "bunx --bun nuxt preview",
-		"postinstall": "bunx --bun nuxt prepare"
+		"postinstall": "bunx --bun nuxt prepare",
+		"lint": "eslint . --fix",
+		"check": "bunx --bun nuxi typecheck"
 	},
 	"dependencies": {
 		"@carbon/icons-vue": "^10.108.0",
