@@ -55,8 +55,11 @@ export type SchemaNode = (
 
 function parseNodeFields(
 	fields?: readonly {
-		type: any;
-		directives?: readonly any[];
+		type: unknown;
+		directives?: readonly {
+			name: { value: string };
+			arguments?: readonly unknown[];
+		}[];
 		name: { value: string };
 		description?: { value: string };
 	}[],
@@ -102,6 +105,6 @@ function extractFieldType(obj: unknown, isRequired = false, hasMany = false) {
 }
 
 function getArgumentValue(args: readonly unknown[], name: string): string {
-	/* @ts-expect-error */
+	/* @ts-expect-error arg shape comes from graphql AST */
 	return args.find((a) => a.name.value === name)?.value.value;
 }

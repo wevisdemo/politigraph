@@ -56,6 +56,7 @@ function getErrorTitle(type: VoteIssueType): string {
 	<div class="flex flex-col">
 		<cv-inline-notification
 			v-for="{ kind, type, title, subTitle, ids } in issueGroups"
+			:key="type"
 			class="mb-2 mt-0 pr-2"
 			low-contrast
 			hide-close-button

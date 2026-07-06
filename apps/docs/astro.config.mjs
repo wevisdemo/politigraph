@@ -6,7 +6,7 @@ import { defineConfig, passthroughImageService } from 'astro/config';
 
 export default defineConfig({
 	site: 'https://politigraph.wevis.info',
-	// @ts-ignore
+	// @ts-expect-error starlight config type doesn't include vite
 	vite: { plugins: [tailwindcss()] },
 	image: {
 		service: passthroughImageService(),

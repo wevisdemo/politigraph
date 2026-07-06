@@ -11,7 +11,7 @@ import { Elysia, t, type Context as ElysiaContext } from 'elysia';
 export interface ServerRegistration<
 	Path extends string = '/graphql',
 	TContext extends BaseContext = BaseContext,
-> extends Omit<StartStandaloneServerOptions<any>, 'context'> {
+> extends Omit<StartStandaloneServerOptions<BaseContext>, 'context'> {
 	path?: Path;
 	context?: (context: ElysiaContext) => Promise<TContext>;
 	onLandingPageRequested?: (context: ElysiaContext) => void;
@@ -48,7 +48,7 @@ export class ElysiaApolloServer<
 > extends ApolloServer<Context> {
 	public async createHandler<Path extends string = '/graphql'>({
 		path = '/graphql' as Path,
-		context: apolloContext = async () => ({}) as any,
+		context: apolloContext = async () => ({}) as Context,
 		onLandingPageRequested,
 		maxBatching,
 	}: ServerRegistration<Path, Context>) {
@@ -105,10 +105,9 @@ export class ElysiaApolloServer<
 						body,
 						search: getQueryString(url),
 						request,
-						// @ts-ignore
+						// @ts-expect-error elysia type compatible with apollo
 						headers,
 					},
-					// @ts-ignore
 					context: () => apolloContext(context),
 				}).catch((x) => x);
 

@@ -25,10 +25,6 @@ const variation = computed(() => {
 			return { label: '', background: '', foreground: '' };
 	}
 });
-
-const isPublish = computed(() => {
-	return props.status === 'PUBLISHED';
-});
 </script>
 
 <template>

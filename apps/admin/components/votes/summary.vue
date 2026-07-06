@@ -1,5 +1,5 @@
 <script setup lang="ts">
-//@ts-ignore
+// @ts-expect-error carbon icons vue type
 import { CheckmarkFilled16, WarningFilled16 } from '@carbon/icons-vue';
 import type { Vote, VoteEvent } from '@politigraph/graphql/genql';
 import { standardVoteOptions, voteCountKeyMap } from '~/constants/votes';
@@ -49,7 +49,10 @@ const options = computed(() => [
 			<strong>สรุปจากหัวเอกสาร</strong>
 			<strong class="pr-4">สรุปจากตาราง</strong>
 
-			<template v-for="{ option, headingCountKey, tableCount } in options">
+			<template
+				v-for="{ option, headingCountKey, tableCount } in options"
+				:key="option"
+			>
 				<div class="h-[40px]">
 					{{ option }}
 				</div>
@@ -61,7 +64,7 @@ const options = computed(() => [
 						:model-value="voteEvent[headingCountKey] ?? 0"
 						@update:model-value="
 							(value: string) => {
-								// @ts-ignore
+								// @ts-expect-error carbon icons vue type
 								voteEvent[headingCountKey] = value;
 							}
 						"

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-// @ts-ignore
+// @ts-expect-error carbon icons vue type
 import { Add16 } from '@carbon/icons-vue';
 import type { Person, PublishStatus } from '@politigraph/graphql/genql';
 import PublishStatusLabel from '~/components/ui/PublishStatusLabel.vue';
@@ -27,8 +27,6 @@ const emit = defineEmits<{
 	(e: 'page-size-change', pageSize: number): void;
 	(e: 'search', query: string): void;
 }>();
-
-const router = useRouter();
 </script>
 
 <template>

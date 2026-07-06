@@ -1,5 +1,5 @@
 <script setup lang="ts">
-//@ts-ignore
+// @ts-expect-error carbon icons vue type
 import { DocumentPdf16, NotebookReference16 } from '@carbon/icons-vue';
 import {
 	enumPublishStatus,
@@ -70,7 +70,7 @@ const {
 const { data } = await useLazyAsyncData(
 	'voteEvents',
 	async () => {
-		const where: Record<string, any> = {};
+		const where: Record<string, unknown> = {};
 
 		if (filters.value.assembly !== 'ALL') {
 			const assemblyIds = filters.value.assembly.split('|');
@@ -309,7 +309,7 @@ const organizationsOption = () => {
 							</cv-data-table-cell>
 							<cv-data-table-cell>
 								<div class="flex flex-col justify-evenly">
-									<span v-for="org in row.organizations"
+									<span v-for="org in row.organizations" :key="org.abbreviation"
 										>{{ org.abbreviation }} ชุดที่ {{ org.term }}</span
 									>
 								</div>

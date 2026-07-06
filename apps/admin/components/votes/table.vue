@@ -1,5 +1,5 @@
 <script setup lang="ts">
-//@ts-ignore
+// @ts-expect-error carbon icons vue type
 import { Add16, Download16, WarningFilled16 } from '@carbon/icons-vue';
 import type { Person, Vote, VoteEvent } from '@politigraph/graphql/genql';
 import { standardVoteOptions } from '~/constants/votes';
@@ -259,7 +259,7 @@ const downloadCSV = () => {
 				<cv-data-table-heading heading="ชื่อสังกัด" />
 				<cv-data-table-heading heading="ผลการลงคะแนน" />
 			</template>
-			<template #data class="table">
+			<template #data>
 				<cv-data-table-row
 					v-for="(row, i) in filteredVotes"
 					:key="row.id"

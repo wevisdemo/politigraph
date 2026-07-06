@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const props = defineProps<{
+defineProps<{
 	name: string;
 	modelValue: string;
 	value: string;

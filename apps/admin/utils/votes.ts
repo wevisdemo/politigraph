@@ -55,7 +55,7 @@ export function validateVotes({
 		});
 	}
 
-	votes.forEach((vote, i) => {
+	votes.forEach((vote, _i) => {
 		if (!vote.id || !vote.vote_order || !vote.badge_number) {
 			warnings.push({ type: 'MISSING_INFORMATION', id: vote.id });
 		}

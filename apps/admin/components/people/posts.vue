@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-// @ts-ignore
+// @ts-expect-error carbon icons vue type
 import { Add16, Close16, Edit16, TrashCan16 } from '@carbon/icons-vue';
 import {
 	type Membership,

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-// @ts-ignore
+// @ts-expect-error carbon icons vue type
 import { UserFilled32 } from '@carbon/icons-vue';
 import { enumGender, type Gender, type Link } from '@politigraph/graphql/genql';
 import { formatDate, parseDate } from '~/utils/date';
@@ -27,7 +27,7 @@ export interface PeopleDetailProps {
 
 const modelValue = defineModel<PeopleDetailProps | null>();
 
-const props = defineProps<{
+defineProps<{
 	previewImage?: string | null;
 }>();
 
@@ -170,10 +170,7 @@ const genderOptions = Object.values(enumGender);
 				placeholder=""
 				rows="6"
 			/>
-			<template
-				v-if="modelValue && modelValue.links"
-				class="flex flex-col gap-8"
-			>
+			<template v-if="modelValue && modelValue.links">
 				<h6>Social Media</h6>
 				<LinksForm v-model:links="modelValue.links" />
 			</template>

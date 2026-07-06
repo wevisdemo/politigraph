@@ -98,7 +98,7 @@ const { data: voteEvent, refresh } = useAsyncData(
 		voteEvent.votes.sort((a, b) => Number(a.vote_order) - Number(b.vote_order));
 
 		voteEvent.votes?.forEach((vote) => {
-			const { voters, ...rest } = vote;
+			const { voters: _, ...rest } = vote;
 			originalVotesMap.value[vote.id] = { ...rest };
 		});
 

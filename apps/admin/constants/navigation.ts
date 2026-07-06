@@ -1,4 +1,4 @@
-// @ts-ignore
+// @ts-expect-error carbon icons vue type
 import { Building32, Document32, Event32, Person32 } from '@carbon/icons-vue';
 
 export const ADMIN_NAVIGATIONS = [

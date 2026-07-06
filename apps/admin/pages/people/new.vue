@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-// @ts-ignore
+// @ts-expect-error carbon icons vue type
 import { Add16 } from '@carbon/icons-vue';
 import { enumPublishStatus } from '@politigraph/graphql/genql';
 import { PeopleDetail } from '#components';
@@ -68,7 +68,7 @@ const savePeople = async () => {
 		if (imageUrl) {
 			peopleDetailData.value.image = imageUrl;
 		}
-	} catch (error) {
+	} catch {
 		toast.show({
 			kind: 'warning',
 			title: 'เกิดข้อผิดพลาดในการอัปโหลดรูปภาพ',

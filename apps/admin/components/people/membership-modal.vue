@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import {
 	Close16,
-	// @ts-ignore
+	// @ts-expect-error carbon icons vue type
 } from '@carbon/icons-vue';
 import { enumOrganizationType } from '@politigraph/graphql/genql';
 import LinksForm from '~/components/LinksForm.vue';
@@ -238,6 +238,7 @@ const handleRoleInput = (selectedValue: string) => {
 					<cv-radio-group legend-text="Label">
 						<cv-radio-button
 							v-for="label in Object.values(RepresentativeLabel)"
+							:key="label"
 							v-model="membership.label"
 							name="representative-label"
 							:label="label"

@@ -1,8 +1,7 @@
 <script lang="ts" setup>
-// @ts-ignore
+// @ts-expect-error carbon icons vue type
 import { Add16 } from '@carbon/icons-vue';
 import { formatDate, parseDate } from '~/utils/date';
-import type { title } from 'radash';
 
 export type MemberShipProp = {
 	id: string;
@@ -29,6 +28,10 @@ const props = defineProps<{
 		posts: Array<{ label: string; value: string }>;
 	}>;
 	editedMembershipsId?: Set<string>;
+}>();
+
+defineEmits<{
+	(e: 'savechanges'): void;
 }>();
 
 const memberships = defineModel<MemberShipProp[] | null>('memberships');
@@ -69,10 +72,6 @@ const getRowClass = (id: string): string => {
 	}
 	return '';
 };
-
-const emit = defineEmits<{
-	(e: 'savechanges'): void;
-}>();
 
 watch(
 	memberships,
@@ -151,7 +150,7 @@ const handleRoleInput = (event: InputEvent, m: MemberShipProp) => {
 					/>
 				</template>
 
-				<template #data class="relative">
+				<template #data>
 					<cv-data-table-row
 						v-for="(m, i) in memberships"
 						:key="m.id"

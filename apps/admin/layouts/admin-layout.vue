@@ -5,7 +5,7 @@ import {
 	Settings16,
 	UserAvatar24,
 	UserMultiple16,
-	//@ts-ignore
+	// @ts-expect-error carbon icons vue type
 } from '@carbon/icons-vue';
 import { ADMIN_NAVIGATIONS } from '~/constants/navigation';
 

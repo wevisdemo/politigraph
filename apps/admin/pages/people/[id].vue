@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-// @ts-ignore
+// @ts-expect-error carbon icons vue type
 import { Save16, View16, ViewOff16 } from '@carbon/icons-vue';
 import {
 	enumPublishStatus,
@@ -115,7 +115,7 @@ const setMembershipMutation = () => {
 				m.links !== orig.links
 			);
 		})
-		.map(({ mode, ...rest }) => rest);
+		.map(({ mode: _, ...rest }) => rest);
 
 	const newMemberships = changedMemberships.filter(
 		(m) => !originalMemberships.value?.find((o) => o.id === m.id),

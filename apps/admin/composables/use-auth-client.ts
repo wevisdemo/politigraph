@@ -49,7 +49,12 @@ export function useAuthClientWithRouteGuard(
 				router.replace('/');
 			}
 
-			successCallback?.(session.user);
+			const user = {
+				...session.user,
+				role: session.user.role ?? undefined,
+				banned: session.user.banned ?? null,
+			} satisfies UserWithRole;
+			successCallback?.(user);
 		}
 
 		isValidatingSession.value = false;

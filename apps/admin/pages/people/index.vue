@@ -60,8 +60,8 @@ const partyMembershipCondition = {
 const { data } = await useLazyAsyncData(
 	'people',
 	async () => {
-		const where: Record<string, any> = {};
-		const andClauses: Record<string, any>[] = [];
+		const where: Record<string, unknown> = {};
+		const andClauses: Record<string, unknown>[] = [];
 
 		if (debouncedSearch.value) {
 			andClauses.push({

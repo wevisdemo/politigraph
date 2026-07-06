@@ -23,7 +23,7 @@ import {
 	User16,
 	UserProfileAlt16,
 	VoiceActivate16,
-	// @ts-ignore
+	// @ts-expect-error carbon icons vue has incomplete type exports
 } from '@carbon/icons-vue';
 
 export const nodeIconMap = new Map([

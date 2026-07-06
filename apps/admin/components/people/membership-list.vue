@@ -11,7 +11,7 @@ import {
 	CheckmarkFilled16,
 	Edit16,
 	TrashCan16,
-	// @ts-ignore
+	// @ts-expect-error carbon icons vue type
 } from '@carbon/icons-vue';
 import { enumOrganizationType } from '@politigraph/graphql/genql';
 import type { MembershipProp } from '~/types/membership';
@@ -19,7 +19,7 @@ import { formatDate } from '~/utils/date';
 import DeleteMembershipModal from './delete-membership-modal.vue';
 import MembershipModal from './membership-modal.vue';
 
-const props = defineProps<{
+defineProps<{
 	organizationsOptions?: Array<{
 		label: string;
 		value: string;
@@ -199,7 +199,7 @@ const showModalDeleteMembership = (id: string, name: string | undefined) => {
 
 			<template #data>
 				<cv-data-table-row
-					v-for="(m, i) in memberships"
+					v-for="m in memberships"
 					:key="m.id"
 					:class="m?.mode ? '[&>td]:bg-[#FFF8E1]' : ''"
 				>

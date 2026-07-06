@@ -23,6 +23,12 @@ export default [
 			// Nuxt auto-imports (useRoute, useHead, definePageMeta, ...) are
 			// resolved at compile time and not visible to ESLint.
 			'no-undef': 'off',
+			'@typescript-eslint/no-unused-vars': [
+				'warn',
+				{ argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
+			],
+			// Components directly mutate props as a pattern in this codebase
+			'vue/no-mutating-props': 'off',
 		},
 	},
 	prettier,

@@ -57,7 +57,7 @@ watch(filters, () => {
 const { data } = await useLazyAsyncData(
 	'organizations',
 	async () => {
-		const where: Record<string, any> = {};
+		const where: Record<string, unknown> = {};
 
 		if (debouncedSearch.value) {
 			where.name = {

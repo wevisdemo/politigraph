@@ -4,7 +4,7 @@ import {
 	Save16,
 	View16,
 	ViewOff16,
-	//@ts-ignore
+	// @ts-expect-error carbon icons vue type
 } from '@carbon/icons-vue';
 import type { PublishStatus } from '@politigraph/graphql/genql';
 

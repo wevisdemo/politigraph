@@ -1,5 +1,5 @@
 <script setup lang="ts">
-// @ts-ignore
+// @ts-expect-error carbon icons vue type
 import { Save16 } from '@carbon/icons-vue';
 import type { Link } from '@politigraph/graphql/genql';
 import type { BillForm } from '~/components/bills/detail.vue';
