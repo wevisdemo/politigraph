@@ -1,6 +1,9 @@
 {
 	"$schema": "https://v2-10-3.turborepo.dev/schema.json",
 	"tasks": {
+		"test": {
+			"cache": false
+		},
 		"build": {
 			"dependsOn": ["^build"],
 			"outputs": [".output/**", "dist/**", "genql/**"],

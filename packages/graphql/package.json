@@ -6,7 +6,8 @@
 		"dev": "bun run build.ts --watch",
 		"build": "bun run build.ts",
 		"lint": "eslint . --fix",
-		"check": "tsc --noEmit"
+		"check": "tsc --noEmit",
+		"test": "bun test"
 	},
 	"dependencies": {
 		"@genql/cli": "^6.3.3",

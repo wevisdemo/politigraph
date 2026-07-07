@@ -12,6 +12,7 @@
 		"lint": "turbo lint --concurrency=1",
 		"check": "turbo check",
 		"format": "prettier --write --ignore-unknown --ignore-path .gitignore .",
+		"test": "turbo test",
 		"db:pull": "rsync -azvP --delete politigraphdb:/var/server/neo4j/data .neo4j"
 	},
 	"lint-staged": {
