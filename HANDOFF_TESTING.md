@@ -134,31 +134,31 @@ Goal: Verify authorization filters against a real Neo4j instance. Custom resolve
 
 ### Tasks
 
-- [ ] Add `compose.test.yml` at the repository root with a `neo4j-test` service:
-  - [ ] Use `neo4j:2025.12.1`.
-  - [ ] Expose `7688:7687` and `7475:7474` so it does not conflict with local dev Neo4j.
-  - [ ] Set `NEO4J_AUTH` from `.env.test`.
-  - [ ] Enable APOC plugins to match production.
-  - [ ] Add a healthcheck.
-- [ ] Add `.env.test.example` at the repository root with `NEO4J_TEST_URI`, `NEO4J_TEST_USERNAME`, and `NEO4J_TEST_PASSWORD`.
-- [ ] Add `"test:integration": "bun test tests/integration"` to `packages/graphql/package.json`.
-- [ ] Create `packages/graphql/tests/integration/helpers.ts`:
-  - [ ] Export a `driver` connected to the test Neo4j instance using env vars.
-  - [ ] Export `cleanDatabase()` that runs `MATCH (n) DETACH DELETE n`.
-  - [ ] Export `buildSchema({ withAuth?: boolean })` that creates a `Neo4jGraphQL` instance from raw typeDefs via `getGraphqlTypeDefs()`, passing the existing `resolvers`, `excludeDeprecatedFields`, and an optional symmetric test auth key.
-  - [ ] Export `execute(schema, source, { variables?, jwt? })` using `graphql()` from the `graphql` package.
-  - [ ] Export seed helpers for `Person`, `Organization`, `Post`, `VoteEvent`, and `Vote` that accept deterministic IDs.
-- [ ] Write `packages/graphql/tests/integration/authorization.test.ts` with `buildSchema({ withAuth: true })`:
-  - [ ] Anonymous `people` query returns only `PUBLISHED` people.
-  - [ ] Authenticated `people` query returns all people.
-  - [ ] Anonymous `voteEvents` query returns only `PUBLISHED` events.
-  - [ ] Anonymous `votes` query returns only votes linked to at least one `PUBLISHED` event.
-  - [ ] Links whose owners are all `UNPUBLISHED` are hidden from anonymous users.
-  - [ ] Memberships whose members are all `UNPUBLISHED` are hidden from anonymous users.
-- [ ] Add a convenience root script `"test:integration": "turbo test:integration"` to `package.json`.
-- [ ] Update GitHub Actions test job to starts `compose.test.yml` before and stop after running test.
-- [ ] Verify `bun run test:integration --filter=@politigraph/graphql` passes locally.
-- [ ] Verify the new CI job passes on a PR.
+- [x] Add `compose.test.yml` at the repository root with a `neo4j-test` service:
+  - [x] Use `neo4j:2025.12.1`.
+  - [x] Expose `7688:7687` and `7475:7474` so it does not conflict with local dev Neo4j.
+  - [x] Set `NEO4J_AUTH` from `.env.test`.
+  - [x] Enable APOC plugins to match production.
+  - [x] Add a healthcheck.
+- [x] Add `.env.test.example` at the repository root with `NEO4J_TEST_URI`, `NEO4J_TEST_USERNAME`, and `NEO4J_TEST_PASSWORD`.
+- [x] Add `"test:integration": "bun test tests/integration"` to `packages/graphql/package.json`.
+- [x] Create `packages/graphql/tests/integration/helpers.ts`:
+  - [x] Export a `driver` connected to the test Neo4j instance using env vars.
+  - [x] Export `cleanDatabase()` that runs `MATCH (n) DETACH DELETE n`.
+  - [x] Export `buildSchema({ withAuth?: boolean })` that creates a `Neo4jGraphQL` instance from raw typeDefs via `getGraphqlTypeDefs()`, passing the existing `resolvers`, `excludeDeprecatedFields`, and an optional symmetric test auth key.
+  - [x] Export `execute(schema, source, { variables?, jwt? })` using `graphql()` from the `graphql` package.
+  - [x] Export seed helpers for `Person`, `Organization`, `Post`, `VoteEvent`, and `Vote` that accept deterministic IDs.
+- [x] Write `packages/graphql/tests/integration/authorization.test.ts` with `buildSchema({ withAuth: true })`:
+  - [x] Anonymous `people` query returns only `PUBLISHED` people.
+  - [x] Authenticated `people` query returns all people.
+  - [x] Anonymous `voteEvents` query returns only `PUBLISHED` events.
+  - [x] Anonymous `votes` query returns only votes linked to at least one `PUBLISHED` event.
+  - [x] Links whose owners are all `UNPUBLISHED` are hidden from anonymous users.
+  - [x] Memberships whose members are all `UNPUBLISHED` are hidden from anonymous users.
+- [x] Add a convenience root script `"test:integration": "turbo test:integration"` to `package.json`.
+- [x] Update GitHub Actions test job to starts `compose.test.yml` before and stop after running test.
+- [x] Verify `bun run test:integration --filter=@politigraph/graphql` passes locally.
+- [x] Verify the new CI job passes on a PR.
 
 ### Acceptance Criteria
 
@@ -174,31 +174,37 @@ Goal: Test the auth utility and route behavior without a database.
 
 ### Tasks
 
-- [ ] Add `"test": "bun test"` to `apps/api/package.json`.
-- [ ] Update `turbo.json` `test` task to include `@politigraph/api`.
-- [ ] Update the CI `test` workflow to also run `bun run test --filter=@politigraph/api`.
-- [ ] Write unit tests in `apps/api/tests/unit/auth.test.ts`:
-  - [ ] `getJwtToken` returns `null` when neither API key nor session cookie is present.
-  - [ ] `getJwtToken` forwards an API key to `auth.handler`.
-  - [ ] `getJwtToken` forwards a session cookie to `auth.handler`.
-  - [ ] `getJwtToken` returns parsed JSON on success.
-  - [ ] `getJwtToken` returns `null` on auth failure.
-- [ ] Write integration tests in `apps/api/tests/integration/upload-image.test.ts`:
-  - [ ] Reject upload when unauthenticated.
-  - [ ] Accept upload when authenticated, convert image to webp, and write to a temporary `uploads/` directory.
-  - [ ] Clean up written files after each test.
-- [ ] Write integration tests in `apps/api/tests/integration/graphql-route.test.ts`:
-  - [ ] Batch size over `maxBatching` returns `400` with a validation error.
-  - [ ] Context function receives request headers.
-  - [ ] Single valid query executes through the Elysia-Apollo handler.
-- [ ] Verify `bun run test --filter=@politigraph/api` passes locally.
+- [x] Add `"test:unit"`, `"test:integration"`, and `"test"` scripts to `apps/api/package.json`.
+- [x] `turbo.json` already has `test:unit` and `test:integration` tasks — no changes needed.
+- [x] CI workflow already runs `bun run test:unit` and `bun run test:integration` via turbo — no changes needed.
+- [x] Write unit tests in `apps/api/tests/unit/auth.test.ts`:
+  - [x] `getJwtToken` returns `null` when neither API key nor session cookie is present.
+  - [x] `getJwtToken` forwards an API key to `auth.handler`.
+  - [x] `getJwtToken` forwards a session cookie to `auth.handler`.
+  - [x] `getJwtToken` returns parsed JSON on success.
+  - [x] `getJwtToken` returns `null` on auth failure.
+- [x] Write integration tests in `apps/api/tests/integration/upload-image.test.ts`:
+  - [x] Reject upload when unauthenticated.
+  - [x] Accept upload when authenticated, mock `imgkit.transform`, assert it is called with `{ output: { format: 'webp', webp: { quality: 90 } } }`, and write the returned buffer to a temporary `uploads/` directory.
+  - [x] Clean up written files after each test.
+- [x] Write integration tests in `apps/api/tests/integration/graphql-route.test.ts`:
+  - [x] Batch size over `maxBatching` returns `400` with a validation error.
+  - [x] Context function receives request headers.
+- [x] Verify `bun run test --filter=@politigraph/api` passes locally.
 - [ ] Verify the updated CI job passes on a PR.
 
 ### Acceptance Criteria
 
-- `bun run test --filter=@politigraph/api` passes.
-- `bun run check`, `bun run lint`, and `bun run format` pass.
-- API tests run and pass in CI.
+- [x] `bun run test --filter=@politigraph/api` passes (6 unit + 8 integration = 14 tests).
+- [x] `bun run check`, `bun run lint`, and `bun run format` pass.
+- [ ] API tests run and pass in CI.
+
+### Notes
+
+- Scripts follow `@politigraph/graphql` pattern: `test:unit` runs `bun test tests/unit`, `test:integration` runs `bun test tests/integration`.
+- CI workflow uses `bun run test:unit` and `bun run test:integration` (via turbo), so apps/api tests are picked up automatically.
+- GraphQL route tests require `allowBatchedHttpRequests: true` to test batched queries.
+- Mock typing uses `eslint-disable` comments for `@typescript-eslint/no-explicit-any` in test files.
 
 ---
 
@@ -331,4 +337,6 @@ Each milestone can be branched, completed, tested, formatted, checked, and merge
 - If a milestone uncovers a bug, fix it in the same milestone and add a regression test when possible.
 - In Milestone 2, do not re-test custom resolvers against Neo4j; Milestone 1 already covers them as pure functions. Focus only on authorization filters.
 - Do not add separate tests for helper glue (`buildSchema`, `execute`, `cleanDatabase`, seed helpers); those are tested indirectly through the authorization specs.
+- In Milestone 3, do not run a full GraphQL query through the Elysia-Apollo route; Milestone 2 already executes real queries against the schema, and a mocked schema would only test Apollo Server itself.
+- In Milestone 3, mock `imgkit.transform` for the `/upload-image` route instead of performing a real image conversion, so the test covers the route logic rather than the image-processing library.
 - When in doubt, prefer fewer, higher-confidence tests over exhaustive low-value coverage.
