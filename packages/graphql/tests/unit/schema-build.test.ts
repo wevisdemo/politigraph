@@ -3,9 +3,9 @@ import { describe, expect, test } from 'bun:test';
 import {
 	getGraphqlCreateIndexQueries,
 	getGraphqlTypeDefs,
-} from '../schema/index';
+} from '../../schema/index';
 
-const SCHEMA_DIR = join(import.meta.dir, '../schema');
+const SCHEMA_DIR = join(import.meta.dir, '../../schema');
 
 describe('getGraphqlTypeDefs', () => {
 	test('concatenates all .graphql files under schema/', async () => {
@@ -26,5 +26,15 @@ describe('getGraphqlTypeDefs', () => {
 	test('returns a non-empty string', async () => {
 		const result = await getGraphqlTypeDefs(SCHEMA_DIR);
 		expect(result.length).toBeGreaterThan(0);
+	});
+});
+
+describe('getGraphqlCreateIndexQueries', () => {
+	test('splits indexes.cypher and trims empty entries', async () => {
+		const result = await getGraphqlCreateIndexQueries(SCHEMA_DIR);
+
+		expect(result.length).toBeGreaterThan(0);
+		expect(result.every((query) => query.length > 0)).toBe(true);
+		expect(result.some((query) => query.includes('CREATE INDEX'))).toBe(true);
 	});
 });

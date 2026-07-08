@@ -3,6 +3,7 @@ node_modules
 .env.act
 .env.local
 .env.production
+.env.test
 !.env.example
 .neo4j
 .turbo

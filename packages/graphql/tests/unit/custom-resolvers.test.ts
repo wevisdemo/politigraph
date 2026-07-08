@@ -1,12 +1,12 @@
 import { describe, expect, test } from 'bun:test';
-import { resolvers } from '../custom-resolvers';
+import { resolvers } from '../../custom-resolvers';
 import type {
 	AlternatePersonName,
 	Organization,
 	Person,
 	Post,
 	Vote,
-} from '../genql';
+} from '../../genql';
 
 describe('Person.name', () => {
 	test('joins firstname, middlename, and lastname', () => {

@@ -15,14 +15,25 @@ jobs:
   test:
     name: Run tests
     runs-on: ubuntu-latest
+    env:
+      NEO4J_TEST_URI: neo4j://127.0.0.1:7688
+      NEO4J_TEST_USERNAME: neo4j
+      NEO4J_TEST_PASSWORD: testpassword
     steps:
       - uses: actions/checkout@v6
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
       - name: Install dependencies
         run: bun install --ignore-scripts
-      - name: Run tests
-        run: bun run test
+      - name: Run unit tests
+        run: bun run test:unit
+      - name: Start database containers
+        run: docker compose -f compose.test.yml up -d --wait
+      - name: Run integration tests
+        run: bun run test:integration
+      - name: Stop test containers
+        if: always()
+        run: docker compose -f compose.test.yml down
   build-api:
     name: Build API image
     runs-on: ubuntu-latest
