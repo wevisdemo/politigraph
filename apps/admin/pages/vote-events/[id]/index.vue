@@ -128,7 +128,7 @@ const voteEventFormInput = useForm({
 			updateVoteEvents: {
 				__args: {
 					where: {
-						id_EQ: route.params.id as string,
+						id: { eq: route.params.id as string },
 					},
 					update: {
 						title: { set: value.title },

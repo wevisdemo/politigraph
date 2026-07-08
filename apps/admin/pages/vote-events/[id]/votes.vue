@@ -272,7 +272,7 @@ async function onSaveChanges() {
 												{
 													where: {
 														node: {
-															id_EQ: voterId,
+															id: { eq: voterId },
 														},
 													},
 												},
