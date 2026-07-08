@@ -67,7 +67,9 @@ const { data: voteEventData, refresh: refreshVoteEvent } =
 	});
 
 useHead({
-	title: `${voteEventData.value?.title || 'Vote Event'} | Politigraph Admin`,
+	title: computed(
+		() => `${voteEventData.value?.title || 'Vote Event'} | Politigraph Admin`,
+	),
 });
 
 const defaultValues = reactive({

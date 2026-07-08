@@ -146,7 +146,9 @@ const {
 });
 
 useHead({
-	title: `${billData.value?.title || 'Bills'} | Politigraph Admin`,
+	title: computed(
+		() => `${billData.value?.title || 'Bills'} | Politigraph Admin`,
+	),
 });
 
 const form = reactive<BillForm>({

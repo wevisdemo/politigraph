@@ -108,7 +108,10 @@ const { data: voteEvent, refresh } = useAsyncData(
 );
 
 useHead({
-	title: `Votes - ${voteEvent.value?.title || 'Vote Event'} | Politigraph Admin`,
+	title: computed(
+		() =>
+			`Votes - ${voteEvent.value?.title || 'Vote Event'} | Politigraph Admin`,
+	),
 });
 
 const { data: peopleOptions } = await usePeopleOptions();

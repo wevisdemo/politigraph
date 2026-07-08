@@ -21,7 +21,9 @@ const { previewImage, setImageBlob, uploadImage, clearImage } =
 	useImageUpload();
 
 useHead({
-	title: 'People | Politigraph Admin',
+	title: computed(
+		() => `${peopleData.value?.name || 'People'} | Politigraph Admin`,
+	),
 });
 
 const originalMemberships = ref<Partial<Membership>[] | null>(null);
