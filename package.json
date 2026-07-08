@@ -9,7 +9,7 @@
 		"prepare": "husky",
 		"dev": "turbo dev",
 		"build": "turbo build",
-		"lint": "turbo lint --concurrency=1",
+		"lint": "turbo lint",
 		"check": "turbo check",
 		"format": "prettier --write --ignore-unknown --ignore-path .gitignore .",
 		"test:unit": "turbo test:unit",

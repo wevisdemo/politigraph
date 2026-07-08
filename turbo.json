@@ -29,6 +29,10 @@
 		"check": {
 			"dependsOn": ["^build"],
 			"cache": false
+		},
+		"@politigraph/graphql#check": {
+			"dependsOn": ["build"],
+			"cache": false
 		}
 	}
 }
