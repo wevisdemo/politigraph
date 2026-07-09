@@ -2,6 +2,7 @@ import { getNumberQueryParam } from '~/utils/query';
 import { computed, ref, toValue, watch } from 'vue';
 import type { MaybeRefOrGetter } from 'vue';
 import type { LocationQuery, LocationQueryRaw } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 
 type PaginationData = {
 	page: number;

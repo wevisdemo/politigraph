@@ -1,3 +1,5 @@
+import { onScopeDispose, ref } from 'vue';
+
 const NOTIFICATION_DURATION = 5000;
 
 export type ToastNotificationKind = 'success' | 'warning' | 'error' | 'info';

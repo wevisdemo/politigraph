@@ -28,15 +28,18 @@
 		"@commitlint/config-conventional": "^19.6.0",
 		"@eslint/js": "^10.0.1",
 		"@ianvs/prettier-plugin-sort-imports": "^4.4.0",
+		"@vue/test-utils": "^2.4.11",
 		"astro-eslint-parser": "^2.1.0",
 		"eslint": "^9.25.1",
 		"eslint-config-prettier": "^10.1.8",
 		"eslint-plugin-astro": "^2.1.1",
+		"happy-dom": "^20.10.6",
 		"husky": "^9.1.7",
 		"lint-staged": "^15.2.11",
 		"prettier": "^3.6.2",
 		"prettier-plugin-astro": "^0.14.1",
 		"prettier-plugin-tailwindcss": "^0.6.13",
-		"typescript-eslint": "^8.62.1"
+		"typescript-eslint": "^8.62.1",
+		"vitest": "^4.1.10"
 	}
 }

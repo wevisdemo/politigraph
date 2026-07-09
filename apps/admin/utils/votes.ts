@@ -76,7 +76,6 @@ export function validateVotes({
 						(otherVote.voters[0]?.id ?? otherVote.voter_name_raw),
 			)
 		) {
-			console.log(vote.id);
 			errors.push({
 				type: 'DUPLICATED',
 				id: vote.id,

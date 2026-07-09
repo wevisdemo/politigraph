@@ -197,7 +197,7 @@ Goal: Test the auth utility and route behavior without a database.
 
 - [x] `bun run test --filter=@politigraph/api` passes (6 unit + 8 integration = 14 tests).
 - [x] `bun run check`, `bun run lint`, and `bun run format` pass.
-- [ ] API tests run and pass in CI.
+- [x] API tests run and pass in CI.
 
 ### Notes
 
