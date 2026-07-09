@@ -5,9 +5,9 @@ import { resolvers } from '../../custom-resolvers';
 import { excludeDeprecatedFields } from '../../deprecated-fields';
 import { getGraphqlTypeDefs } from '../../schema';
 
-const uri = process.env.NEO4J_TEST_URI ?? 'neo4j://127.0.0.1:7688';
-const username = process.env.NEO4J_TEST_USERNAME ?? 'neo4j';
-const password = process.env.NEO4J_TEST_PASSWORD ?? 'testpassword';
+const uri = process.env.NEO4J_URI ?? 'neo4j://127.0.0.1:7688';
+const username = process.env.NEO4J_USERNAME ?? 'neo4j';
+const password = process.env.NEO4J_PASSWORD ?? 'testpassword';
 
 export const driver = neo4j.driver(uri, neo4j.auth.basic(username, password));
 

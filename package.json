@@ -12,6 +12,7 @@
 		"lint": "turbo lint",
 		"check": "turbo check",
 		"format": "prettier --write --ignore-unknown --ignore-path .gitignore .",
+		"migrate": "turbo migrate",
 		"test:unit": "turbo test:unit",
 		"test:integration": "turbo test:integration",
 		"test:e2e": "turbo test:e2e",

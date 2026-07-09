@@ -16,9 +16,12 @@ jobs:
     name: Run tests
     runs-on: ubuntu-latest
     env:
-      NEO4J_TEST_URI: neo4j://127.0.0.1:7688
-      NEO4J_TEST_USERNAME: neo4j
-      NEO4J_TEST_PASSWORD: testpassword
+      NEO4J_URI: neo4j://127.0.0.1:7688
+      NEO4J_USERNAME: neo4j
+      NEO4J_PASSWORD: testpassword
+      DATABASE_URL: postgresql://postgres:testpassword@127.0.0.1:5433/betterauth
+      BETTER_AUTH_SECRET: testsecretkey123
+      BETTER_AUTH_URL: http://localhost:8000
     steps:
       - uses: actions/checkout@v6
       - name: Setup Bun
@@ -31,12 +34,20 @@ jobs:
         run: bun run lint
       - name: Run unit tests
         run: bun run test:unit
-      - name: Install Playwright browsers
-        run: bunx playwright install --with-deps chromium
       - name: Start database containers
-        run: docker compose -f compose.test.yml up -d --wait
+        run: docker compose -f compose.test.yml up -d --wait --quiet-pull
+      - name: Debug - check containers
+        run: |
+          docker compose -f compose.test.yml ps
+          docker compose -f compose.test.yml logs postgres-test
+          pg_isready -h 127.0.0.1 -p 5433 -U postgres
+      - name: Migrate database
+        run: bun run --bun drizzle-kit migrate
+        working-directory: packages/auth
       - name: Run integration tests
         run: bun run test:integration
+      - name: Install Playwright browsers
+        run: bunx playwright install --with-deps chromium
       - name: Run E2E tests
         run: bun run test:e2e
       - name: Stop test containers

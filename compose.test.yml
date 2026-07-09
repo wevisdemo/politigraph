@@ -2,13 +2,12 @@ services:
   neo4j-test:
     image: neo4j:2025.12.1
     environment:
-      NEO4J_AUTH: ${NEO4J_TEST_USERNAME}/${NEO4J_TEST_PASSWORD}
+      NEO4J_AUTH: ${NEO4J_USERNAME}/${NEO4J_PASSWORD}
       NEO4J_apoc_export_file_enabled: true
       NEO4J_apoc_import_file_enabled: true
       NEO4J_apoc_import_file_use__neo4j__config: true
       NEO4J_PLUGINS: '["apoc"]'
     ports:
-      - '7475:7474'
       - '7688:7687'
     healthcheck:
       test:
@@ -16,9 +15,9 @@ services:
           'CMD',
           'cypher-shell',
           '-u',
-          '${NEO4J_TEST_USERNAME}',
+          '${NEO4J_USERNAME}',
           '-p',
-          '${NEO4J_TEST_PASSWORD}',
+          '${NEO4J_PASSWORD}',
           'RETURN 1',
         ]
       interval: 5s

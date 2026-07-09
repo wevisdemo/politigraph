@@ -7,7 +7,7 @@ import typeDefs from './dist/typedefs.graphql' with { type: 'text' };
 import { getGraphqlCreateIndexQueries } from './schema';
 
 const driver = neo4j.driver(
-	`neo4j://${process.env.NEO4J_HOST ?? '127.0.0.1'}:7687`,
+	process.env.NEO4J_URI ?? 'neo4j://127.0.0.1:7687',
 	neo4j.auth.basic(process.env.NEO4J_USERNAME!, process.env.NEO4J_PASSWORD!),
 );
 
