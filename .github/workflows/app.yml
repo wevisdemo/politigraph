@@ -36,11 +36,6 @@ jobs:
         run: bun run test:unit
       - name: Start database containers
         run: docker compose -f compose.test.yml up -d --wait --quiet-pull
-      - name: Debug - check containers
-        run: |
-          docker compose -f compose.test.yml ps
-          docker compose -f compose.test.yml logs postgres-test
-          pg_isready -h 127.0.0.1 -p 5433 -U postgres
       - name: Migrate database
         run: bun run --bun drizzle-kit migrate
         working-directory: packages/auth
@@ -48,6 +43,8 @@ jobs:
         run: bun run test:integration
       - name: Install Playwright browsers
         run: bunx playwright install --with-deps chromium
+      - name: Build API
+        run: bun run build --filter=@politigraph/api
       - name: Run E2E tests
         run: bun run test:e2e
       - name: Stop test containers

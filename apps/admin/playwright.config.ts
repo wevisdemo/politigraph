@@ -19,7 +19,7 @@ export default defineConfig({
 	],
 	webServer: [
 		{
-			command: 'cd ../.. && bun run dev --filter=@politigraph/api',
+			command: '../api/dist/server',
 			port: 3000,
 			reuseExistingServer: !process.env.CI,
 			timeout: 30000,
