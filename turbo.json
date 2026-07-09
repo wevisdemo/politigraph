@@ -10,6 +10,9 @@
 		"test:integration": {
 			"cache": false
 		},
+		"test:e2e": {
+			"cache": false
+		},
 		"build": {
 			"dependsOn": ["^build"],
 			"outputs": [".output/**", "dist/**", "genql/**"],

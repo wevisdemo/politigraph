@@ -31,10 +31,14 @@ jobs:
         run: bun run lint
       - name: Run unit tests
         run: bun run test:unit
+      - name: Install Playwright browsers
+        run: bunx playwright install --with-deps chromium
       - name: Start database containers
         run: docker compose -f compose.test.yml up -d --wait
       - name: Run integration tests
         run: bun run test:integration
+      - name: Run E2E tests
+        run: bun run test:e2e
       - name: Stop test containers
         if: always()
         run: docker compose -f compose.test.yml down
