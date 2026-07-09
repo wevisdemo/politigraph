@@ -19,7 +19,7 @@ export default defineConfig({
 	],
 	webServer: [
 		{
-			command: '../api/dist/server',
+			command: 'bun run ../api/src/index.ts',
 			port: 3000,
 			reuseExistingServer: !process.env.CI,
 			timeout: 30000,

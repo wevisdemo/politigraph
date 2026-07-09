@@ -42,9 +42,9 @@ jobs:
       - name: Run integration tests
         run: bun run test:integration
       - name: Install Playwright browsers
-        run: bunx playwright install --with-deps chromium
-      - name: Build API
-        run: bun run build --filter=@politigraph/api
+        run: bunx playwright install --no-progress --with-deps chromium
+      - name: Build GraphQL
+        run: bun run build --filter=@politigraph/graphql
       - name: Run E2E tests
         run: bun run test:e2e
       - name: Stop test containers
