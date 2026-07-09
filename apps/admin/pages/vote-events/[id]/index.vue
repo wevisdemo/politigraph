@@ -324,9 +324,7 @@ async function togglePublishStatus() {
 		:errors="voteValidationResult.errors"
 		:warnings="voteValidationResult.warnings"
 		:get-action-label="() => 'Review'"
-		@action="
-			() => $router.push(`/admin/vote-events/${voteEventData?.id}/votes`)
-		"
+		@action="() => $router.push(`./${voteEventData?.id}/votes`)"
 	/>
 
 	<form
