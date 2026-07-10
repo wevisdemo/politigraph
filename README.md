@@ -17,6 +17,7 @@ Managed with [Turborepo](https://turborepo.com/)
   - **/docs** : Landing page and documentations to be built as static website
 - **/packages** : Shared packages between app
   - **/auth** : Authentication and related database management
+  - **/config** : Centralized environment variable validation
   - **/graphql** : Schemas and custom resolvers implementation
 
 ## 2. Routes and Deployment
@@ -35,12 +36,14 @@ Following these steps will help you set up Politigraph on your local development
 
 ### 3.1 Environment Variables
 
-Add following variables to the root `.env` (for docker) and `/apps/api/.env` (for API) to config neo4j credential. Both file must be the same.
+Add required environment variables to the root `.env`. See `.env.example` at the project root for the full list. Make sure `POSTGRES_PASSWORD` matches the password embedded in `DATABASE_URL`.
 
-```env
-NEO4J_USERNAME=<SOME_USER_NAME>
-NEO4J_PASSWORD=<SOME_INITIAL_PASSWORD>
-```
+`@politigraph/config` loads env files in order:
+
+1. `.env` — baseline
+2. `.env.{NODE_ENV}` — overrides (e.g. `.env.production`)
+
+All files are optional. `NODE_ENV` defaults to `development`.
 
 ### 3.2 Start Neo4j and Postgres Containers
 

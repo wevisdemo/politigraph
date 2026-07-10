@@ -26,9 +26,9 @@ export async function fetchGraphql(
 	lastRequestTime = Date.now();
 
 	const response = await fetch(
-		`${
-			import.meta.env.POLITIGRAPH_URL ?? 'https://politigraph.wevis.info'
-		}/graphql`,
+		process.env.POLITIGRAPH_URL ??
+			import.meta.env.POLITIGRAPH_URL ??
+			'https://politigraph.wevis.info/graphql',
 		{
 			method: 'POST',
 			headers: {

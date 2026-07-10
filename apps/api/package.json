@@ -11,6 +11,7 @@
 		"test": "bun test"
 	},
 	"dependencies": {
+		"@politigraph/config": "workspace:*",
 		"@apollo/server": "^4.11.2",
 		"@escape.tech/graphql-armor": "^3.2.0",
 		"@politigraph/auth": "workspace:*",

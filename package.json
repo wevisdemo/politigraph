@@ -8,14 +8,14 @@
 	"scripts": {
 		"prepare": "husky",
 		"dev": "turbo dev",
-		"build": "turbo build",
+		"build": "NODE_ENV=production turbo build",
 		"lint": "turbo lint",
 		"check": "turbo check",
 		"format": "prettier --write --ignore-unknown --ignore-path .gitignore .",
 		"migrate": "turbo migrate",
-		"test:unit": "turbo test:unit",
-		"test:integration": "turbo test:integration",
-		"test:e2e": "turbo test:e2e",
+		"test:unit": "NODE_ENV=test turbo test:unit",
+		"test:integration": "NODE_ENV=test turbo test:integration",
+		"test:e2e": "NODE_ENV=test turbo test:e2e",
 		"db:pull": "rsync -azvP --delete politigraphdb:/var/server/neo4j/data .neo4j"
 	},
 	"lint-staged": {

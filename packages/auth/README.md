@@ -15,4 +15,4 @@ Authentication and related database management
 
 ## Environment Variables
 
-- `DATABASE_URL` postgres connection URL
+Managed by `@politigraph/config`. See `.env.example` at the project root for the full list.

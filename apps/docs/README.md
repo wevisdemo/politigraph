@@ -16,4 +16,4 @@ Landing page and documentations to be built as static website
 
 ## Environment Variables
 
-- `POLITIGRAPH_URL` for GraphQL endpoint (optional, default to https://politigraph.wevis.info)
+- `POLITIGRAPH_URL` for GraphQL endpoint (optional, default to https://politigraph.wevis.info/graphql)

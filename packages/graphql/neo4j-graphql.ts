@@ -1,4 +1,5 @@
 import { Neo4jGraphQL } from '@neo4j/graphql';
+import { neo4jConfig } from '@politigraph/config/neo4j';
 import neo4j from 'neo4j-driver';
 import { resolvers } from './custom-resolvers';
 import { excludeDeprecatedFields } from './deprecated-fields';
@@ -7,8 +8,8 @@ import typeDefs from './dist/typedefs.graphql' with { type: 'text' };
 import { getGraphqlCreateIndexQueries } from './schema';
 
 const driver = neo4j.driver(
-	process.env.NEO4J_URI ?? 'neo4j://127.0.0.1:7687',
-	neo4j.auth.basic(process.env.NEO4J_USERNAME!, process.env.NEO4J_PASSWORD!),
+	neo4jConfig.uri,
+	neo4j.auth.basic(neo4jConfig.username, neo4jConfig.password),
 );
 
 export function initNeo4jGraphql(jwksUrl: string) {
@@ -28,11 +29,6 @@ export function initNeo4jGraphql(jwksUrl: string) {
 }
 
 export async function createNeo4jIndex() {
-	if (!process.env.NEO4J_USERNAME || !process.env.NEO4J_PASSWORD) {
-		console.info('[Neo4j] Credential env not found, skipping setup');
-		return;
-	}
-
 	const queries = await getGraphqlCreateIndexQueries();
 	const session = driver.session();
 	const tx = await session.beginTransaction();

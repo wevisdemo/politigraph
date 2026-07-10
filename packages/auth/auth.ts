@@ -1,3 +1,5 @@
+import { databaseUrl } from '@politigraph/config/postgres';
+import { serverConfig } from '@politigraph/config/server';
 import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { admin, apiKey, jwt, openAPI } from 'better-auth/plugins';
@@ -10,11 +12,7 @@ export const trustedOrigins = [
 	'https://politigraph.wevis.info',
 ];
 
-if (!process.env.DATABASE_URL) {
-	throw Error('DATABASE_URL env is not provided');
-}
-
-const db = drizzle(process.env.DATABASE_URL);
+const db = drizzle(databaseUrl);
 
 export const auth = betterAuth({
 	basePath: 'auth',
@@ -32,7 +30,7 @@ export const auth = betterAuth({
 			},
 		}),
 		jwt(),
-		...(process.env.NODE_ENV !== 'production' ? [openAPI()] : []),
+		...(!serverConfig.isProduction ? [openAPI()] : []),
 	],
 	emailAndPassword: {
 		enabled: true,

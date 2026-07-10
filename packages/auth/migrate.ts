@@ -1,3 +1,5 @@
+import { databaseUrl } from '@politigraph/config/postgres';
 import { $ } from 'bun';
 
-await $`DATABASE_URL=${process.env.DATABASE_URL} bun run --bun drizzle-kit migrate`;
+process.env.DATABASE_URL = databaseUrl;
+await $`bun run --bun drizzle-kit migrate`;

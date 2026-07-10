@@ -19,6 +19,7 @@ jobs:
       NEO4J_URI: neo4j://127.0.0.1:7688
       NEO4J_USERNAME: neo4j
       NEO4J_PASSWORD: testpassword
+      POSTGRES_PASSWORD: testpassword
       DATABASE_URL: postgresql://postgres:testpassword@127.0.0.1:5433/betterauth
       BETTER_AUTH_SECRET: testsecretkey123
       BETTER_AUTH_URL: http://localhost:8000

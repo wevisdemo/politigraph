@@ -12,6 +12,7 @@
 		"test": "bun test"
 	},
 	"dependencies": {
+		"@politigraph/config": "workspace:*",
 		"@genql/cli": "^6.3.3",
 		"@graphql-tools/utils": "^10.6.2",
 		"@neo4j/graphql": "^7.4.2",

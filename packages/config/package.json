@@ -1,0 +1,26 @@
+{
+	"name": "@politigraph/config",
+	"type": "module",
+	"private": true,
+	"scripts": {
+		"check": "tsc --noEmit",
+		"lint": "eslint . --fix"
+	},
+	"exports": {
+		".": "./src/index.ts",
+		"./postgres": "./src/postgres.ts",
+		"./neo4j": "./src/neo4j.ts",
+		"./auth": "./src/auth.ts",
+		"./server": "./src/server.ts"
+	},
+	"dependencies": {
+		"dotenv": "^17.2.3",
+		"zod": "^4.4.3"
+	},
+	"peerDependencies": {
+		"typescript": "^5"
+	},
+	"devDependencies": {
+		"@types/bun": "latest"
+	}
+}

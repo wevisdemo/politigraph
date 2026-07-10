@@ -1,5 +1,6 @@
 import { ApolloArmor } from '@escape.tech/graphql-armor';
 import { auth } from '@politigraph/auth/auth';
+import { serverConfig } from '@politigraph/config/server';
 import { initNeo4jGraphql } from '@politigraph/graphql/neo4j-graphql';
 import { Elysia, type Context } from 'elysia';
 import { apollo } from './routes/graphql';
@@ -7,7 +8,7 @@ import { upload } from './routes/upload-image';
 import { getJwtToken } from './utils/auth';
 import { triggerPlausiblePageview } from './utils/plausible';
 
-const port = process.env.PORT ?? 3000;
+const port = serverConfig.port;
 const origin = `http://127.0.0.1:${port}`;
 
 const neo4jGraphql = initNeo4jGraphql(`${origin}/auth/jwks`);
@@ -55,7 +56,7 @@ const app = new Elysia()
 	.use(upload(origin))
 	.all('/auth/*', (ctx) => auth.handler(ctx.request));
 
-if (process.env.NODE_ENV !== 'production') {
+if (!serverConfig.isProduction) {
 	app.use((await import('@elysiajs/cors')).cors());
 }
 

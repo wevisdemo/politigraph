@@ -17,6 +17,6 @@ Backend API for GraphQL and authentication
 - `BETTER_AUTH_SECRET` - Random string used for better auth token signing
 - `BETTER_AUTH_URL` - Frontend base URL
 - `DATABASE_URL` - Postgres connection URL
-- `NEO4J_HOST` (optional, default to localhost)
+- `NEO4J_URI` (optional, default to `neo4j://127.0.0.1:7687`)
 - `NEO4J_USERNAME`
 - `NEO4J_PASSWORD`

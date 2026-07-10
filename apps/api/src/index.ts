@@ -1,9 +1,11 @@
 import cluster from 'node:cluster';
 import os from 'node:os';
+import { serverConfig } from '@politigraph/config/server';
 
 if (cluster.isPrimary) {
-	const availableThread =
-		process.env.NODE_ENV === 'production' ? os.availableParallelism() : 1;
+	const availableThread = serverConfig.isProduction
+		? os.availableParallelism()
+		: 1;
 
 	console.log(`Starting server on ${availableThread} threads...`);
 
