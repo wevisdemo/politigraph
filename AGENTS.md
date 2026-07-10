@@ -12,6 +12,7 @@
   - Check type with `bun run check`
   - Lint with `bun run lint`, all errors and warnings must be fixed
   - Format code with `bun run format` before declaring task as done
+  - Run involved tests as appropriate
 - Human will get in the loop and edit some file along the way. If you spot it, please respect those changes
 
 ## Folder Structure
@@ -31,3 +32,17 @@ More information on tech stack of each project can be found in the respective RE
 - Use conventional commit format
 - Don't add body to the commit message. Concisely explain changes to the message title
 - If the changes specific to any app or package, then add it name to the scope
+
+## Testing
+
+Test commands:
+
+- `bun run test:unit` — unit tests
+- `bun run test:integration` — integration tests (requires test databases)
+- `bun run test:e2e` — Playwright E2E tests (requires test databases)
+  - On NixOS, must run with `nix-shell --run "bun test:e2e"`
+
+Test databases via `docker compose -f compose.test.yml up -d --wait`:
+
+- Neo4j: port 7688
+- Postgres: port 5433

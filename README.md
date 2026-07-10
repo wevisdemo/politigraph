@@ -80,7 +80,38 @@ You need to create an account first to login to the admin panel, by making a POS
 }
 ```
 
-## 4. References
+## 4. Testing
+
+The project has three test levels:
+
+- **Unit tests** — test individual functions and composables
+- **Integration tests** — test API routes and GraphQL resolvers with real databases
+- **E2E tests** — test full user flows in the admin panel using Playwright
+
+### 4.1 Running tests
+
+All tests require test databases. Start them with:
+
+```bash
+docker compose -f compose.test.yml up -d --wait
+```
+
+Then run tests:
+
+```bash
+bun run test:unit        # Unit tests only
+bun run test:integration # Integration tests (requires test databases)
+bun run test:e2e         # E2E tests (requires test databases + seed)
+```
+
+### 4.2 Test infrastructure
+
+`compose.test.yml` provides isolated test databases:
+
+- **Neo4j** on port `7688` (avoids conflict with dev Neo4j on 7687)
+- **Postgres** on port `5433` (avoids conflict with dev Postgres on 5432)
+
+## 5. References
 
 ### 4.1 GraphQL API authentication
 
