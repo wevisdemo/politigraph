@@ -42,6 +42,9 @@ jobs:
         working-directory: packages/auth
       - name: Run integration tests
         run: bun run test:integration
+      - name: Seed test user
+        run: bun seed.ts
+        working-directory: packages/auth
       - name: Install Playwright browsers
         working-directory: apps/admin
         run: bun playwright install --with-deps chromium
