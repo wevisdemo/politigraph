@@ -19,15 +19,18 @@ export default defineConfig({
 	],
 	webServer: [
 		{
-			command: 'bun run ../api/src/index.ts',
+			command: 'bun run ../api/src/server.ts',
 			port: 3000,
-			reuseExistingServer: !process.env.CI,
+			reuseExistingServer: true,
 			timeout: 30000,
+			env: {
+				NODE_ENV: 'test',
+			},
 		},
 		{
 			command: 'bun run dev',
 			port: 8000,
-			reuseExistingServer: !process.env.CI,
+			reuseExistingServer: true,
 			timeout: 30000,
 		},
 	],
