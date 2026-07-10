@@ -19,7 +19,7 @@ export async function login(page: Page) {
 	await page.fill('input[placeholder="username@wevis.info"]', TEST_USER.email);
 	await page.fill('input[placeholder="Password"]', TEST_USER.password);
 	await page.click('button:has-text("Log in")');
-	await page.waitForURL('/');
+	await page.waitForURL(/.*admin\/?$/);
 }
 
 export async function createTestPerson(
@@ -27,16 +27,16 @@ export async function createTestPerson(
 	person: { firstname: string; lastname: string; publishStatus?: string },
 ) {
 	await page.goto('/people/new');
-	await page.fill('input[label="First Name"]', person.firstname);
-	await page.fill('input[label="Last Name"]', person.lastname);
+	await page.getByLabel('Title*').fill('นาย');
+	await page.getByLabel(/Firstname.*Thai/).fill(person.firstname);
+	await page.getByLabel(/Lastname.*Thai/).fill(person.lastname);
 
 	if (person.publishStatus) {
-		await page.selectOption(
-			'select[label="Publish Status"]',
-			person.publishStatus,
-		);
+		await page.getByLabel(/Publish/).selectOption(person.publishStatus);
 	}
 
-	await page.click('button:has-text("Save")');
-	await page.waitForURL(/\/people\/[a-zA-Z0-9-]+/);
+	await page.click('button:has-text("Create")');
+
+	// Wait for URL to change to a UUID-based path (not /new)
+	await page.waitForURL(/\/people\/[0-9a-f]{8}-/, { timeout: 15000 });
 }

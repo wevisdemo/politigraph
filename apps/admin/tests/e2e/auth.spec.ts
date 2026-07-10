@@ -12,7 +12,7 @@ test.describe('Authentication', () => {
 		await page.fill('input[placeholder="Password"]', TEST_USER.password);
 		await page.click('button:has-text("Log in")');
 
-		await page.waitForURL('/');
+		await page.waitForURL(/.*admin\/?$/);
 		await expect(page.locator('h1, h2, h3').first()).toBeVisible();
 	});
 
@@ -26,16 +26,14 @@ test.describe('Authentication', () => {
 		await page.fill('input[placeholder="Password"]', 'wrongpassword');
 		await page.click('button:has-text("Log in")');
 
-		await expect(page.locator('.bx--inline-notification')).toBeVisible();
-		await expect(page.locator('.bx--inline-notification')).toContainText(
-			'Error',
-		);
+		await expect(page.locator('[role="alert"]')).toBeVisible();
+		await expect(page.locator('[role="alert"]')).toContainText('Error');
 	});
 
 	test('unauthenticated user is redirected to /login', async ({ page }) => {
 		await page.goto('/');
 
-		await page.waitForURL('/login');
+		await page.waitForURL(/.*admin\/login$/);
 		await expect(page.locator('h1:has-text("Log in")')).toBeVisible();
 	});
 
@@ -48,48 +46,65 @@ test.describe('Authentication', () => {
 		await page.fill('input[autocomplete="password"]', TEST_USER.password);
 
 		const newPassword = 'newtestpassword123';
-		await page.fill('input[label="New Password"]', newPassword);
-		await page.fill('input[label="Confirm New Password"]', newPassword);
+		await page.getByLabel('New Password', { exact: true }).fill(newPassword);
+		await page
+			.getByLabel('Confirm New Password', { exact: true })
+			.fill(newPassword);
 
 		await page.click('button:has-text("Change Password")');
 
-		await expect(page.locator('.bx--inline-notification--success')).toBeVisible(
-			{
-				timeout: 10000,
-			},
+		await expect(page.locator('h1:has-text("You\'re all set!")')).toBeVisible({
+			timeout: 10000,
+		});
+
+		// Sign out and log back in with new password to change it back
+		await page.click('button:has-text("Go to Sign In")');
+		await page.waitForURL(/.*admin\/login$/);
+
+		await page.fill(
+			'input[placeholder="username@wevis.info"]',
+			TEST_USER.email,
 		);
+		await page.fill('input[placeholder="Password"]', newPassword);
+		await page.click('button:has-text("Log in")');
+		await page.waitForURL(/.*admin\/?$/);
+
+		await page.goto('/change-password');
 
 		await page.fill('input[autocomplete="password"]', newPassword);
-		await page.fill('input[label="New Password"]', TEST_USER.password);
-		await page.fill('input[label="Confirm New Password"]', TEST_USER.password);
+		await page
+			.getByLabel('New Password', { exact: true })
+			.fill(TEST_USER.password);
+		await page
+			.getByLabel('Confirm New Password', { exact: true })
+			.fill(TEST_USER.password);
 		await page.click('button:has-text("Change Password")');
 
-		await expect(page.locator('.bx--inline-notification--success')).toBeVisible(
-			{
-				timeout: 10000,
-			},
-		);
+		await expect(page.locator('h1:has-text("You\'re all set!")')).toBeVisible({
+			timeout: 10000,
+		});
 	});
 
 	test('create an API key', async ({ page }) => {
 		await login(page);
 
 		await page.goto('/api-keys');
-		await expect(page.locator('h1, h2').first()).toBeVisible();
+		await expect(page.getByRole('heading', { name: 'API Keys' })).toBeVisible();
 
-		await page.click('button:has-text("Create API Key")');
+		await page.getByPlaceholder('Key name').fill('Test API Key');
+		await page.click('button:has-text("Create")');
 
-		await page.fill('input[label="Name"]', 'Test API Key');
-		await page.click('button:has-text("Save")');
-
-		await expect(page.locator('text=Test API Key')).toBeVisible({
+		await expect(page.getByRole('cell', { name: 'Test API Key' })).toBeVisible({
 			timeout: 10000,
 		});
 
-		// Clean up - delete the API key
-		await page.click('button[aria-label="Delete"]:near(:text("Test API Key"))');
-		await page.click('button:has-text("Confirm")');
+		// Clean up — click delete button bypassing tooltip actionability
+		const deleteBtn = page.locator('button').filter({ hasText: 'Delete' });
+		await deleteBtn.evaluate((el) => el.click());
+		await page.waitForTimeout(1000);
 
-		await expect(page.locator('text=Test API Key')).not.toBeVisible();
+		await expect(
+			page.getByRole('cell', { name: 'Test API Key' }),
+		).not.toBeVisible();
 	});
 });
