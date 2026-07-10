@@ -13,6 +13,7 @@
 	"dependencies": {
 		"@politigraph/config": "workspace:*",
 		"@apollo/server": "^4.11.2",
+		"@elysiajs/cors": "^1.4.0",
 		"@escape.tech/graphql-armor": "^3.2.0",
 		"@politigraph/auth": "workspace:*",
 		"@politigraph/graphql": "workspace:*",
@@ -21,7 +22,6 @@
 		"imgkit": "^2.2.1"
 	},
 	"devDependencies": {
-		"@elysiajs/cors": "^1.4.0",
 		"@graphql-tools/schema": "^10.0.35",
 		"bun-types": "latest",
 		"graphql": "^16.9.0"
