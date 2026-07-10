@@ -44,7 +44,7 @@ jobs:
         run: bun run test:integration
       - name: Install Playwright browsers
         working-directory: apps/admin
-        run: bun playwright install --no-progress --with-deps chromium
+        run: bun playwright install --with-deps chromium
       - name: Build GraphQL
         run: bun run build --filter=@politigraph/graphql
       - name: Run E2E tests
