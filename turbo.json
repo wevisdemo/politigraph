@@ -48,7 +48,14 @@
 		},
 		"test:e2e": {
 			"cache": false,
-			"dependsOn": ["^build", "@politigraph/auth#migrate"]
+			"dependsOn": [
+				"^build",
+				"@politigraph/auth#migrate",
+				"@politigraph/auth#seed"
+			]
+		},
+		"seed": {
+			"cache": false
 		}
 	}
 }

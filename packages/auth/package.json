@@ -6,7 +6,8 @@
 		"generate": "bun run --bun better-auth generate -y && bun run --bun drizzle-kit generate",
 		"migrate": "bun migrate.ts",
 		"lint": "eslint . --fix",
-		"check": "tsc --noEmit"
+		"check": "tsc --noEmit",
+		"seed": "bun run seed.ts"
 	},
 	"dependencies": {
 		"@politigraph/config": "workspace:*",

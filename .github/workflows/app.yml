@@ -42,19 +42,20 @@ jobs:
         working-directory: packages/auth
       - name: Run integration tests
         run: bun run test:integration
-      - name: Seed test user
-        run: bun seed.ts
-        working-directory: packages/auth
       - name: Install Playwright browsers
         working-directory: apps/admin
         run: bun playwright install --with-deps chromium
-      - name: Build GraphQL
-        run: bun run build --filter=@politigraph/graphql
       - name: Run E2E tests
         run: bun run test:e2e
       - name: Stop test containers
         if: always()
         run: docker compose -f compose.test.yml down
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30
   build-api:
     name: Build API image
     runs-on: ubuntu-latest
