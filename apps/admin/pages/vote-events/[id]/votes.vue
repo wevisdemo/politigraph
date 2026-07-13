@@ -227,6 +227,7 @@ async function onSaveChanges() {
 								update: {
 									vote_order: { set: vote.vote_order },
 									badge_number: { set: vote.badge_number },
+									voter_name_raw: { set: vote.voter_name_raw },
 									voter_party: { set: vote.voter_party },
 									option: { set: vote.option },
 									voters: [
