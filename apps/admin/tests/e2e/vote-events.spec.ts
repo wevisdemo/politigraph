@@ -258,4 +258,110 @@ test.describe('Vote Events & Votes', () => {
 			refreshedRow.locator('td').filter({ hasText: personFullName }),
 		).toBeVisible();
 	});
+
+	test('filter vote events by status', async ({ page }) => {
+		const uniqueId = `${test.info().workerIndex}-${Date.now()}`;
+
+		const { title: unpublishedTitle } = await createVoteEventWithVotes(
+			page,
+			`Filter Test ${uniqueId}`,
+		);
+
+		const { title: publishedTitle } = await createVoteEventWithVotes(
+			page,
+			`Filter Published ${uniqueId}`,
+			[DEFAULT_VOTE],
+			'UNPUBLISHED', // can't publish without valid data
+		);
+
+		await page.goto('/vote-events');
+		await waitForTable(page);
+
+		await expect(
+			page.getByRole('link', { name: unpublishedTitle }),
+		).toBeVisible();
+		await expect(
+			page.getByRole('link', { name: publishedTitle }),
+		).toBeVisible();
+
+		await page.locator('label:has-text("UNPUBLISHED")').first().click();
+		await page.waitForResponse((r) => r.url().includes('/graphql'));
+
+		await expect(
+			page.getByRole('link', { name: unpublishedTitle }),
+		).toBeVisible();
+	});
+
+	test('show validation errors for invalid votes', async ({ page }) => {
+		const uniqueId = `${test.info().workerIndex}-${Date.now()}`;
+
+		const { voteEventId } = await createVoteEventWithVotes(
+			page,
+			`Validation Test ${uniqueId}`,
+			[DEFAULT_VOTE, { ...DEFAULT_VOTE, vote_order: '2', badge_number: '002' }],
+		);
+
+		await page.goto(`/vote-events/${voteEventId}/votes`);
+		await waitForTable(page);
+
+		await expect(page.getByText('Duplicate Votes')).toBeVisible();
+		await expect(page.getByText('Unrecognized Voter Names')).toBeVisible();
+	});
+
+	test('edit summary counts', async ({ page }) => {
+		const uniqueId = `${test.info().workerIndex}-${Date.now()}`;
+		const { voteEventId } = await createVoteEventWithVotes(
+			page,
+			`Summary Test ${uniqueId}`,
+		);
+
+		await page.goto(`/vote-events/${voteEventId}/votes`);
+		await waitForTable(page);
+
+		await expect(
+			page.getByRole('heading', { name: 'Vote Summary' }),
+		).toBeVisible();
+
+		const agreeInput = page.locator('input[type="number"]').first();
+		await agreeInput.clear();
+		await agreeInput.fill('5');
+
+		await saveChanges(page);
+
+		await page.reload();
+		await waitForTable(page);
+		await expect(page.locator('input[type="number"]').first()).toHaveValue('5');
+	});
+
+	test('open batch name correction modal', async ({ page }) => {
+		const uniqueId = `${test.info().workerIndex}-${Date.now()}`;
+		const personFirstname = 'ทดสอบ';
+		const personLastname = `นามสกุล${uniqueId}`;
+
+		await createTestPerson(page, {
+			firstname: personFirstname,
+			lastname: personLastname,
+		});
+
+		const { voteEventId } = await createVoteEventWithVotes(
+			page,
+			`Batch Name Test ${uniqueId}`,
+			[{ ...DEFAULT_VOTE, voter_name_raw: 'ชื่อผิด นามสกุลผิด' }],
+		);
+
+		await page.goto(`/vote-events/${voteEventId}/votes`);
+		await waitForTable(page);
+
+		await page.getByRole('button', { name: 'Review names' }).click();
+
+		const modal = page.locator('.bx--modal.is-visible');
+		await expect(modal).toBeVisible();
+		await expect(modal).toContainText('Review Suggested Name Corrections');
+
+		await expect(modal.getByText('ชื่อผิด นามสกุลผิด')).toBeVisible();
+		await expect(modal.getByRole('checkbox')).toHaveCount(2); // header + 1 vote row
+
+		await modal.getByRole('button', { name: 'Cancel' }).click();
+		await expect(modal).not.toBeVisible();
+	});
 });

@@ -41,6 +41,7 @@ export async function createVoteEventWithVotes(
 	page: Page,
 	title: string,
 	votes: VoteInput[] = [DEFAULT_VOTE],
+	publishStatus: 'PUBLISHED' | 'UNPUBLISHED' = 'UNPUBLISHED',
 ) {
 	const votesInput = votes
 		.map(
@@ -66,7 +67,7 @@ export async function createVoteEventWithVotes(
 							title: $title
 							start_date: "${DATES.start_date}"
 							end_date: "${DATES.end_date}"
-							publish_status: UNPUBLISHED
+							publish_status: ${publishStatus}
 							votes: {
 								create: [${votesInput}]
 							}
@@ -100,6 +101,8 @@ export async function createVoteEventWithVotes(
 	const voteEvent = data.data.createVoteEvents.voteEvents[0];
 	return {
 		voteEventId: voteEvent.id as string,
+		title: voteEvent.title as string,
+		publishStatus: voteEvent.publish_status as string,
 		votes: voteEvent.votes as Array<{
 			id: string;
 			vote_order: string;
