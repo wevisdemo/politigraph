@@ -56,10 +56,8 @@ test.describe('People Management', () => {
 
 		await page.click('button:has-text("Create")');
 
-		// Wait for save confirmation or redirect
 		await page.waitForTimeout(3000);
 
-		// Verify page has person details heading (works on both new and edit pages)
 		await expect(
 			page.getByRole('heading', { name: 'Person Details' }),
 		).toBeVisible({ timeout: 10000 });

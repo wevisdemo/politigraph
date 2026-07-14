@@ -7,7 +7,8 @@
 - Do not use CSS style block if not necessary, using Tailwind classes is preferable
 - Always name source code in kebab-case
 - Avoid mutating variables, prefer functional approach when possible
-- Don't write arbitrary comment if the code is self-explainable.
+- Don't write arbitrary comment if the code is self-explainable
+- Add/update test cases if your changes effect business logic
 - After finishing any task, run the following commands:
   - Check type with `bun run check`
   - Lint with `bun run lint`, all errors and warnings must be fixed
