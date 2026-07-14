@@ -309,7 +309,9 @@ const organizationsOption = () => {
 							</cv-data-table-cell>
 							<cv-data-table-cell>
 								<div class="flex flex-col justify-evenly">
-									<span v-for="org in row.organizations" :key="org.abbreviation"
+									<span
+										v-for="org in row.organizations"
+										:key="org.abbreviation ?? ''"
 										>{{ org.abbreviation }} ชุดที่ {{ org.term }}</span
 									>
 								</div>

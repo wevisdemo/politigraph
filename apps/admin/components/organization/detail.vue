@@ -64,7 +64,7 @@ const selectedChildLabels = computed(() =>
 
 const organizationColor = computed<string>({
 	get: () => modelValue.value?.color ?? '',
-	set: (value) => {
+	set: (value: string) => {
 		if (!modelValue.value) return;
 		modelValue.value.color = value || null;
 	},
@@ -190,7 +190,7 @@ const organizationTypeOptions = Object.values(enumOrganizationType).map(
 				label="Classification*"
 				:model-value="modelValue.classification"
 				@update:model-value="
-					(value) => {
+					(value: string) => {
 						if (!modelValue) return;
 						modelValue.classification = value as OrganizationType;
 					}

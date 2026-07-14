@@ -182,6 +182,6 @@ export async function editDropdown(
 	const dropdownItem = cell.locator(
 		`[data-value="${value}"] a.bx--dropdown-link`,
 	);
-	await dropdownItem.evaluate((el) => el.click());
+	await dropdownItem.evaluate((el) => (el as HTMLElement).click());
 	await page.waitForTimeout(500);
 }

@@ -71,7 +71,7 @@ async function saveCroppedImage() {
 	if (!canvas) return;
 
 	const blob = await new Promise<Blob>((resolve, reject) => {
-		canvas.toBlob((b: Blob) => {
+		canvas.toBlob((b: Blob | null) => {
 			if (b) resolve(b);
 			else reject(new Error('Failed to create blob'));
 		}, 'image/jpeg');

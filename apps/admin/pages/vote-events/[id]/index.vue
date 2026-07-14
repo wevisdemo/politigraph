@@ -329,7 +329,7 @@ async function togglePublishStatus() {
 
 	<form
 		@submit="
-			(e) => {
+			(e: SubmitEvent) => {
 				e.preventDefault();
 				e.stopPropagation();
 			}

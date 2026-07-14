@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { isValidatingSession } from '~/composables/use-auth-client';
+
 definePageMeta({
 	layout: 'admin-layout',
 });
