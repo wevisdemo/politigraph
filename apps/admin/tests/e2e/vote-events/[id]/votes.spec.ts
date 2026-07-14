@@ -1,106 +1,63 @@
 import { expect, test } from '@playwright/test';
-import { createTestPerson, login } from './fixtures';
+import { createTestPerson, login } from '../../fixtures';
 import {
 	createVoteEventWithVotes,
 	DEFAULT_VOTE,
+	deleteVoteEvent,
 	editDropdown,
 	editTextInput,
 	getVoteRow,
 	saveChanges,
 	VOTE_OPTIONS,
 	waitForTable,
-} from './vote-events.helpers';
+} from '../helpers';
 
-test.describe('Vote Events & Votes', () => {
+test.describe('Votes Management', () => {
+	const seededVoteEventIds: string[] = [];
+
 	test.beforeEach(async ({ page }) => {
 		await login(page);
 	});
 
-	test('list vote events', async ({ page }) => {
-		await page.goto('/vote-events');
-
-		await expect(page.locator('h1:has-text("Vote Events")')).toBeVisible();
-		await expect(page.locator('table, [role="table"]')).toBeVisible();
+	test.afterEach(async ({ page }) => {
+		for (const id of seededVoteEventIds) {
+			await deleteVoteEvent(page, id);
+		}
+		seededVoteEventIds.length = 0;
 	});
 
-	test('update vote_order', async ({ page }) => {
+	test('update all vote fields and persist', async ({ page }) => {
 		const uniqueId = `${test.info().workerIndex}-${Date.now()}`;
 		const { voteEventId, votes } = await createVoteEventWithVotes(
 			page,
-			`Test Vote Order ${uniqueId}`,
+			`Test Edit All Fields ${uniqueId}`,
 		);
+		seededVoteEventIds.push(voteEventId);
 
 		await page.goto(`/vote-events/${voteEventId}/votes`);
 		await waitForTable(page);
 
 		const voteRow = getVoteRow(page, votes[0].id);
 		await editTextInput(page, voteRow, 0, '5');
-
-		await saveChanges(page);
-
-		const refreshedRow = getVoteRow(page, votes[0].id);
-		const refreshedInput = refreshedRow.locator('input[type="text"]').first();
-		await expect(refreshedInput).toHaveValue('5');
-	});
-
-	test('update badge_number', async ({ page }) => {
-		const uniqueId = `${test.info().workerIndex}-${Date.now()}`;
-		const { voteEventId, votes } = await createVoteEventWithVotes(
-			page,
-			`Test Badge Number ${uniqueId}`,
-		);
-
-		await page.goto(`/vote-events/${voteEventId}/votes`);
-		await waitForTable(page);
-
-		const voteRow = getVoteRow(page, votes[0].id);
 		await editTextInput(page, voteRow, 1, '999');
-
-		await saveChanges(page);
-
-		const refreshedRow = getVoteRow(page, votes[0].id);
-		const refreshedInput = refreshedRow.locator('input[type="text"]').nth(1);
-		await expect(refreshedInput).toHaveValue('999');
-	});
-
-	test('update voter_party', async ({ page }) => {
-		const uniqueId = `${test.info().workerIndex}-${Date.now()}`;
-		const { voteEventId, votes } = await createVoteEventWithVotes(
-			page,
-			`Test Voter Party ${uniqueId}`,
-		);
-
-		await page.goto(`/vote-events/${voteEventId}/votes`);
-		await waitForTable(page);
-
-		const voteRow = getVoteRow(page, votes[0].id);
 		await editTextInput(page, voteRow, 2, 'พรรคใหม่');
-
-		await saveChanges(page);
-
-		const refreshedRow = getVoteRow(page, votes[0].id);
-		const refreshedInput = refreshedRow.locator('input[type="text"]').nth(2);
-		await expect(refreshedInput).toHaveValue('พรรคใหม่');
-	});
-
-	test('update option', async ({ page }) => {
-		const uniqueId = `${test.info().workerIndex}-${Date.now()}`;
-		const { voteEventId, votes } = await createVoteEventWithVotes(
-			page,
-			`Test Option ${uniqueId}`,
-		);
-
-		await page.goto(`/vote-events/${voteEventId}/votes`);
-		await waitForTable(page);
-
-		const voteRow = getVoteRow(page, votes[0].id);
 		await editDropdown(page, voteRow, 5, VOTE_OPTIONS.DISAGREE);
 
 		await saveChanges(page);
 
 		const refreshedRow = getVoteRow(page, votes[0].id);
-		const refreshedCell = refreshedRow.locator('td').nth(5);
-		await expect(refreshedCell).toContainText(VOTE_OPTIONS.DISAGREE);
+		await expect(
+			refreshedRow.locator('input[type="text"]').first(),
+		).toHaveValue('5');
+		await expect(refreshedRow.locator('input[type="text"]').nth(1)).toHaveValue(
+			'999',
+		);
+		await expect(refreshedRow.locator('input[type="text"]').nth(2)).toHaveValue(
+			'พรรคใหม่',
+		);
+		await expect(refreshedRow.locator('td').nth(5)).toContainText(
+			VOTE_OPTIONS.DISAGREE,
+		);
 	});
 
 	test('add new vote row', async ({ page }) => {
@@ -109,6 +66,7 @@ test.describe('Vote Events & Votes', () => {
 			page,
 			`Test Add Vote ${uniqueId}`,
 		);
+		seededVoteEventIds.push(voteEventId);
 
 		await page.goto(`/vote-events/${voteEventId}/votes`);
 		await waitForTable(page);
@@ -141,6 +99,7 @@ test.describe('Vote Events & Votes', () => {
 				},
 			],
 		);
+		seededVoteEventIds.push(voteEventId);
 
 		await page.goto(`/vote-events/${voteEventId}/votes`);
 		await waitForTable(page);
@@ -153,51 +112,6 @@ test.describe('Vote Events & Votes', () => {
 		await page.waitForTimeout(500);
 
 		await saveChanges(page);
-	});
-
-	test('edit vote event details', async ({ page }) => {
-		const uniqueId = `${test.info().workerIndex}-${Date.now()}`;
-		const { voteEventId } = await createVoteEventWithVotes(
-			page,
-			`Test Edit Details ${uniqueId}`,
-		);
-
-		await page.goto(`/vote-events/${voteEventId}`);
-		await page.waitForTimeout(3000);
-
-		const titleInput = page.getByLabel('Title');
-		await titleInput.clear();
-		await titleInput.fill(`Updated Title ${uniqueId}`);
-
-		const nicknameInput = page.getByLabel('Nickname');
-		await nicknameInput.clear();
-		await nicknameInput.fill('Test Nickname');
-
-		const descriptionInput = page.getByLabel('Description');
-		await descriptionInput.clear();
-		await descriptionInput.fill('Test description text');
-
-		await saveChanges(page, 'บันทึก');
-	});
-
-	test('toggle publish status', async ({ page }) => {
-		const uniqueId = `${test.info().workerIndex}-${Date.now()}`;
-		const { voteEventId } = await createVoteEventWithVotes(
-			page,
-			`Test Publish ${uniqueId}`,
-		);
-
-		await page.goto(`/vote-events/${voteEventId}`);
-		await page.waitForTimeout(3000);
-
-		const publishButton = page
-			.locator('button')
-			.filter({ hasText: /Publish/ })
-			.first();
-		await expect(publishButton).toBeVisible();
-
-		const buttonText = await publishButton.innerText();
-		expect(buttonText).toMatch(/Publish/);
 	});
 
 	test('update voter name', async ({ page }) => {
@@ -217,6 +131,7 @@ test.describe('Vote Events & Votes', () => {
 			`Test Vote Event ${uniqueId}`,
 			[{ ...DEFAULT_VOTE, voter_name_raw: invalidVoterName }],
 		);
+		seededVoteEventIds.push(voteEventId);
 
 		await page.goto(`/vote-events/${voteEventId}/votes`);
 		await waitForTable(page);
@@ -259,39 +174,6 @@ test.describe('Vote Events & Votes', () => {
 		).toBeVisible();
 	});
 
-	test('filter vote events by status', async ({ page }) => {
-		const uniqueId = `${test.info().workerIndex}-${Date.now()}`;
-
-		const { title: unpublishedTitle } = await createVoteEventWithVotes(
-			page,
-			`Filter Test ${uniqueId}`,
-		);
-
-		const { title: publishedTitle } = await createVoteEventWithVotes(
-			page,
-			`Filter Published ${uniqueId}`,
-			[DEFAULT_VOTE],
-			'UNPUBLISHED', // can't publish without valid data
-		);
-
-		await page.goto('/vote-events');
-		await waitForTable(page);
-
-		await expect(
-			page.getByRole('link', { name: unpublishedTitle }),
-		).toBeVisible();
-		await expect(
-			page.getByRole('link', { name: publishedTitle }),
-		).toBeVisible();
-
-		await page.locator('label:has-text("UNPUBLISHED")').first().click();
-		await page.waitForResponse((r) => r.url().includes('/graphql'));
-
-		await expect(
-			page.getByRole('link', { name: unpublishedTitle }),
-		).toBeVisible();
-	});
-
 	test('show validation errors for invalid votes', async ({ page }) => {
 		const uniqueId = `${test.info().workerIndex}-${Date.now()}`;
 
@@ -300,6 +182,7 @@ test.describe('Vote Events & Votes', () => {
 			`Validation Test ${uniqueId}`,
 			[DEFAULT_VOTE, { ...DEFAULT_VOTE, vote_order: '2', badge_number: '002' }],
 		);
+		seededVoteEventIds.push(voteEventId);
 
 		await page.goto(`/vote-events/${voteEventId}/votes`);
 		await waitForTable(page);
@@ -314,6 +197,7 @@ test.describe('Vote Events & Votes', () => {
 			page,
 			`Summary Test ${uniqueId}`,
 		);
+		seededVoteEventIds.push(voteEventId);
 
 		await page.goto(`/vote-events/${voteEventId}/votes`);
 		await waitForTable(page);
@@ -348,6 +232,7 @@ test.describe('Vote Events & Votes', () => {
 			`Batch Name Test ${uniqueId}`,
 			[{ ...DEFAULT_VOTE, voter_name_raw: 'ชื่อผิด นามสกุลผิด' }],
 		);
+		seededVoteEventIds.push(voteEventId);
 
 		await page.goto(`/vote-events/${voteEventId}/votes`);
 		await waitForTable(page);
@@ -359,7 +244,7 @@ test.describe('Vote Events & Votes', () => {
 		await expect(modal).toContainText('Review Suggested Name Corrections');
 
 		await expect(modal.getByText('ชื่อผิด นามสกุลผิด')).toBeVisible();
-		await expect(modal.getByRole('checkbox')).toHaveCount(2); // header + 1 vote row
+		await expect(modal.getByRole('checkbox')).toHaveCount(2);
 
 		await modal.getByRole('button', { name: 'Cancel' }).click();
 		await expect(modal).not.toBeVisible();

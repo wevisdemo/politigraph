@@ -1,8 +1,7 @@
 import { expect, test } from '@playwright/test';
-import { login } from './fixtures';
+import { login } from '../fixtures';
 import {
 	addLink,
-	cancelPostModal,
 	createTestOrganization,
 	createTestPost,
 	deleteTestLink,
@@ -15,67 +14,9 @@ import {
 	saveOrganizationChanges,
 	savePostModal,
 	waitForOrganizationDetail,
-	waitForOrganizationTable,
-} from './organization-helpers';
+} from './helpers';
 
 const genId = () => `${test.info().workerIndex}-${Date.now()}`;
-
-test.describe('Organization List', () => {
-	test.beforeEach(async ({ page }) => {
-		await login(page);
-	});
-
-	test('list organizations', async ({ page }) => {
-		await page.goto('/organizations');
-
-		await expect(page.locator('h1:has-text("Organizations")')).toBeVisible();
-		await expect(page.locator('table, [role="table"]')).toBeVisible();
-	});
-
-	test('navigate from list to detail page', async ({ page }) => {
-		const uid = genId();
-		const orgName = `TestOrgNav${uid}`;
-		const org = await createTestOrganization(page, orgName, 'POLITICAL_PARTY');
-
-		try {
-			await page.goto('/organizations');
-			await waitForOrganizationTable(page);
-
-			const orgLink = page.locator(`a:has-text("${orgName}")`).first();
-			await expect(orgLink).toBeVisible({ timeout: 10000 });
-			await orgLink.click();
-
-			await page.waitForURL(/\/organizations\/[0-9a-f]{8}-/, {
-				timeout: 10000,
-			});
-			await waitForOrganizationDetail(page);
-
-			await expect(
-				page.locator('h4:has-text("Organization Details")'),
-			).toBeVisible();
-		} finally {
-			await deleteTestOrganization(page, org.id);
-		}
-	});
-
-	test('filter by classification', async ({ page }) => {
-		const uid = genId();
-		const orgName = `TestOrgFilter${uid}`;
-		const org = await createTestOrganization(page, orgName, 'POLITICAL_PARTY');
-
-		await page.goto('/organizations');
-		await waitForOrganizationTable(page);
-
-		await page
-			.locator('label.bx--radio-button__label:has-text("พรรคการเมือง")')
-			.click();
-		await page.waitForTimeout(1000);
-
-		await expect(page.locator('table, [role="table"]')).toBeVisible();
-
-		await deleteTestOrganization(page, org.id);
-	});
-});
 
 test.describe('Organization Detail - Edit & Persist', () => {
 	let orgId: string;
@@ -108,82 +49,33 @@ test.describe('Organization Detail - Edit & Persist', () => {
 		await expect(page.getByLabel('Classification*')).toBeVisible();
 	});
 
-	test('edit name and persist', async ({ page }) => {
+	test('edit multiple fields and persist', async ({ page }) => {
 		await page.goto(`/organizations/${orgId}`);
 		await waitForOrganizationDetail(page);
 
-		const newName = `UpdatedOrg${genId()}`;
+		const uid = genId();
+		const newName = `Updated${uid}`;
+		const newNameEn = `UpdatedEn${uid}`;
+		const newDesc = `Description ${uid}`;
+
 		await page.getByLabel('Name*').clear();
 		await page.getByLabel('Name*').fill(newName);
 
-		await saveOrganizationChanges(page);
-
-		const detail = await fetchOrganizationDetail(page, orgId);
-		expect(detail.name).toBe(newName);
-	});
-
-	test('edit name_en and persist', async ({ page }) => {
-		await page.goto(`/organizations/${orgId}`);
-		await waitForOrganizationDetail(page);
-
-		const newNameEn = `UpdatedOrgEn${genId()}`;
 		await page.getByLabel('Name (Eng)').clear();
 		await page.getByLabel('Name (Eng)').fill(newNameEn);
 
-		await saveOrganizationChanges(page);
-
-		const detail = await fetchOrganizationDetail(page, orgId);
-		expect(detail.name_en).toBe(newNameEn);
-	});
-
-	test('edit description and persist', async ({ page }) => {
-		await page.goto(`/organizations/${orgId}`);
-		await waitForOrganizationDetail(page);
-
-		const description = `Test description ${genId()}`;
 		await page.getByLabel('Description').clear();
-		await page.getByLabel('Description').fill(description);
-
-		await saveOrganizationChanges(page);
-
-		const detail = await fetchOrganizationDetail(page, orgId);
-		expect(detail.description).toBe(description);
-	});
-
-	test('change classification and persist', async ({ page }) => {
-		await page.goto(`/organizations/${orgId}`);
-		await waitForOrganizationDetail(page);
+		await page.getByLabel('Description').fill(newDesc);
 
 		await page.getByLabel('Classification*').selectOption('CABINET');
 
 		await saveOrganizationChanges(page);
 
 		const detail = await fetchOrganizationDetail(page, orgId);
+		expect(detail.name).toBe(newName);
+		expect(detail.name_en).toBe(newNameEn);
+		expect(detail.description).toBe(newDesc);
 		expect(detail.classification).toBe('CABINET');
-	});
-
-	test('edit color and persist', async ({ page }) => {
-		await page.goto(`/organizations/${orgId}`);
-		await waitForOrganizationDetail(page);
-
-		const colorInput = page
-			.locator('.vue-pick-colors-trigger, [class*="pick-colors"]')
-			.first();
-		if (await colorInput.isVisible()) {
-			await colorInput.click();
-			await page.waitForTimeout(300);
-
-			const colorHex = page.locator('input[type="text"]').last();
-			await colorHex.clear();
-			await colorHex.fill('#FF5733');
-			await colorHex.press('Enter');
-			await page.waitForTimeout(300);
-		}
-
-		await saveOrganizationChanges(page);
-
-		const detail = await fetchOrganizationDetail(page, orgId);
-		expect(detail).toBeTruthy();
 	});
 });
 
@@ -224,7 +116,9 @@ test.describe('Organization Detail - Parent/Child Relationships', () => {
 		await deleteTestOrganization(page, parentOrgId);
 	});
 
-	test('add parent organization via multi-select', async ({ page }) => {
+	test('add parent and child organizations via multi-select', async ({
+		page,
+	}) => {
 		await page.goto(`/organizations/${mainOrgId}`);
 		await waitForOrganizationDetail(page);
 
@@ -245,17 +139,11 @@ test.describe('Organization Detail - Parent/Child Relationships', () => {
 			.click();
 		await page.waitForTimeout(300);
 
-		await saveOrganizationChanges(page);
-
-		const detail = await fetchOrganizationDetail(page, mainOrgId);
-		expect(
-			detail.parents.some((p: { id: string }) => p.id === parentOrgId),
-		).toBe(true);
-	});
-
-	test('add child organization via multi-select', async ({ page }) => {
-		await page.goto(`/organizations/${mainOrgId}`);
-		await waitForOrganizationDetail(page);
+		await page.keyboard.press('Escape');
+		await page.waitForTimeout(300);
+		await expect(
+			parentContainer.locator('.bx--list-box__menu'),
+		).not.toBeVisible();
 
 		const childLabel = page.locator('label.bx--label:has-text("Children")');
 		await childLabel.scrollIntoViewIfNeeded();
@@ -285,6 +173,9 @@ test.describe('Organization Detail - Parent/Child Relationships', () => {
 
 		const detail = await fetchOrganizationDetail(page, mainOrgId);
 		expect(
+			detail.parents.some((p: { id: string }) => p.id === parentOrgId),
+		).toBe(true);
+		expect(
 			detail.children.some((c: { id: string }) => c.id === childOrgId),
 		).toBe(true);
 	});
@@ -307,20 +198,6 @@ test.describe('Organization Detail - Posts CRUD', () => {
 
 	test.afterEach(async ({ page }) => {
 		await deleteTestOrganization(page, orgId);
-	});
-
-	test('add post modal renders', async ({ page }) => {
-		await page.goto(`/organizations/${orgId}`);
-		await waitForOrganizationDetail(page);
-
-		await openAddPostModal(page);
-
-		await expect(
-			page.locator('.post-modal .bx--modal-header__heading'),
-		).toContainText(/add/i);
-		await expect(page.locator('.post-modal')).toContainText('Role*');
-
-		await cancelPostModal(page);
 	});
 
 	test('add post locally', async ({ page }) => {
@@ -416,7 +293,7 @@ test.describe('Organization Detail - Links', () => {
 		await deleteTestOrganization(page, orgId);
 	});
 
-	test('add link and persist', async ({ page }) => {
+	test('add link then delete and persist', async ({ page }) => {
 		await page.goto(`/organizations/${orgId}`);
 		await waitForOrganizationDetail(page);
 
@@ -427,24 +304,12 @@ test.describe('Organization Detail - Links', () => {
 
 		await saveOrganizationChanges(page);
 
-		const detail = await fetchOrganizationDetail(page, orgId);
+		const detailAfterAdd = await fetchOrganizationDetail(page, orgId);
 		expect(
-			detail.links.some(
+			detailAfterAdd.links.some(
 				(l: { note: string; url: string }) => l.note === note && l.url === url,
 			),
 		).toBe(true);
-	});
-
-	test('delete link and persist', async ({ page }) => {
-		await page.goto(`/organizations/${orgId}`);
-		await waitForOrganizationDetail(page);
-
-		const note = `Delete Note ${genId()}`;
-		const url = `https://delete.com/${genId()}`;
-
-		await addLink(page, note, url);
-
-		await saveOrganizationChanges(page);
 
 		await page.goto(`/organizations/${orgId}`);
 		await waitForOrganizationDetail(page);
@@ -458,55 +323,7 @@ test.describe('Organization Detail - Links', () => {
 
 		await saveOrganizationChanges(page);
 
-		const detail = await fetchOrganizationDetail(page, orgId);
-		expect(detail.links).toHaveLength(0);
-	});
-});
-
-test.describe('Organization Detail - Full Edit & Persist', () => {
-	let orgId: string;
-	let orgName: string;
-
-	test.beforeEach(async ({ page }) => {
-		await login(page);
-
-		const uid = genId();
-		orgName = `FullOrg${uid}`;
-
-		const org = await createTestOrganization(page, orgName, 'POLITICAL_PARTY');
-		orgId = org.id;
-	});
-
-	test.afterEach(async ({ page }) => {
-		await deleteTestOrganization(page, orgId);
-	});
-
-	test('edit multiple fields and persist', async ({ page }) => {
-		await page.goto(`/organizations/${orgId}`);
-		await waitForOrganizationDetail(page);
-
-		const uid = genId();
-		const newName = `Updated${uid}`;
-		const newNameEn = `UpdatedEn${uid}`;
-		const newDesc = `Description ${uid}`;
-
-		await page.getByLabel('Name*').clear();
-		await page.getByLabel('Name*').fill(newName);
-
-		await page.getByLabel('Name (Eng)').clear();
-		await page.getByLabel('Name (Eng)').fill(newNameEn);
-
-		await page.getByLabel('Description').clear();
-		await page.getByLabel('Description').fill(newDesc);
-
-		await page.getByLabel('Classification*').selectOption('CABINET');
-
-		await saveOrganizationChanges(page);
-
-		const detail = await fetchOrganizationDetail(page, orgId);
-		expect(detail.name).toBe(newName);
-		expect(detail.name_en).toBe(newNameEn);
-		expect(detail.description).toBe(newDesc);
-		expect(detail.classification).toBe('CABINET');
+		const detailAfterDelete = await fetchOrganizationDetail(page, orgId);
+		expect(detailAfterDelete.links).toHaveLength(0);
 	});
 });

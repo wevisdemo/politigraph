@@ -1,6 +1,5 @@
 import { expect, type Page } from '@playwright/test';
 
-// Constants
 export const VOTE_OPTIONS = {
 	AGREE: 'เห็นด้วย',
 	DISAGREE: 'ไม่เห็นด้วย',
@@ -36,7 +35,6 @@ export const TIMEOUTS = {
 	TOAST: 5000,
 } as const;
 
-// GraphQL helpers
 export async function createVoteEventWithVotes(
 	page: Page,
 	title: string,
@@ -115,7 +113,7 @@ export async function createVoteEventWithVotes(
 }
 
 export async function deleteVoteEvent(page: Page, voteEventId: string) {
-	await page.request.post('/graphql', {
+	const response = await page.request.post('/graphql', {
 		headers: { 'Content-Type': 'application/json' },
 		data: {
 			query: `
@@ -128,9 +126,12 @@ export async function deleteVoteEvent(page: Page, voteEventId: string) {
 			variables: { id: voteEventId },
 		},
 	});
+	expect(
+		response.ok(),
+		`Failed to delete vote event ${voteEventId}`,
+	).toBeTruthy();
 }
 
-// Page helpers
 export async function waitForTable(page: Page) {
 	await page.waitForSelector('table, [role="table"]', {
 		timeout: TIMEOUTS.TABLE,
