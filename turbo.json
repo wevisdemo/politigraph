@@ -44,17 +44,15 @@
 			"cache": false
 		},
 		"test:integration": {
+			"dependsOn": ["^migrate"],
 			"cache": false
 		},
 		"test:e2e": {
-			"cache": false,
-			"dependsOn": [
-				"^build",
-				"@politigraph/auth#migrate",
-				"@politigraph/auth#seed"
-			]
+			"dependsOn": ["^build", "^seed"],
+			"cache": false
 		},
 		"seed": {
+			"dependsOn": ["migrate"],
 			"cache": false
 		}
 	}
