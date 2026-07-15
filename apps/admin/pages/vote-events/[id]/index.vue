@@ -255,6 +255,15 @@ const voteValidationResult = computed(
 		}),
 );
 
+const issueSummary = computed(() => {
+	const errs = voteValidationResult.value?.errors.length ?? 0;
+	const warns = voteValidationResult.value?.warnings.length ?? 0;
+	const parts: string[] = [];
+	if (errs) parts.push(`Found ${errs} error${errs === 1 ? '' : 's'}`);
+	if (warns) parts.push(`${warns} warning${warns === 1 ? '' : 's'}`);
+	return `${parts.join(' and ')} with votes`;
+});
+
 async function togglePublishStatus() {
 	const { updateVoteEvents } = await graphqlClient.mutation({
 		updateVoteEvents: {
@@ -318,12 +327,20 @@ async function togglePublishStatus() {
 		</template>
 	</voteEventFormInput.Subscribe>
 
-	<VotesErrorNotifications
-		v-if="voteValidationResult"
-		:errors="voteValidationResult.errors"
-		:warnings="voteValidationResult.warnings"
-		:get-action-label="() => 'Review'"
-		@action="() => $router.push(`./${voteEventData?.id}/votes`)"
+	<cv-inline-notification
+		v-if="
+			voteValidationResult &&
+			(voteValidationResult.errors.length ||
+				voteValidationResult.warnings.length)
+		"
+		class="mb-2 mt-0 pr-2"
+		low-contrast
+		hide-close-button
+		:kind="voteValidationResult.errors.length ? 'error' : 'warning'"
+		title="Vote data needs review"
+		:sub-title="issueSummary"
+		action-label="Review"
+		@action="$router.push(`./${voteEventData?.id}/votes`)"
 	/>
 
 	<form
