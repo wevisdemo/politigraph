@@ -1,3 +1,8 @@
+export enum RepresentativeLabel {
+	District = 'แบ่งเขต',
+	Partylist = 'บัญชีรายชื่อ',
+}
+
 export type MembershipMode = 'new' | 'edited' | 'deleted';
 
 export type MembershipProp = {

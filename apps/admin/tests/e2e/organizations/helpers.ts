@@ -1,8 +1,10 @@
 import { expect, type Page } from '@playwright/test';
 import {
+	createTestMembership,
 	createTestOrganization,
 	createTestPost,
 	deleteTestLink,
+	deleteTestMembership,
 	deleteTestOrganization,
 	deleteTestPost,
 	linkPostToOrganization,
@@ -15,6 +17,8 @@ export {
 	deleteTestPost,
 	linkPostToOrganization,
 	deleteTestLink,
+	createTestMembership,
+	deleteTestMembership,
 };
 
 const TIMEOUTS = {
@@ -115,6 +119,7 @@ export async function fetchOrganizationDetail(page: Page, orgId: string) {
 						parents { id name }
 						children { id name }
 						posts { id role }
+						memberships { id posts { id role organizations { id name } } }
 						links { id note url }
 					}
 				}
@@ -126,4 +131,100 @@ export async function fetchOrganizationDetail(page: Page, orgId: string) {
 	expect(response.ok(), `Failed to fetch organization ${orgId}`).toBeTruthy();
 	const data = await response.json();
 	return data.data?.organizations?.[0];
+}
+
+export async function waitForMembershipTable(page: Page) {
+	await page.locator('h4:has-text("Membership")').waitFor({
+		state: 'visible',
+		timeout: TIMEOUTS.TABLE,
+	});
+	await page.waitForTimeout(500);
+}
+
+export async function openAddMembershipModal(page: Page) {
+	await page
+		.locator('h4:has-text("Membership")')
+		.locator('..')
+		.getByRole('button', { name: 'Add' })
+		.click();
+
+	await page.locator('.membership-modal .bx--modal-container').waitFor({
+		state: 'visible',
+		timeout: 5000,
+	});
+	await page.waitForTimeout(300);
+}
+
+const CLASSIFICATION_LABELS: Record<string, string> = {
+	HOUSE_OF_REPRESENTATIVE: 'สส.',
+	HOUSE_OF_SENATE: 'สว.',
+	CABINET: 'ครม.',
+	POLITICAL_PARTY: 'พรรคการเมือง',
+};
+
+export async function fillClassification(page: Page, value: string) {
+	const classificationField = page
+		.locator('.membership-modal .bx--combo-box')
+		.first();
+	await classificationField.waitFor({ state: 'visible', timeout: 5000 });
+
+	const labelText = CLASSIFICATION_LABELS[value] ?? value;
+	const input = classificationField.locator('input[role="combobox"]');
+	await input.click();
+	await page.waitForTimeout(300);
+	await input.press('ArrowDown');
+	await page.waitForTimeout(500);
+
+	const menuItem = classificationField.locator(
+		`.bx--list-box__menu-item:has-text("${labelText}")`,
+	);
+	await menuItem.waitFor({ state: 'visible', timeout: 5000 });
+	await menuItem.click();
+	await page.waitForTimeout(500);
+}
+
+export async function fillOrganizationName(page: Page, name: string) {
+	const orgField = page.locator('.membership-modal .bx--combo-box').nth(1);
+	await orgField.waitFor({ state: 'visible', timeout: 5000 });
+
+	const input = orgField.locator('input[role="combobox"]');
+	await input.click();
+	await page.waitForTimeout(300);
+	await input.fill(name);
+	await page.waitForTimeout(500);
+
+	await orgField
+		.locator(`.bx--list-box__menu-item:has-text("${name}")`)
+		.click();
+	await page.waitForTimeout(500);
+}
+
+export async function fillPost(page: Page, role: string) {
+	const postField = page.locator('.membership-modal .bx--combo-box').nth(2);
+	await postField.waitFor({ state: 'visible', timeout: 5000 });
+
+	const input = postField.locator('input[role="combobox"]');
+	await input.click();
+	await page.waitForTimeout(300);
+	await input.fill(role);
+	await page.waitForTimeout(500);
+
+	await postField
+		.locator(`.bx--list-box__menu-item:has-text("${role}")`)
+		.click();
+	await page.waitForTimeout(500);
+}
+
+export async function saveMembershipModal(page: Page) {
+	const primaryBtn = page.locator('.membership-modal .bx--btn--primary');
+	await expect(primaryBtn).toBeEnabled({ timeout: 5000 });
+	await primaryBtn.click();
+	await page.waitForTimeout(500);
+}
+
+export function getMembershipRows(page: Page) {
+	return page
+		.locator('h4:has-text("Membership")')
+		.locator('..')
+		.locator('.bx--data-table tbody tr, .bx--table tbody tr');
 }

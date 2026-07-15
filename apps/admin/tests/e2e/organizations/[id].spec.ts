@@ -2,17 +2,26 @@ import { expect, test } from '@playwright/test';
 import { login } from '../fixtures';
 import {
 	addLink,
+	createTestMembership,
 	createTestOrganization,
 	createTestPost,
 	deleteTestLink,
+	deleteTestMembership,
 	deleteTestOrganization,
 	deleteTestPost,
 	fetchOrganizationDetail,
+	fillClassification,
+	fillOrganizationName,
+	fillPost,
+	getMembershipRows,
 	getPostRows,
 	linkPostToOrganization,
+	openAddMembershipModal,
 	openAddPostModal,
+	saveMembershipModal,
 	saveOrganizationChanges,
 	savePostModal,
+	waitForMembershipTable,
 	waitForOrganizationDetail,
 } from './helpers';
 
@@ -325,5 +334,163 @@ test.describe('Organization Detail - Links', () => {
 
 		const detailAfterDelete = await fetchOrganizationDetail(page, orgId);
 		expect(detailAfterDelete.links).toHaveLength(0);
+	});
+});
+
+test.describe('Organization Detail - Membership CRUD', () => {
+	let orgId: string;
+	let postOrgId: string;
+	let postOrgName: string;
+	let postId: string;
+	let postRole: string;
+	let altPostOrgId: string;
+	let altPostOrgName: string;
+	let altPostId: string;
+	let altPostRole: string;
+	const seededMembershipIds: string[] = [];
+
+	test.beforeEach(async ({ page }) => {
+		await login(page);
+
+		const uid = genId();
+		postOrgName = `PostOrg${uid}`;
+		postRole = `PostRole${uid}`;
+		altPostOrgName = `AltOrg${uid}`;
+		altPostRole = `AltPost${uid}`;
+
+		const mainOrg = await createTestOrganization(
+			page,
+			`MainOrg${uid}`,
+			'POLITICAL_PARTY',
+		);
+		orgId = mainOrg.id;
+
+		const postOrg = await createTestOrganization(
+			page,
+			postOrgName,
+			'POLITICAL_PARTY',
+		);
+		postOrgId = postOrg.id;
+
+		const post = await createTestPost(page, postRole);
+		postId = post.id;
+		await linkPostToOrganization(page, postId, postOrgId);
+
+		const altPostOrg = await createTestOrganization(
+			page,
+			altPostOrgName,
+			'POLITICAL_PARTY',
+		);
+		altPostOrgId = altPostOrg.id;
+
+		const altPost = await createTestPost(page, altPostRole);
+		altPostId = altPost.id;
+		await linkPostToOrganization(page, altPostId, altPostOrgId);
+	});
+
+	test.afterEach(async ({ page }) => {
+		for (const id of seededMembershipIds) {
+			await deleteTestMembership(page, id);
+		}
+		seededMembershipIds.length = 0;
+		await deleteTestOrganization(page, orgId);
+		await deleteTestPost(page, postId);
+		await deleteTestOrganization(page, postOrgId);
+		await deleteTestPost(page, altPostId);
+		await deleteTestOrganization(page, altPostOrgId);
+	});
+
+	test('add membership locally then persist via Save Changes', async ({
+		page,
+	}) => {
+		await page.goto(`/organizations/${orgId}`);
+		await waitForOrganizationDetail(page);
+		await waitForMembershipTable(page);
+
+		await openAddMembershipModal(page);
+
+		await fillClassification(page, 'POLITICAL_PARTY');
+		await fillOrganizationName(page, postOrgName);
+		await fillPost(page, postRole);
+		await page.evaluate(() => {
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			const input = (globalThis as any).document.querySelector(
+				'.membership-modal .membership-datepicker input',
+			);
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			(input as any)._flatpickr.setDate('2024-01-15', true);
+		});
+		await page.waitForTimeout(300);
+		await saveMembershipModal(page);
+
+		const rows = getMembershipRows(page);
+		await expect(rows).toHaveCount(1);
+		await expect(rows.first()).toHaveClass(/FFF8E1/);
+		await expect(rows.first()).toContainText(postOrgName);
+		await expect(rows.first()).toContainText(postRole);
+
+		await saveOrganizationChanges(page);
+
+		const detail = await fetchOrganizationDetail(page, orgId);
+		for (const m of detail.memberships ?? []) {
+			seededMembershipIds.push(m.id);
+		}
+		expect(detail.memberships).toHaveLength(1);
+
+		await page.goto(`/organizations/${orgId}`);
+		await waitForOrganizationDetail(page);
+		await waitForMembershipTable(page);
+
+		const persistedRows = getMembershipRows(page);
+		await expect(persistedRows).toHaveCount(1);
+		await expect(persistedRows.first()).toContainText(postOrgName);
+		await expect(persistedRows.first()).not.toHaveClass(/FFF8E1/);
+	});
+
+	test('edit membership post selection persists via Save Changes', async ({
+		page,
+	}) => {
+		const membership = await createTestMembership(
+			page,
+			orgId,
+			postId,
+			'Organization',
+			{
+				start_date: '2024-01-01',
+			},
+		);
+		seededMembershipIds.push(membership.id);
+
+		await page.goto(`/organizations/${orgId}`);
+		await waitForOrganizationDetail(page);
+		await waitForMembershipTable(page);
+
+		const rows = getMembershipRows(page);
+		await expect(rows).toHaveCount(1);
+		await expect(rows.first()).toContainText(postOrgName);
+
+		await rows.first().getByRole('button', { name: 'แก้ไข' }).click();
+		await page.locator('.membership-modal .bx--modal-container').waitFor({
+			state: 'visible',
+			timeout: 5000,
+		});
+
+		await fillOrganizationName(page, altPostOrgName);
+		await fillPost(page, altPostRole);
+
+		await saveMembershipModal(page);
+
+		const updatedRows = getMembershipRows(page);
+		await expect(updatedRows.first()).toContainText(altPostOrgName);
+		await expect(updatedRows.first()).toContainText(altPostRole);
+
+		await saveOrganizationChanges(page);
+
+		const detail = await fetchOrganizationDetail(page, orgId);
+		const updatedMembership = detail.memberships?.find(
+			(m: { id: string }) => m.id === membership.id,
+		);
+		expect(updatedMembership).toBeDefined();
+		expect(updatedMembership.posts[0].id).toBe(altPostId);
 	});
 });

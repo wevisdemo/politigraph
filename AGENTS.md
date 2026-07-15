@@ -8,12 +8,12 @@
 - Always name source code in kebab-case
 - Avoid mutating variables, prefer functional approach when possible
 - Don't write arbitrary comment if the code is self-explainable
-- Add/update test cases if your changes effect business logic
+- Add/update test cases if your changes effect business logic, only add high value test case and grouped it if possible to reduce redundancy and test time
 - After finishing any task, run the following commands:
   - Check type with `bun run check`
   - Lint with `bun run lint`, all errors and warnings must be fixed
   - Format code with `bun run format` before declaring task as done
-  - Run involved tests as appropriate
+  - Run involved tests as appropriate. For integration and e2e test, must use `compose.test.yml` to set up test databases. Don't use `compose.yml` which is for development.
 - Human will get in the loop and edit some file along the way. If you spot it, please respect those changes
 
 ## Folder Structure

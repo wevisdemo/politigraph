@@ -1,7 +1,9 @@
 import { expect, type Page } from '@playwright/test';
 import {
+	createTestMembership,
 	createTestOrganization,
 	createTestPost,
+	deleteTestMembership,
 	deleteTestOrganization,
 	deleteTestPost,
 	linkPostToOrganization,
@@ -13,6 +15,8 @@ export {
 	createTestPost,
 	deleteTestPost,
 	linkPostToOrganization,
+	createTestMembership,
+	deleteTestMembership,
 };
 
 const TIMEOUTS = {
@@ -29,99 +33,6 @@ export const ORGANIZATION_CLASSIFICATIONS = {
 	CABINET: 'CABINET',
 	POLITICAL_PARTY: 'POLITICAL_PARTY',
 } as const;
-
-export async function createTestMembership(
-	page: Page,
-	personId: string,
-	postId: string,
-	dates?: { start_date?: string; end_date?: string },
-) {
-	const startDate = dates?.start_date ?? '2020-01-01';
-	const endDate = dates?.end_date;
-
-	const mutation = endDate
-		? `
-			mutation CreateTestMembership($personId: ID!, $postId: ID!, $startDate: Date!, $endDate: Date!) {
-				createMemberships(
-					input: [{
-						start_date: $startDate
-						end_date: $endDate
-						members: {
-							Person: {
-								connect: [{ where: { node: { id: { eq: $personId } } } }]
-							}
-						}
-						posts: {
-							connect: [{ where: { node: { id: { eq: $postId } } } }]
-						}
-					}]
-				) {
-					memberships { id }
-				}
-			}
-		`
-		: `
-			mutation CreateTestMembership($personId: ID!, $postId: ID!, $startDate: Date!) {
-				createMemberships(
-					input: [{
-						start_date: $startDate
-						members: {
-							Person: {
-								connect: [{ where: { node: { id: { eq: $personId } } } }]
-							}
-						}
-						posts: {
-							connect: [{ where: { node: { id: { eq: $postId } } } }]
-						}
-					}]
-				) {
-					memberships { id }
-				}
-			}
-		`;
-
-	const variables: Record<string, string> = {
-		personId,
-		postId,
-		startDate,
-		...(endDate ? { endDate } : {}),
-	};
-
-	const response = await page.request.post('/graphql', {
-		headers: { 'Content-Type': 'application/json' },
-		data: { query: mutation, variables },
-	});
-
-	if (!response.ok()) {
-		const body = await response.text();
-		throw new Error(
-			`createTestMembership failed: ${response.status()} ${body}`,
-		);
-	}
-	const data = await response.json();
-	if (data.errors) {
-		throw new Error(
-			`createTestMembership GraphQL errors: ${JSON.stringify(data.errors)}`,
-		);
-	}
-
-	return data.data.createMemberships.memberships[0] as { id: string };
-}
-
-export async function deleteTestMembership(page: Page, id: string) {
-	const response = await page.request.post('/graphql', {
-		headers: { 'Content-Type': 'application/json' },
-		data: {
-			query: `
-				mutation DeleteTestMembership($id: ID!) {
-					deleteMemberships(where: { id: { eq: $id } }) { nodesDeleted }
-				}
-			`,
-			variables: { id },
-		},
-	});
-	expect(response.ok(), `Failed to delete membership ${id}`).toBeTruthy();
-}
 
 export async function waitForMembershipTable(page: Page) {
 	await page.locator('h4:has-text("Membership")').waitFor({

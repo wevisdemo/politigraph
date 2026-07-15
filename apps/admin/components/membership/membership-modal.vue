@@ -5,20 +5,17 @@ import {
 } from '@carbon/icons-vue';
 import { enumOrganizationType } from '@politigraph/graphql/genql';
 import LinksForm from '~/components/LinksForm.vue';
+import type { OrganizationWithPostsOption } from '~/composables/use-organizations-with-posts-options';
 import type { MembershipProp } from '~/types/membership';
-import { RepresentativeLabel } from './membership-list.vue';
+import { RepresentativeLabel } from '~/types/membership';
 
 const props = defineProps<{
 	visible: boolean;
 	mode: 'add' | 'edit' | null;
 	membership: MembershipProp | null;
-	organizationsOptions?: Array<{
-		label: string;
-		value: string;
-		classification: string;
-		posts: Array<{ label: string; value: string }>;
-	}> | null;
+	organizationsOptions?: OrganizationWithPostsOption[] | null;
 	disabled: boolean;
+	memberType: 'Person' | 'Organization';
 }>();
 
 const emit = defineEmits<{
@@ -229,8 +226,9 @@ const handleRoleInput = (selectedValue: string) => {
 
 				<template
 					v-if="
+						memberType === 'Person' &&
 						membership.posts[0].organizations[0].classification ===
-						enumOrganizationType.HOUSE_OF_REPRESENTATIVE
+							enumOrganizationType.HOUSE_OF_REPRESENTATIVE
 					"
 				>
 					<h4 class="font-normal">Representative Details</h4>
@@ -277,8 +275,9 @@ const handleRoleInput = (selectedValue: string) => {
 
 				<template
 					v-else-if="
+						memberType === 'Person' &&
 						membership.posts[0].organizations[0].classification ===
-						enumOrganizationType.HOUSE_OF_SENATE
+							enumOrganizationType.HOUSE_OF_SENATE
 					"
 				>
 					<h4 class="font-normal">Senates Details</h4>

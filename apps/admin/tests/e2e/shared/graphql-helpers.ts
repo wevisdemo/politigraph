@@ -128,3 +128,94 @@ export async function deleteTestLink(page: Page, id: string) {
 	});
 	expect(response.ok(), `Failed to delete link ${id}`).toBeTruthy();
 }
+
+export async function createTestMembership(
+	page: Page,
+	memberId: string,
+	postId: string,
+	memberType: 'Person' | 'Organization' = 'Person',
+	dates?: { start_date?: string; end_date?: string },
+) {
+	const startDate = dates?.start_date ?? '2020-01-01';
+	const endDate = dates?.end_date;
+
+	const memberConnect =
+		memberType === 'Person'
+			? `Person: { connect: [{ where: { node: { id: { eq: $memberId } } } }] }`
+			: `Organization: { connect: [{ where: { node: { id: { eq: $memberId } } } }] }`;
+
+	const mutation = endDate
+		? `
+			mutation CreateTestMembership($memberId: ID!, $postId: ID!, $startDate: Date!, $endDate: Date!) {
+				createMemberships(
+					input: [{
+						start_date: $startDate
+						end_date: $endDate
+						members: { ${memberConnect} }
+						posts: {
+							connect: [{ where: { node: { id: { eq: $postId } } } }]
+						}
+					}]
+				) {
+					memberships { id }
+				}
+			}
+		`
+		: `
+			mutation CreateTestMembership($memberId: ID!, $postId: ID!, $startDate: Date!) {
+				createMemberships(
+					input: [{
+						start_date: $startDate
+						members: { ${memberConnect} }
+						posts: {
+							connect: [{ where: { node: { id: { eq: $postId } } } }]
+						}
+					}]
+				) {
+					memberships { id }
+				}
+			}
+		`;
+
+	const variables: Record<string, string> = {
+		memberId,
+		postId,
+		startDate,
+		...(endDate ? { endDate } : {}),
+	};
+
+	const response = await page.request.post('/graphql', {
+		headers: { 'Content-Type': 'application/json' },
+		data: { query: mutation, variables },
+	});
+
+	if (!response.ok()) {
+		const body = await response.text();
+		throw new Error(
+			`createTestMembership failed: ${response.status()} ${body}`,
+		);
+	}
+	const data = await response.json();
+	if (data.errors) {
+		throw new Error(
+			`createTestMembership GraphQL errors: ${JSON.stringify(data.errors)}`,
+		);
+	}
+
+	return data.data.createMemberships.memberships[0] as { id: string };
+}
+
+export async function deleteTestMembership(page: Page, id: string) {
+	const response = await page.request.post('/graphql', {
+		headers: { 'Content-Type': 'application/json' },
+		data: {
+			query: `
+				mutation DeleteTestMembership($id: ID!) {
+					deleteMemberships(where: { id: { eq: $id } }) { nodesDeleted }
+				}
+			`,
+			variables: { id },
+		},
+	});
+	expect(response.ok(), `Failed to delete membership ${id}`).toBeTruthy();
+}

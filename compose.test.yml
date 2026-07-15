@@ -1,5 +1,7 @@
 services:
   neo4j-test:
+    networks:
+      - test
     image: neo4j:2025.12.1
     environment:
       NEO4J_AUTH: ${NEO4J_USERNAME:-neo4j}/${NEO4J_PASSWORD:-testpassword}
@@ -25,6 +27,8 @@ services:
       retries: 10
       start_period: 10s
   postgres-test:
+    networks:
+      - test
     image: postgres:18.1-alpine
     environment:
       POSTGRES_DB: betterauth
@@ -37,3 +41,7 @@ services:
       timeout: 5s
       retries: 10
       start_period: 5s
+
+networks:
+  test:
+    name: politigraph-test

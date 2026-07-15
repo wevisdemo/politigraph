@@ -1,10 +1,3 @@
-<script lang="ts">
-export enum RepresentativeLabel {
-	District = 'แบ่งเขต',
-	Partylist = 'บัญชีรายชื่อ',
-}
-</script>
-
 <script lang="ts" setup>
 import {
 	Add16,
@@ -14,18 +7,15 @@ import {
 	// @ts-expect-error carbon icons vue type
 } from '@carbon/icons-vue';
 import { enumOrganizationType } from '@politigraph/graphql/genql';
+import type { OrganizationWithPostsOption } from '~/composables/use-organizations-with-posts-options';
 import type { MembershipProp } from '~/types/membership';
 import { formatDate } from '~/utils/date';
 import DeleteMembershipModal from './delete-membership-modal.vue';
 import MembershipModal from './membership-modal.vue';
 
 defineProps<{
-	organizationsOptions?: Array<{
-		label: string;
-		value: string;
-		classification: string;
-		posts: Array<{ label: string; value: string }>;
-	}> | null;
+	organizationsOptions?: OrganizationWithPostsOption[] | null;
+	memberType: 'Person' | 'Organization';
 }>();
 
 const memberships = defineModel<MembershipProp[] | null>('memberships');
@@ -86,9 +76,9 @@ const handleAddMembership = () => {
 };
 
 const handleEditMembership = (data: MembershipProp) => {
-	const index = memberships.value?.findIndex((m) => m.id === data.id) ?? null;
+	const index = memberships.value?.findIndex((m) => m.id === data.id) ?? -1;
 
-	if (index !== null && memberships.value) {
+	if (index !== -1 && memberships.value) {
 		editingMembership.value = structuredClone(toRaw(memberships.value[index]));
 	}
 
@@ -165,16 +155,19 @@ const showModalDeleteMembership = (id: string, name: string | undefined) => {
 
 <template>
 	<div class="h-fit w-full space-y-4 bg-white p-4">
-		<h4 class="mb-1 pt-2">Membership</h4>
-		<p class="text-sm text-neutral-600">การเป็นสมาชิกในองค์กรต่างๆ</p>
-
 		<cv-data-table-skeleton
 			v-if="!memberships"
-			:headers="Array(5).fill('')"
+			title="Memberships"
+			helper-text="การเป็นสมาชิกในองค์กรต่างๆ"
 			:rows="3"
 		/>
 
-		<cv-data-table v-else :key="memberships.length">
+		<cv-data-table
+			v-else
+			:key="memberships.length"
+			title="Memberships"
+			helper-text="การเป็นสมาชิกในองค์กรต่างๆ"
+		>
 			<template #actions>
 				<cv-button :icon="Add16" aria-label="Add" @click="handleAddMembership">
 					Add
@@ -204,18 +197,27 @@ const showModalDeleteMembership = (id: string, name: string | undefined) => {
 					:class="m?.mode ? '[&>td]:bg-[#FFF8E1]' : ''"
 				>
 					<cv-data-table-cell>
-						<p :class="m.mode == 'deleted' ? 'line-through' : ''">
-							{{
-								m.posts?.[0]?.organizations?.[0]?.classification ==
-								enumOrganizationType.POLITICAL_PARTY
-									? 'พรรค'
-									: ''
-							}}{{ m.posts?.[0]?.organizations?.[0]?.name ?? '-' }}
+						<a
+							:href="`/admin/organizations/${m.posts?.[0]?.organizations?.[0]?.id}`"
+							class="space-x-1"
+						>
+							<span
+								class="text-base"
+								:class="m.mode == 'deleted' ? 'line-through' : ''"
+							>
+								{{
+									m.posts?.[0]?.organizations?.[0]?.classification ==
+									enumOrganizationType.POLITICAL_PARTY
+										? 'พรรค'
+										: ''
+								}}{{ m.posts?.[0]?.organizations?.[0]?.name ?? '-' }}
+							</span>
+
 							<CheckmarkFilled16
 								v-if="m.end_date === null"
-								class="inline text-[#0043CE]"
+								class="mb-0.5 inline text-[#0043CE]"
 							/>
-						</p>
+						</a>
 					</cv-data-table-cell>
 					<cv-data-table-cell>
 						<p :class="m.mode == 'deleted' ? 'line-through' : ''">
@@ -264,6 +266,7 @@ const showModalDeleteMembership = (id: string, name: string | undefined) => {
 			:membership="currentMembership"
 			:organizations-options="organizationsOptions"
 			:disabled="isMembershipAddDisabled"
+			:member-type="memberType"
 			@update:visible="showMembershipDetails = false"
 			@save="handleSaveMembership"
 			@cancel="handleCancelMembership"

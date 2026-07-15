@@ -3,10 +3,12 @@
 import { Save16 } from '@carbon/icons-vue';
 import {
 	type Link,
+	type Membership,
 	type Organization,
 	type Post,
 } from '@politigraph/graphql/genql';
 import type { OrganizationDetailProps } from '~/components/organization/detail.vue';
+import type { MembershipProp } from '~/types/membership';
 import { diff } from 'radash';
 
 definePageMeta({
@@ -29,6 +31,7 @@ type OrganizationDetail = OrganizationDetailProps & {
 	parents: OrganizationRelation[];
 	children: OrganizationRelation[];
 	posts: OrganizationPost[];
+	memberships: MembershipProp[];
 };
 
 type OrganizationPost = Pick<
@@ -45,6 +48,7 @@ const originalPosts = ref<
 	Pick<Post, 'id' | 'role' | 'start_date' | 'end_date'>[]
 >([]);
 const originalLinks = ref<Pick<Link, 'id' | 'note' | 'url'>[]>([]);
+const originalMemberships = ref<Partial<Membership>[] | null>(null);
 
 const { data: organizationData, refresh: refreshOrganizationDetail } =
 	await useLazyAsyncData<OrganizationDetail>(
@@ -90,6 +94,32 @@ const { data: organizationData, refresh: refreshOrganizationDetail } =
 							},
 						},
 					},
+					memberships: {
+						__args: {
+							sort: [{ end_date: 'DESC' }, { start_date: 'DESC' }],
+						},
+						id: true,
+						start_date: true,
+						end_date: true,
+						posts: {
+							id: true,
+							role: true,
+							organizations: {
+								id: true,
+								name: true,
+								classification: true,
+							},
+						},
+						district_number: true,
+						label: true,
+						province: true,
+						list_number: true,
+						links: {
+							id: true,
+							url: true,
+							note: true,
+						},
+					},
 					links: {
 						id: true,
 						note: true,
@@ -107,6 +137,9 @@ const { data: organizationData, refresh: refreshOrganizationDetail } =
 			originalChildIds.value = organization.children.map((child) => child.id);
 			originalPosts.value = JSON.parse(JSON.stringify(organization.posts));
 			originalLinks.value = JSON.parse(JSON.stringify(organization.links));
+			originalMemberships.value = JSON.parse(
+				JSON.stringify(organization.memberships),
+			);
 
 			return {
 				...organization,
@@ -135,6 +168,24 @@ const organizationPosts = computed<OrganizationPost[] | null>({
 		organizationData.value.posts = value ?? [];
 	},
 });
+
+const editableMemberships = ref<MembershipProp[]>([]);
+
+const memberId = computed(() => organizationData.value?.id);
+const { buildMembershipMutations } = useMembershipMutations({
+	memberType: 'Organization',
+	memberId,
+	originalMemberships,
+});
+
+watch(
+	() => organizationData.value?.memberships,
+	(newVal) => {
+		if (!newVal) return;
+		editableMemberships.value = newVal;
+	},
+	{ immediate: true },
+);
 
 watch(
 	() => organizationData.value?.parents,
@@ -177,6 +228,17 @@ const { data: organizationOptions } = await useAsyncData(
 	},
 	{ lazy: true },
 );
+
+const { data: organizationsWithPostsOptions } =
+	useOrganizationsWithPostsOptions();
+
+const membershipOrganizationsOptions = computed(() => {
+	return (
+		organizationsWithPostsOptions.value?.filter(
+			(org) => org.value !== organizationId,
+		) ?? []
+	);
+});
 
 const toast = useToastNotification();
 
@@ -445,6 +507,7 @@ const saveChanges = async () => {
 					},
 				}),
 			),
+			...buildMembershipMutations(editableMemberships.value),
 		]);
 
 		await refreshOrganizationDetail();
@@ -519,8 +582,13 @@ const saveChanges = async () => {
 				/>
 			</div>
 
-			<div class="basis-2/4">
+			<div class="flex basis-2/4 flex-col gap-6">
 				<PeoplePosts v-model:posts="organizationPosts" />
+				<MembershipTable
+					v-model:memberships="editableMemberships"
+					:organizations-options="membershipOrganizationsOptions"
+					member-type="Organization"
+				/>
 			</div>
 		</div>
 	</form>

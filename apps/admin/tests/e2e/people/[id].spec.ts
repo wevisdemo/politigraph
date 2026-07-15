@@ -123,10 +123,16 @@ test.describe('Membership CRUD', () => {
 	});
 
 	test('edit membership then persist via Save Changes', async ({ page }) => {
-		const membership = await createTestMembership(page, personId, postId, {
-			start_date: '2024-01-01',
-			end_date: '2024-06-30',
-		});
+		const membership = await createTestMembership(
+			page,
+			personId,
+			postId,
+			'Person',
+			{
+				start_date: '2024-01-01',
+				end_date: '2024-06-30',
+			},
+		);
 		seededMembershipIds.push(membership.id);
 
 		await page.goto(`/people/${personId}`);
@@ -168,7 +174,12 @@ test.describe('Membership CRUD', () => {
 	});
 
 	test('delete membership then persist via Save Changes', async ({ page }) => {
-		const membership = await createTestMembership(page, personId, postId);
+		const membership = await createTestMembership(
+			page,
+			personId,
+			postId,
+			'Person',
+		);
 		seededMembershipIds.push(membership.id);
 
 		await page.goto(`/people/${personId}`);
@@ -449,10 +460,16 @@ test.describe('Membership - Cancel Modal', () => {
 		const rows = getMembershipRows(page);
 		await expect(rows).toHaveCount(0);
 
-		const membership = await createTestMembership(page, personId, postId, {
-			start_date: '2024-01-01',
-			end_date: '2024-06-30',
-		});
+		const membership = await createTestMembership(
+			page,
+			personId,
+			postId,
+			'Person',
+			{
+				start_date: '2024-01-01',
+				end_date: '2024-06-30',
+			},
+		);
 		seededMembershipIds.push(membership.id);
 
 		await page.goto(`/people/${personId}`);

@@ -6,8 +6,7 @@ import {
 	type Link,
 	type Membership,
 } from '@politigraph/graphql/genql';
-import { PeopleDetail, PeopleMembershipList } from '#components';
-import { RepresentativeLabel } from '~/components/people/membership-list.vue';
+import { PeopleDetail } from '#components';
 import type { MembershipProp } from '~/types/membership';
 
 definePageMeta({
@@ -95,215 +94,12 @@ const { data: peopleData, refresh: refreshPeopleDetail } =
 
 const editableMemberships = ref<MembershipProp[]>([]);
 
-const setMembershipMutation = () => {
-	const deletedMemberships = editableMemberships.value.filter(
-		(m) => m.mode === 'deleted',
-	);
-
-	const activeMemberships = editableMemberships.value.filter(
-		(m) => m.mode !== 'deleted',
-	);
-
-	const changedMemberships = activeMemberships
-		.filter((m) => {
-			const orig = originalMemberships.value?.find((o) => o.id === m.id);
-			if (!orig) return true;
-			return (
-				m.start_date !== orig.start_date ||
-				m.end_date !== orig.end_date ||
-				m.posts?.[0]?.id !== orig.posts?.[0]?.id ||
-				m.posts?.[0]?.organizations?.[0]?.id !==
-					orig.posts?.[0]?.organizations?.[0]?.id ||
-				m.links !== orig.links
-			);
-		})
-		.map(({ mode: _, ...rest }) => rest);
-
-	const newMemberships = changedMemberships.filter(
-		(m) => !originalMemberships.value?.find((o) => o.id === m.id),
-	);
-	const updatedMemberships = changedMemberships.filter((m) =>
-		originalMemberships.value?.find((o) => o.id === m.id),
-	);
-
-	const deleteMemberships = [
-		...deletedMemberships,
-		...(originalMemberships.value ?? []).filter(
-			(ol) =>
-				!activeMemberships.some((el) => el.id === ol.id) &&
-				!deletedMemberships.some((d) => d.id === ol.id),
-		),
-	];
-
-	return [
-		...newMemberships.map((membership) =>
-			graphqlClient.mutation({
-				createMemberships: {
-					__args: {
-						input: [
-							{
-								label: membership.label,
-								...(membership.label === RepresentativeLabel.District
-									? {
-											district_number: membership.district_number,
-											province: membership.province,
-										}
-									: membership.label === RepresentativeLabel.Partylist
-										? { list_number: membership.list_number }
-										: {}),
-								start_date: membership.start_date,
-								end_date: membership.end_date,
-								links: {
-									create: membership.links.map(({ note, url }) => ({
-										node: { note, url },
-									})),
-								},
-								members: {
-									Person: {
-										connect: [
-											{
-												where: {
-													node: { id: { eq: peopleData.value?.id } },
-												},
-											},
-										],
-									},
-								},
-								posts: {
-									connect: [
-										{
-											where: {
-												node: { id: { eq: membership.posts[0]?.id } },
-											},
-										},
-									],
-								},
-							},
-						],
-					},
-					memberships: { id: true },
-				},
-			}),
-		),
-
-		...deleteMemberships.map((membership) =>
-			graphqlClient.mutation({
-				deleteMemberships: {
-					__args: { where: { id: { eq: membership.id } } },
-					nodesDeleted: true,
-					relationshipsDeleted: true,
-				},
-			}),
-		),
-
-		...updatedMemberships.map((membership) => {
-			const originalMembership = originalMemberships.value?.find(
-				(s) => s.id === membership.id,
-			);
-
-			const originalLinkIds = new Set(
-				originalMembership?.links?.map((l) => l.id) ?? [],
-			);
-			const currentLinkIds = new Set(membership.links?.map((l) => l.id) ?? []);
-
-			const newLinks =
-				membership.links?.filter((l) => !originalLinkIds.has(l.id)) ?? [];
-			const deletedLinks =
-				originalMembership?.links?.filter((l) => !currentLinkIds.has(l.id)) ??
-				[];
-			const updatedLinks =
-				membership.links?.filter((l) => originalLinkIds.has(l.id)) ?? [];
-
-			return graphqlClient.mutation({
-				updateMemberships: {
-					__args: {
-						where: { id: { eq: membership.id } },
-						update: {
-							start_date: { set: membership.start_date },
-							end_date: { set: membership.end_date },
-							posts: membership.posts[0]?.id
-								? [
-										{
-											update: {
-												node: {
-													role: { set: membership.posts[0]?.role },
-													organizations: membership.posts[0]?.organizations?.[0]
-														?.id
-														? [
-																{
-																	update: {
-																		node: {
-																			name: {
-																				set: membership.posts[0]
-																					?.organizations?.[0]?.name,
-																			},
-																		},
-																	},
-																},
-															]
-														: [],
-												},
-											},
-										},
-									]
-								: [],
-							label: { set: membership.label },
-							province: {
-								set:
-									membership.label === RepresentativeLabel.District
-										? membership.province
-										: null,
-							},
-							district_number: {
-								set:
-									membership.label === RepresentativeLabel.District
-										? membership.district_number
-										: null,
-							},
-							list_number: {
-								set:
-									membership.label === RepresentativeLabel.Partylist
-										? membership.list_number
-										: null,
-							},
-							links: [
-								...newLinks.map((link) => ({
-									create: [
-										{
-											node: {
-												url: link.url,
-												note: link.note,
-											},
-										},
-									],
-								})),
-								...deletedLinks.map((link) => ({
-									delete: [{ where: { node: { id: { eq: link.id } } } }],
-								})),
-								...updatedLinks.map((link) => ({
-									update: {
-										where: {
-											node: {
-												id: {
-													eq: link.id,
-												},
-											},
-										},
-										node: {
-											url: { set: link.url },
-											note: { set: link.note },
-										},
-									},
-								})),
-							],
-						},
-					},
-					memberships: { id: true },
-				},
-			});
-		}),
-	];
-};
+const memberId = computed(() => peopleData.value?.id);
+const { buildMembershipMutations } = useMembershipMutations({
+	memberType: 'Person',
+	memberId,
+	originalMemberships,
+});
 
 const saveChanges = async () => {
 	if (!peopleData.value) return;
@@ -422,7 +218,7 @@ const saveChanges = async () => {
 			...createLinksPromises,
 			...updateLinkPromises,
 			...deleteLinksPromises,
-			...setMembershipMutation(),
+			...buildMembershipMutations(editableMemberships.value),
 		]);
 		await refreshPeopleDetail();
 		toast.show({
@@ -476,47 +272,7 @@ const togglePublishStatus = async () => {
 
 const toast = useToastNotification();
 
-const { data: organizationsOptions } = await useAsyncData(
-	'organizations-with-posts',
-	async () => {
-		const { organizations } = await graphqlClient.query({
-			organizations: {
-				id: true,
-				name: true,
-				classification: true,
-				posts: {
-					id: true,
-					role: true,
-				},
-			},
-		});
-		const organizationsOptions = organizations.map((org) => ({
-			label: org.name,
-			value: org.id,
-			classification: org.classification,
-			posts:
-				org.posts?.map((p) => ({
-					label: p.role,
-					value: p.id,
-				})) ?? [],
-		}));
-
-		return organizationsOptions;
-	},
-	{ lazy: true },
-);
-
-const selectedOrganization = ref<string | null>(null);
-const postOptions = ref<{ label: string; value: string }[]>([]);
-
-watch(selectedOrganization, (orgId) => {
-	if (!orgId) {
-		postOptions.value = [];
-		return;
-	}
-	const org = organizationsOptions.value?.find((o) => o.value === orgId);
-	postOptions.value = org?.posts || [];
-});
+const { data: organizationsOptions } = useOrganizationsWithPostsOptions();
 
 watch(
 	() => peopleData.value?.memberships,
@@ -581,9 +337,10 @@ watch(
 			"
 		/>
 		<div v-if="peopleData" class="flex flex-col gap-6">
-			<PeopleMembershipList
+			<MembershipTable
 				v-model:memberships="editableMemberships"
 				:organizations-options="organizationsOptions"
+				member-type="Person"
 			/>
 		</div>
 	</div>
