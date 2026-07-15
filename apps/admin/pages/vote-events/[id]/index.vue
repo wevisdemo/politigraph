@@ -454,7 +454,7 @@ async function togglePublishStatus() {
 				<div class="mb-3 flex flex-col gap-2 p-4">
 					<h4>Vote Summary (Original)</h4>
 
-					<p class="text-body-01">
+					<p class="text-sm">
 						ข้อมูลสรุปผลคะแนนที่ OCR จากหัวเอกสารบันทึกผลการลงมติ
 						โดยระบบจะใช้ผลคะแนนนี้ในการตรวจสอบข้อมูลการลงมติ (Votes)
 						ว่าถูกต้องตรงกันหรือไม่

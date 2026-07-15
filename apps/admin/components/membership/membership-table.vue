@@ -154,7 +154,7 @@ const showModalDeleteMembership = (id: string, name: string | undefined) => {
 </script>
 
 <template>
-	<div class="h-fit w-full space-y-4 bg-white p-4">
+	<div>
 		<cv-data-table-skeleton
 			v-if="!memberships"
 			title="Memberships"
@@ -191,18 +191,16 @@ const showModalDeleteMembership = (id: string, name: string | undefined) => {
 			</template>
 
 			<template #data>
-				<cv-data-table-row
-					v-for="m in memberships"
-					:key="m.id"
-					:class="m?.mode ? '[&>td]:bg-[#FFF8E1]' : ''"
-				>
-					<cv-data-table-cell>
-						<a
-							:href="`/admin/organizations/${m.posts?.[0]?.organizations?.[0]?.id}`"
-							class="space-x-1"
-						>
-							<span
-								class="text-base"
+				<template v-if="memberships.length">
+					<cv-data-table-row
+						v-for="m in memberships"
+						:key="m.id"
+						:class="m?.mode ? '[&>td]:bg-[#FFF8E1]' : ''"
+					>
+						<cv-data-table-cell>
+							<a
+								:href="`/admin/organizations/${m.posts?.[0]?.organizations?.[0]?.id}`"
+								class="space-x-1 hover:underline"
 								:class="m.mode == 'deleted' ? 'line-through' : ''"
 							>
 								{{
@@ -211,52 +209,67 @@ const showModalDeleteMembership = (id: string, name: string | undefined) => {
 										? 'พรรค'
 										: ''
 								}}{{ m.posts?.[0]?.organizations?.[0]?.name ?? '-' }}
-							</span>
 
-							<CheckmarkFilled16
-								v-if="m.end_date === null"
-								class="mb-0.5 inline text-[#0043CE]"
-							/>
-						</a>
-					</cv-data-table-cell>
-					<cv-data-table-cell>
-						<p :class="m.mode == 'deleted' ? 'line-through' : ''">
-							{{ m.posts[0]?.role ?? '-' }}
-						</p>
-					</cv-data-table-cell>
-					<cv-data-table-cell>
-						<p :class="m.mode == 'deleted' ? 'line-through' : ''">
-							{{ formatDate(m.start_date ?? '') ?? '-' }}
-						</p>
-					</cv-data-table-cell>
-					<cv-data-table-cell>
-						<p :class="m.mode == 'deleted' ? 'line-through' : ''">
-							{{ formatDate(m.end_date ?? '') ?? '-' }}
-						</p>
-					</cv-data-table-cell>
-					<cv-data-table-cell>
-						<div class="flex gap-2">
-							<cv-icon-button
-								label="แก้ไข"
-								kind="ghost"
-								:icon="Edit16"
-								class="p-0"
-								@click="handleEditMembership(m)"
-							/><cv-icon-button
-								label="ลบ"
-								kind="ghost"
-								:icon="TrashCan16"
-								class="p-0"
-								@click="
-									showModalDeleteMembership(
-										m.id,
-										m.posts?.[0]?.organizations?.[0]?.name,
-									)
-								"
-							/>
-						</div>
-					</cv-data-table-cell>
-				</cv-data-table-row>
+								<CheckmarkFilled16
+									v-if="m.end_date === null"
+									class="mb-0.5 inline text-[#0043CE]"
+								/>
+							</a>
+						</cv-data-table-cell>
+						<cv-data-table-cell>
+							<p
+								class="text-sm"
+								:class="m.mode == 'deleted' ? 'line-through' : ''"
+							>
+								{{ m.posts[0]?.role ?? '-' }}
+							</p>
+						</cv-data-table-cell>
+						<cv-data-table-cell>
+							<p
+								class="text-sm"
+								:class="m.mode == 'deleted' ? 'line-through' : ''"
+							>
+								{{ formatDate(m.start_date ?? '') ?? '-' }}
+							</p>
+						</cv-data-table-cell>
+						<cv-data-table-cell>
+							<p
+								class="text-sm"
+								:class="m.mode == 'deleted' ? 'line-through' : ''"
+							>
+								{{ formatDate(m.end_date ?? '') ?? '-' }}
+							</p>
+						</cv-data-table-cell>
+						<cv-data-table-cell>
+							<div class="flex gap-2">
+								<cv-icon-button
+									label="แก้ไข"
+									kind="ghost"
+									:icon="Edit16"
+									class="p-0"
+									@click="handleEditMembership(m)"
+								/><cv-icon-button
+									label="ลบ"
+									kind="ghost"
+									:icon="TrashCan16"
+									class="p-0"
+									@click="
+										showModalDeleteMembership(
+											m.id,
+											m.posts?.[0]?.organizations?.[0]?.name,
+										)
+									"
+								/>
+							</div>
+						</cv-data-table-cell>
+					</cv-data-table-row>
+				</template>
+
+				<ui-table-empty-state
+					v-else
+					message="No memberships found"
+					:colspan="5"
+				/>
 			</template>
 		</cv-data-table>
 
@@ -280,9 +293,3 @@ const showModalDeleteMembership = (id: string, name: string | undefined) => {
 		/>
 	</div>
 </template>
-
-<style scoped>
-::v-deep(.bx--table-toolbar) {
-	background-color: white;
-}
-</style>

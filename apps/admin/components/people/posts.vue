@@ -226,7 +226,7 @@ watch(
 </script>
 
 <template>
-	<div class="h-fit w-full space-y-4 bg-white p-4">
+	<div>
 		<cv-data-table-skeleton
 			v-if="!posts"
 			title="Posts"
@@ -276,22 +276,34 @@ watch(
 						:class="getRowClass(post.mode)"
 					>
 						<cv-data-table-cell>
-							<p :class="post.mode === 'deleted' ? 'line-through' : ''">
+							<p
+								class="text-sm"
+								:class="post.mode === 'deleted' ? 'line-through' : ''"
+							>
 								{{ post.role || '-' }}
 							</p>
 						</cv-data-table-cell>
 						<cv-data-table-cell>
-							<p :class="post.mode === 'deleted' ? 'line-through' : ''">
+							<p
+								class="text-sm"
+								:class="post.mode === 'deleted' ? 'line-through' : ''"
+							>
 								{{ formatDate(post.start_date ?? '') ?? '-' }}
 							</p>
 						</cv-data-table-cell>
 						<cv-data-table-cell>
-							<p :class="post.mode === 'deleted' ? 'line-through' : ''">
+							<p
+								class="text-sm"
+								:class="post.mode === 'deleted' ? 'line-through' : ''"
+							>
 								{{ formatDate(post.end_date ?? '') ?? '-' }}
 							</p>
 						</cv-data-table-cell>
 						<cv-data-table-cell>
-							<p :class="post.mode === 'deleted' ? 'line-through' : ''">
+							<p
+								class="text-sm"
+								:class="post.mode === 'deleted' ? 'line-through' : ''"
+							>
 								{{ post.membershipCount ?? 0 }}
 							</p>
 						</cv-data-table-cell>
@@ -322,11 +334,7 @@ watch(
 					</cv-data-table-row>
 				</template>
 
-				<cv-data-table-row v-else>
-					<cv-data-table-cell colspan="5">
-						<p class="py-4 text-sm text-[#525252]">No posts found</p>
-					</cv-data-table-cell>
-				</cv-data-table-row>
+				<ui-table-empty-state v-else message="No posts found" :colspan="5" />
 			</template>
 		</cv-data-table>
 

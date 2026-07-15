@@ -3,9 +3,14 @@
 .bx--data-table-header,
 .bx--data-table tbody,
 .bx--data-table tbody tr td,
+.bx--table-toolbar,
 .bx--pagination,
 .bx--pagination .bx--select-input {
 	background-color: #ffffff;
+}
+
+.bx--data-table-content {
+	overflow: unset;
 }
 
 .bx--toast-notification--error {
@@ -43,6 +48,10 @@
 	align-items: center;
 	justify-content: space-between;
 	width: 100%;
+}
+
+.bx--modal-content {
+	overflow-y: visible;
 }
 
 .bx--modal-content p {

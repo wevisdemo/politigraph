@@ -233,18 +233,11 @@ const isEventComplete = (event: BillEventForm): boolean => {
 							</div>
 						</template>
 					</cv-data-table-row>
-					<template v-if="!events.length">
-						<tr />
-						<tr>
-							<td
-								colspan="4"
-								class="border-0 bg-white text-center text-sm text-neutral-500"
-							>
-								No events
-							</td>
-						</tr>
-						<tr />
-					</template>
+					<ui-table-empty-state
+						v-if="!events.length"
+						message="No events"
+						:colspan="4"
+					/>
 				</template>
 			</cv-data-table>
 		</template>

@@ -84,7 +84,9 @@ export function getPostRows(page: Page) {
 		)
 		.locator('..')
 		.locator('..')
-		.locator('.bx--data-table tbody tr, .bx--table tbody tr');
+		.locator(
+			'.bx--data-table tbody tr:not([data-testid="empty-state"]), .bx--table tbody tr:not([data-testid="empty-state"])',
+		);
 }
 
 export async function addLink(page: Page, note: string, url: string) {
@@ -142,11 +144,10 @@ export async function waitForMembershipTable(page: Page) {
 }
 
 export async function openAddMembershipModal(page: Page) {
-	await page
-		.locator('h4:has-text("Membership")')
-		.locator('..')
-		.getByRole('button', { name: 'Add' })
-		.click();
+	const header = page.locator('h4:has-text("Membership")');
+	await header.waitFor({ state: 'visible', timeout: TIMEOUTS.TABLE });
+	const section = header.locator('..').locator('..');
+	await section.getByRole('button', { name: 'Add' }).click();
 
 	await page.locator('.membership-modal .bx--modal-container').waitFor({
 		state: 'visible',
@@ -226,5 +227,8 @@ export function getMembershipRows(page: Page) {
 	return page
 		.locator('h4:has-text("Membership")')
 		.locator('..')
-		.locator('.bx--data-table tbody tr, .bx--table tbody tr');
+		.locator('..')
+		.locator(
+			'.bx--data-table tbody tr:not([data-testid="empty-state"]), .bx--table tbody tr:not([data-testid="empty-state"])',
+		);
 }
