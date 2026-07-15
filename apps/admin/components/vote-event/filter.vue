@@ -27,7 +27,7 @@ const resetFilter = () => {
 				Reset Filters
 			</button>
 		</div>
-		<FilterOptions
+		<FormFilterOptions
 			v-model="filters.assembly"
 			label="Assembly"
 			type="radio"
@@ -35,7 +35,7 @@ const resetFilter = () => {
 			:options="props.assembliesOption"
 		/>
 
-		<FilterOptions
+		<FormFilterOptions
 			v-model="filters.status"
 			label="Status"
 			type="radio"
@@ -43,7 +43,7 @@ const resetFilter = () => {
 			:options="props.statusOptions"
 		/>
 
-		<FilterOptions
+		<FormFilterOptions
 			v-model="filters.classification"
 			label="Classification"
 			type="multi-select"

@@ -291,7 +291,7 @@ watch(
 		<cv-breadcrumb-item>{{ peopleData?.name }}</cv-breadcrumb-item>
 	</cv-breadcrumb>
 
-	<ToastNotification :notification="toast.notification" @close="toast.hide" />
+	<FeedbackToast :notification="toast.notification" @close="toast.hide" />
 
 	<div class="flex flex-wrap justify-between">
 		<div class="flex flex-wrap items-center gap-4">
@@ -299,7 +299,7 @@ watch(
 				{{ peopleData?.name }}
 			</h1>
 			<div class="pb-2">
-				<UiPublishStatusTag :status="peopleData?.publish_status" />
+				<PublishStatusTag :status="peopleData?.publish_status" />
 			</div>
 		</div>
 		<div class="flex flex-wrap items-start gap-4">

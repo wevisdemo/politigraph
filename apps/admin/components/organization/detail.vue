@@ -129,7 +129,7 @@ const organizationTypeOptions = Object.values(enumOrganizationType).map(
 		</template>
 
 		<template v-else>
-			<UploadedImageDisplay
+			<FormUploadedImageDisplay
 				:image-url="previewImage || modelValue?.image"
 				:placeholder-icon="Enterprise32"
 				:cropper-size="
@@ -237,7 +237,7 @@ const organizationTypeOptions = Object.values(enumOrganizationType).map(
 
 			<div>
 				<h4 class="mb-3">References</h4>
-				<LinksForm v-model:links="modelValue.links" />
+				<FormLinks v-model:links="modelValue.links" />
 			</div>
 		</template>
 	</div>

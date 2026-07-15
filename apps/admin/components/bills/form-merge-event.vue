@@ -37,7 +37,7 @@ const emit = defineEmits<{
 			:class="{ 'radio-group--incomplete': props.incomplete }"
 			vertical
 		>
-			<radio-input-with-details
+			<FormRadioInputWithDetails
 				v-for="bill in sortedBills"
 				:key="bill.id"
 				:value="bill.id"
@@ -77,7 +77,7 @@ const emit = defineEmits<{
 						</template>
 					</template>
 				</span>
-			</radio-input-with-details>
+			</FormRadioInputWithDetails>
 		</cv-radio-group>
 	</div>
 </template>

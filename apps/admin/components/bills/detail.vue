@@ -7,7 +7,6 @@ import type {
 	Link,
 	OrganizationType,
 } from '@politigraph/graphql/genql';
-import RelatedLinksForm from '~/components/LinksForm.vue';
 import type { PeopleOption } from '~/composables/use-people-options';
 
 interface OrganizationOption {
@@ -250,7 +249,7 @@ const getOrganizationOptions = (classification: OrganizationType) => {
 
 			<div>
 				<h4>References</h4>
-				<RelatedLinksForm v-model:links="form.links" />
+				<FormLinks v-model:links="form.links" />
 			</div>
 		</template>
 	</div>

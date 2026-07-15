@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import type { Link } from '@politigraph/graphql/genql';
 import { useForm } from '@tanstack/vue-form';
-import RelatedLinksForm from '~/components/LinksForm.vue';
 import { validateVotes } from '~/utils/votes';
 import { diff } from 'radash';
 
@@ -440,7 +439,7 @@ async function togglePublishStatus() {
 						</div>
 						<voteEventFormInput.Field name="links">
 							<template #default="{ field }">
-								<RelatedLinksForm
+								<FormLinks
 									v-model:links="field.state.value"
 									@update:links="field.handleChange"
 								/>
@@ -530,7 +529,7 @@ async function togglePublishStatus() {
 		</div>
 	</form>
 
-	<ToastNotification
+	<FeedbackToast
 		:notification="successToast.notification"
 		@close="successToast.hide"
 	/>

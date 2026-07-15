@@ -2,7 +2,6 @@
 // @ts-expect-error carbon icons vue type
 import { Add16 } from '@carbon/icons-vue';
 import type { Person, PublishStatus } from '@politigraph/graphql/genql';
-import PublishStatusLabel from '~/components/ui/PublishStatusLabel.vue';
 import { formatDate } from '~/utils/date';
 
 type Membership = {

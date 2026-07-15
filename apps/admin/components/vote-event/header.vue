@@ -33,7 +33,7 @@ const isPublished = computed(() => props.publishStatus === 'PUBLISHED');
 			</h2>
 
 			<div>
-				<UiPublishStatusTag :status="publishStatus" />
+				<PublishStatusTag :status="publishStatus" />
 			</div>
 		</div>
 

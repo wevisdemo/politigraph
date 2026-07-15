@@ -10,8 +10,8 @@ import { enumOrganizationType } from '@politigraph/graphql/genql';
 import type { OrganizationWithPostsOption } from '~/composables/use-organizations-with-posts-options';
 import type { MembershipProp } from '~/types/membership';
 import { formatDate } from '~/utils/date';
-import DeleteMembershipModal from './delete-membership-modal.vue';
-import MembershipModal from './membership-modal.vue';
+import DeleteMembershipModal from './delete-modal.vue';
+import MembershipModal from './modal.vue';
 
 defineProps<{
 	organizationsOptions?: OrganizationWithPostsOption[] | null;

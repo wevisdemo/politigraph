@@ -62,7 +62,7 @@ const genderOptions = Object.values(enumGender);
 			<cv-number-input-skeleton v-for="i in 9" :key="i" />
 		</template>
 		<template v-else>
-			<UploadedImageDisplay
+			<FormUploadedImageDisplay
 				:image-url="previewImage || modelValue?.image"
 				:placeholder-icon="UserFilled32"
 				:cropper-size="
@@ -172,7 +172,7 @@ const genderOptions = Object.values(enumGender);
 			/>
 			<template v-if="modelValue && modelValue.links">
 				<h6>Social Media</h6>
-				<LinksForm v-model:links="modelValue.links" />
+				<FormLinks v-model:links="modelValue.links" />
 			</template>
 		</template>
 	</div>

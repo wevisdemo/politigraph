@@ -22,14 +22,14 @@ const resetFilter = () => {
 				Reset Filters
 			</button>
 		</div>
-		<FilterOptions
+		<FormFilterOptions
 			v-model="filters.membership"
 			label="Membership"
 			type="radio"
 			name="people-membership-filter"
 			:options="props.membershipOptions"
 		/>
-		<FilterOptions
+		<FormFilterOptions
 			v-model="filters.status"
 			label="Status"
 			type="radio"

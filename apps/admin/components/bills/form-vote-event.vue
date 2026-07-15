@@ -86,7 +86,7 @@ watch(() => props.event.start_date, refresh);
 				:class="{ 'radio-group--incomplete': props.incomplete }"
 				vertical
 			>
-				<radio-input-with-details
+				<FormRadioInputWithDetails
 					v-for="ve in matchingVoteEvents"
 					:key="ve.id"
 					v-model="selectedVoteEventId"
@@ -142,7 +142,7 @@ watch(() => props.event.start_date, refresh);
 							</template>
 						</template>
 					</span>
-				</radio-input-with-details>
+				</FormRadioInputWithDetails>
 			</cv-radio-group>
 		</div>
 	</div>

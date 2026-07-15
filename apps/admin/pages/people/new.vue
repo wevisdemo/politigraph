@@ -150,7 +150,7 @@ const savePeople = async () => {
 		<cv-breadcrumb-item><a href="/admin/people">People</a></cv-breadcrumb-item>
 	</cv-breadcrumb>
 
-	<ToastNotification :notification="toast.notification" @close="toast.hide" />
+	<FeedbackToast :notification="toast.notification" @close="toast.hide" />
 
 	<div class="flex flex-wrap justify-between">
 		<h1 class="mb-8 mt-4 font-normal">

@@ -535,7 +535,7 @@ const saveChanges = async () => {
 		<cv-breadcrumb-item>{{ organizationData?.name }}</cv-breadcrumb-item>
 	</cv-breadcrumb>
 
-	<ToastNotification :notification="toast.notification" @close="toast.hide" />
+	<FeedbackToast :notification="toast.notification" @close="toast.hide" />
 
 	<div class="flex flex-wrap justify-between">
 		<div class="flex flex-wrap items-center gap-4">

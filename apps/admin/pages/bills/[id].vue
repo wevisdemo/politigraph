@@ -583,7 +583,7 @@ const { data: organizationList } = await useAsyncData(
 		</div>
 	</form>
 
-	<ToastNotification
+	<FeedbackToast
 		:notification="successToast.notification"
 		@close="successToast.hide"
 	/>

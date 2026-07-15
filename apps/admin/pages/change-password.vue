@@ -115,10 +115,7 @@ const signout = async () => {
 				>
 					<template v-if="isErrorConfirmNewPassword" #invalid-message />
 				</cv-text-input>
-				<ToastNotification
-					:notification="toast.notification"
-					@close="toast.hide"
-				/>
+				<FeedbackToast :notification="toast.notification" @close="toast.hide" />
 				<cv-button class="w-full max-w-full"> Change Password </cv-button>
 			</cv-form>
 		</template>

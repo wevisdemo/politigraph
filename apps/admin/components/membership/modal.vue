@@ -4,7 +4,6 @@ import {
 	// @ts-expect-error carbon icons vue type
 } from '@carbon/icons-vue';
 import { enumOrganizationType } from '@politigraph/graphql/genql';
-import LinksForm from '~/components/LinksForm.vue';
 import type { OrganizationWithPostsOption } from '~/composables/use-organizations-with-posts-options';
 import type { MembershipProp } from '~/types/membership';
 import { RepresentativeLabel } from '~/types/membership';
@@ -293,7 +292,7 @@ const handleRoleInput = (selectedValue: string) => {
 
 				<h4 class="font-normal">References</h4>
 
-				<LinksForm
+				<FormLinks
 					:links="membership?.links ?? []"
 					@update:links="
 						(val) => {

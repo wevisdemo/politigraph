@@ -5,7 +5,6 @@ import {
 	enumPublishStatus,
 	enumVoteEventType,
 } from '@politigraph/graphql/genql';
-import PublishStatusLabel from '~/components/ui/PublishStatusLabel.vue';
 import { formatDate } from '~/utils/date';
 import { getArrayQueryParam, getStringQueryParam } from '~/utils/query';
 import { ref } from 'vue';

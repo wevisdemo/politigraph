@@ -28,7 +28,7 @@ const resetFilter = () => {
 				Reset Filters
 			</button>
 		</div>
-		<FilterOptions
+		<FormFilterOptions
 			v-model="filters.organization"
 			label="Propose in Representative Term"
 			type="radio"
@@ -36,7 +36,7 @@ const resetFilter = () => {
 			:options="props.organizationOption"
 		/>
 
-		<FilterOptions
+		<FormFilterOptions
 			v-model="filters.status"
 			label="Status"
 			type="radio"
@@ -44,7 +44,7 @@ const resetFilter = () => {
 			:options="props.statusOptions"
 		/>
 
-		<FilterOptions
+		<FormFilterOptions
 			v-model="filters.creatorType"
 			label="Creator Type"
 			type="radio"
@@ -52,7 +52,7 @@ const resetFilter = () => {
 			:options="props.creatorTypeOptions"
 		/>
 
-		<FilterOptions
+		<FormFilterOptions
 			v-model="filters.eventCompleteness"
 			label="Event Completeness"
 			type="radio"

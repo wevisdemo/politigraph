@@ -404,7 +404,7 @@ function scrollToRow(id: string) {
 			<cv-breadcrumb-item>Votes</cv-breadcrumb-item>
 		</cv-breadcrumb>
 
-		<ToastNotification
+		<FeedbackToast
 			:notification="successToast.notification"
 			@close="successToast.hide"
 		/>

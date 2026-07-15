@@ -110,7 +110,7 @@ onMounted(async () => {
 		</div>
 	</div>
 
-	<ToastNotification :notification="toast.notification" @close="toast.hide" />
+	<FeedbackToast :notification="toast.notification" @close="toast.hide" />
 </template>
 
 <style scoped>
