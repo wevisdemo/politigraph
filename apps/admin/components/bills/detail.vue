@@ -45,8 +45,6 @@ const props = defineProps<{
 	organizationList: OrganizationOption[] | null;
 }>();
 
-const coCreatorKeyword = ref('');
-
 const billClassification = [
 	{ label: 'ทั่วไป', value: 'NORMAL_BILL' },
 	{ label: 'เกี่ยวข้องกับงบประมาณ', value: 'BUDGET_BILL' },
@@ -170,40 +168,11 @@ const getOrganizationOptions = (classification: OrganizationType) => {
 					@update:model-value="form.personCreators = [$event]"
 				/>
 
-				<div class="flex flex-col gap-3">
-					<cv-combo-box
-						v-model="coCreatorKeyword"
-						title="Co-Creators"
-						:options="peopleList"
-						item-value-key="value"
-						item-text-key="label"
-						auto-filter
-						auto-highlight
-						@update:model-value="
-							(creatorId: string) => {
-								if (!peopleList?.some((p) => p.value === creatorId)) return;
-								form.co_creators = [...(form.co_creators ?? []), creatorId];
-								coCreatorKeyword = '';
-							}
-						"
-					/>
-
-					<div class="flex flex-wrap gap-2">
-						<cv-tag
-							v-for="id in form.co_creators ?? []"
-							:key="id"
-							:label="
-								peopleList?.find((person) => person.value === id)?.label ?? id
-							"
-							filter
-							@remove="
-								form.co_creators = (form.co_creators ?? []).filter(
-									(value) => value !== id,
-								)
-							"
-						/>
-					</div>
-				</div>
+				<FormMultiselectCombobox
+					v-model="form.co_creators"
+					title="Co-Creators"
+					:options="peopleList"
+				/>
 			</div>
 
 			<div v-else-if="form.creator_type === 'ASSEMBLY'">

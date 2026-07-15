@@ -45,23 +45,6 @@ defineEmits<{
 	(e: 'delete'): void;
 }>();
 
-const getSelectedOrganizationLabels = (ids: string[] | undefined) =>
-	(ids ?? [])
-		.map(
-			(id) =>
-				props.organizationOptions?.find((option) => option.value === id)
-					?.label ?? id,
-		)
-		.join(', ');
-
-const selectedParentLabels = computed(() =>
-	getSelectedOrganizationLabels(selectedParentIds.value),
-);
-
-const selectedChildLabels = computed(() =>
-	getSelectedOrganizationLabels(selectedChildIds.value),
-);
-
 const organizationColor = computed<string>({
 	get: () => modelValue.value?.color ?? '',
 	set: (value: string) => {
@@ -221,17 +204,15 @@ const organizationTypeOptions = Object.values(enumOrganizationType).map(
 				/>
 			</div>
 
-			<cv-multi-select
+			<FormMultiselectCombobox
 				v-model="selectedParentIds"
 				title="Parents"
-				:label="selectedParentLabels"
 				:options="organizationOptions"
 			/>
 
-			<cv-multi-select
+			<FormMultiselectCombobox
 				v-model="selectedChildIds"
 				title="Children"
-				:label="selectedChildLabels"
 				:options="organizationOptions"
 			/>
 

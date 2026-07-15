@@ -131,52 +131,40 @@ test.describe('Organization Detail - Parent/Child Relationships', () => {
 		await page.goto(`/organizations/${mainOrgId}`);
 		await waitForOrganizationDetail(page);
 
-		const parentLabel = page.locator('label.bx--label:has-text("Parents")');
-		await parentLabel.waitFor({ state: 'visible', timeout: 10000 });
-		const parentContainer = parentLabel.locator(
-			'xpath=ancestor::div[contains(@class, "bx--list-box")][1]',
-		);
-		const parentButton = parentContainer
-			.locator('button.bx--list-box__field, [role="listbox"]')
-			.first();
-		await parentButton.click();
+		const parentWrapper = page
+			.locator('.bx--list-box__wrapper')
+			.filter({ has: page.locator('label.bx--label:has-text("Parents")') });
+		await parentWrapper.waitFor({ state: 'visible', timeout: 10000 });
+		const parentField = parentWrapper.locator('.bx--combo-box');
+		const parentInput = parentField.locator('input[role="combobox"]');
+		await parentInput.click();
 		await page.waitForTimeout(300);
+		await parentInput.fill('ParentOrg');
+		await page.waitForTimeout(500);
 
-		await page
+		await parentField
 			.locator(`.bx--list-box__menu-item:has-text("ParentOrg")`)
 			.first()
 			.click();
 		await page.waitForTimeout(300);
 
-		await page.keyboard.press('Escape');
+		const childWrapper = page
+			.locator('.bx--list-box__wrapper')
+			.filter({ has: page.locator('label.bx--label:has-text("Children")') });
+		await childWrapper.scrollIntoViewIfNeeded();
+		await childWrapper.waitFor({ state: 'visible', timeout: 10000 });
+		const childField = childWrapper.locator('.bx--combo-box');
+		const childInput = childField.locator('input[role="combobox"]');
+		await childInput.click();
 		await page.waitForTimeout(300);
-		await expect(
-			parentContainer.locator('.bx--list-box__menu'),
-		).not.toBeVisible();
-
-		const childLabel = page.locator('label.bx--label:has-text("Children")');
-		await childLabel.scrollIntoViewIfNeeded();
-		await childLabel.waitFor({ state: 'visible', timeout: 10000 });
-		const childContainer = childLabel.locator(
-			'xpath=ancestor::div[contains(@class, "bx--list-box")][1]',
-		);
-		const childButton = childContainer
-			.locator('button.bx--list-box__field')
-			.first();
-		await childButton.scrollIntoViewIfNeeded();
-		await childButton.click();
+		await childInput.fill('ChildOrg');
 		await page.waitForTimeout(500);
 
-		const childItem = childContainer
+		await childField
 			.locator(`.bx--list-box__menu-item:has-text("ChildOrg")`)
-			.first();
-		await childItem.waitFor({ state: 'attached', timeout: 5000 });
-		await childItem.scrollIntoViewIfNeeded();
-		await childItem.click({ force: true });
+			.first()
+			.click();
 		await page.waitForTimeout(500);
-
-		await childButton.click();
-		await page.waitForTimeout(300);
 
 		await saveOrganizationChanges(page);
 
