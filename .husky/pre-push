@@ -1,2 +1,1 @@
-bun run check
-bun run lint
+bun turbo run lint check
