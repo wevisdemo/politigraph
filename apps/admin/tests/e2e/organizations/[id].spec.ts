@@ -1,10 +1,11 @@
 import { expect, test } from '@playwright/test';
-import { login } from '../fixtures';
+import { createTestPerson, login } from '../fixtures';
 import {
 	addLink,
 	createTestMembership,
 	createTestOrganization,
 	createTestPost,
+	deletePostMembership,
 	deleteTestLink,
 	deleteTestMembership,
 	deleteTestOrganization,
@@ -13,14 +14,20 @@ import {
 	fillClassification,
 	fillOrganizationName,
 	fillPost,
+	fillPostMembershipPerson,
 	getMembershipRows,
+	getPostMembershipRows,
 	getPostRows,
 	linkPostToOrganization,
 	openAddMembershipModal,
+	openAddPostMembershipModal,
 	openAddPostModal,
+	openPostEditModal,
 	saveMembershipModal,
 	saveOrganizationChanges,
+	savePostMembershipModal,
 	savePostModal,
+	selectPostMembershipType,
 	waitForMembershipTable,
 	waitForOrganizationDetail,
 } from './helpers';
@@ -403,7 +410,7 @@ test.describe('Organization Detail - Membership CRUD', () => {
 		await page.evaluate(() => {
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			const input = (globalThis as any).document.querySelector(
-				'.membership-modal .membership-datepicker input',
+				'.membership-modal:not(.post-membership-modal) .membership-datepicker input',
 			);
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			(input as any)._flatpickr.setDate('2024-01-15', true);
@@ -458,10 +465,14 @@ test.describe('Organization Detail - Membership CRUD', () => {
 		await expect(rows.first()).toContainText(postOrgName);
 
 		await rows.first().getByRole('button', { name: 'แก้ไข' }).click();
-		await page.locator('.membership-modal .bx--modal-container').waitFor({
-			state: 'visible',
-			timeout: 5000,
-		});
+		await page
+			.locator(
+				'.membership-modal:not(.post-membership-modal) .bx--modal-container',
+			)
+			.waitFor({
+				state: 'visible',
+				timeout: 5000,
+			});
 
 		await fillOrganizationName(page, altPostOrgName);
 		await fillPost(page, altPostRole);
@@ -480,5 +491,169 @@ test.describe('Organization Detail - Membership CRUD', () => {
 		);
 		expect(updatedMembership).toBeDefined();
 		expect(updatedMembership.posts[0].id).toBe(altPostId);
+	});
+});
+
+test.describe('Organization Detail - Post Membership CRUD', () => {
+	test.setTimeout(60000);
+
+	let orgId: string;
+	let orgName: string;
+	let postId: string;
+	let postRole: string;
+	let personName: string;
+	const seededMembershipIds: string[] = [];
+
+	test.beforeEach(async ({ page }) => {
+		await login(page);
+
+		const uid = genId();
+		orgName = `PostMemOrg${uid}`;
+		postRole = `PostMemRole${uid}`;
+		personName = `PostMemPerson${uid}`;
+
+		const org = await createTestOrganization(page, orgName, 'POLITICAL_PARTY');
+		orgId = org.id;
+
+		const post = await createTestPost(page, postRole);
+		postId = post.id;
+		await linkPostToOrganization(page, postId, orgId);
+
+		await createTestPerson(page, {
+			firstname: personName,
+			lastname: 'Test',
+		});
+	});
+
+	test.afterEach(async ({ page }) => {
+		for (const id of seededMembershipIds) {
+			await deleteTestMembership(page, id);
+		}
+		seededMembershipIds.length = 0;
+		await deleteTestPost(page, postId);
+		await deleteTestOrganization(page, orgId);
+	});
+
+	test('add membership to existing post and persist', async ({ page }) => {
+		await page.goto(`/organizations/${orgId}`);
+		await waitForOrganizationDetail(page);
+
+		const postRows = getPostRows(page);
+		await expect(postRows).toHaveCount(1);
+		await openPostEditModal(page, postRows.first());
+
+		await openAddPostMembershipModal(page);
+		await selectPostMembershipType(page, 'Person');
+		await fillPostMembershipPerson(page, personName);
+		await savePostMembershipModal(page);
+
+		const pmRows = getPostMembershipRows(page);
+		await expect(pmRows).toHaveCount(1);
+		await expect(pmRows.first()).toContainText(personName);
+
+		await savePostModal(page);
+		await saveOrganizationChanges(page);
+
+		const detail = await fetchOrganizationDetail(page, orgId);
+		const savedPost = detail.posts.find((p: { id: string }) => p.id === postId);
+		expect(savedPost).toBeDefined();
+
+		const postMemberships = savedPost?.memberships ?? [];
+		expect(postMemberships.length).toBeGreaterThan(0);
+		seededMembershipIds.push(postMemberships[0].id);
+	});
+
+	test('edit membership dates and persist', async ({ page }) => {
+		const membership = await createTestMembership(
+			page,
+			orgId,
+			postId,
+			'Organization',
+			{ start_date: '2024-01-01' },
+		);
+		seededMembershipIds.push(membership.id);
+
+		await page.goto(`/organizations/${orgId}`);
+		await waitForOrganizationDetail(page);
+
+		const postRows = getPostRows(page);
+		await openPostEditModal(page, postRows.first());
+
+		const pmRows = getPostMembershipRows(page);
+		await expect(pmRows).toHaveCount(1);
+		await pmRows.first().getByRole('button', { name: 'แก้ไข' }).click();
+
+		await page
+			.locator('.post-membership-modal .bx--modal-container')
+			.waitFor({ state: 'visible', timeout: 5000 });
+
+		await page.evaluate(() => {
+			const inputs = document.querySelectorAll(
+				'.post-membership-modal .membership-datepicker input',
+			);
+			if (inputs[0]) {
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any
+				(inputs[0] as any)._flatpickr.setDate('2025-06-15', true);
+			}
+		});
+		await page.waitForTimeout(300);
+
+		await savePostMembershipModal(page);
+		await savePostModal(page);
+		await saveOrganizationChanges(page);
+
+		const detail = await fetchOrganizationDetail(page, orgId);
+		const updated = detail.memberships?.find(
+			(m: { id: string }) => m.id === membership.id,
+		);
+		expect(updated).toBeDefined();
+		expect(updated.start_date).toBe('2025-06-15');
+	});
+
+	test('delete membership from post and persist', async ({ page }) => {
+		const membership = await createTestMembership(
+			page,
+			orgId,
+			postId,
+			'Organization',
+		);
+		seededMembershipIds.push(membership.id);
+
+		await page.goto(`/organizations/${orgId}`);
+		await waitForOrganizationDetail(page);
+
+		const postRows = getPostRows(page);
+		await openPostEditModal(page, postRows.first());
+
+		const pmRows = getPostMembershipRows(page);
+		await expect(pmRows).toHaveCount(1);
+		await deletePostMembership(page, pmRows.first());
+
+		await savePostModal(page);
+		await saveOrganizationChanges(page);
+
+		const detail = await fetchOrganizationDetail(page, orgId);
+		const deleted = detail.memberships?.find(
+			(m: { id: string }) => m.id === membership.id,
+		);
+		expect(deleted).toBeUndefined();
+		seededMembershipIds.length = 0;
+	});
+
+	test('new post shows membership hint instead of table', async ({ page }) => {
+		await page.goto(`/organizations/${orgId}`);
+		await waitForOrganizationDetail(page);
+
+		await openAddPostModal(page);
+
+		const hint = page.locator(
+			'.post-modal :text("Membership can be added after the post has been successfully created and saved.")',
+		);
+		await expect(hint).toBeVisible();
+
+		const membershipTable = page.locator(
+			'.post-modal h4:has-text("Memberships")',
+		);
+		await expect(membershipTable).not.toBeVisible();
 	});
 });

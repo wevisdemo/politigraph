@@ -40,12 +40,15 @@ type OrganizationPost = Pick<
 > & {
 	mode?: 'new' | 'edited' | 'deleted';
 	membershipCount?: number;
+	memberships?: MembershipProp[];
 };
 
 const originalParentIds = ref<string[]>([]);
 const originalChildIds = ref<string[]>([]);
 const originalPosts = ref<
-	Pick<Post, 'id' | 'role' | 'start_date' | 'end_date'>[]
+	(Pick<Post, 'id' | 'role' | 'start_date' | 'end_date'> & {
+		memberships?: MembershipProp[];
+	})[]
 >([]);
 const originalLinks = ref<Pick<Link, 'id' | 'note' | 'url'>[]>([]);
 const originalMemberships = ref<Partial<Membership>[] | null>(null);
@@ -90,6 +93,35 @@ const { data: organizationData, refresh: refreshOrganizationDetail } =
 							aggregate: {
 								count: {
 									nodes: true,
+								},
+							},
+						},
+						memberships: {
+							__args: {
+								sort: [{ end_date: 'DESC' }, { start_date: 'DESC' }],
+							},
+							id: true,
+							start_date: true,
+							end_date: true,
+							label: true,
+							province: true,
+							district_number: true,
+							list_number: true,
+							links: {
+								id: true,
+								url: true,
+								note: true,
+							},
+							members: {
+								on_Person: {
+									__typename: true,
+									id: true,
+									name: true,
+								},
+								on_Organization: {
+									__typename: true,
+									id: true,
+									name: true,
 								},
 							},
 						},
@@ -147,6 +179,42 @@ const { data: organizationData, refresh: refreshOrganizationDetail } =
 					...post,
 					membershipCount:
 						post.membershipsConnection?.aggregate?.count?.nodes ?? 0,
+					memberships: (post.memberships ?? []).map((m) => {
+						const member = m.members?.[0] as
+							| { __typename?: string; id: string; name: string }
+							| undefined;
+						const resolvedMember = member
+							? { id: member.id, name: member.name }
+							: undefined;
+						const resolvedType: 'Person' | 'Organization' =
+							member?.__typename === 'Organization' ? 'Organization' : 'Person';
+
+						return {
+							id: m.id,
+							start_date: m.start_date,
+							end_date: m.end_date,
+							label: m.label,
+							province: m.province,
+							district_number: m.district_number,
+							list_number: m.list_number,
+							links: m.links ?? [],
+							posts: [
+								{
+									id: post.id,
+									role: post.role,
+									organizations: [
+										{
+											id: organization.id,
+											name: organization.name,
+											classification: organization.classification,
+										},
+									],
+								},
+							],
+							members: resolvedMember ? [resolvedMember] : [],
+							memberType: resolvedType,
+						};
+					}),
 				})),
 			};
 		},
@@ -231,6 +299,16 @@ const { data: organizationOptions } = await useAsyncData(
 
 const { data: organizationsWithPostsOptions } =
 	useOrganizationsWithPostsOptions();
+
+const { data: peopleOptions, execute: executePeopleOptions } = usePeopleOptions(
+	{ immediate: false },
+);
+
+const onMemberTypeChange = (type: 'Person' | 'Organization') => {
+	if (type === 'Person') {
+		executePeopleOptions();
+	}
+};
 
 const membershipOrganizationsOptions = computed(() => {
 	return (
@@ -390,6 +468,27 @@ const saveChanges = async () => {
 			(ol) => !organizationData.value?.links.some((el) => el.id === ol.id),
 		);
 
+		const postMembershipMutations = organizationData.value.posts
+			.filter((p) => p.mode !== 'deleted' && p.mode !== 'new' && p.memberships)
+			.flatMap((post) => {
+				const original = originalPosts.value.find((o) => o.id === post.id);
+				const { buildMembershipMutations: buildPostMembershipMutations } =
+					useMembershipMutations({
+						memberType: 'Person',
+						memberId: ref(undefined),
+						originalMemberships: ref(
+							(original?.memberships ?? []).map((m) => ({
+								id: m.id,
+								start_date: m.start_date,
+								end_date: m.end_date,
+								links: m.links,
+								posts: m.posts,
+							})) as Partial<Membership>[],
+						),
+					});
+				return buildPostMembershipMutations(post.memberships ?? []);
+			});
+
 		await Promise.all([
 			...postsToCreate.map((post) =>
 				graphqlClient.mutation({
@@ -508,8 +607,8 @@ const saveChanges = async () => {
 				}),
 			),
 			...buildMembershipMutations(editableMemberships.value),
+			...postMembershipMutations,
 		]);
-
 		await refreshOrganizationDetail();
 		toast.show({
 			kind: 'success',
@@ -583,7 +682,23 @@ const saveChanges = async () => {
 			</div>
 
 			<div class="flex basis-2/4 flex-col gap-6">
-				<PeoplePosts v-model:posts="organizationPosts" />
+				<OrganizationPosts
+					v-model:posts="organizationPosts"
+					v-model:people-options="peopleOptions"
+					v-model:organization-options="organizationOptions"
+					:default-start-date="organizationData?.founding_date ?? null"
+					:default-end-date="organizationData?.dissolution_date ?? null"
+					:organization="
+						organizationData
+							? {
+									id: organizationData.id,
+									name: organizationData.name,
+									classification: organizationData.classification,
+								}
+							: null
+					"
+					@member-type-change="onMemberTypeChange"
+				/>
 				<MembershipTable
 					v-model:memberships="editableMemberships"
 					:organizations-options="membershipOrganizationsOptions"

@@ -3,10 +3,13 @@ import { RepresentativeLabel } from '~/types/membership';
 import type { MembershipProp } from '~/types/membership';
 import type { Ref } from 'vue';
 
+type OriginalMembership = Partial<Membership> &
+	Pick<MembershipProp, 'members' | 'memberType' | 'mode'>;
+
 export function useMembershipMutations(args: {
 	memberType: 'Person' | 'Organization';
 	memberId: Ref<string | undefined>;
-	originalMemberships: Ref<Partial<Membership>[] | null>;
+	originalMemberships: Ref<OriginalMembership[] | null>;
 }) {
 	const graphqlClient = useGraphqlClient();
 
@@ -29,7 +32,9 @@ export function useMembershipMutations(args: {
 					m.posts?.[0]?.id !== orig.posts?.[0]?.id ||
 					m.posts?.[0]?.organizations?.[0]?.id !==
 						orig.posts?.[0]?.organizations?.[0]?.id ||
-					JSON.stringify(m.links) !== JSON.stringify(orig.links)
+					JSON.stringify(m.links) !== JSON.stringify(orig.links) ||
+					m.members?.[0]?.id !== orig.members?.[0]?.id ||
+					m.memberType !== orig.memberType
 				);
 			})
 			.map(({ mode: _, ...rest }) => rest);
@@ -74,15 +79,31 @@ export function useMembershipMutations(args: {
 										})),
 									},
 									members: {
-										[args.memberType]: {
-											connect: [
-												{
-													where: {
-														node: { id: { eq: args.memberId.value } },
+										...(membership.members?.[0]?.id
+											? {
+													[membership.memberType ?? 'Person']: {
+														connect: [
+															{
+																where: {
+																	node: {
+																		id: { eq: membership.members[0].id },
+																	},
+																},
+															},
+														],
 													},
-												},
-											],
-										},
+												}
+											: {
+													[args.memberType]: {
+														connect: [
+															{
+																where: {
+																	node: { id: { eq: args.memberId.value } },
+																},
+															},
+														],
+													},
+												}),
 									},
 									posts: {
 										connect: [
@@ -134,6 +155,12 @@ export function useMembershipMutations(args: {
 				const originalPostId = originalMembership?.posts?.[0]?.id;
 				const currentPostId = membership.posts?.[0]?.id;
 				const postChanged = currentPostId && currentPostId !== originalPostId;
+
+				const originalMemberId = originalMembership?.members?.[0]?.id;
+				const currentMemberId = membership.members?.[0]?.id;
+				const memberType = membership.memberType || args.memberType;
+				const memberChanged =
+					currentMemberId && currentMemberId !== originalMemberId;
 
 				return graphqlClient.mutation({
 					updateMemberships: {
@@ -191,6 +218,34 @@ export function useMembershipMutations(args: {
 											? membership.list_number
 											: null,
 								},
+								members: memberChanged
+									? {
+											[memberType]: [
+												{
+													disconnect: originalMemberId
+														? [
+																{
+																	where: {
+																		node: {
+																			id: { eq: originalMemberId },
+																		},
+																	},
+																},
+															]
+														: [],
+													connect: [
+														{
+															where: {
+																node: {
+																	id: { eq: currentMemberId },
+																},
+															},
+														},
+													],
+												},
+											],
+										}
+									: {},
 								links: [
 									...newLinks.map((link) => ({
 										create: [

@@ -1,4 +1,5 @@
-import { expect, type Page } from '@playwright/test';
+import { expect, type Locator, type Page } from '@playwright/test';
+import { createTestPerson } from '../fixtures';
 import {
 	createTestMembership,
 	createTestOrganization,
@@ -19,6 +20,7 @@ export {
 	deleteTestLink,
 	createTestMembership,
 	deleteTestMembership,
+	createTestPerson,
 };
 
 const TIMEOUTS = {
@@ -70,13 +72,6 @@ export async function openAddPostModal(page: Page) {
 	await page.waitForTimeout(300);
 }
 
-export async function savePostModal(page: Page) {
-	const primaryBtn = page.locator('.post-modal .bx--btn--primary');
-	await expect(primaryBtn).toBeEnabled({ timeout: 5000 });
-	await primaryBtn.click();
-	await page.waitForTimeout(500);
-}
-
 export function getPostRows(page: Page) {
 	return page
 		.locator(
@@ -120,8 +115,8 @@ export async function fetchOrganizationDetail(page: Page, orgId: string) {
 						color
 						parents { id name }
 						children { id name }
-						posts { id role }
-						memberships { id posts { id role organizations { id name } } }
+						posts { id role memberships { id start_date end_date posts { id role } } }
+						memberships { id start_date end_date posts { id role organizations { id name } } }
 						links { id note url }
 					}
 				}
@@ -143,13 +138,17 @@ export async function waitForMembershipTable(page: Page) {
 	await page.waitForTimeout(500);
 }
 
+const MEMBER_FIXED_MODAL = '.membership-modal:not(.post-membership-modal)';
+const POST_MEMBERSHIP_MODAL = '.post-membership-modal';
+const POST_DELETE_MODAL = '.post-delete-membership-modal';
+
 export async function openAddMembershipModal(page: Page) {
 	const header = page.locator('h4:has-text("Membership")');
 	await header.waitFor({ state: 'visible', timeout: TIMEOUTS.TABLE });
 	const section = header.locator('..').locator('..');
 	await section.getByRole('button', { name: 'Add' }).click();
 
-	await page.locator('.membership-modal .bx--modal-container').waitFor({
+	await page.locator(`${MEMBER_FIXED_MODAL} .bx--modal-container`).waitFor({
 		state: 'visible',
 		timeout: 5000,
 	});
@@ -165,7 +164,7 @@ const CLASSIFICATION_LABELS: Record<string, string> = {
 
 export async function fillClassification(page: Page, value: string) {
 	const classificationField = page
-		.locator('.membership-modal .bx--combo-box')
+		.locator(`${MEMBER_FIXED_MODAL} .bx--combo-box`)
 		.first();
 	await classificationField.waitFor({ state: 'visible', timeout: 5000 });
 
@@ -185,7 +184,7 @@ export async function fillClassification(page: Page, value: string) {
 }
 
 export async function fillOrganizationName(page: Page, name: string) {
-	const orgField = page.locator('.membership-modal .bx--combo-box').nth(1);
+	const orgField = page.locator(`${MEMBER_FIXED_MODAL} .bx--combo-box`).nth(1);
 	await orgField.waitFor({ state: 'visible', timeout: 5000 });
 
 	const input = orgField.locator('input[role="combobox"]');
@@ -201,7 +200,7 @@ export async function fillOrganizationName(page: Page, name: string) {
 }
 
 export async function fillPost(page: Page, role: string) {
-	const postField = page.locator('.membership-modal .bx--combo-box').nth(2);
+	const postField = page.locator(`${MEMBER_FIXED_MODAL} .bx--combo-box`).nth(2);
 	await postField.waitFor({ state: 'visible', timeout: 5000 });
 
 	const input = postField.locator('input[role="combobox"]');
@@ -217,7 +216,7 @@ export async function fillPost(page: Page, role: string) {
 }
 
 export async function saveMembershipModal(page: Page) {
-	const primaryBtn = page.locator('.membership-modal .bx--btn--primary');
+	const primaryBtn = page.locator(`${MEMBER_FIXED_MODAL} .bx--btn--primary`);
 	await expect(primaryBtn).toBeEnabled({ timeout: 5000 });
 	await primaryBtn.click();
 	await page.waitForTimeout(500);
@@ -231,4 +230,95 @@ export function getMembershipRows(page: Page) {
 		.locator(
 			'.bx--data-table tbody tr:not([data-testid="empty-state"]), .bx--table tbody tr:not([data-testid="empty-state"])',
 		);
+}
+
+export async function openPostEditModal(page: Page, postRow: Locator) {
+	await postRow.getByRole('button', { name: 'แก้ไข' }).click();
+	await page.locator('.post-modal .bx--modal-container').waitFor({
+		state: 'visible',
+		timeout: 5000,
+	});
+	await page.waitForTimeout(300);
+}
+
+export function getPostMembershipRows(page: Page) {
+	const postModal = page.locator('.post-modal .bx--modal-container');
+	return postModal
+		.locator('h4:has-text("Memberships")')
+		.locator('..')
+		.locator('..')
+		.locator(
+			'.bx--data-table tbody tr:not([data-testid="empty-state"]), .bx--table tbody tr:not([data-testid="empty-state"])',
+		);
+}
+
+export async function openAddPostMembershipModal(page: Page) {
+	const postModal = page.locator('.post-modal .bx--modal-container');
+	const membershipsHeader = postModal.locator('h4:has-text("Memberships")');
+	const section = membershipsHeader.locator('..').locator('..');
+	await section.getByRole('button', { name: 'Add' }).click();
+
+	await page.locator(`${POST_MEMBERSHIP_MODAL} .bx--modal-container`).waitFor({
+		state: 'visible',
+		timeout: 5000,
+	});
+	await page.waitForTimeout(300);
+}
+
+export async function selectPostMembershipType(
+	page: Page,
+	type: 'Person' | 'Organization',
+) {
+	const dropdown = page.locator(`${POST_MEMBERSHIP_MODAL} .bx--dropdown`);
+	await dropdown.waitFor({ state: 'visible', timeout: 5000 });
+	await dropdown.click();
+	await page.waitForTimeout(300);
+	await page
+		.locator(`${POST_MEMBERSHIP_MODAL} .bx--dropdown-item:has-text("${type}")`)
+		.first()
+		.click();
+	await page.waitForTimeout(300);
+}
+
+export async function fillPostMembershipPerson(page: Page, personName: string) {
+	const personField = page.locator(`${POST_MEMBERSHIP_MODAL} .bx--combo-box`);
+	await personField.waitFor({ state: 'visible', timeout: 5000 });
+	const input = personField.locator('input[role="combobox"]');
+	await input.click();
+	await page.waitForTimeout(300);
+	await input.fill(personName);
+	await page.waitForTimeout(500);
+	await personField
+		.locator(`.bx--list-box__menu-item:has-text("${personName}")`)
+		.first()
+		.click();
+	await page.waitForTimeout(300);
+}
+
+export async function savePostMembershipModal(page: Page) {
+	const primaryBtn = page.locator(`${POST_MEMBERSHIP_MODAL} .bx--btn--primary`);
+	await expect(primaryBtn).toBeEnabled({ timeout: 5000 });
+	await primaryBtn.click();
+	await page.waitForTimeout(500);
+}
+
+export async function deletePostMembership(page: Page, row: Locator) {
+	await row.getByRole('button', { name: 'ลบ' }).click();
+	const deleteModal = page.locator(`${POST_DELETE_MODAL} .bx--modal-container`);
+	await expect(deleteModal).toBeVisible({ timeout: 5000 });
+	await page
+		.locator(
+			`${POST_DELETE_MODAL} .bx--btn--danger, ${POST_DELETE_MODAL} .bx--btn--primary`,
+		)
+		.click();
+	await page.waitForTimeout(500);
+}
+
+export async function savePostModal(page: Page) {
+	const primaryBtn = page.locator(
+		'.post-modal .bx--modal-footer .bx--btn--primary',
+	);
+	await expect(primaryBtn).toBeEnabled({ timeout: 5000 });
+	await primaryBtn.click();
+	await page.waitForTimeout(500);
 }

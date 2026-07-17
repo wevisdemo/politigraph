@@ -5,22 +5,43 @@ import {
 } from '@carbon/icons-vue';
 import { enumOrganizationType } from '@politigraph/graphql/genql';
 import type { OrganizationWithPostsOption } from '~/composables/use-organizations-with-posts-options';
+import type { PeopleOption } from '~/composables/use-people-options';
 import type { MembershipProp } from '~/types/membership';
 import { RepresentativeLabel } from '~/types/membership';
 
-const props = defineProps<{
-	visible: boolean;
-	mode: 'add' | 'edit' | null;
-	membership: MembershipProp | null;
-	organizationsOptions?: OrganizationWithPostsOption[] | null;
-	disabled: boolean;
-	memberType: 'Person' | 'Organization';
-}>();
+type FixedPost = {
+	id: string;
+	role: string;
+	organizations: Array<{ id: string; name: string; classification: string }>;
+};
+
+const props = withDefaults(
+	defineProps<{
+		visible: boolean;
+		mode: 'add' | 'edit' | null;
+		membership: MembershipProp | null;
+		organizationsOptions?: OrganizationWithPostsOption[] | null;
+		disabled: boolean;
+		memberType: 'Person' | 'Organization';
+		variant?: 'member-fixed' | 'post-fixed';
+		fixedPost?: FixedPost | null;
+		peopleOptions?: PeopleOption[] | null;
+		organizationOptions?: Array<{ label: string; value: string }> | null;
+	}>(),
+	{
+		variant: 'member-fixed',
+		organizationsOptions: null,
+		fixedPost: null,
+		peopleOptions: null,
+		organizationOptions: null,
+	},
+);
 
 const emit = defineEmits<{
 	'update:visible': [value: boolean];
 	save: [dates: { start: string | null; end: string | null }];
 	cancel: [];
+	'member-type-change': [type: 'Person' | 'Organization'];
 }>();
 
 const genId = () => crypto.randomUUID();
@@ -132,6 +153,58 @@ const handleRoleInput = (selectedValue: string) => {
 	props.membership.posts[0].id = selected?.value ?? '';
 	props.membership.posts[0].role = selected?.label ?? '';
 };
+
+const resolvedClassification = computed(() =>
+	props.variant === 'post-fixed'
+		? props.fixedPost?.organizations[0]?.classification
+		: props.membership?.posts[0]?.organizations[0]?.classification,
+);
+
+const memberTypeOptions = [
+	{ label: 'Person', value: 'Person' },
+	{ label: 'Organization', value: 'Organization' },
+];
+
+const handleMemberTypeChange = (newType: string) => {
+	if (!props.membership) return;
+	const validType = memberTypeOptions.find((opt) => opt.value === newType);
+	if (!validType) return;
+	props.membership.memberType = validType.value as 'Person' | 'Organization';
+	props.membership.members = [];
+	emit('member-type-change', validType.value as 'Person' | 'Organization');
+};
+
+watch(
+	() => props.visible,
+	(visible) => {
+		if (visible && props.membership?.memberType) {
+			emit('member-type-change', props.membership.memberType);
+		}
+	},
+	{ immediate: true },
+);
+
+const handlePersonChange = (selectedValue: string) => {
+	if (!props.membership) return;
+	const selected = props.peopleOptions?.find(
+		(opt) => opt.value === selectedValue,
+	);
+	if (selected) {
+		props.membership.members = [{ id: selected.value, name: selected.name }];
+		props.membership.memberType = 'Person';
+	}
+};
+
+const handleOrgMemberChange = (selectedValue: string) => {
+	if (!props.membership) return;
+	const selected = props.organizationOptions?.find(
+		(opt) => opt.value === selectedValue,
+	);
+	if (selected) {
+		props.membership.members = [{ id: selected.value, name: selected.label }];
+		props.membership.memberType = 'Organization';
+	}
+};
 </script>
 
 <template>
@@ -151,57 +224,50 @@ const handleRoleInput = (selectedValue: string) => {
 
 		<template #content>
 			<div v-if="membership" class="flex flex-col gap-5">
-				<div class="flex justify-between gap-5">
-					<div class="relative w-1/2">
-						<cv-combo-box
-							v-model="membership.posts[0].organizations[0].classification"
-							title="Organization Classification*"
-							:options="organizationClassification"
-							item-value-key="value"
-							item-text-key="label"
-							auto-filter
-							auto-highlight
-							@change="(event: string) => onClassificationChange(event)"
-						/>
-					</div>
+				<div v-if="variant === 'post-fixed'" class="flex flex-col gap-5">
+					<p class="text-sm text-[#525252]">
+						Post:
+						<strong>{{ fixedPost?.role }}</strong>
+						— {{ fixedPost?.organizations[0]?.name }}
+					</p>
 
-					<div class="relative w-1/2">
-						<cv-combo-box
-							:key="membership.posts[0].organizations[0].classification"
-							v-model="membership.posts[0].organizations[0].id"
-							title="Organization Name*"
-							:options="
-								getOrganizationOptions(
-									membership.posts[0].organizations[0].classification,
-								)
-							"
-							:disabled="!membership.posts[0].organizations[0].classification"
-							item-value-key="value"
-							item-text-key="label"
-							auto-filter
-							auto-highlight
-							@change="(event: string) => handleOrgNameChange(event)"
-						/>
-					</div>
-				</div>
+					<cv-dropdown
+						:model-value="membership.memberType ?? ''"
+						label="Member Type*"
+						placeholder="Select member type"
+						@change="(event: string) => handleMemberTypeChange(event)"
+					>
+						<cv-dropdown-item
+							v-for="{ value, label } in memberTypeOptions"
+							:key="value"
+							:value="value"
+							>{{ label }}</cv-dropdown-item
+						>
+					</cv-dropdown>
 
-				<div class="flex w-full gap-5">
-					<div class="w-1/2">
-						<cv-combo-box
-							:key="membership.posts[0].organizations[0].id"
-							v-model="membership.posts[0].id"
-							:options="
-								getPostOptionsForOrg(membership.posts[0].organizations[0].id)
-							"
-							title="Post*"
-							:disabled="!membership.posts[0].organizations[0].id"
-							item-value-key="value"
-							item-text-key="label"
-							auto-filter
-							auto-highlight
-							@change="(event: string) => handleRoleInput(event)"
-						/>
-					</div>
+					<cv-combo-box
+						v-if="membership.memberType === 'Person'"
+						:model-value="membership.members?.[0]?.id ?? ''"
+						title="Person*"
+						:options="peopleOptions ?? []"
+						item-value-key="value"
+						item-text-key="label"
+						auto-filter
+						auto-highlight
+						@change="(event: string) => handlePersonChange(event)"
+					/>
+
+					<cv-combo-box
+						v-else-if="membership.memberType === 'Organization'"
+						:model-value="membership.members?.[0]?.id ?? ''"
+						title="Organization*"
+						:options="organizationOptions ?? []"
+						item-value-key="value"
+						item-text-key="label"
+						auto-filter
+						auto-highlight
+						@change="(event: string) => handleOrgMemberChange(event)"
+					/>
 
 					<div class="flex w-1/2 gap-5">
 						<div v-for="field in dateFields" :key="field.key" class="relative">
@@ -223,10 +289,89 @@ const handleRoleInput = (selectedValue: string) => {
 					</div>
 				</div>
 
+				<template v-else>
+					<div class="flex justify-between gap-5">
+						<div class="relative w-1/2">
+							<cv-combo-box
+								v-model="membership.posts[0].organizations[0].classification"
+								title="Organization Classification*"
+								:options="organizationClassification"
+								item-value-key="value"
+								item-text-key="label"
+								auto-filter
+								auto-highlight
+								@change="(event: string) => onClassificationChange(event)"
+							/>
+						</div>
+
+						<div class="relative w-1/2">
+							<cv-combo-box
+								:key="membership.posts[0].organizations[0].classification"
+								v-model="membership.posts[0].organizations[0].id"
+								title="Organization Name*"
+								:options="
+									getOrganizationOptions(
+										membership.posts[0].organizations[0].classification,
+									)
+								"
+								:disabled="!membership.posts[0].organizations[0].classification"
+								item-value-key="value"
+								item-text-key="label"
+								auto-filter
+								auto-highlight
+								@change="(event: string) => handleOrgNameChange(event)"
+							/>
+						</div>
+					</div>
+
+					<div class="flex w-full gap-5">
+						<div class="w-1/2">
+							<cv-combo-box
+								:key="membership.posts[0].organizations[0].id"
+								v-model="membership.posts[0].id"
+								:options="
+									getPostOptionsForOrg(membership.posts[0].organizations[0].id)
+								"
+								title="Post*"
+								:disabled="!membership.posts[0].organizations[0].id"
+								item-value-key="value"
+								item-text-key="label"
+								auto-filter
+								auto-highlight
+								@change="(event: string) => handleRoleInput(event)"
+							/>
+						</div>
+
+						<div class="flex w-1/2 gap-5">
+							<div
+								v-for="field in dateFields"
+								:key="field.key"
+								class="relative"
+							>
+								<cv-date-picker
+									v-model="modalDate[field.key]"
+									:date-label="field.label"
+									kind="single"
+									class="membership-datepicker"
+									:cal-options="{ dateFormat: 'Y-m-d' }"
+								/>
+								<button
+									v-if="modalDate[field.key]"
+									class="absolute bottom-4 right-0 m-auto size-fit cursor-pointer"
+									@click="modalDate[field.key] = null"
+								>
+									<Close16 />
+								</button>
+							</div>
+						</div>
+					</div>
+				</template>
+
 				<template
 					v-if="
+						variant === 'member-fixed' &&
 						memberType === 'Person' &&
-						membership.posts[0].organizations[0].classification ===
+						resolvedClassification ===
 							enumOrganizationType.HOUSE_OF_REPRESENTATIVE
 					"
 				>
@@ -274,9 +419,9 @@ const handleRoleInput = (selectedValue: string) => {
 
 				<template
 					v-else-if="
+						variant === 'member-fixed' &&
 						memberType === 'Person' &&
-						membership.posts[0].organizations[0].classification ===
-							enumOrganizationType.HOUSE_OF_SENATE
+						resolvedClassification === enumOrganizationType.HOUSE_OF_SENATE
 					"
 				>
 					<h4 class="font-normal">Senates Details</h4>

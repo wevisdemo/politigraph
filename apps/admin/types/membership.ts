@@ -27,5 +27,7 @@ export type MembershipProp = {
 			classification: string;
 		}>;
 	}>;
+	members?: Array<{ id: string; name: string }>;
+	memberType?: 'Person' | 'Organization' | '';
 	mode?: MembershipMode;
 };
