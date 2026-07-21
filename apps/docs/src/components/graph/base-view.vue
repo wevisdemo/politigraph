@@ -6,6 +6,7 @@ import { nextTick, ref } from 'vue';
 const props = defineProps<{
 	fit?: () => void;
 	isSidebarEmpty?: boolean;
+	fillHeight?: boolean;
 }>();
 
 const isMaximized = ref(false);
@@ -21,7 +22,13 @@ async function toggleMaximize() {
 	<Teleport to="body" :disabled="!isMaximized">
 		<div
 			class="flex flex-col bg-gray-100 md:flex-row"
-			:class="isMaximized ? 'fixed inset-0 z-20' : 'md:h-128'"
+			:class="
+				isMaximized
+					? 'fixed inset-0 z-20'
+					: fillHeight
+						? 'md:h-[max(32rem,calc(100vh-22rem))]'
+						: 'md:h-128'
+			"
 		>
 			<div class="relative flex min-h-80 flex-col overflow-hidden md:flex-1">
 				<slot />

@@ -1,0 +1,29 @@
+---
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+import ExploreGraph from '../components/explore/explore-graph.vue';
+---
+
+<StarlightPage
+	frontmatter={{
+		title: 'สำรวจข้อมูล',
+		template: 'splash',
+		tableOfContents: false,
+		pagefind: false,
+		prev: false,
+		next: false,
+	}}
+>
+	<p>
+		ค้นหาบุคคล องค์กร การลงมติ หรือกฎหมายที่สนใจ
+		แล้วสำรวจความเชื่อมโยงกับข้อมูลอื่นๆ ในรูปแบบกราฟ โดยเลือกโหนดใดๆ
+		ในกราฟเพื่อดูข้อมูลโดยรอบของโหนดนั้นต่อไปได้เรื่อยๆ
+	</p>
+	<ExploreGraph client:load />
+</StarlightPage>
+
+<style is:global>
+	/* Beat starlight's html:not([data-has-sidebar]) content width rule */
+	:root:not([data-has-sidebar]) {
+		--sl-content-width: 100%;
+	}
+</style>

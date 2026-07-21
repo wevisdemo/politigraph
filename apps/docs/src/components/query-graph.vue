@@ -26,7 +26,8 @@ import {
 } from 'vue';
 import { nodeIconMap } from '../constants/schema';
 import {
-	objects,
+	getObjectLabel,
+	typenameSchemaMap,
 	type GraphqlDataResponse,
 	type GraphqlObject,
 } from '../utils/schema';
@@ -94,17 +95,13 @@ const drawNodeHover: NodeHoverDrawingFunction = (context, data, settings) => {
 
 const props = defineProps<{
 	data: GraphqlDataResponse;
+	fillHeight?: boolean;
+	labelLang?: 'en' | 'th';
 }>();
 
-const typenameSchemaMap = new Map(
-	objects.map((obj) => [
-		obj.name,
-		{
-			...obj,
-			description: obj.description?.split('อ้างอิงจาก').at(0)?.trim(),
-		},
-	]),
-);
+const emit = defineEmits<{
+	nodeSelect: [node: GraphqlObject];
+}>();
 
 const graph = computed(() => {
 	const nodes: Record<string, GraphqlObject> = {};
@@ -115,7 +112,7 @@ const graph = computed(() => {
 		(value) => typeof value !== 'string',
 	);
 
-	if (!initialNodes) {
+	if (!initialNodes?.length) {
 		return { nodes, edges, layouts };
 	}
 
@@ -217,7 +214,7 @@ function rebuildGraph() {
 			color: NODE_COLOR,
 			pictogramColor: '#ffffff',
 			image: getIconDataUri(node.__typename),
-			label: truncateLabel(getObjectLabel(node)),
+			label: truncateLabel(getObjectLabel(node, props.labelLang)),
 		});
 	});
 
@@ -371,8 +368,14 @@ onBeforeUnmount(() => {
 
 watch(graph, rebuildGraph);
 
-watch(selectedNodes, () => {
+watch(selectedNodes, ([id]) => {
 	sigma?.refresh({ skipIndexation: true });
+
+	const node = id ? graph.value.nodes[id] : undefined;
+
+	if (node) {
+		emit('nodeSelect', node);
+	}
 });
 
 function fitGraph() {
@@ -393,31 +396,11 @@ const selectedNode = computed(() => {
 		fields: Object.entries(node).filter(([key]) => key !== '__typename'),
 	};
 });
-
-function getObjectLabel(obj: GraphqlObject) {
-	return (obj.name_en ||
-		obj.name ||
-		obj.label ||
-		obj.nickname ||
-		obj.title ||
-		obj.note ||
-		obj.option_en ||
-		obj.option ||
-		(obj.start_date
-			? `${getShortDateString(obj.start_date)} - ${getShortDateString(obj.end_date)}`
-			: '')) as string;
-}
-
-function getShortDateString(date: unknown) {
-	return typeof date === 'string'
-		? new Date(date).toLocaleDateString('TH-th', { dateStyle: 'short' })
-		: 'now';
-}
 </script>
 
 <template>
 	<div class="relative">
-		<BaseView :fit="fitGraph">
+		<BaseView :fit="fitGraph" :fillHeight="props.fillHeight">
 			<div ref="container" class="not-content min-h-0 w-full flex-1"></div>
 			<template v-slot:legend>
 				<Legend
@@ -466,7 +449,7 @@ function getShortDateString(date: unknown) {
 										class="cursor-pointer text-left text-blue-400"
 										@click="selectedNodes = [node.id]"
 									>
-										{{ getObjectLabel(node) }}
+										{{ getObjectLabel(node, labelLang) }}
 									</span>
 								</li>
 							</ul>
