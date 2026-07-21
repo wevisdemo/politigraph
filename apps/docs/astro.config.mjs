@@ -81,6 +81,13 @@ export default defineConfig({
 					},
 					autogenerate: { directory: 'schema' },
 				},
+				{
+					label: 'สำรวจข้อมูล',
+					translations: {
+						en: 'Explore',
+					},
+					link: '/explore',
+				},
 			],
 			tableOfContents: false,
 			lastUpdated: true,

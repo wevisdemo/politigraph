@@ -12,7 +12,7 @@ defineProps<{
 </script>
 
 <template>
-	<div class="mt-0 flex flex-row items-center gap-1">
+	<div class="mt-0 flex shrink-0 flex-row items-center gap-1 whitespace-nowrap">
 		<component v-if="nodeIconMap.has(term)" :is="nodeIconMap.get(term)" />
 		<div
 			v-else

@@ -12,6 +12,7 @@ import {
 import Graph from 'graphology';
 import type Sigma from 'sigma';
 import type {
+	EdgeLabelDrawingFunction,
 	NodeHoverDrawingFunction,
 	NodeLabelDrawingFunction,
 } from 'sigma/rendering';
@@ -25,8 +26,10 @@ import {
 	watch,
 } from 'vue';
 import { nodeIconMap } from '../constants/schema';
+import { useTranslations, type Language } from '../utils/i18n';
 import {
-	objects,
+	getObjectLabel,
+	typenameSchemaMap,
 	type GraphqlDataResponse,
 	type GraphqlObject,
 } from '../utils/schema';
@@ -41,6 +44,10 @@ const MAX_GRAPH_LABEL_LENGTH = 20;
 const NODE_RADIUS = 14;
 const NODE_COLOR = '#4466cc';
 const EDGE_COLOR = '#bbb';
+const DIMMED_NODE_COLOR = '#e5e7eb';
+const DIMMED_PICTOGRAM_COLOR = '#f9fafb';
+const DIMMED_EDGE_COLOR = '#eeeeee';
+const DIMMED_LABEL_COLOR = '#cccccc';
 const LABEL_GAP = 4;
 const LABEL_PADDING = 4;
 
@@ -51,7 +58,10 @@ function getLabelCenterY(data: { y: number; size: number }, labelSize: number) {
 const drawNodeLabel: NodeLabelDrawingFunction = (context, data, settings) => {
 	if (!data.label) return;
 
-	context.fillStyle = settings.labelColor.color ?? '#000';
+	context.fillStyle =
+		(data as { labelColor?: string }).labelColor ??
+		settings.labelColor.color ??
+		'#000';
 	context.font = `${settings.labelWeight} ${settings.labelSize}px ${settings.labelFont}`;
 	context.textAlign = 'center';
 	context.textBaseline = 'middle';
@@ -92,31 +102,85 @@ const drawNodeHover: NodeHoverDrawingFunction = (context, data, settings) => {
 	drawNodeLabel(context, data, settings);
 };
 
+const drawEdgeLabel: EdgeLabelDrawingFunction = (
+	context,
+	edgeData,
+	sourceData,
+	targetData,
+	settings,
+) => {
+	const label = edgeData.label;
+	if (!label) return;
+
+	const size = settings.edgeLabelSize;
+	context.font = `${settings.edgeLabelWeight} ${size}px ${settings.edgeLabelFont}`;
+
+	let sx = sourceData.x;
+	let sy = sourceData.y;
+	let tx = targetData.x;
+	let ty = targetData.y;
+	const dx = tx - sx;
+	const dy = ty - sy;
+	const d = Math.sqrt(dx * dx + dy * dy);
+	if (d < sourceData.size + targetData.size) return;
+
+	sx += (dx * sourceData.size) / d;
+	sy += (dy * sourceData.size) / d;
+	tx -= (dx * targetData.size) / d;
+	ty -= (dy * targetData.size) / d;
+
+	const angle = Math.atan2(ty - sy, tx - sx);
+	const flipped = angle > Math.PI / 2 || angle < -Math.PI / 2;
+	const textWidth = context.measureText(label).width;
+
+	context.save();
+	context.translate((sx + tx) / 2, (sy + ty) / 2);
+	context.rotate(flipped ? angle + Math.PI : angle);
+	context.textAlign = 'center';
+	context.textBaseline = 'middle';
+	context.lineJoin = 'round';
+	context.lineWidth = 4;
+	context.strokeStyle = '#fff';
+	context.strokeText(label, 0, -(edgeData.size / 2 + size / 2));
+	context.fillStyle = settings.edgeLabelColor.color ?? NODE_COLOR;
+	context.fillText(label, 0, -(edgeData.size / 2 + size / 2));
+	context.restore();
+
+	context.textAlign = 'left';
+	context.textBaseline = 'alphabetic';
+};
+
 const props = defineProps<{
 	data: GraphqlDataResponse;
+	fillHeight?: boolean;
+	labelLang?: Language;
+	getNodeSizeScale?: (node: GraphqlObject) => number;
+	getNodeColor?: (node: GraphqlObject) => string;
+	edgeColor?: string;
+	immersive?: boolean;
 }>();
 
-const typenameSchemaMap = new Map(
-	objects.map((obj) => [
-		obj.name,
-		{
-			...obj,
-			description: obj.description?.split('อ้างอิงจาก').at(0)?.trim(),
-		},
-	]),
-);
+const t = useTranslations(props.labelLang ?? 'en');
+
+const emit = defineEmits<{
+	nodeSelect: [node: GraphqlObject];
+	nodeActivate: [node: GraphqlObject];
+}>();
 
 const graph = computed(() => {
 	const nodes: Record<string, GraphqlObject> = {};
-	const edges: Record<string, { source: string; target: string }> = {};
+	const edges: Record<
+		string,
+		{ source: string; target: string; label: string }
+	> = {};
 	const layouts: Record<string, { x: number; y: number }> = {};
 
 	const initialNodes = Object.values(props.data).find(
 		(value) => typeof value !== 'string',
 	);
 
-	if (!initialNodes) {
-		return { nodes, edges, layouts };
+	if (!initialNodes?.length) {
+		return { nodes, edges, layouts, rootId: undefined };
 	}
 
 	function collectGraphItems(
@@ -133,7 +197,7 @@ const graph = computed(() => {
 		nodes[node.id] = node;
 		layouts[node.id] = { x: r * Math.cos(theta), y: r * Math.sin(theta) };
 
-		Object.values(node).forEach((value) => {
+		Object.entries(node).forEach(([relationName, value]) => {
 			if (Array.isArray(value)) {
 				value
 					.sort((a, z) => a.id.localeCompare(z.id))
@@ -141,6 +205,7 @@ const graph = computed(() => {
 						edges[`${node.id}->${child.id}`] = {
 							source: node.id,
 							target: child.id,
+							label: relationName,
 						};
 
 						if (!nodes[child.id]) {
@@ -163,11 +228,107 @@ const graph = computed(() => {
 	);
 	selectedNodes.value = [initialNodes[0].id];
 
-	return { nodes, edges, layouts };
+	return { nodes, edges, layouts, rootId: initialNodes[0].id };
 });
+
+const shortestPathIndex = computed(() => {
+	const { edges, rootId } = graph.value;
+	const distance = new Map<string, number>();
+	const adjacency = new Map<string, { node: string; edge: string }[]>();
+
+	Object.entries(edges).forEach(([edge, { source, target }]) => {
+		adjacency.set(source, [
+			...(adjacency.get(source) ?? []),
+			{ node: target, edge },
+		]);
+		adjacency.set(target, [
+			...(adjacency.get(target) ?? []),
+			{ node: source, edge },
+		]);
+	});
+
+	if (rootId) {
+		const queue = [rootId];
+		distance.set(rootId, 0);
+
+		while (queue.length) {
+			const current = queue.shift()!;
+
+			adjacency.get(current)?.forEach(({ node }) => {
+				if (!distance.has(node)) {
+					distance.set(node, distance.get(current)! + 1);
+					queue.push(node);
+				}
+			});
+		}
+	}
+
+	return { distance, adjacency };
+});
+
+function collectPathToRoot(nodeId?: string) {
+	const nodes = new Set<string>();
+	const edges = new Set<string>();
+	const { distance, adjacency } = shortestPathIndex.value;
+
+	if (nodeId !== undefined && distance.has(nodeId)) {
+		const queue = [nodeId];
+		nodes.add(nodeId);
+
+		while (queue.length) {
+			const current = queue.shift()!;
+
+			adjacency.get(current)?.forEach(({ node, edge }) => {
+				if (distance.get(node) === distance.get(current)! - 1) {
+					edges.add(edge);
+
+					if (!nodes.has(node)) {
+						nodes.add(node);
+						queue.push(node);
+					}
+				}
+			});
+		}
+	}
+
+	return { nodes, edges };
+}
+
+const hoveredPathNodes = new Set<string>();
+const hoveredPathEdges = new Set<string>();
+
+function setHoveredPath(nodeId?: string) {
+	const { nodes, edges } = collectPathToRoot(nodeId);
+
+	hoveredPathNodes.clear();
+	hoveredPathEdges.clear();
+	nodes.forEach((node) => hoveredPathNodes.add(node));
+	edges.forEach((edge) => hoveredPathEdges.add(edge));
+
+	syncEdgeLayerOrder();
+	sigma?.refresh({ skipIndexation: true });
+}
+
+function syncEdgeLayerOrder() {
+	if (!sigma) return;
+
+	const { nodes, edges } = sigma.getCanvases();
+
+	if (hoveredPathEdges.size || selectedPath.value) {
+		nodes.after(edges);
+	} else {
+		nodes.before(edges);
+	}
+}
 
 const container = ref<HTMLDivElement>();
 const selectedNodes = ref<string[]>([]);
+
+const selectedPath = computed(() => {
+	const [id] = selectedNodes.value;
+
+	return id && id !== graph.value.rootId ? collectPathToRoot(id) : null;
+});
 
 const graphology = new Graph();
 let sigma: Sigma | undefined;
@@ -213,18 +374,19 @@ function rebuildGraph() {
 		graphology.addNode(node.id, {
 			x,
 			y,
-			size: NODE_RADIUS,
-			color: NODE_COLOR,
+			size: NODE_RADIUS * (props.getNodeSizeScale?.(node) ?? 1),
+			color: props.getNodeColor?.(node) ?? NODE_COLOR,
 			pictogramColor: '#ffffff',
 			image: getIconDataUri(node.__typename),
-			label: truncateLabel(getObjectLabel(node)),
+			label: truncateLabel(getObjectLabel(node, props.labelLang)),
 		});
 	});
 
-	Object.entries(edges).forEach(([id, { source, target }]) => {
+	Object.entries(edges).forEach(([id, { source, target, label }]) => {
 		graphology.addEdgeWithKey(id, source, target, {
 			size: 1,
-			color: EDGE_COLOR,
+			color: props.edgeColor ?? EDGE_COLOR,
+			relationLabel: label,
 		});
 	});
 
@@ -297,9 +459,62 @@ onMounted(async () => {
 		labelColor: { color: '#333333' },
 		labelDensity: 4,
 		labelGridCellSize: 50,
-		nodeReducer: (id, data) =>
-			selectedNodes.value.includes(id) ? { ...data, highlighted: true } : data,
+		zIndex: true,
+		renderEdgeLabels: true,
+		edgeLabelSize: 10,
+		edgeLabelWeight: 'bold',
+		edgeLabelFont: 'IBM Plex Sans Thai Looped, sans-serif',
+		edgeLabelColor: { color: NODE_COLOR },
+		defaultDrawEdgeLabel: drawEdgeLabel,
+		nodeReducer: (id, data) => {
+			if (
+				selectedNodes.value.includes(id) ||
+				hoveredPathNodes.has(id) ||
+				selectedPath.value?.nodes.has(id)
+			) {
+				return { ...data, highlighted: true };
+			}
+
+			if (selectedPath.value && !selectedPath.value.nodes.has(id)) {
+				return {
+					...data,
+					color: DIMMED_NODE_COLOR,
+					pictogramColor: DIMMED_PICTOGRAM_COLOR,
+					labelColor: DIMMED_LABEL_COLOR,
+					zIndex: 0,
+				};
+			}
+
+			return data;
+		},
+		edgeReducer: (id, data) => {
+			if (!hoveredPathEdges.has(id) && !selectedPath.value?.edges.has(id)) {
+				return selectedPath.value
+					? { ...data, color: DIMMED_EDGE_COLOR, zIndex: 0 }
+					: data;
+			}
+
+			const { distance } = shortestPathIndex.value;
+			const isForward =
+				(distance.get(graphology.source(id)) ?? 0) <
+				(distance.get(graphology.target(id)) ?? 0);
+
+			return {
+				...data,
+				color: NODE_COLOR,
+				size: 2,
+				zIndex: 1,
+				forceLabel: true,
+				label: isForward ? data.relationLabel : undefined,
+			};
+		},
 	});
+
+	const canvases = sigma.getCanvases();
+	canvases.hovers.before(canvases.edgeLabels);
+
+	sigma.on('enterNode', ({ node }) => setHoveredPath(node));
+	sigma.on('leaveNode', () => setHoveredPath());
 
 	let draggedNode: SimNode | undefined;
 	let didDrag = false;
@@ -309,7 +524,11 @@ onMounted(async () => {
 			didDrag = false;
 			return;
 		}
-		selectedNodes.value = [node];
+		if (selectedNodes.value[0] === node) {
+			emit('nodeActivate', graph.value.nodes[node]);
+		} else {
+			selectedNodes.value = [node];
+		}
 	});
 
 	sigma.on('clickStage', () => {
@@ -369,10 +588,22 @@ onBeforeUnmount(() => {
 	sigma?.kill();
 });
 
-watch(graph, rebuildGraph);
+watch(graph, () => {
+	hoveredPathNodes.clear();
+	hoveredPathEdges.clear();
+	rebuildGraph();
+	fitGraph();
+});
 
-watch(selectedNodes, () => {
+watch(selectedNodes, ([id]) => {
+	syncEdgeLayerOrder();
 	sigma?.refresh({ skipIndexation: true });
+
+	const node = id ? graph.value.nodes[id] : undefined;
+
+	if (node) {
+		emit('nodeSelect', node);
+	}
 });
 
 function fitGraph() {
@@ -393,32 +624,19 @@ const selectedNode = computed(() => {
 		fields: Object.entries(node).filter(([key]) => key !== '__typename'),
 	};
 });
-
-function getObjectLabel(obj: GraphqlObject) {
-	return (obj.name_en ||
-		obj.name ||
-		obj.label ||
-		obj.nickname ||
-		obj.title ||
-		obj.note ||
-		obj.option_en ||
-		obj.option ||
-		(obj.start_date
-			? `${getShortDateString(obj.start_date)} - ${getShortDateString(obj.end_date)}`
-			: '')) as string;
-}
-
-function getShortDateString(date: unknown) {
-	return typeof date === 'string'
-		? new Date(date).toLocaleDateString('TH-th', { dateStyle: 'short' })
-		: 'now';
-}
 </script>
 
 <template>
-	<div class="relative">
-		<BaseView :fit="fitGraph">
+	<div class="relative" :class="{ 'h-full': props.immersive }">
+		<BaseView
+			:fit="fitGraph"
+			:fillHeight="props.fillHeight"
+			:immersive="props.immersive"
+		>
 			<div ref="container" class="not-content min-h-0 w-full flex-1"></div>
+			<template v-slot:overlay>
+				<slot name="overlay" />
+			</template>
 			<template v-slot:legend>
 				<Legend
 					v-for="obj in typenameSchemaMap
@@ -466,19 +684,21 @@ function getShortDateString(date: unknown) {
 										class="cursor-pointer text-left text-blue-400"
 										@click="selectedNodes = [node.id]"
 									>
-										{{ getObjectLabel(node) }}
+										{{ getObjectLabel(node, labelLang) }}
 									</span>
 								</li>
 							</ul>
 						</li>
 					</ul>
 					<p class="mt-auto text-xs italic leading-tight text-gray-400">
-						*Only showing nodes, properties, and relationships from the query
-						<a href="/docs/schema" class="text-blue-400">see full schema</a>
+						{{ t.graphPartialSchemaNote }}
+						<a href="/docs/schema" class="text-blue-400">{{
+							t.graphFullSchemaLink
+						}}</a>
 					</p>
 				</template>
 				<p v-else class="m-auto text-center text-sm italic text-gray-400">
-					Select any node to see the description and properties
+					{{ t.graphSelectNodeHint }}
 				</p>
 			</template>
 		</BaseView>

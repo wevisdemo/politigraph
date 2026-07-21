@@ -23,8 +23,12 @@ const armor = new ApolloArmor({
 	costLimit: {
 		enabled: false,
 	},
+	maxTokens: {
+		n: 10000,
+	},
+	// Docs explore center node queries use up to 91 aliases (Organization)
 	maxAliases: {
-		n: 10,
+		n: 120,
 	},
 	maxDepth: {
 		n: 10,

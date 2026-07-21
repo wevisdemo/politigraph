@@ -1,0 +1,59 @@
+---
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+import ExploreGraph from '../../components/explore/explore-graph.vue';
+import { getLanguage, useTranslations } from '../../utils/i18n';
+
+export function getStaticPaths() {
+	return [{ params: { locale: undefined } }, { params: { locale: 'en' } }];
+}
+
+const lang = getLanguage(Astro.params.locale);
+const t = useTranslations(lang);
+---
+
+<StarlightPage
+	frontmatter={{
+		title: t.exploreTitle,
+		template: 'splash',
+		tableOfContents: false,
+		pagefind: false,
+		prev: false,
+		next: false,
+	}}
+>
+	<ExploreGraph client:load lang={lang} />
+</StarlightPage>
+
+<style is:global>
+	:root:not([data-has-sidebar]) {
+		--sl-content-width: 100%;
+	}
+
+	.main-frame {
+		padding-top: var(--sl-nav-height);
+		padding-inline-start: 0;
+	}
+
+	main {
+		padding: 0;
+	}
+
+	.content-panel {
+		padding: 0;
+		border: none;
+	}
+
+	.content-panel:first-of-type,
+	main footer {
+		display: none;
+	}
+
+	.content-panel .sl-container {
+		max-width: none;
+		margin: 0;
+	}
+
+	.content-panel:last-of-type .sl-container > div:last-child {
+		margin: 1rem var(--sl-content-pad-x);
+	}
+</style>

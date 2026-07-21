@@ -1,4 +1,5 @@
 import definitions from '@politigraph/graphql/dist/definitions.json';
+import type { Language } from './i18n';
 
 export interface GraphqlObject {
 	__typename: string;
@@ -52,6 +53,42 @@ export type SchemaNode = (
 	| typeof interfaces
 	| typeof enums
 )[number];
+
+export const typenameSchemaMap = new Map(
+	objects.map((obj) => [
+		obj.name,
+		{
+			...obj,
+			description: obj.description?.split('อ้างอิงจาก').at(0)?.trim(),
+		},
+	]),
+);
+
+export function getObjectLabel(
+	obj: GraphqlObject,
+	preferredLang: Language = 'en',
+) {
+	const [name, option] =
+		preferredLang === 'th'
+			? [obj.name || obj.name_en, obj.option || obj.option_en]
+			: [obj.name_en || obj.name, obj.option_en || obj.option];
+
+	return (name ||
+		obj.label ||
+		obj.nickname ||
+		obj.title ||
+		obj.note ||
+		option ||
+		(obj.start_date
+			? `${getShortDateString(obj.start_date)} - ${getShortDateString(obj.end_date)}`
+			: '')) as string;
+}
+
+function getShortDateString(date: unknown) {
+	return typeof date === 'string'
+		? new Date(date).toLocaleDateString('TH-th', { dateStyle: 'short' })
+		: 'now';
+}
 
 function parseNodeFields(
 	fields?: readonly {
