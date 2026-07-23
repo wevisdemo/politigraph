@@ -98,6 +98,7 @@ const props = defineProps<{
 	fillHeight?: boolean;
 	labelLang?: 'en' | 'th';
 	sizeScale?: number;
+	immersive?: boolean;
 }>();
 
 const sizeScale = props.sizeScale ?? 1;
@@ -465,8 +466,12 @@ const selectedNode = computed(() => {
 </script>
 
 <template>
-	<div class="relative">
-		<BaseView :fit="fitGraph" :fillHeight="props.fillHeight">
+	<div class="relative" :class="{ 'h-full': props.immersive }">
+		<BaseView
+			:fit="fitGraph"
+			:fillHeight="props.fillHeight"
+			:immersive="props.immersive"
+		>
 			<div ref="container" class="not-content min-h-0 w-full flex-1"></div>
 			<template v-slot:legend>
 				<Legend

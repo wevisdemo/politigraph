@@ -7,6 +7,7 @@ const props = defineProps<{
 	fit?: () => void;
 	isSidebarEmpty?: boolean;
 	fillHeight?: boolean;
+	immersive?: boolean;
 }>();
 
 const isMaximized = ref(false);
@@ -25,9 +26,11 @@ async function toggleMaximize() {
 			:class="
 				isMaximized
 					? 'fixed inset-0 z-20'
-					: fillHeight
-						? 'md:h-[max(32rem,calc(100vh-22rem))]'
-						: 'md:h-128'
+					: immersive
+						? 'h-full w-full'
+						: fillHeight
+							? 'md:h-[max(32rem,calc(100vh-22rem))]'
+							: 'md:h-128'
 			"
 		>
 			<div class="relative flex min-h-80 flex-col overflow-hidden md:flex-1">
@@ -38,6 +41,7 @@ async function toggleMaximize() {
 					<slot name="legend" />
 				</div>
 				<button
+					v-if="!immersive"
 					class="bottom absolute left-0 top-0 m-0 flex size-6 cursor-pointer items-center justify-center rounded-br bg-gray-200 text-gray-700 hover:text-black"
 					@click="toggleMaximize"
 					:aria-label="isMaximized ? 'Minimize' : 'Maximize'"
@@ -48,7 +52,7 @@ async function toggleMaximize() {
 			</div>
 			<div
 				class="mt-0 flex h-full max-h-80 flex-col gap-3 overflow-y-scroll bg-gray-800 p-3 text-white md:max-h-none"
-				:class="isMaximized ? 'md:w-96' : 'md:w-64'"
+				:class="isMaximized || immersive ? 'md:w-96' : 'md:w-64'"
 			>
 				<slot name="sidebar" />
 			</div>

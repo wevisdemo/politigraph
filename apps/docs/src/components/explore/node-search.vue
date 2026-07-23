@@ -7,13 +7,17 @@ import { getObjectLabel, type GraphqlObject } from '../../utils/schema';
 
 const SEARCH_DEBOUNCE_DELAY = 300;
 
+interface ResultGroup {
+	typename: string;
+	nodes: GraphqlObject[];
+}
+
 const emit = defineEmits<{
 	select: [node: GraphqlObject];
 }>();
 
-const selectedTypeName = ref(searchableTypes[0].name);
 const keyword = ref('');
-const results = ref<GraphqlObject[]>([]);
+const groups = ref<ResultGroup[]>([]);
 const isLoading = ref(false);
 const isDropdownOpen = ref(false);
 const errorMessage = ref('');
@@ -22,7 +26,7 @@ let debounceTimer: ReturnType<typeof setTimeout> | undefined;
 let latestRequestId = 0;
 let skipNextSearch = false;
 
-watch([keyword, selectedTypeName], () => {
+watch(keyword, () => {
 	if (skipNextSearch) {
 		skipNextSearch = false;
 		return;
@@ -32,7 +36,7 @@ watch([keyword, selectedTypeName], () => {
 	errorMessage.value = '';
 
 	if (!keyword.value.trim()) {
-		results.value = [];
+		groups.value = [];
 		isDropdownOpen.value = false;
 		return;
 	}
@@ -42,20 +46,22 @@ watch([keyword, selectedTypeName], () => {
 
 async function search() {
 	const requestId = ++latestRequestId;
-	const searchableType = searchableTypes.find(
-		(type) => type.name === selectedTypeName.value,
-	)!;
 
 	isLoading.value = true;
 
 	try {
-		const { data } = await fetchGraphql(buildSearchQuery(searchableType), {
+		const { data } = await fetchGraphql(buildSearchQuery(), {
 			keyword: keyword.value.trim(),
 		});
 
 		if (requestId !== latestRequestId) return;
 
-		results.value = Object.values(data).flat();
+		groups.value = Object.values(data)
+			.map((nodes, index) => ({
+				typename: searchableTypes[index].name,
+				nodes,
+			}))
+			.filter((group) => group.nodes.length > 0);
 		isDropdownOpen.value = true;
 	} catch (error) {
 		if (requestId !== latestRequestId) return;
@@ -77,38 +83,38 @@ function selectNode(node: GraphqlObject) {
 </script>
 
 <template>
-	<div class="flex flex-col gap-2 sm:flex-row">
-		<select
-			v-model="selectedTypeName"
-			class="rounded border border-gray-300 bg-white px-2 py-2 text-sm dark:border-gray-700 dark:bg-gray-800"
-			aria-label="Node type"
+	<div class="relative">
+		<input
+			v-model="keyword"
+			type="text"
+			role="combobox"
+			:aria-expanded="isDropdownOpen"
+			placeholder="พิมพ์คำค้นหา เช่น ชื่อบุคคล องค์กร หรือกฎหมาย"
+			class="w-full rounded-full border border-gray-300 bg-white px-5 py-3 text-sm shadow-lg outline-none focus:border-blue-500 dark:border-gray-700 dark:bg-gray-800"
+			@focus="isDropdownOpen = groups.length > 0"
+			@blur="isDropdownOpen = false"
+		/>
+		<div
+			v-if="isLoading"
+			class="absolute right-5 top-1/2 size-4 -translate-y-1/2 animate-spin rounded-full border-2 border-gray-300 border-t-gray-700 dark:border-gray-600 dark:border-t-gray-200"
+		></div>
+		<div
+			v-if="isDropdownOpen"
+			class="absolute z-10 mt-2 max-h-96 w-full overflow-y-auto rounded-2xl border border-gray-300 bg-white p-1 shadow-xl dark:border-gray-700 dark:bg-gray-800"
 		>
-			<option v-for="{ name } in searchableTypes" :key="name" :value="name">
-				{{ name }}
-			</option>
-		</select>
-		<div class="relative flex-1">
-			<input
-				v-model="keyword"
-				type="text"
-				role="combobox"
-				:aria-expanded="isDropdownOpen"
-				placeholder="พิมพ์คำค้นหา เช่น ชื่อบุคคล องค์กร หรือกฎหมาย"
-				class="w-full rounded border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-800"
-				@focus="isDropdownOpen = results.length > 0"
-				@blur="isDropdownOpen = false"
-			/>
-			<div
-				v-if="isLoading"
-				class="absolute right-3 top-1/2 size-4 -translate-y-1/2 animate-spin rounded-full border-2 border-gray-300 border-t-gray-700 dark:border-gray-600 dark:border-t-gray-200"
-			></div>
 			<ul
-				v-if="isDropdownOpen"
-				class="absolute z-10 mt-1 flex max-h-80 w-full list-none flex-col overflow-y-auto rounded border border-gray-300 bg-white p-0 shadow-lg dark:border-gray-700 dark:bg-gray-800"
+				v-for="group in groups"
+				:key="group.typename"
+				class="m-0 list-none p-0"
 			>
-				<li v-for="node in results" :key="node.id" class="mt-0">
+				<li
+					class="mt-0 px-3 pb-1 pt-2 text-xs font-bold uppercase tracking-wide text-gray-400"
+				>
+					{{ group.typename }}
+				</li>
+				<li v-for="node in group.nodes" :key="node.id" class="mt-0">
 					<button
-						class="m-0 flex w-full cursor-pointer flex-row items-center gap-2 bg-transparent px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700"
+						class="m-0 flex w-full cursor-pointer flex-row items-center gap-2 rounded-lg bg-transparent px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700"
 						@mousedown.prevent="selectNode(node)"
 					>
 						<component
@@ -116,22 +122,18 @@ function selectNode(node: GraphqlObject) {
 							class="shrink-0"
 						/>
 						<span class="flex-1">{{ getObjectLabel(node, 'th') }}</span>
-						<span
-							class="rounded-full bg-blue-700 px-2 text-xs font-bold text-white"
-							>{{ node.__typename }}</span
-						>
 					</button>
 				</li>
-				<li
-					v-if="!results.length && !isLoading"
-					class="mt-0 px-3 py-2 text-sm italic text-gray-400"
-				>
-					ไม่พบข้อมูลที่ตรงกับคำค้นหา
-				</li>
 			</ul>
+			<p
+				v-if="!groups.length && !isLoading"
+				class="m-0 px-3 py-2 text-sm italic text-gray-400"
+			>
+				ไม่พบข้อมูลที่ตรงกับคำค้นหา
+			</p>
 		</div>
+		<p v-if="errorMessage" class="mt-2 text-sm text-red-500">
+			{{ errorMessage }}
+		</p>
 	</div>
-	<p v-if="errorMessage" class="mt-2 text-sm text-red-500">
-		{{ errorMessage }}
-	</p>
 </template>

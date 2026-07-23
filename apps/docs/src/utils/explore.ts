@@ -12,6 +12,8 @@ const CONNECTION_FIELD_SUFFIX = 'Connection';
 
 export const RELATIONSHIP_NODES_LIMIT = 100;
 
+export const SEARCH_RESULT_LIMIT_PER_TYPE = 5;
+
 const EXPANDED_NODE_TYPES = ['Membership', 'Post', 'Vote'];
 
 export interface SearchableType {
@@ -53,18 +55,22 @@ const interfaceImplementorsMap = new Map(
 
 const unionMembersMap = new Map(unions.map(({ name, types }) => [name, types]));
 
-export function buildSearchQuery({ name, searchFields }: SearchableType) {
-	const labelFields = getScalarFieldNames(name).filter((field) =>
-		LABEL_FIELDS.includes(field),
-	);
-	const filters = searchFields
-		.map((field) => `{ ${field}: { contains: $keyword } }`)
-		.join(', ');
+export function buildSearchQuery() {
+	const typeQueries = searchableTypes.map(({ name, searchFields }) => {
+		const labelFields = getScalarFieldNames(name).filter((field) =>
+			LABEL_FIELDS.includes(field),
+		);
+		const filters = searchFields
+			.map((field) => `{ ${field}: { contains: $keyword } }`)
+			.join(', ');
+
+		return `${getQueryFieldName(name)}(where: { OR: [${filters}] }, limit: ${SEARCH_RESULT_LIMIT_PER_TYPE}) {
+			__typename id ${labelFields.join(' ')}
+		}`;
+	});
 
 	return `query Search($keyword: String!) {
-		${getQueryFieldName(name)}(where: { OR: [${filters}] }, limit: 10) {
-			__typename id ${labelFields.join(' ')}
-		}
+		${typeQueries.join('\n')}
 	}`;
 }
 

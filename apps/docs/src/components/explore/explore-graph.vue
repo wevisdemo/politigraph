@@ -60,46 +60,63 @@ async function exploreNode(node: GraphqlObject) {
 </script>
 
 <template>
-	<div class="flex flex-col gap-4">
-		<NodeSearch @select="exploreNode" />
-		<p v-if="errorMessage" class="text-sm text-red-500">{{ errorMessage }}</p>
-		<template v-if="centerNode && graphData">
+	<div class="relative h-[calc(100vh-var(--sl-nav-height))] w-full">
+		<QueryGraph
+			v-if="centerNode && graphData"
+			:data="graphData"
+			immersive
+			labelLang="th"
+			:sizeScale="0.6"
+			@node-select="exploreNode"
+		/>
+		<div
+			v-else
+			class="flex h-full items-center justify-center gap-2 bg-gray-100 px-6 text-center text-sm italic text-gray-400 dark:bg-gray-900"
+		>
+			<template v-if="isLoading">
+				<div
+					class="size-4 animate-spin rounded-full border-2 border-gray-300 border-t-gray-700 dark:border-gray-600 dark:border-t-gray-200"
+				></div>
+				กำลังโหลดข้อมูล...
+			</template>
+		</div>
+
+		<div
+			class="pointer-events-none absolute inset-x-0 z-30 flex flex-col items-center gap-2 p-4 transition-all duration-500"
+			:class="centerNode ? 'top-0' : 'top-1/2 -translate-y-1/2'"
+		>
+			<p
+				v-if="!centerNode && !isLoading"
+				class="text-center text-sm italic text-gray-400"
+			>
+				ค้นหาและเลือกโหนดที่ต้องการ เพื่อสำรวจข้อมูลโดยรอบในรูปแบบกราฟ
+			</p>
+			<NodeSearch
+				class="pointer-events-auto w-full max-w-md"
+				@select="exploreNode"
+			/>
+			<p
+				v-if="errorMessage"
+				class="pointer-events-auto rounded bg-red-500 px-3 py-1 text-sm text-white shadow"
+			>
+				{{ errorMessage }}
+			</p>
 			<p
 				v-if="truncatedRelationships.length"
-				class="text-xs italic text-gray-400"
+				class="pointer-events-auto max-w-md rounded bg-white/80 px-3 py-1 text-xs italic text-gray-500 shadow dark:bg-gray-800/80 dark:text-gray-400"
 			>
 				แสดงเฉพาะ {{ RELATIONSHIP_NODES_LIMIT }} รายการแรกของความสัมพันธ์
 				{{ truncatedRelationships.join(', ') }}
 			</p>
-			<div class="relative">
-				<QueryGraph
-					:data="graphData"
-					fillHeight
-					labelLang="th"
-					:sizeScale="0.6"
-					@node-select="exploreNode"
-				/>
-				<div
-					v-if="isLoading"
-					class="absolute inset-0 z-10 flex items-center justify-center bg-white/50 dark:bg-black/50"
-				>
-					<div
-						class="size-8 animate-spin rounded-full border-4 border-gray-300 border-t-gray-700 dark:border-gray-600 dark:border-t-gray-200"
-					></div>
-				</div>
-			</div>
-		</template>
+		</div>
+
 		<div
-			v-else-if="isLoading"
-			class="flex flex-row items-center gap-2 text-sm italic text-gray-400"
+			v-if="isLoading && centerNode"
+			class="pointer-events-none absolute inset-0 z-20 flex items-center justify-center bg-white/50 dark:bg-black/50"
 		>
 			<div
-				class="size-4 animate-spin rounded-full border-2 border-gray-300 border-t-gray-700 dark:border-gray-600 dark:border-t-gray-200"
+				class="size-8 animate-spin rounded-full border-4 border-gray-300 border-t-gray-700 dark:border-gray-600 dark:border-t-gray-200"
 			></div>
-			กำลังโหลดข้อมูล...
 		</div>
-		<p v-else class="text-sm italic text-gray-400">
-			ค้นหาและเลือกโหนดที่ต้องการ เพื่อสำรวจข้อมูลโดยรอบในรูปแบบกราฟ
-		</p>
 	</div>
 </template>
