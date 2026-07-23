@@ -97,7 +97,10 @@ const props = defineProps<{
 	data: GraphqlDataResponse;
 	fillHeight?: boolean;
 	labelLang?: 'en' | 'th';
+	sizeScale?: number;
 }>();
+
+const sizeScale = props.sizeScale ?? 1;
 
 const emit = defineEmits<{
 	nodeSelect: [node: GraphqlObject];
@@ -113,7 +116,7 @@ const graph = computed(() => {
 	);
 
 	if (!initialNodes?.length) {
-		return { nodes, edges, layouts };
+		return { nodes, edges, layouts, rootId: undefined };
 	}
 
 	function collectGraphItems(
@@ -160,8 +163,64 @@ const graph = computed(() => {
 	);
 	selectedNodes.value = [initialNodes[0].id];
 
-	return { nodes, edges, layouts };
+	return { nodes, edges, layouts, rootId: initialNodes[0].id };
 });
+
+const stepsTowardRoot = computed(() => {
+	const { edges, rootId } = graph.value;
+	const steps = new Map<string, { node: string; edge: string }>();
+
+	if (!rootId) return steps;
+
+	const adjacency = new Map<string, { node: string; edge: string }[]>();
+
+	Object.entries(edges).forEach(([edge, { source, target }]) => {
+		adjacency.set(source, [
+			...(adjacency.get(source) ?? []),
+			{ node: target, edge },
+		]);
+		adjacency.set(target, [
+			...(adjacency.get(target) ?? []),
+			{ node: source, edge },
+		]);
+	});
+
+	const queue = [rootId];
+	const visited = new Set(queue);
+
+	while (queue.length) {
+		const current = queue.shift()!;
+
+		adjacency.get(current)?.forEach(({ node, edge }) => {
+			if (!visited.has(node)) {
+				visited.add(node);
+				steps.set(node, { node: current, edge });
+				queue.push(node);
+			}
+		});
+	}
+
+	return steps;
+});
+
+const hoveredPathNodes = new Set<string>();
+const hoveredPathEdges = new Set<string>();
+
+function setHoveredPath(nodeId?: string) {
+	hoveredPathNodes.clear();
+	hoveredPathEdges.clear();
+
+	let current = nodeId;
+
+	while (current) {
+		hoveredPathNodes.add(current);
+		const step = stepsTowardRoot.value.get(current);
+		if (step) hoveredPathEdges.add(step.edge);
+		current = step?.node;
+	}
+
+	sigma?.refresh({ skipIndexation: true });
+}
 
 const container = ref<HTMLDivElement>();
 const selectedNodes = ref<string[]>([]);
@@ -210,7 +269,7 @@ function rebuildGraph() {
 		graphology.addNode(node.id, {
 			x,
 			y,
-			size: NODE_RADIUS,
+			size: NODE_RADIUS * sizeScale,
 			color: NODE_COLOR,
 			pictogramColor: '#ffffff',
 			image: getIconDataUri(node.__typename),
@@ -295,8 +354,15 @@ onMounted(async () => {
 		labelDensity: 4,
 		labelGridCellSize: 50,
 		nodeReducer: (id, data) =>
-			selectedNodes.value.includes(id) ? { ...data, highlighted: true } : data,
+			selectedNodes.value.includes(id) || hoveredPathNodes.has(id)
+				? { ...data, highlighted: true }
+				: data,
+		edgeReducer: (id, data) =>
+			hoveredPathEdges.has(id) ? { ...data, color: NODE_COLOR, size: 2 } : data,
 	});
+
+	sigma.on('enterNode', ({ node }) => setHoveredPath(node));
+	sigma.on('leaveNode', () => setHoveredPath());
 
 	let draggedNode: SimNode | undefined;
 	let didDrag = false;

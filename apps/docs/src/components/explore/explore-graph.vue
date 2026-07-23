@@ -2,8 +2,6 @@
 import { computed, ref } from 'vue';
 import {
 	buildCenterNodeQuery,
-	buildRelationshipQuery,
-	getRelationshipFields,
 	normalizeAliasedFields,
 	parseCenterNode,
 	RELATIONSHIP_NODES_LIMIT,
@@ -19,34 +17,18 @@ import NodeSearch from './node-search.vue';
 
 const centerNode = ref<GraphqlObject | null>(null);
 const relationshipCounts = ref<Record<string, number>>({});
-const relationshipNodes = ref<Record<string, GraphqlObject[]>>({});
-const activeRelationship = ref('');
 const isLoading = ref(false);
 const errorMessage = ref('');
 
-const relationshipFields = computed(() =>
-	centerNode.value ? getRelationshipFields(centerNode.value.__typename) : [],
+const graphData = computed<GraphqlDataResponse | null>(() =>
+	centerNode.value ? { nodes: [centerNode.value] } : null,
 );
 
-const graphData = computed<GraphqlDataResponse | null>(() => {
-	if (!centerNode.value) return null;
-
-	const nodes = relationshipNodes.value[activeRelationship.value];
-
-	return {
-		nodes: [
-			{
-				...centerNode.value,
-				...(nodes ? { [activeRelationship.value]: nodes } : {}),
-			},
-		],
-	};
-});
-
-const truncatedNodeCount = computed(() => {
-	const totalCount = relationshipCounts.value[activeRelationship.value] ?? 0;
-	return totalCount > RELATIONSHIP_NODES_LIMIT ? totalCount : 0;
-});
+const truncatedRelationships = computed(() =>
+	Object.entries(relationshipCounts.value)
+		.filter(([, count]) => count > RELATIONSHIP_NODES_LIMIT)
+		.map(([name, count]) => `${name} (${count})`),
+);
 
 async function exploreNode(node: GraphqlObject) {
 	if (isLoading.value || node.id === centerNode.value?.id) return;
@@ -58,7 +40,7 @@ async function exploreNode(node: GraphqlObject) {
 		const { data } = await fetchGraphql(buildCenterNodeQuery(node.__typename), {
 			id: node.id,
 		});
-		const [rawNode] = Object.values(data).flat();
+		const [rawNode] = Object.values(normalizeAliasedFields(data)).flat();
 
 		if (!rawNode) {
 			throw new Error(`ไม่พบข้อมูลของ "${getObjectLabel(node, 'th')}"`);
@@ -69,60 +51,11 @@ async function exploreNode(node: GraphqlObject) {
 
 		centerNode.value = parsedNode;
 		relationshipCounts.value = counts;
-		relationshipNodes.value = {};
-		activeRelationship.value = '';
-
-		const firstNonEmpty = Object.entries(counts).find(
-			([, count]) => count > 0,
-		)?.[0];
-
-		if (firstNonEmpty) {
-			activeRelationship.value = firstNonEmpty;
-			await fetchRelationshipNodes(firstNonEmpty);
-		}
 	} catch (error) {
 		errorMessage.value = error instanceof Error ? error.message : `${error}`;
 	} finally {
 		isLoading.value = false;
 	}
-}
-
-async function toggleRelationship(fieldName: string) {
-	if (isLoading.value || !centerNode.value) return;
-
-	activeRelationship.value = fieldName;
-
-	if (
-		relationshipNodes.value[fieldName] ||
-		!relationshipCounts.value[fieldName]
-	) {
-		return;
-	}
-
-	isLoading.value = true;
-	errorMessage.value = '';
-
-	try {
-		await fetchRelationshipNodes(fieldName);
-	} catch (error) {
-		errorMessage.value = error instanceof Error ? error.message : `${error}`;
-	} finally {
-		isLoading.value = false;
-	}
-}
-
-async function fetchRelationshipNodes(fieldName: string) {
-	const { data } = await fetchGraphql(
-		buildRelationshipQuery(centerNode.value!.__typename, fieldName),
-		{ id: centerNode.value!.id },
-	);
-	const [rawNode] = Object.values(normalizeAliasedFields(data)).flat();
-	const nodes = rawNode?.[fieldName];
-
-	relationshipNodes.value = {
-		...relationshipNodes.value,
-		[fieldName]: Array.isArray(nodes) ? nodes : [],
-	};
 }
 </script>
 
@@ -131,33 +64,19 @@ async function fetchRelationshipNodes(fieldName: string) {
 		<NodeSearch @select="exploreNode" />
 		<p v-if="errorMessage" class="text-sm text-red-500">{{ errorMessage }}</p>
 		<template v-if="centerNode && graphData">
-			<div class="flex flex-row flex-wrap items-center gap-2">
-				<span class="text-sm text-gray-400">ความสัมพันธ์:</span>
-				<button
-					v-for="{ name, description } in relationshipFields"
-					:key="name"
-					:title="description"
-					:disabled="!relationshipCounts[name] || isLoading"
-					class="cursor-pointer rounded-full border px-3 py-0.5 text-sm disabled:cursor-not-allowed disabled:opacity-40"
-					:class="
-						name === activeRelationship
-							? 'border-blue-700 bg-blue-700 text-white'
-							: 'border-gray-300 hover:bg-gray-100 dark:border-gray-700 dark:hover:bg-gray-800'
-					"
-					@click="toggleRelationship(name)"
-				>
-					{{ name }} ({{ relationshipCounts[name] ?? 0 }})
-				</button>
-			</div>
-			<p v-if="truncatedNodeCount" class="text-xs italic text-gray-400">
-				แสดง {{ RELATIONSHIP_NODES_LIMIT }} รายการแรก จากทั้งหมด
-				{{ truncatedNodeCount }} รายการ
+			<p
+				v-if="truncatedRelationships.length"
+				class="text-xs italic text-gray-400"
+			>
+				แสดงเฉพาะ {{ RELATIONSHIP_NODES_LIMIT }} รายการแรกของความสัมพันธ์
+				{{ truncatedRelationships.join(', ') }}
 			</p>
 			<div class="relative">
 				<QueryGraph
 					:data="graphData"
 					fillHeight
 					labelLang="th"
+					:sizeScale="0.6"
 					@node-select="exploreNode"
 				/>
 				<div

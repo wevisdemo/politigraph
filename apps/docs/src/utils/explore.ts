@@ -12,6 +12,8 @@ const CONNECTION_FIELD_SUFFIX = 'Connection';
 
 export const RELATIONSHIP_NODES_LIMIT = 100;
 
+const EXPANDED_NODE_TYPES = ['Membership', 'Post', 'Vote'];
+
 export interface SearchableType {
 	name: string;
 	searchFields: string[];
@@ -66,11 +68,10 @@ export function buildSearchQuery({ name, searchFields }: SearchableType) {
 	}`;
 }
 
-export function getRelationshipFields(typename: string) {
+function getRelationshipFields(typename: string) {
 	return objectMap
 		.get(typename)!
-		.fields.filter((field) => isNodeType(field.type.name))
-		.map(({ name, description }) => ({ name, description }));
+		.fields.filter((field) => isNodeType(field.type.name));
 }
 
 export function buildCenterNodeQuery(typename: string) {
@@ -78,21 +79,12 @@ export function buildCenterNodeQuery(typename: string) {
 		${getQueryFieldName(typename)}(where: { id: { eq: $id } }) {
 			__typename ${getScalarFieldNames(typename).join(' ')}
 			${getRelationshipFields(typename)
-				.map(({ name }) => `${name}${CONNECTION_FIELD_SUFFIX} { totalCount }`)
+				.map(
+					({ name, type }) =>
+						`${name}(limit: ${RELATIONSHIP_NODES_LIMIT}) ${getNodeSelection(type.name)}
+						${name}${CONNECTION_FIELD_SUFFIX} { totalCount }`,
+				)
 				.join('\n')}
-		}
-	}`;
-}
-
-export function buildRelationshipQuery(typename: string, fieldName: string) {
-	const field = objectMap
-		.get(typename)!
-		.fields.find(({ name }) => name === fieldName)!;
-
-	return `query Relationship($id: ID!) {
-		${getQueryFieldName(typename)}(where: { id: { eq: $id } }) {
-			__typename id
-			${fieldName}(limit: ${RELATIONSHIP_NODES_LIMIT}) ${getNodeSelection(field.type.name)}
 		}
 	}`;
 }
@@ -163,9 +155,21 @@ function getFieldSignature({ type }: { type: ScalarFieldType }) {
 
 type ScalarFieldType = ReturnType<typeof getScalarFields>[number]['type'];
 
-function getNodeSelection(typename: string) {
+function getNodeSelection(
+	typename: string,
+	expandedAncestors: string[] = [],
+): string {
 	if (objectMap.has(typename)) {
-		return `{ __typename ${getScalarFieldNames(typename).join(' ')} }`;
+		const adjacentSelections =
+			EXPANDED_NODE_TYPES.includes(typename) &&
+			!expandedAncestors.includes(typename)
+				? getRelationshipFields(typename).map(
+						({ name, type }) =>
+							`${name}(limit: ${RELATIONSHIP_NODES_LIMIT}) ${getNodeSelection(type.name, [...expandedAncestors, typename])}`,
+					)
+				: [];
+
+		return `{ __typename ${[...getScalarFieldNames(typename), ...adjacentSelections].join(' ')} }`;
 	}
 
 	const concreteTypes =
