@@ -4,6 +4,7 @@ import {
 	defineConfigs,
 	VNetworkGraph,
 	type Layouts,
+	type UserConfigs,
 	type VNetworkGraphInstance,
 } from 'v-network-graph';
 import 'v-network-graph/lib/style.css';
@@ -97,7 +98,7 @@ const configs = defineConfigs<Node, Edge>({
 			zIndex: (edge) => (isGraphicActive(edge) ? 1 : 0),
 		},
 	},
-});
+}) as UserConfigs;
 
 const graph = computed(() => {
 	const nodes: Record<string, Node> = {};
@@ -170,6 +171,11 @@ const graph = computed(() => {
 const graphElement = ref<VNetworkGraphInstance>();
 const selectedNodes = ref<string[]>([]);
 
+function fitGraph() {
+	graphElement.value?.fitToContents();
+	graphElement.value?.panToCenter();
+}
+
 const selectedNode = computed<Node | null>(() =>
 	selectedNodes.value.length ? graph.value.nodes[selectedNodes.value[0]] : null,
 );
@@ -207,7 +213,7 @@ function isGraphicActive(item: Node | Edge) {
 </script>
 
 <template>
-	<BaseView :graphElement>
+	<BaseView :fit="fitGraph">
 		<VNetworkGraph
 			ref="graphElement"
 			:configs

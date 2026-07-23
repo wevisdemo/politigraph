@@ -15,7 +15,7 @@ const { query, variables } = Astro.props;
 const parsedVariables = variables ? JSON.parse(variables) : undefined;
 const jsonResponse = await fetchGraphql(query, parsedVariables);
 
-const flattenedData = Object.values(jsonResponse.data).flatMap(([value]) => {
+const flattenedData = Object.values(jsonResponse.data).flatMap((value) => {
 	if (Array.isArray(value)) {
 		return value.map((item) => ({
 			...item,

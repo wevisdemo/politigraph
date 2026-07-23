@@ -1,21 +1,19 @@
 <script setup lang="ts">
 // @ts-ignore
 import { Maximize16, Minimize16 } from '@carbon/icons-vue';
-import { type VNetworkGraphInstance } from 'v-network-graph';
 import { nextTick, ref } from 'vue';
 
 const props = defineProps<{
-	graphElement?: VNetworkGraphInstance;
+	fit?: () => void;
 	isSidebarEmpty?: boolean;
 }>();
 
 const isMaximized = ref(false);
 
-function toggleMaximize() {
+async function toggleMaximize() {
 	isMaximized.value = !isMaximized.value;
-	nextTick();
-	props.graphElement?.fitToContents();
-	props.graphElement?.panToCenter();
+	await nextTick();
+	props.fit?.();
 }
 </script>
 
