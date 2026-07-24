@@ -12,6 +12,7 @@ import {
 import Graph from 'graphology';
 import type Sigma from 'sigma';
 import type {
+	EdgeLabelDrawingFunction,
 	NodeHoverDrawingFunction,
 	NodeLabelDrawingFunction,
 } from 'sigma/rendering';
@@ -93,6 +94,54 @@ const drawNodeHover: NodeHoverDrawingFunction = (context, data, settings) => {
 	drawNodeLabel(context, data, settings);
 };
 
+const drawEdgeLabel: EdgeLabelDrawingFunction = (
+	context,
+	edgeData,
+	sourceData,
+	targetData,
+	settings,
+) => {
+	const label = edgeData.label;
+	if (!label) return;
+
+	const size = settings.edgeLabelSize;
+	context.font = `${settings.edgeLabelWeight} ${size}px ${settings.edgeLabelFont}`;
+
+	let sx = sourceData.x;
+	let sy = sourceData.y;
+	let tx = targetData.x;
+	let ty = targetData.y;
+	const dx = tx - sx;
+	const dy = ty - sy;
+	const d = Math.sqrt(dx * dx + dy * dy);
+	if (d < sourceData.size + targetData.size) return;
+
+	sx += (dx * sourceData.size) / d;
+	sy += (dy * sourceData.size) / d;
+	tx -= (dx * targetData.size) / d;
+	ty -= (dy * targetData.size) / d;
+
+	const angle = Math.atan2(ty - sy, tx - sx);
+	const flipped = angle > Math.PI / 2 || angle < -Math.PI / 2;
+	const textWidth = context.measureText(label).width;
+
+	context.save();
+	context.translate((sx + tx) / 2, (sy + ty) / 2);
+	context.rotate(flipped ? angle + Math.PI : angle);
+	context.textAlign = 'center';
+	context.textBaseline = 'middle';
+	context.lineJoin = 'round';
+	context.lineWidth = 4;
+	context.strokeStyle = '#fff';
+	context.strokeText(label, 0, -(edgeData.size / 2 + size / 2));
+	context.fillStyle = settings.edgeLabelColor.color ?? NODE_COLOR;
+	context.fillText(label, 0, -(edgeData.size / 2 + size / 2));
+	context.restore();
+
+	context.textAlign = 'left';
+	context.textBaseline = 'alphabetic';
+};
+
 const props = defineProps<{
 	data: GraphqlDataResponse;
 	fillHeight?: boolean;
@@ -105,11 +154,15 @@ const props = defineProps<{
 
 const emit = defineEmits<{
 	nodeSelect: [node: GraphqlObject];
+	nodeActivate: [node: GraphqlObject];
 }>();
 
 const graph = computed(() => {
 	const nodes: Record<string, GraphqlObject> = {};
-	const edges: Record<string, { source: string; target: string }> = {};
+	const edges: Record<
+		string,
+		{ source: string; target: string; label: string }
+	> = {};
 	const layouts: Record<string, { x: number; y: number }> = {};
 
 	const initialNodes = Object.values(props.data).find(
@@ -134,7 +187,7 @@ const graph = computed(() => {
 		nodes[node.id] = node;
 		layouts[node.id] = { x: r * Math.cos(theta), y: r * Math.sin(theta) };
 
-		Object.values(node).forEach((value) => {
+		Object.entries(node).forEach(([relationName, value]) => {
 			if (Array.isArray(value)) {
 				value
 					.sort((a, z) => a.id.localeCompare(z.id))
@@ -142,6 +195,7 @@ const graph = computed(() => {
 						edges[`${node.id}->${child.id}`] = {
 							source: node.id,
 							target: child.id,
+							label: relationName,
 						};
 
 						if (!nodes[child.id]) {
@@ -167,47 +221,68 @@ const graph = computed(() => {
 	return { nodes, edges, layouts, rootId: initialNodes[0].id };
 });
 
-const stepsTowardRoot = computed(() => {
+const shortestPathIndex = computed(() => {
 	const { edges, rootId } = graph.value;
-	const parents = new Map<string, string>();
+	const distance = new Map<string, number>();
+	const adjacency = new Map<string, { node: string; edge: string }[]>();
 
-	if (!rootId) return parents;
-
-	const adjacency = new Map<string, string[]>();
-
-	Object.values(edges).forEach(({ source, target }) => {
-		adjacency.set(source, [...(adjacency.get(source) ?? []), target]);
-		adjacency.set(target, [...(adjacency.get(target) ?? []), source]);
+	Object.entries(edges).forEach(([edge, { source, target }]) => {
+		adjacency.set(source, [
+			...(adjacency.get(source) ?? []),
+			{ node: target, edge },
+		]);
+		adjacency.set(target, [
+			...(adjacency.get(target) ?? []),
+			{ node: source, edge },
+		]);
 	});
 
-	const queue = [rootId];
-	const visited = new Set(queue);
+	if (rootId) {
+		const queue = [rootId];
+		distance.set(rootId, 0);
 
-	while (queue.length) {
-		const current = queue.shift()!;
+		while (queue.length) {
+			const current = queue.shift()!;
 
-		adjacency.get(current)?.forEach((node) => {
-			if (!visited.has(node)) {
-				visited.add(node);
-				parents.set(node, current);
-				queue.push(node);
-			}
-		});
+			adjacency.get(current)?.forEach(({ node }) => {
+				if (!distance.has(node)) {
+					distance.set(node, distance.get(current)! + 1);
+					queue.push(node);
+				}
+			});
+		}
 	}
 
-	return parents;
+	return { distance, adjacency };
 });
 
 const hoveredPathNodes = new Set<string>();
+const hoveredPathEdges = new Set<string>();
 
 function setHoveredPath(nodeId?: string) {
 	hoveredPathNodes.clear();
+	hoveredPathEdges.clear();
 
-	let current = nodeId;
+	const { distance, adjacency } = shortestPathIndex.value;
 
-	while (current) {
-		hoveredPathNodes.add(current);
-		current = stepsTowardRoot.value.get(current);
+	if (nodeId !== undefined && distance.has(nodeId)) {
+		const queue = [nodeId];
+		hoveredPathNodes.add(nodeId);
+
+		while (queue.length) {
+			const current = queue.shift()!;
+
+			adjacency.get(current)?.forEach(({ node, edge }) => {
+				if (distance.get(node) === distance.get(current)! - 1) {
+					hoveredPathEdges.add(edge);
+
+					if (!hoveredPathNodes.has(node)) {
+						hoveredPathNodes.add(node);
+						queue.push(node);
+					}
+				}
+			});
+		}
 	}
 
 	sigma?.refresh({ skipIndexation: true });
@@ -268,10 +343,11 @@ function rebuildGraph() {
 		});
 	});
 
-	Object.entries(edges).forEach(([id, { source, target }]) => {
+	Object.entries(edges).forEach(([id, { source, target, label }]) => {
 		graphology.addEdgeWithKey(id, source, target, {
 			size: 1,
 			color: props.edgeColor ?? EDGE_COLOR,
+			relationLabel: label,
 		});
 	});
 
@@ -344,16 +420,37 @@ onMounted(async () => {
 		labelColor: { color: '#333333' },
 		labelDensity: 4,
 		labelGridCellSize: 50,
+		zIndex: true,
+		renderEdgeLabels: true,
+		edgeLabelSize: 10,
+		edgeLabelFont: 'IBM Plex Sans Thai Looped, sans-serif',
+		edgeLabelColor: { color: NODE_COLOR },
+		defaultDrawEdgeLabel: drawEdgeLabel,
 		nodeReducer: (id, data) =>
 			selectedNodes.value.includes(id) || hoveredPathNodes.has(id)
 				? { ...data, highlighted: true }
 				: data,
-		edgeReducer: (id, data) =>
-			hoveredPathNodes.has(graphology.source(id)) &&
-			hoveredPathNodes.has(graphology.target(id))
-				? { ...data, color: NODE_COLOR, size: 2 }
-				: data,
+		edgeReducer: (id, data) => {
+			if (!hoveredPathEdges.has(id)) return data;
+
+			const { distance } = shortestPathIndex.value;
+			const isForward =
+				(distance.get(graphology.source(id)) ?? 0) <
+				(distance.get(graphology.target(id)) ?? 0);
+
+			return {
+				...data,
+				color: NODE_COLOR,
+				size: 2,
+				zIndex: 1,
+				forceLabel: true,
+				label: isForward ? data.relationLabel : undefined,
+			};
+		},
 	});
+
+	const canvases = sigma.getCanvases();
+	canvases.nodes.after(canvases.edgeLabels);
 
 	sigma.on('enterNode', ({ node }) => setHoveredPath(node));
 	sigma.on('leaveNode', () => setHoveredPath());
@@ -366,7 +463,11 @@ onMounted(async () => {
 			didDrag = false;
 			return;
 		}
-		selectedNodes.value = [node];
+		if (selectedNodes.value[0] === node) {
+			emit('nodeActivate', graph.value.nodes[node]);
+		} else {
+			selectedNodes.value = [node];
+		}
 	});
 
 	sigma.on('clickStage', () => {
@@ -426,7 +527,11 @@ onBeforeUnmount(() => {
 	sigma?.kill();
 });
 
-watch(graph, rebuildGraph);
+watch(graph, () => {
+	hoveredPathNodes.clear();
+	rebuildGraph();
+	fitGraph();
+});
 
 watch(selectedNodes, ([id]) => {
 	sigma?.refresh({ skipIndexation: true });

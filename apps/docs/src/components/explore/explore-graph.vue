@@ -15,6 +15,7 @@ import {
 import QueryGraph from '../query-graph.vue';
 import NodeSearch from './node-search.vue';
 
+const CENTER_NODE_COLOR = '#f59e0b';
 const MAIN_NODE_COLOR = '#4466cc';
 const SUB_NODE_COLOR = '#8899dd';
 const EDGE_COLOR = '#dddddd';
@@ -22,6 +23,7 @@ const EDGE_COLOR = '#dddddd';
 const centerNode = ref<GraphqlObject | null>(null);
 const isLoading = ref(false);
 const errorMessage = ref('');
+const centeringLabel = ref('');
 
 const graphData = computed<GraphqlDataResponse | null>(() =>
 	centerNode.value ? { nodes: [centerNode.value] } : null,
@@ -32,6 +34,7 @@ async function exploreNode(node: GraphqlObject) {
 
 	isLoading.value = true;
 	errorMessage.value = '';
+	centeringLabel.value = getObjectLabel(node, 'th');
 
 	try {
 		const { data } = await fetchGraphql(buildCenterNodeQuery(node.__typename), {
@@ -63,11 +66,15 @@ async function exploreNode(node: GraphqlObject) {
 				({ __typename }) => (mainNodeTypes.has(__typename) ? 0.8 : 0.4)
 			"
 			:getNodeColor="
-				({ __typename }) =>
-					mainNodeTypes.has(__typename) ? MAIN_NODE_COLOR : SUB_NODE_COLOR
+				(node) =>
+					node.id === centerNode?.id
+						? CENTER_NODE_COLOR
+						: mainNodeTypes.has(node.__typename)
+							? MAIN_NODE_COLOR
+							: SUB_NODE_COLOR
 			"
 			:edgeColor="EDGE_COLOR"
-			@node-select="exploreNode"
+			@node-activate="exploreNode"
 		/>
 		<div
 			v-else
@@ -93,6 +100,8 @@ async function exploreNode(node: GraphqlObject) {
 			</p>
 			<NodeSearch
 				class="pointer-events-auto w-full max-w-md"
+				:centerLabel="centeringLabel"
+				:loading="isLoading"
 				@select="exploreNode"
 			/>
 			<p

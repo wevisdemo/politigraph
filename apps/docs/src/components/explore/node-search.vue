@@ -12,6 +12,11 @@ interface ResultGroup {
 	nodes: GraphqlObject[];
 }
 
+const props = defineProps<{
+	centerLabel?: string;
+	loading?: boolean;
+}>();
+
 const emit = defineEmits<{
 	select: [node: GraphqlObject];
 }>();
@@ -25,6 +30,16 @@ const errorMessage = ref('');
 let debounceTimer: ReturnType<typeof setTimeout> | undefined;
 let latestRequestId = 0;
 let skipNextSearch = false;
+
+watch(
+	() => props.centerLabel,
+	(label) => {
+		if (!label || label === keyword.value) return;
+		skipNextSearch = true;
+		keyword.value = label;
+		isDropdownOpen.value = false;
+	},
+);
 
 watch(keyword, () => {
 	if (skipNextSearch) {
@@ -95,7 +110,7 @@ function selectNode(node: GraphqlObject) {
 			@blur="isDropdownOpen = false"
 		/>
 		<div
-			v-if="isLoading"
+			v-if="isLoading || props.loading"
 			class="absolute right-5 top-1/2 size-4 -translate-y-1/2 animate-spin rounded-full border-2 border-gray-300 border-t-gray-700 dark:border-gray-600 dark:border-t-gray-200"
 		></div>
 		<div
