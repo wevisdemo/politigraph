@@ -2,9 +2,9 @@
 import { computed, ref } from 'vue';
 import {
 	buildCenterNodeQuery,
+	mainNodeTypes,
 	normalizeAliasedFields,
-	parseCenterNode,
-	RELATIONSHIP_NODES_LIMIT,
+	pruneToMainLeaves,
 } from '../../utils/explore';
 import { fetchGraphql } from '../../utils/graphql';
 import {
@@ -15,19 +15,16 @@ import {
 import QueryGraph from '../query-graph.vue';
 import NodeSearch from './node-search.vue';
 
+const MAIN_NODE_COLOR = '#4466cc';
+const SUB_NODE_COLOR = '#8899dd';
+const EDGE_COLOR = '#dddddd';
+
 const centerNode = ref<GraphqlObject | null>(null);
-const relationshipCounts = ref<Record<string, number>>({});
 const isLoading = ref(false);
 const errorMessage = ref('');
 
 const graphData = computed<GraphqlDataResponse | null>(() =>
 	centerNode.value ? { nodes: [centerNode.value] } : null,
-);
-
-const truncatedRelationships = computed(() =>
-	Object.entries(relationshipCounts.value)
-		.filter(([, count]) => count > RELATIONSHIP_NODES_LIMIT)
-		.map(([name, count]) => `${name} (${count})`),
 );
 
 async function exploreNode(node: GraphqlObject) {
@@ -46,11 +43,7 @@ async function exploreNode(node: GraphqlObject) {
 			throw new Error(`ไม่พบข้อมูลของ "${getObjectLabel(node, 'th')}"`);
 		}
 
-		const { node: parsedNode, relationshipCounts: counts } =
-			parseCenterNode(rawNode);
-
-		centerNode.value = parsedNode;
-		relationshipCounts.value = counts;
+		centerNode.value = pruneToMainLeaves(rawNode);
 	} catch (error) {
 		errorMessage.value = error instanceof Error ? error.message : `${error}`;
 	} finally {
@@ -66,7 +59,14 @@ async function exploreNode(node: GraphqlObject) {
 			:data="graphData"
 			immersive
 			labelLang="th"
-			:sizeScale="0.6"
+			:getNodeSizeScale="
+				({ __typename }) => (mainNodeTypes.has(__typename) ? 0.8 : 0.4)
+			"
+			:getNodeColor="
+				({ __typename }) =>
+					mainNodeTypes.has(__typename) ? MAIN_NODE_COLOR : SUB_NODE_COLOR
+			"
+			:edgeColor="EDGE_COLOR"
 			@node-select="exploreNode"
 		/>
 		<div
@@ -100,13 +100,6 @@ async function exploreNode(node: GraphqlObject) {
 				class="pointer-events-auto rounded bg-red-500 px-3 py-1 text-sm text-white shadow"
 			>
 				{{ errorMessage }}
-			</p>
-			<p
-				v-if="truncatedRelationships.length"
-				class="pointer-events-auto max-w-md rounded bg-white/80 px-3 py-1 text-xs italic text-gray-500 shadow dark:bg-gray-800/80 dark:text-gray-400"
-			>
-				แสดงเฉพาะ {{ RELATIONSHIP_NODES_LIMIT }} รายการแรกของความสัมพันธ์
-				{{ truncatedRelationships.join(', ') }}
 			</p>
 		</div>
 

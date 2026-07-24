@@ -97,11 +97,11 @@ const props = defineProps<{
 	data: GraphqlDataResponse;
 	fillHeight?: boolean;
 	labelLang?: 'en' | 'th';
-	sizeScale?: number;
+	getNodeSizeScale?: (node: GraphqlObject) => number;
+	getNodeColor?: (node: GraphqlObject) => string;
+	edgeColor?: string;
 	immersive?: boolean;
 }>();
-
-const sizeScale = props.sizeScale ?? 1;
 
 const emit = defineEmits<{
 	nodeSelect: [node: GraphqlObject];
@@ -169,21 +169,15 @@ const graph = computed(() => {
 
 const stepsTowardRoot = computed(() => {
 	const { edges, rootId } = graph.value;
-	const steps = new Map<string, { node: string; edge: string }>();
+	const parents = new Map<string, string>();
 
-	if (!rootId) return steps;
+	if (!rootId) return parents;
 
-	const adjacency = new Map<string, { node: string; edge: string }[]>();
+	const adjacency = new Map<string, string[]>();
 
-	Object.entries(edges).forEach(([edge, { source, target }]) => {
-		adjacency.set(source, [
-			...(adjacency.get(source) ?? []),
-			{ node: target, edge },
-		]);
-		adjacency.set(target, [
-			...(adjacency.get(target) ?? []),
-			{ node: source, edge },
-		]);
+	Object.values(edges).forEach(({ source, target }) => {
+		adjacency.set(source, [...(adjacency.get(source) ?? []), target]);
+		adjacency.set(target, [...(adjacency.get(target) ?? []), source]);
 	});
 
 	const queue = [rootId];
@@ -192,32 +186,28 @@ const stepsTowardRoot = computed(() => {
 	while (queue.length) {
 		const current = queue.shift()!;
 
-		adjacency.get(current)?.forEach(({ node, edge }) => {
+		adjacency.get(current)?.forEach((node) => {
 			if (!visited.has(node)) {
 				visited.add(node);
-				steps.set(node, { node: current, edge });
+				parents.set(node, current);
 				queue.push(node);
 			}
 		});
 	}
 
-	return steps;
+	return parents;
 });
 
 const hoveredPathNodes = new Set<string>();
-const hoveredPathEdges = new Set<string>();
 
 function setHoveredPath(nodeId?: string) {
 	hoveredPathNodes.clear();
-	hoveredPathEdges.clear();
 
 	let current = nodeId;
 
 	while (current) {
 		hoveredPathNodes.add(current);
-		const step = stepsTowardRoot.value.get(current);
-		if (step) hoveredPathEdges.add(step.edge);
-		current = step?.node;
+		current = stepsTowardRoot.value.get(current);
 	}
 
 	sigma?.refresh({ skipIndexation: true });
@@ -270,8 +260,8 @@ function rebuildGraph() {
 		graphology.addNode(node.id, {
 			x,
 			y,
-			size: NODE_RADIUS * sizeScale,
-			color: NODE_COLOR,
+			size: NODE_RADIUS * (props.getNodeSizeScale?.(node) ?? 1),
+			color: props.getNodeColor?.(node) ?? NODE_COLOR,
 			pictogramColor: '#ffffff',
 			image: getIconDataUri(node.__typename),
 			label: truncateLabel(getObjectLabel(node, props.labelLang)),
@@ -281,7 +271,7 @@ function rebuildGraph() {
 	Object.entries(edges).forEach(([id, { source, target }]) => {
 		graphology.addEdgeWithKey(id, source, target, {
 			size: 1,
-			color: EDGE_COLOR,
+			color: props.edgeColor ?? EDGE_COLOR,
 		});
 	});
 
@@ -359,7 +349,10 @@ onMounted(async () => {
 				? { ...data, highlighted: true }
 				: data,
 		edgeReducer: (id, data) =>
-			hoveredPathEdges.has(id) ? { ...data, color: NODE_COLOR, size: 2 } : data,
+			hoveredPathNodes.has(graphology.source(id)) &&
+			hoveredPathNodes.has(graphology.target(id))
+				? { ...data, color: NODE_COLOR, size: 2 }
+				: data,
 	});
 
 	sigma.on('enterNode', ({ node }) => setHoveredPath(node));

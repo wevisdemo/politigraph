@@ -17,7 +17,6 @@ import ExploreGraph from '../components/explore/explore-graph.vue';
 </StarlightPage>
 
 <style is:global>
-	/* Immersive explore: only the Starlight navbar, search bar, and graph */
 	:root:not([data-has-sidebar]) {
 		--sl-content-width: 100%;
 	}
@@ -36,7 +35,6 @@ import ExploreGraph from '../components/explore/explore-graph.vue';
 		border: none;
 	}
 
-	/* Hide the page title panel and Starlight's footer meta */
 	.content-panel:first-of-type,
 	main footer {
 		display: none;
@@ -47,7 +45,6 @@ import ExploreGraph from '../components/explore/explore-graph.vue';
 		margin: 0;
 	}
 
-	/* Breathing room around the WeVis footer, only on this page */
 	.content-panel:last-of-type .sl-container > div:last-child {
 		margin: 1rem var(--sl-content-pad-x);
 	}

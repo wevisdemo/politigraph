@@ -23,8 +23,11 @@ const armor = new ApolloArmor({
 	costLimit: {
 		enabled: false,
 	},
+	maxTokens: {
+		n: 10000,
+	},
 	maxAliases: {
-		n: 10,
+		n: 200,
 	},
 	maxDepth: {
 		n: 10,

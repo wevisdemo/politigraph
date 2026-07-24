@@ -8,13 +8,8 @@ import {
 } from './schema';
 
 const CONFLICT_ALIAS_SEPARATOR = '___';
-const CONNECTION_FIELD_SUFFIX = 'Connection';
-
-export const RELATIONSHIP_NODES_LIMIT = 100;
 
 export const SEARCH_RESULT_LIMIT_PER_TYPE = 5;
-
-const EXPANDED_NODE_TYPES = ['Membership', 'Post', 'Vote'];
 
 export interface SearchableType {
 	name: string;
@@ -30,6 +25,8 @@ export const searchableTypes: SearchableType[] = [
 	{ name: 'VoteEvent', searchFields: ['title', 'nickname'] },
 	{ name: 'Bill', searchFields: ['title', 'nickname'] },
 ];
+
+export const mainNodeTypes = new Set(searchableTypes.map(({ name }) => name));
 
 const LABEL_FIELDS = [
 	'name_en',
@@ -85,32 +82,34 @@ export function buildCenterNodeQuery(typename: string) {
 		${getQueryFieldName(typename)}(where: { id: { eq: $id } }) {
 			__typename ${getScalarFieldNames(typename).join(' ')}
 			${getRelationshipFields(typename)
-				.map(
-					({ name, type }) =>
-						`${name}(limit: ${RELATIONSHIP_NODES_LIMIT}) ${getNodeSelection(type.name)}
-						${name}${CONNECTION_FIELD_SUFFIX} { totalCount }`,
-				)
+				.map(({ name, type }) => `${name} ${getNodeSelection(type.name)}`)
 				.join('\n')}
 		}
 	}`;
 }
 
-export function parseCenterNode(raw: GraphqlObject) {
-	const entries = Object.entries(raw);
-
-	return {
-		node: Object.fromEntries(
-			entries.filter(([key]) => !key.endsWith(CONNECTION_FIELD_SUFFIX)),
-		) as GraphqlObject,
-		relationshipCounts: Object.fromEntries(
-			entries
-				.filter(([key]) => key.endsWith(CONNECTION_FIELD_SUFFIX))
-				.map(([key, value]) => [
-					key.slice(0, -CONNECTION_FIELD_SUFFIX.length),
-					(value as unknown as { totalCount: number }).totalCount,
-				]),
+// The type graph forces branches to stop expanding at cycles, and real data
+// may have empty relations, both leaving non-main nodes as dead-end leaves.
+// Drop any non-main node without a main-type descendant so every leaf is a
+// meaningful main-type node. Mapping before filtering prunes bottom-up, so
+// dead-ends cascade away in a single pass.
+export function pruneToMainLeaves(node: GraphqlObject): GraphqlObject {
+	return Object.fromEntries(
+		Object.entries(node).map(([key, value]) =>
+			Array.isArray(value)
+				? [key, value.map(pruneToMainLeaves).filter(hasMainDescendant)]
+				: [key, value],
 		),
-	};
+	) as GraphqlObject;
+}
+
+function hasMainDescendant(node: GraphqlObject): boolean {
+	return (
+		mainNodeTypes.has(node.__typename) ||
+		Object.values(node).some(
+			(value) => Array.isArray(value) && value.length > 0,
+		)
+	);
 }
 
 export function normalizeAliasedFields(
@@ -161,21 +160,27 @@ function getFieldSignature({ type }: { type: ScalarFieldType }) {
 
 type ScalarFieldType = ReturnType<typeof getScalarFields>[number]['type'];
 
+// Expand relationships of non-main types until reaching main types. The type
+// graph is cyclic (eg. Membership <-> Post, Link <-> bill events), so each
+// branch stops expanding a type already found in its ancestor chain.
+function getAdjacentSelections(typename: string, expandedAncestors: string[]) {
+	return mainNodeTypes.has(typename) || expandedAncestors.includes(typename)
+		? []
+		: getRelationshipFields(typename).map(
+				({ name, type }) =>
+					`${name} ${getNodeSelection(type.name, [...expandedAncestors, typename])}`,
+			);
+}
+
 function getNodeSelection(
 	typename: string,
 	expandedAncestors: string[] = [],
 ): string {
 	if (objectMap.has(typename)) {
-		const adjacentSelections =
-			EXPANDED_NODE_TYPES.includes(typename) &&
-			!expandedAncestors.includes(typename)
-				? getRelationshipFields(typename).map(
-						({ name, type }) =>
-							`${name}(limit: ${RELATIONSHIP_NODES_LIMIT}) ${getNodeSelection(type.name, [...expandedAncestors, typename])}`,
-					)
-				: [];
-
-		return `{ __typename ${[...getScalarFieldNames(typename), ...adjacentSelections].join(' ')} }`;
+		return `{ __typename ${[
+			...getScalarFieldNames(typename),
+			...getAdjacentSelections(typename, expandedAncestors),
+		].join(' ')} }`;
 	}
 
 	const concreteTypes =
@@ -208,7 +213,10 @@ function getNodeSelection(
 				: field.name;
 		});
 
-		return `... on ${type} { ${selections.join(' ')} }`;
+		return `... on ${type} { ${[
+			...selections,
+			...getAdjacentSelections(type, expandedAncestors),
+		].join(' ')} }`;
 	});
 
 	return `{ __typename ${fragments.join(' ')} }`;
