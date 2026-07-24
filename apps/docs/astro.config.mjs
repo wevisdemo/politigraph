@@ -1,3 +1,4 @@
+import { resolve } from 'node:path';
 import starlight from '@astrojs/starlight';
 import vue from '@astrojs/vue';
 import tailwindcss from '@tailwindcss/vite';
@@ -7,7 +8,10 @@ import { defineConfig, passthroughImageService } from 'astro/config';
 export default defineConfig({
 	site: 'https://politigraph.wevis.info',
 	// @ts-expect-error starlight config type doesn't include vite
-	vite: { plugins: [tailwindcss()] },
+	vite: {
+		plugins: [tailwindcss()],
+		envDir: resolve(import.meta.dirname, '../../'),
+	},
 	image: {
 		service: passthroughImageService(),
 	},

@@ -16,4 +16,4 @@ Landing page and documentations to be built as static website
 
 ## Environment Variables
 
-- `POLITIGRAPH_URL` for GraphQL endpoint (optional, default to https://politigraph.wevis.info/graphql)
+- `PUBLIC_POLITIGRAPH_URL` for GraphQL endpoint (optional, default to https://politigraph.wevis.info/graphql). Read from the root `.env` via Vite's `envDir`; the `PUBLIC_` prefix is required to expose it to browser code.

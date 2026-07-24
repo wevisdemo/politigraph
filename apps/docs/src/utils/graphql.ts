@@ -6,6 +6,10 @@ type GraphqlResponse =
 	  }
 	| { errors: { message: string }[] };
 
+const GRAPHQL_URL =
+	import.meta.env.PUBLIC_POLITIGRAPH_URL ??
+	'https://politigraph.wevis.info/graphql';
+
 const RATE_LIMIT_DELAY = 1000 / 2.9;
 
 let lastRequestTime = 0;
@@ -25,21 +29,16 @@ export async function fetchGraphql(
 
 	lastRequestTime = Date.now();
 
-	const response = await fetch(
-		process.env.POLITIGRAPH_URL ??
-			import.meta.env.POLITIGRAPH_URL ??
-			'https://politigraph.wevis.info/graphql',
-		{
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-			},
-			body: JSON.stringify({
-				query: query.replaceAll(' id ', ' __typename id '),
-				variables: variables ?? {},
-			}),
+	const response = await fetch(GRAPHQL_URL, {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
 		},
-	);
+		body: JSON.stringify({
+			query: query.replaceAll(' id ', ' __typename id '),
+			variables: variables ?? {},
+		}),
+	});
 
 	if (!response.ok) {
 		throw new Error(response.statusText);
