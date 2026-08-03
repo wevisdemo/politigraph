@@ -1,0 +1,66 @@
+---
+import { Icon } from '@astrojs/starlight/components';
+import MobileMenuFooter from '@astrojs/starlight/components/MobileMenuFooter.astro';
+import {
+	Launch16,
+	// @ts-expect-error carbon icons vue has incomplete type exports
+} from '@carbon/icons-vue';
+import { getNavLinks, isActiveNavLink } from '../utils/nav';
+
+const { locale } = Astro.locals.starlightRoute;
+const links = getNavLinks(locale);
+const pathname = Astro.url.pathname;
+---
+
+<details class="md:sl-hidden print:hidden">
+	<summary
+		class="fixed top-[calc((var(--sl-nav-height)-var(--sl-menu-button-size))/2)] end-(--sl-nav-pad-x) z-(--sl-z-index-navbar) flex size-(--sl-menu-button-size) cursor-pointer list-none items-center justify-center [&::-webkit-details-marker]:hidden"
+	>
+		<Icon name="bars" size="var(--sl-text-xl)" class="open-icon" />
+		<Icon name="close" size="var(--sl-text-xl)" class="close-icon" />
+	</summary>
+	<div
+		class="fixed inset-x-0 top-(--sl-nav-height) bottom-0 z-(--sl-z-index-menu) flex flex-col overflow-y-auto bg-(--sl-color-black) pt-4"
+	>
+		<nav>
+			{
+				links.map((link) => (
+					<a
+						href={link.href}
+						target={link.external ? '_blank' : undefined}
+						rel={link.external ? 'noreferrer' : undefined}
+						class:list={[
+							'flex items-center gap-1 border-l-4 px-4 py-2 no-underline',
+							isActiveNavLink(link, pathname)
+								? 'border-accent-600 dark:border-accent-200 bg-gray-200 text-black dark:bg-gray-700 dark:text-white'
+								: 'border-transparent text-(--sl-color-gray-2)',
+						]}
+					>
+						{link.label}
+						{link.external && <Launch16 aria-hidden="true" />}
+					</a>
+				))
+			}
+		</nav>
+		<div class="mt-auto px-4">
+			<MobileMenuFooter />
+		</div>
+	</div>
+</details>
+
+<style>
+	details[open] .open-icon,
+	details:not([open]) .close-icon {
+		display: none;
+	}
+</style>
+
+<style is:global>
+	@media (max-width: 49.999rem) {
+		header.header {
+			padding-inline-end: calc(
+				var(--sl-nav-gap) + var(--sl-nav-pad-x) + var(--sl-menu-button-size)
+			);
+		}
+	}
+</style>

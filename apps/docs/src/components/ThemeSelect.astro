@@ -2,14 +2,14 @@
 import { Icon } from '@astrojs/starlight/components';
 ---
 
-<starlight-theme-select>
+<starlight-theme-select class="flex items-center">
 	<button
 		type="button"
 		class="theme-toggle flex items-center justify-center w-10 h-10 bg-transparent border-none cursor-pointer transition-opacity hover:opacity-60"
 		aria-label="Toggle theme"
 	>
-		<Icon name="sun" class="w-5 h-5 absolute block sun-icon" />
-		<Icon name="moon" class="w-5 h-5 absolute hidden moon-icon" />
+		<Icon name="sun" class="w-5 h-5 block sun-icon" />
+		<Icon name="moon" class="w-5 h-5 hidden moon-icon" />
 	</button>
 </starlight-theme-select>
 

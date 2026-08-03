@@ -1,48 +1,20 @@
 ---
-import Default from '@astrojs/starlight/components/SocialIcons.astro';
+import { Icon } from '@astrojs/starlight/components';
+import config from 'virtual:starlight/user-config';
 
-const { siteTitleHref, locale } = Astro.locals.starlightRoute;
-const isEn = locale === 'en';
-const base = siteTitleHref === '/' ? '' : siteTitleHref.replace(/\/$/, '');
-
-const navLinks = [
-	{ href: `${base}/getting-started/`, label: isEn ? 'Doc' : 'คู่มือ' },
-	{ href: '/explore', label: isEn ? 'Explore' : 'สำรวจ' },
-	{ href: '/graphql', label: 'GraphQL' },
-];
-
-const currentPath = Astro.url.pathname;
-const isCurrent = (href: string) => currentPath.startsWith(href);
+const links = config.social ?? [];
 ---
 
-<nav class="top-nav sl-hidden md:sl-flex" aria-label="Main">
-	{
-		navLinks.map(({ href, label }) => (
-			<a href={href} aria-current={isCurrent(href) ? 'page' : undefined}>
-				{label}
-			</a>
-		))
-	}
-</nav>
-<Default />
-
-<style>
-	@layer starlight.core {
-		.top-nav {
-			gap: 1.25rem;
-			align-items: center;
-			margin-inline-end: 0.5rem;
-			padding-inline-start: 1rem;
-		}
-		.top-nav a {
-			color: var(--sl-color-gray-2);
-			text-decoration: none;
-			font-size: var(--sl-text-sm);
-			white-space: nowrap;
-		}
-		.top-nav a:hover,
-		.top-nav a[aria-current='page'] {
-			color: var(--sl-color-text-accent);
-		}
-	}
-</style>
+{
+	links.map(({ label, href, icon }) => (
+		<a
+			{href}
+			target="_blank"
+			rel="me noreferrer"
+			class="sl-flex -m-2 p-2 text-(--sl-color-gray-2) transition-colors hover:text-(--sl-color-white)"
+		>
+			<span class="sr-only">{label}</span>
+			<Icon name={icon} />
+		</a>
+	))
+}

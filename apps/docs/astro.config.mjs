@@ -88,6 +88,11 @@ export default defineConfig({
 					},
 					link: '/explore',
 				},
+				{
+					label: 'GraphQL Playground',
+					link: '/graphql',
+					attrs: { target: '_blank' },
+				},
 			],
 			tableOfContents: false,
 			lastUpdated: true,
@@ -96,6 +101,8 @@ export default defineConfig({
 				'@fontsource/ibm-plex-sans-thai-looped',
 			],
 			components: {
+				Header: './src/components/header.astro',
+				SocialIcons: './src/components/social-icons.astro',
 				Footer: './src/components/footer.astro',
 				ThemeSelect: './src/components/ThemeSelect.astro',
 				LanguageSelect: './src/components/LanguageSelect.astro',

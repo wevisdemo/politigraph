@@ -1,6 +1,9 @@
 export type Language = 'th' | 'en';
 
 const th = {
+	navDocumentation: 'คู่มือการใช้',
+	navExplore: 'สำรวจข้อมูล',
+	navPlayground: 'GraphQL Playground',
 	exploreTitle: 'สำรวจข้อมูล',
 	exploreHint: 'เลือก Node เริ่มต้นเพื่อสำรวจข้อมูลโดยรอบในรูปแบบ Graph',
 	exploreNodeNotFound: (label: string) => `ไม่พบข้อมูลของ "${label}"`,
@@ -15,6 +18,9 @@ const th = {
 };
 
 const en: typeof th = {
+	navDocumentation: 'Documentation',
+	navExplore: 'Explore',
+	navPlayground: 'GraphQL Playground',
 	exploreTitle: 'Explore',
 	exploreHint: 'Select starting node to explore its surrounding data graph',
 	exploreNodeNotFound: (label: string) => `No data found for "${label}"`,
