@@ -13,9 +13,9 @@ jobs:
     name: Update database server
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Upload compose files to server
-        uses: burnett01/rsync-deployments@7.0.1
+        uses: burnett01/rsync-deployments@9.0.0
         with:
           switches: -azvP --chown=bot:deployer --chmod=g+w
           path: servers/db/
@@ -24,7 +24,7 @@ jobs:
           remote_key: ${{ secrets.SSH_KEY }}
           remote_path: ${{ secrets.SSH_DB_DIR }}
       - name: Update DB containers
-        uses: appleboy/ssh-action@v1.2.0
+        uses: appleboy/ssh-action@v1.2.5
         with:
           host: ${{ secrets.SSH_DB_HOST }}
           username: bot

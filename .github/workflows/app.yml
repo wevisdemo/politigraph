@@ -24,7 +24,7 @@ jobs:
       BETTER_AUTH_SECRET: testsecretkey123
       BETTER_AUTH_URL: http://localhost:8000
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
       - name: Install dependencies
@@ -45,7 +45,7 @@ jobs:
       - name: Stop test containers
         if: always()
         run: docker compose -f compose.test.yml down
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v7
         if: ${{ !cancelled() }}
         with:
           name: playwright-report
@@ -57,13 +57,13 @@ jobs:
     needs:
       - test
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Build image
         run: docker build -t wevisdemo/politigraph .
       - name: Save image
         run: docker save wevisdemo/politigraph | gzip > politigraph-image.tar.gz
       - name: Upload image and configs to server
-        uses: burnett01/rsync-deployments@7.0.1
+        uses: burnett01/rsync-deployments@9.0.0
         with:
           switches: -azvP --chown=bot:deployer --chmod=g+w
           path: servers/app/compose.yml servers/app/nginx.conf politigraph-image.tar.gz
@@ -77,7 +77,7 @@ jobs:
     needs:
       - test
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
       - name: Install dependencies
@@ -104,7 +104,7 @@ jobs:
       - migrate-database
     steps:
       - name: Update server containers
-        uses: appleboy/ssh-action@v1.2.0
+        uses: appleboy/ssh-action@v1.2.5
         with:
           host: ${{ secrets.SSH_APP_HOST }}
           username: bot
@@ -125,7 +125,7 @@ jobs:
     needs:
       - update-server
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
       - name: Install dependencies
@@ -136,7 +136,7 @@ jobs:
           NODE_ENV: production
           NUXT_PUBLIC_BASE_URL: https://politigraph.wevis.info
       - name: Upload admin to server
-        uses: burnett01/rsync-deployments@7.0.1
+        uses: burnett01/rsync-deployments@9.0.0
         with:
           switches: -azvP --chown=bot:deployer --chmod=g+w --delete
           path: ./apps/admin/.output/public/*
@@ -145,7 +145,7 @@ jobs:
           remote_key: ${{ secrets.SSH_KEY }}
           remote_path: ${{ secrets.SSH_FRONTEND_DIR }}/admin
       - name: Upload docs to server
-        uses: burnett01/rsync-deployments@7.0.1
+        uses: burnett01/rsync-deployments@9.0.0
         with:
           switches: -azvP --chown=bot:deployer --chmod=g+w --delete
           path: ./apps/docs/dist/*
