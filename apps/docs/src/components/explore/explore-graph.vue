@@ -13,22 +13,36 @@ import {
 	type GraphqlDataResponse,
 	type GraphqlObject,
 } from '../../utils/schema';
+import { useTheme, type Theme } from '../../utils/theme';
 import QueryGraph from '../query-graph.vue';
 import SearchOverlay from './search-overlay.vue';
 
 const NODE_TYPE_PARAM = 'type';
 const NODE_ID_PARAM = 'id';
 
-const CENTER_NODE_COLOR = '#f59e0b';
-const MAIN_NODE_COLOR = '#4466cc';
-const SUB_NODE_COLOR = '#8899dd';
-const EDGE_COLOR = '#dddddd';
+const THEME_COLORS = {
+	light: {
+		centerNode: '#f59e0b',
+		mainNode: '#4466cc',
+		subNode: '#8899dd',
+		edge: '#dddddd',
+	},
+	dark: {
+		centerNode: '#f59e0b',
+		mainNode: '#7f9bec',
+		subNode: '#4d5f9e',
+		edge: '#383838',
+	},
+} satisfies Record<Theme, Record<string, string>>;
 
 const props = defineProps<{
 	lang: Language;
 }>();
 
 const t = useTranslations(props.lang);
+
+const theme = useTheme();
+const colors = computed(() => THEME_COLORS[theme.value]);
 
 const centerNode = ref<GraphqlObject | null>(null);
 const hasExpanded = ref(false);
@@ -140,12 +154,12 @@ onUnmounted(() => window.removeEventListener('popstate', syncFromUrl));
 			:getNodeColor="
 				(node) =>
 					node.id === centerNode?.id
-						? CENTER_NODE_COLOR
+						? colors.centerNode
 						: mainNodeTypes.has(node.__typename)
-							? MAIN_NODE_COLOR
-							: SUB_NODE_COLOR
+							? colors.mainNode
+							: colors.subNode
 			"
-			:edgeColor="EDGE_COLOR"
+			:edgeColor="colors.edge"
 			@node-activate="(node) => exploreNode(node, { fromGraph: true })"
 		>
 			<template v-slot:overlay>
@@ -160,7 +174,7 @@ onUnmounted(() => window.removeEventListener('popstate', syncFromUrl));
 				>
 					<p
 						v-if="!hasExpanded"
-						class="mt-1 rounded-sm border border-gray-200 bg-white/80 px-2 py-1 text-center text-xs italic leading-none text-gray-400"
+						class="mt-1 rounded-sm border border-gray-200 bg-white/80 px-2 py-1 text-center text-xs italic leading-none text-gray-400 dark:border-gray-700 dark:bg-gray-900/80"
 					>
 						{{ t.exploreInteractHint }}
 					</p>

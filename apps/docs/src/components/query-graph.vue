@@ -33,6 +33,7 @@ import {
 	type GraphqlDataResponse,
 	type GraphqlObject,
 } from '../utils/schema';
+import { useTheme, type Theme } from '../utils/theme';
 import BaseView from './graph/base-view.vue';
 import Legend from './graph/legend.vue';
 
@@ -42,14 +43,37 @@ interface SimNode extends SimulationNodeDatum {
 
 const MAX_GRAPH_LABEL_LENGTH = 20;
 const NODE_RADIUS = 14;
-const NODE_COLOR = '#4466cc';
-const EDGE_COLOR = '#bbb';
-const DIMMED_NODE_COLOR = '#e5e7eb';
-const DIMMED_PICTOGRAM_COLOR = '#f9fafb';
-const DIMMED_EDGE_COLOR = '#eeeeee';
-const DIMMED_LABEL_COLOR = '#cccccc';
 const LABEL_GAP = 4;
 const LABEL_PADDING = 4;
+
+const THEME_COLORS = {
+	light: {
+		node: '#4466cc',
+		pictogram: '#ffffff',
+		edge: '#bbbbbb',
+		dimmedNode: '#e5e7eb',
+		dimmedPictogram: '#f9fafb',
+		dimmedEdge: '#eeeeee',
+		dimmedLabel: '#cccccc',
+		label: '#333333',
+		background: '#f6f6f6',
+		surface: '#ffffff',
+		shadow: '#000000',
+	},
+	dark: {
+		node: '#7f9bec',
+		pictogram: '#181818',
+		edge: '#585858',
+		dimmedNode: '#383838',
+		dimmedPictogram: '#272727',
+		dimmedEdge: '#272727',
+		dimmedLabel: '#585858',
+		label: '#c2c2c2',
+		background: '#181818',
+		surface: '#272727',
+		shadow: '#000000',
+	},
+} satisfies Record<Theme, Record<string, string>>;
 
 function getLabelCenterY(data: { y: number; size: number }, labelSize: number) {
 	return data.y + data.size + LABEL_GAP + labelSize / 2;
@@ -74,81 +98,79 @@ const drawNodeLabel: NodeLabelDrawingFunction = (context, data, settings) => {
 	context.textBaseline = 'alphabetic';
 };
 
-const drawNodeHover: NodeHoverDrawingFunction = (context, data, settings) => {
-	if (typeof data.label !== 'string') return;
+const createDrawNodeHover =
+	(theme: Theme): NodeHoverDrawingFunction =>
+	(context, data, settings) => {
+		if (typeof data.label !== 'string') return;
 
-	const { labelSize } = settings;
-	context.font = `${settings.labelWeight} ${labelSize}px ${settings.labelFont}`;
+		const { labelSize } = settings;
+		context.font = `${settings.labelWeight} ${labelSize}px ${settings.labelFont}`;
 
-	const boxWidth = context.measureText(data.label).width + LABEL_PADDING * 2;
-	const boxHeight = labelSize + LABEL_PADDING * 2;
+		const boxWidth = context.measureText(data.label).width + LABEL_PADDING * 2;
+		const boxHeight = labelSize + LABEL_PADDING * 2;
 
-	context.fillStyle = '#fff';
-	context.shadowOffsetX = 0;
-	context.shadowOffsetY = 0;
-	context.shadowBlur = 8;
-	context.shadowColor = '#000';
-	context.beginPath();
-	context.roundRect(
-		data.x - boxWidth / 2,
-		getLabelCenterY(data, labelSize) - boxHeight / 2,
-		boxWidth,
-		boxHeight,
-		LABEL_PADDING,
-	);
-	context.fill();
-	context.shadowBlur = 0;
+		context.fillStyle = THEME_COLORS[theme].surface;
+		context.shadowOffsetX = 0;
+		context.shadowOffsetY = 0;
+		context.shadowBlur = 8;
+		context.shadowColor = THEME_COLORS[theme].shadow;
+		context.beginPath();
+		context.roundRect(
+			data.x - boxWidth / 2,
+			getLabelCenterY(data, labelSize) - boxHeight / 2,
+			boxWidth,
+			boxHeight,
+			LABEL_PADDING,
+		);
+		context.fill();
+		context.shadowBlur = 0;
 
-	drawNodeLabel(context, data, settings);
-};
+		drawNodeLabel(context, data, settings);
+	};
 
-const drawEdgeLabel: EdgeLabelDrawingFunction = (
-	context,
-	edgeData,
-	sourceData,
-	targetData,
-	settings,
-) => {
-	const label = edgeData.label;
-	if (!label) return;
+const createDrawEdgeLabel =
+	(theme: Theme): EdgeLabelDrawingFunction =>
+	(context, edgeData, sourceData, targetData, settings) => {
+		const label = edgeData.label;
+		if (!label) return;
 
-	const size = settings.edgeLabelSize;
-	context.font = `${settings.edgeLabelWeight} ${size}px ${settings.edgeLabelFont}`;
+		const size = settings.edgeLabelSize;
+		context.font = `${settings.edgeLabelWeight} ${size}px ${settings.edgeLabelFont}`;
 
-	let sx = sourceData.x;
-	let sy = sourceData.y;
-	let tx = targetData.x;
-	let ty = targetData.y;
-	const dx = tx - sx;
-	const dy = ty - sy;
-	const d = Math.sqrt(dx * dx + dy * dy);
-	if (d < sourceData.size + targetData.size) return;
+		let sx = sourceData.x;
+		let sy = sourceData.y;
+		let tx = targetData.x;
+		let ty = targetData.y;
+		const dx = tx - sx;
+		const dy = ty - sy;
+		const d = Math.sqrt(dx * dx + dy * dy);
+		if (d < sourceData.size + targetData.size) return;
 
-	sx += (dx * sourceData.size) / d;
-	sy += (dy * sourceData.size) / d;
-	tx -= (dx * targetData.size) / d;
-	ty -= (dy * targetData.size) / d;
+		sx += (dx * sourceData.size) / d;
+		sy += (dy * sourceData.size) / d;
+		tx -= (dx * targetData.size) / d;
+		ty -= (dy * targetData.size) / d;
 
-	const angle = Math.atan2(ty - sy, tx - sx);
-	const flipped = angle > Math.PI / 2 || angle < -Math.PI / 2;
-	const textWidth = context.measureText(label).width;
+		const angle = Math.atan2(ty - sy, tx - sx);
+		const flipped = angle > Math.PI / 2 || angle < -Math.PI / 2;
 
-	context.save();
-	context.translate((sx + tx) / 2, (sy + ty) / 2);
-	context.rotate(flipped ? angle + Math.PI : angle);
-	context.textAlign = 'center';
-	context.textBaseline = 'middle';
-	context.lineJoin = 'round';
-	context.lineWidth = 4;
-	context.strokeStyle = '#fff';
-	context.strokeText(label, 0, -(edgeData.size / 2 + size / 2));
-	context.fillStyle = settings.edgeLabelColor.color ?? NODE_COLOR;
-	context.fillText(label, 0, -(edgeData.size / 2 + size / 2));
-	context.restore();
+		context.save();
+		context.translate((sx + tx) / 2, (sy + ty) / 2);
+		context.rotate(flipped ? angle + Math.PI : angle);
+		context.textAlign = 'center';
+		context.textBaseline = 'middle';
+		context.lineJoin = 'round';
+		context.lineWidth = 4;
+		context.strokeStyle = THEME_COLORS[theme].background;
+		context.strokeText(label, 0, -(edgeData.size / 2 + size / 2));
+		context.fillStyle =
+			settings.edgeLabelColor.color ?? THEME_COLORS[theme].node;
+		context.fillText(label, 0, -(edgeData.size / 2 + size / 2));
+		context.restore();
 
-	context.textAlign = 'left';
-	context.textBaseline = 'alphabetic';
-};
+		context.textAlign = 'left';
+		context.textBaseline = 'alphabetic';
+	};
 
 const props = defineProps<{
 	data: GraphqlDataResponse;
@@ -161,6 +183,9 @@ const props = defineProps<{
 }>();
 
 const t = useTranslations(props.labelLang ?? 'en');
+
+const theme = useTheme();
+const colors = computed(() => THEME_COLORS[theme.value]);
 
 const emit = defineEmits<{
 	nodeSelect: [node: GraphqlObject];
@@ -375,8 +400,8 @@ function rebuildGraph() {
 			x,
 			y,
 			size: NODE_RADIUS * (props.getNodeSizeScale?.(node) ?? 1),
-			color: props.getNodeColor?.(node) ?? NODE_COLOR,
-			pictogramColor: '#ffffff',
+			color: props.getNodeColor?.(node) ?? colors.value.node,
+			pictogramColor: colors.value.pictogram,
 			image: getIconDataUri(node.__typename),
 			label: truncateLabel(getObjectLabel(node, props.labelLang)),
 		});
@@ -385,7 +410,7 @@ function rebuildGraph() {
 	Object.entries(edges).forEach(([id, { source, target, label }]) => {
 		graphology.addEdgeWithKey(id, source, target, {
 			size: 1,
-			color: props.edgeColor ?? EDGE_COLOR,
+			color: props.edgeColor ?? colors.value.edge,
 			relationLabel: label,
 		});
 	});
@@ -453,10 +478,10 @@ onMounted(async () => {
 			arrow: EdgeArrowProgram,
 		},
 		defaultDrawNodeLabel: drawNodeLabel,
-		defaultDrawNodeHover: drawNodeHover,
+		defaultDrawNodeHover: createDrawNodeHover(theme.value),
 		labelSize: 10,
 		labelFont: 'IBM Plex Sans Thai Looped, sans-serif',
-		labelColor: { color: '#333333' },
+		labelColor: { color: colors.value.label },
 		labelDensity: 4,
 		labelGridCellSize: 50,
 		zIndex: true,
@@ -464,8 +489,8 @@ onMounted(async () => {
 		edgeLabelSize: 10,
 		edgeLabelWeight: 'bold',
 		edgeLabelFont: 'IBM Plex Sans Thai Looped, sans-serif',
-		edgeLabelColor: { color: NODE_COLOR },
-		defaultDrawEdgeLabel: drawEdgeLabel,
+		edgeLabelColor: { color: colors.value.node },
+		defaultDrawEdgeLabel: createDrawEdgeLabel(theme.value),
 		nodeReducer: (id, data) => {
 			if (
 				selectedNodes.value.includes(id) ||
@@ -478,9 +503,9 @@ onMounted(async () => {
 			if (selectedPath.value && !selectedPath.value.nodes.has(id)) {
 				return {
 					...data,
-					color: DIMMED_NODE_COLOR,
-					pictogramColor: DIMMED_PICTOGRAM_COLOR,
-					labelColor: DIMMED_LABEL_COLOR,
+					color: colors.value.dimmedNode,
+					pictogramColor: colors.value.dimmedPictogram,
+					labelColor: colors.value.dimmedLabel,
 					zIndex: 0,
 				};
 			}
@@ -490,7 +515,7 @@ onMounted(async () => {
 		edgeReducer: (id, data) => {
 			if (!hoveredPathEdges.has(id) && !selectedPath.value?.edges.has(id)) {
 				return selectedPath.value
-					? { ...data, color: DIMMED_EDGE_COLOR, zIndex: 0 }
+					? { ...data, color: colors.value.dimmedEdge, zIndex: 0 }
 					: data;
 			}
 
@@ -501,7 +526,7 @@ onMounted(async () => {
 
 			return {
 				...data,
-				color: NODE_COLOR,
+				color: colors.value.node,
 				size: 2,
 				zIndex: 1,
 				forceLabel: true,
@@ -588,6 +613,24 @@ onBeforeUnmount(() => {
 	sigma?.kill();
 });
 
+watch(colors, (value) => {
+	graphology.forEachNode((id) =>
+		graphology.mergeNodeAttributes(id, {
+			color: props.getNodeColor?.(graph.value.nodes[id]) ?? value.node,
+			pictogramColor: value.pictogram,
+		}),
+	);
+	graphology.forEachEdge((id) =>
+		graphology.setEdgeAttribute(id, 'color', props.edgeColor ?? value.edge),
+	);
+
+	sigma?.setSetting('labelColor', { color: value.label });
+	sigma?.setSetting('edgeLabelColor', { color: value.node });
+	sigma?.setSetting('defaultDrawNodeHover', createDrawNodeHover(theme.value));
+	sigma?.setSetting('defaultDrawEdgeLabel', createDrawEdgeLabel(theme.value));
+	sigma?.refresh({ skipIndexation: true });
+});
+
 watch(graph, () => {
 	hoveredPathNodes.clear();
 	hoveredPathEdges.clear();
@@ -662,11 +705,11 @@ const selectedNode = computed(() => {
 						<li
 							v-for="[key, value] in selectedNode.fields"
 							:key="key"
-							class="mt-0 break-all border-t border-gray-700 pb-1 pt-2 leading-normal"
+							class="mt-0 break-all border-t border-gray-300 pb-1 pt-2 leading-normal dark:border-gray-700"
 						>
-							<!-- selectedNode.schema.fields.find((field) => field.name === key)
-							?.description -->
-							<span class="font-bold text-white">{{ key }}:</span>
+							<span class="font-bold text-black dark:text-white"
+								>{{ key }}:</span
+							>
 							{{ ' ' }}
 							<span v-if="value === null" class="italic text-gray-400"
 								>null</span
@@ -681,7 +724,7 @@ const selectedNode = computed(() => {
 							<ul v-else class="mt-1 flex list-none flex-col p-0">
 								<li v-for="node in value" class="ml-6 mt-0 list-disc">
 									<span
-										class="cursor-pointer text-left text-blue-400"
+										class="cursor-pointer text-left text-blue-700 dark:text-blue-400"
 										@click="selectedNodes = [node.id]"
 									>
 										{{ getObjectLabel(node, labelLang) }}
@@ -692,7 +735,7 @@ const selectedNode = computed(() => {
 					</ul>
 					<p class="mt-auto text-xs italic leading-tight text-gray-400">
 						{{ t.graphPartialSchemaNote }}
-						<a href="/docs/schema" class="text-blue-400">{{
+						<a href="/docs/schema" class="text-blue-700 dark:text-blue-400">{{
 							t.graphFullSchemaLink
 						}}</a>
 					</p>

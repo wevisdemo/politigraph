@@ -17,6 +17,7 @@ import {
 	unions,
 	type SchemaNode,
 } from '../utils/schema';
+import { useTheme, type Theme } from '../utils/theme';
 import BaseView from './graph/base-view.vue';
 import Legend from './graph/legend.vue';
 
@@ -32,11 +33,21 @@ interface Edge {
 	label?: string;
 }
 
-const GraphicColor = {
-	Foreground: '#4466cc',
-	Disabled: '#ccc',
-	Background: '#f3f4f6',
-};
+const THEME_COLORS = {
+	light: {
+		foreground: '#4466cc',
+		disabled: '#c2c2c2',
+		background: '#f6f6f6',
+	},
+	dark: {
+		foreground: '#7f9bec',
+		disabled: '#585858',
+		background: '#181818',
+	},
+} satisfies Record<Theme, Record<string, string>>;
+
+const theme = useTheme();
+const colors = computed(() => THEME_COLORS[theme.value]);
 
 const configs = defineConfigs<Node, Edge>({
 	view: {
@@ -52,20 +63,20 @@ const configs = defineConfigs<Node, Edge>({
 			height: 60,
 			borderRadius: 5,
 			color: (node) =>
-				'interfaces' in node ? getNodeColor(node) : GraphicColor.Background,
+				'interfaces' in node ? getNodeColor(node) : colors.value.background,
 			strokeColor: (node) =>
-				'interfaces' in node ? GraphicColor.Background : getNodeColor(node),
+				'interfaces' in node ? colors.value.background : getNodeColor(node),
 			strokeWidth: 1,
 			strokeDasharray: (node) => ('types' in node ? 4 : 0),
 		},
 		hover: {
 			color: (node) =>
-				'interfaces' in node ? getNodeColor(node) : GraphicColor.Background,
+				'interfaces' in node ? getNodeColor(node) : colors.value.background,
 		},
 		label: {
 			direction: 'center',
 			color: (node) =>
-				'interfaces' in node ? GraphicColor.Background : getNodeColor(node),
+				'interfaces' in node ? colors.value.background : getNodeColor(node),
 		},
 		zOrder: {
 			enabled: true,
@@ -190,14 +201,14 @@ const activeEdges = computed(() =>
 
 function getNodeColor(node: Node) {
 	return isGraphicActive(node)
-		? GraphicColor.Foreground
-		: GraphicColor.Disabled;
+		? colors.value.foreground
+		: colors.value.disabled;
 }
 
 function getEdgeColor(edge: Edge) {
 	return isGraphicActive(edge)
-		? GraphicColor.Foreground
-		: GraphicColor.Disabled;
+		? colors.value.foreground
+		: colors.value.disabled;
 }
 
 function isGraphicActive(item: Node | Edge) {
@@ -280,18 +291,18 @@ function isGraphicActive(item: Node | Edge) {
 			<Legend
 				term="Object"
 				definition="ประเภทของ node ข้อมูลจริง"
-				:borderColor="GraphicColor.Foreground"
-				:backgroundColor="GraphicColor.Foreground"
+				:borderColor="colors.foreground"
+				:backgroundColor="colors.foreground"
 			/>
 			<Legend
 				term="Interface"
 				definition="ประเภทที่เป็นข้อกำหนดพื้นฐานให้ประเภทอื่นๆ นำไปใช้ต่อ"
-				:borderColor="GraphicColor.Foreground"
+				:borderColor="colors.foreground"
 			/>
 			<Legend
 				term="Union"
 				definition="เซ็ตของประเภทที่เป็นไปได้"
-				:borderColor="GraphicColor.Foreground"
+				:borderColor="colors.foreground"
 				dashed
 			/>
 		</template>
@@ -319,7 +330,7 @@ function isGraphicActive(item: Node | Edge) {
 						<button
 							v-for="type in selectedNode.interfaces"
 							:key="type"
-							class="cursor-pointer text-blue-400"
+							class="cursor-pointer text-blue-700 dark:text-blue-400"
 							@click="selectedNodes = [type]"
 						>
 							{{ type }}
@@ -345,7 +356,7 @@ function isGraphicActive(item: Node | Edge) {
 								:href="chunk"
 								target="_blank"
 								rel="noopener noreferrer"
-								class="text-blue-400"
+								class="text-blue-700 dark:text-blue-400"
 								>{{ chunk }}</a
 							>
 							<template v-else>{{ chunk }}</template>
@@ -359,7 +370,7 @@ function isGraphicActive(item: Node | Edge) {
 				>
 					<li v-for="type in selectedNode.types" :key="type">
 						<button
-							class="cursor-pointer text-blue-400"
+							class="cursor-pointer text-blue-700 dark:text-blue-400"
 							@click="selectedNodes = [type]"
 						>
 							{{ type }}
@@ -373,13 +384,13 @@ function isGraphicActive(item: Node | Edge) {
 					<li
 						v-for="{ name, description, type } in selectedNode.fields"
 						:key="name"
-						class="break-all border-t border-gray-700 pb-1 pt-2 leading-normal"
+						class="break-all border-t border-gray-300 pb-1 pt-2 leading-normal dark:border-gray-700"
 					>
 						<span class="font-bold">{{ name }}</span
 						>:
 						<button
 							v-if="graph.nodes[type.name]"
-							class="cursor-pointer text-blue-400"
+							class="cursor-pointer text-blue-700 dark:text-blue-400"
 							@click="selectedNodes = [type.name]"
 						>
 							{{ type.name }}</button
