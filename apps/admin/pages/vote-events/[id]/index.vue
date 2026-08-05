@@ -12,6 +12,7 @@ const route = useRoute();
 const graphqlClient = useGraphqlClient();
 
 const successToast = useToastNotification();
+const { isSaving, guardSave } = useSaveGuard(successToast);
 
 const { data: voteEventData, refresh: refreshVoteEvent } =
 	await useLazyAsyncData(async () => {
@@ -320,9 +321,9 @@ async function togglePublishStatus() {
 					)?.url
 				"
 				:is-publishing-disabled="!!voteValidationResult?.errors.length"
-				:is-save-disabled="!canSubmit"
+				:is-save-disabled="!canSubmit || isSaving"
 				@toggle-publish-status="togglePublishStatus"
-				@save="voteEventFormInput.handleSubmit"
+				@save="guardSave(voteEventFormInput.handleSubmit)"
 			/>
 		</template>
 	</voteEventFormInput.Subscribe>

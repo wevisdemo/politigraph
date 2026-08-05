@@ -319,6 +319,7 @@ const membershipOrganizationsOptions = computed(() => {
 });
 
 const toast = useToastNotification();
+const { isSaving, guardSave } = useSaveGuard(toast);
 
 function getOrganizationTypePlural(type: string): string {
 	const lower = type.toLowerCase().replaceAll('_', '-');
@@ -647,7 +648,8 @@ const saveChanges = async () => {
 				class="mt-4"
 				kind="primary"
 				:icon="Save16"
-				@click="saveChanges"
+				:disabled="isSaving"
+				@click="guardSave(saveChanges)"
 			>
 				Save Changes
 			</cv-button>

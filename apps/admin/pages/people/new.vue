@@ -34,6 +34,7 @@ const peopleDetailData = ref<PeopleDetailProps>({
 const router = useRouter();
 const graphqlClient = useGraphqlClient();
 const toast = useToastNotification();
+const { isSaving, guardSave } = useSaveGuard(toast);
 
 const { setImageBlob, uploadImage } = useImageUpload();
 
@@ -165,7 +166,13 @@ const savePeople = async () => {
 			}}
 		</h1>
 		<div class="flex flex-wrap items-start gap-4">
-			<cv-button class="mt-4" kind="primary" :icon="Add16" @click="savePeople">
+			<cv-button
+				class="mt-4"
+				kind="primary"
+				:icon="Add16"
+				:disabled="isSaving"
+				@click="guardSave(savePeople)"
+			>
 				Create
 			</cv-button>
 		</div>

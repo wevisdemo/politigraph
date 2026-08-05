@@ -14,6 +14,7 @@ const route = useRoute();
 const graphqlClient = useGraphqlClient();
 
 const successToast = useToastNotification();
+const { isSaving, guardSave } = useSaveGuard(successToast);
 
 const events = ref<BillEventForm[]>([]);
 
@@ -550,7 +551,13 @@ const { data: organizationList } = await useAsyncData(
 			{{ billData?.title }}
 		</h2>
 
-		<cv-button class="mt-4" kind="primary" :icon="Save16" @click="handleSave">
+		<cv-button
+			class="mt-4"
+			kind="primary"
+			:icon="Save16"
+			:disabled="isSaving"
+			@click="guardSave(handleSave)"
+		>
 			Save Changes
 		</cv-button>
 	</div>

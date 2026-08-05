@@ -16,10 +16,10 @@ type EditableVoteFields =
 const route = useRoute();
 const graphqlClient = useGraphqlClient();
 
-const isSaving = ref(false);
 const isShowBatchNameCorrectionModal = ref(false);
 const isShowNotificationError = ref(false);
 const successToast = useToastNotification();
+const { isSaving, guardSave } = useSaveGuard(successToast);
 const originalVotesMap = ref<Record<string, Partial<Vote>>>({});
 const originalCount = reactive<
 	Record<
@@ -163,7 +163,7 @@ const selectVoter = (rowId: string, voterId: string) => {
 };
 
 async function onSaveChanges() {
-	if (isSaving.value || !voteEvent.value) return;
+	if (!voteEvent.value) return;
 
 	const summaryCountKeyChanges = Object.entries(originalCount)
 		.filter(
@@ -195,185 +195,175 @@ async function onSaveChanges() {
 	)
 		return;
 
-	isSaving.value = true;
-
-	try {
-		if (
-			summaryCountKeyChanges.length ||
-			(voteEvent.value.publish_status === 'ERROR' &&
-				!voteValidationResult.value?.errors.length) ||
-			(voteEvent.value.publish_status === 'UNPUBLISHED' &&
-				voteValidationResult.value?.errors.length)
-		) {
-			await graphqlClient.mutation({
-				updateVoteEvents: {
-					__args: {
-						where: {
-							id: { eq: voteEvent.value.id },
-						},
-						update: {
-							publish_status: {
-								set: voteValidationResult.value?.errors.length
-									? 'ERROR'
-									: voteEvent.value.publish_status === 'PUBLISHED'
-										? 'PUBLISHED'
-										: 'UNPUBLISHED',
-							},
-							...Object.fromEntries(
-								summaryCountKeyChanges.map((key) => [
-									key,
-									{ set: voteEvent.value![key] },
-								]),
-							),
-						},
+	if (
+		summaryCountKeyChanges.length ||
+		(voteEvent.value.publish_status === 'ERROR' &&
+			!voteValidationResult.value?.errors.length) ||
+		(voteEvent.value.publish_status === 'UNPUBLISHED' &&
+			voteValidationResult.value?.errors.length)
+	) {
+		await graphqlClient.mutation({
+			updateVoteEvents: {
+				__args: {
+					where: {
+						id: { eq: voteEvent.value.id },
 					},
-					__scalar: true,
-				},
-			});
-		}
-
-		if (rowsToPatch.length) {
-			const mutationPromises = rowsToPatch.map((vote) => {
-				const voterId = getEffectiveVoterId(vote, selectedVoterIds.value);
-				const linkedVoterId = getLinkedVoterId(vote.id);
-
-				if (existingIds.has(vote.id)) {
-					// Update
-					return graphqlClient.mutation({
-						updateVotes: {
-							__args: {
-								where: {
-									id: { eq: vote.id },
-								},
-								update: {
-									vote_order: { set: vote.vote_order },
-									badge_number: { set: vote.badge_number },
-									voter_name_raw: { set: vote.voter_name_raw },
-									voter_party: { set: vote.voter_party },
-									option: { set: vote.option },
-									...(voterId !== linkedVoterId
-										? {
-												voters: [
-													{
-														...(linkedVoterId
-															? {
-																	disconnect: [
-																		{
-																			where: {
-																				node: { id: { eq: linkedVoterId } },
-																			},
-																		},
-																	],
-																}
-															: {}),
-														...(voterId
-															? {
-																	connect: [
-																		{
-																			where: {
-																				node: { id: { eq: voterId } },
-																			},
-																		},
-																	],
-																}
-															: {}),
-													},
-												],
-											}
-										: {}),
-								},
-							},
-							votes: {
-								id: true,
-							},
+					update: {
+						publish_status: {
+							set: voteValidationResult.value?.errors.length
+								? 'ERROR'
+								: voteEvent.value.publish_status === 'PUBLISHED'
+									? 'PUBLISHED'
+									: 'UNPUBLISHED',
 						},
-					});
-				} else {
-					// Create
-					return graphqlClient.mutation({
-						createVotes: {
-							__args: {
-								input: [
-									{
-										vote_order: vote.vote_order,
-										badge_number: vote.badge_number,
-										voter_name_raw:
-											vote.voter_name_raw ||
-											peopleOptions.value?.find((p) => p.value === voterId)
-												?.name ||
-											'',
-										voter_party: vote.voter_party,
-										option: vote.option,
-										...(voterId
-											? {
-													voters: {
-														connect: [
-															{
-																where: {
-																	node: { id: { eq: voterId } },
-																},
-															},
-														],
-													},
-												}
-											: {}),
-										vote_events: {
-											connect: [
+						...Object.fromEntries(
+							summaryCountKeyChanges.map((key) => [
+								key,
+								{ set: voteEvent.value![key] },
+							]),
+						),
+					},
+				},
+				__scalar: true,
+			},
+		});
+	}
+
+	if (rowsToPatch.length) {
+		const mutationPromises = rowsToPatch.map((vote) => {
+			const voterId = getEffectiveVoterId(vote, selectedVoterIds.value);
+			const linkedVoterId = getLinkedVoterId(vote.id);
+
+			if (existingIds.has(vote.id)) {
+				// Update
+				return graphqlClient.mutation({
+					updateVotes: {
+						__args: {
+							where: {
+								id: { eq: vote.id },
+							},
+							update: {
+								vote_order: { set: vote.vote_order },
+								badge_number: { set: vote.badge_number },
+								voter_name_raw: { set: vote.voter_name_raw },
+								voter_party: { set: vote.voter_party },
+								option: { set: vote.option },
+								...(voterId !== linkedVoterId
+									? {
+											voters: [
 												{
-													where: {
-														node: {
-															id: { eq: voteEvent.value?.id },
-														},
-													},
+													...(linkedVoterId
+														? {
+																disconnect: [
+																	{
+																		where: {
+																			node: { id: { eq: linkedVoterId } },
+																		},
+																	},
+																],
+															}
+														: {}),
+													...(voterId
+														? {
+																connect: [
+																	{
+																		where: {
+																			node: { id: { eq: voterId } },
+																		},
+																	},
+																],
+															}
+														: {}),
 												},
 											],
-										},
-									},
-								],
-							},
-							votes: {
-								id: true,
+										}
+									: {}),
 							},
 						},
-					});
-				}
-			});
-
-			await Promise.all(mutationPromises);
-		}
-
-		if (idsToDelete.length) {
-			await graphqlClient.mutation({
-				deleteVotes: {
-					__args: {
-						where: { id: { in: idsToDelete } },
+						votes: {
+							id: true,
+						},
 					},
-					nodesDeleted: true,
-				},
-			});
-		}
-
-		const rowChange = rowsToPatch.length + toDeleteIds.value.size;
-
-		// reset state
-		editedRows.value.clear();
-		editedCells.value.clear();
-		toDeleteIds.value.clear();
-		activeEditingCell.value = { columnId: null, rowId: null };
-		await refresh();
-
-		successToast.show({
-			kind: 'success',
-			title: 'Changes Saved',
-			subTitle: rowChange
-				? `Changes to ${rowChange} rows have been saved.`
-				: '',
+				});
+			} else {
+				// Create
+				return graphqlClient.mutation({
+					createVotes: {
+						__args: {
+							input: [
+								{
+									vote_order: vote.vote_order,
+									badge_number: vote.badge_number,
+									voter_name_raw:
+										vote.voter_name_raw ||
+										peopleOptions.value?.find((p) => p.value === voterId)
+											?.name ||
+										'',
+									voter_party: vote.voter_party,
+									option: vote.option,
+									...(voterId
+										? {
+												voters: {
+													connect: [
+														{
+															where: {
+																node: { id: { eq: voterId } },
+															},
+														},
+													],
+												},
+											}
+										: {}),
+									vote_events: {
+										connect: [
+											{
+												where: {
+													node: {
+														id: { eq: voteEvent.value?.id },
+													},
+												},
+											},
+										],
+									},
+								},
+							],
+						},
+						votes: {
+							id: true,
+						},
+					},
+				});
+			}
 		});
-	} catch (error) {
-		console.error('Error saving changes:', error);
-	} finally {
-		isSaving.value = false;
+
+		await Promise.all(mutationPromises);
 	}
+
+	if (idsToDelete.length) {
+		await graphqlClient.mutation({
+			deleteVotes: {
+				__args: {
+					where: { id: { in: idsToDelete } },
+				},
+				nodesDeleted: true,
+			},
+		});
+	}
+
+	const rowChange = rowsToPatch.length + toDeleteIds.value.size;
+
+	// reset state
+	editedRows.value.clear();
+	editedCells.value.clear();
+	toDeleteIds.value.clear();
+	activeEditingCell.value = { columnId: null, rowId: null };
+	await refresh();
+
+	successToast.show({
+		kind: 'success',
+		title: 'Changes Saved',
+		subTitle: rowChange ? `Changes to ${rowChange} rows have been saved.` : '',
+	});
 }
 
 async function togglePublishStatus() {
@@ -447,7 +437,7 @@ function scrollToRow(id: string) {
 			:is-publishing-disabled="!!voteValidationResult?.errors.length"
 			:is-save-disabled="isSaving"
 			@toggle-publish-status="togglePublishStatus"
-			@save="onSaveChanges"
+			@save="guardSave(onSaveChanges)"
 		/>
 
 		<VotesErrorNotifications

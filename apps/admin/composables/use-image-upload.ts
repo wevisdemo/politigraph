@@ -38,9 +38,13 @@ export function useImageUpload() {
 			body: formData,
 		});
 
-		return response.ok
-			? `${config.public.baseUrl}/assets/${path}/${await response.text()}`
-			: null;
+		if (!response.ok) {
+			throw new Error(
+				`Image upload failed with ${response.status}: ${await response.text()}`,
+			);
+		}
+
+		return `${config.public.baseUrl}/assets/${path}/${await response.text()}`;
 	}
 
 	return {

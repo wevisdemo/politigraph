@@ -271,6 +271,7 @@ const togglePublishStatus = async () => {
 };
 
 const toast = useToastNotification();
+const { isSaving, guardSave } = useSaveGuard(toast);
 
 const { data: organizationsOptions } = useOrganizationsWithPostsOptions();
 
@@ -307,7 +308,8 @@ watch(
 				class="mt-4"
 				kind="primary"
 				:icon="Save16"
-				@click="saveChanges"
+				:disabled="isSaving"
+				@click="guardSave(saveChanges)"
 			>
 				Save Changes
 			</cv-button>
