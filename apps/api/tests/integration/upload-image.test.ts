@@ -146,4 +146,43 @@ describe('upload-image route', () => {
 		const filePath = join(UPLOAD_DIR, 'custom-dir', 'test.png.webp');
 		expect(existsSync(filePath)).toBe(true);
 	});
+
+	describe('path traversal', () => {
+		const traversalCases = [
+			{ name: 'escaping path', path: '../..', filename: 'evil' },
+			{ name: 'absolute path', path: '/tmp', filename: 'evil' },
+			{ name: 'escaping filename', path: TEST_SUBDIR, filename: '../evil' },
+			{
+				name: 'backslash filename',
+				path: TEST_SUBDIR,
+				filename: '..\\evil',
+			},
+		];
+
+		test.each(traversalCases)('rejects $name', async ({ path, filename }) => {
+			(mockGetJwtToken as any).mockResolvedValue({ token: 'valid-token' });
+			(mockTransform as any).mockResolvedValue(Buffer.from('webp-image-data'));
+
+			const app = upload(ORIGIN);
+
+			const formData = new FormData();
+			formData.append(
+				'file',
+				new File(['test'], 'test.png', { type: 'image/png' }),
+			);
+			formData.append('path', path);
+			formData.append('filename', filename);
+
+			const response = await app.handle(
+				new Request(`${ORIGIN}/upload-image`, {
+					method: 'POST',
+					body: formData,
+				}),
+			);
+
+			expect(response.status).toBe(400);
+			expect(existsSync(join('uploads', '..', 'evil.webp'))).toBe(false);
+			expect(existsSync(join('/tmp', 'evil.webp'))).toBe(false);
+		});
+	});
 });
