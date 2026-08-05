@@ -112,6 +112,60 @@ export async function createVoteEventWithVotes(
 	};
 }
 
+export async function fetchVoteCount(page: Page, voteEventId: string) {
+	const response = await page.request.post('/graphql', {
+		headers: { 'Content-Type': 'application/json' },
+		data: {
+			query: `
+				query VoteEventVotes($id: ID!) {
+					voteEvents(where: { id: { eq: $id } }) {
+						votes {
+							id
+						}
+					}
+				}
+			`,
+			variables: { id: voteEventId },
+		},
+	});
+
+	expect(response.ok()).toBeTruthy();
+	const data = await response.json();
+	expect(data.errors, JSON.stringify(data.errors)).toBeUndefined();
+
+	return data.data.voteEvents[0].votes.length as number;
+}
+
+export async function fetchVote(page: Page, voteId: string) {
+	const response = await page.request.post('/graphql', {
+		headers: { 'Content-Type': 'application/json' },
+		data: {
+			query: `
+				query Vote($id: ID!) {
+					votes(where: { id: { eq: $id } }) {
+						voter_name_raw
+						option
+						voters {
+							name
+						}
+					}
+				}
+			`,
+			variables: { id: voteId },
+		},
+	});
+
+	expect(response.ok()).toBeTruthy();
+	const data = await response.json();
+	expect(data.errors, JSON.stringify(data.errors)).toBeUndefined();
+
+	return data.data.votes[0] as {
+		voter_name_raw: string;
+		option: string;
+		voters: { name: string }[];
+	};
+}
+
 export async function deleteVoteEvent(page: Page, voteEventId: string) {
 	const response = await page.request.post('/graphql', {
 		headers: { 'Content-Type': 'application/json' },

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { Vote } from '@politigraph/graphql/genql';
-import { validateVotes } from '~/utils/votes';
+import { VOTER_CELL_KEY } from '~/constants/votes';
+import { getEffectiveVoterId, validateVotes } from '~/utils/votes';
 
 definePageMeta({
 	layout: 'admin-layout',
@@ -9,7 +10,6 @@ definePageMeta({
 type EditableVoteFields =
 	| 'vote_order'
 	| 'badge_number'
-	| 'voter_name_raw'
 	| 'voter_party'
 	| 'option';
 
@@ -36,9 +36,20 @@ const originalCount = reactive<
 const editedRows = ref<Set<string>>(new Set());
 const editedCells = ref<Set<string>>(new Set());
 const toDeleteIds = ref<Set<string>>(new Set());
+const selectedVoterIds = ref<Record<string, string>>({});
+
+const votesWithSelectedVoters = computed(
+	() =>
+		voteEvent.value?.votes.map((vote) => {
+			const voterId = getEffectiveVoterId(vote, selectedVoterIds.value);
+			return { ...vote, voters: voterId ? [{ id: voterId }] : [] };
+		}) ?? [],
+);
 
 const voteValidationResult = computed(
-	() => voteEvent.value && validateVotes(voteEvent.value),
+	() =>
+		voteEvent.value &&
+		validateVotes({ ...voteEvent.value, votes: votesWithSelectedVoters.value }),
 );
 
 const activeEditingCell = ref<{
@@ -94,6 +105,7 @@ const { data: voteEvent, refresh } = useAsyncData(
 		originalCount.novote_count = voteEvent.novote_count;
 		originalCount.abstain_count = voteEvent.abstain_count;
 		originalVotesMap.value = {};
+		selectedVoterIds.value = {};
 
 		voteEvent.votes.sort((a, b) => Number(a.vote_order) - Number(b.vote_order));
 
@@ -116,42 +128,42 @@ useHead({
 
 const { data: peopleOptions } = await usePeopleOptions();
 
+const getLinkedVoterId = (voteId: string) =>
+	voteEvent.value?.votes.find((v) => v.id === voteId)?.voters[0]?.id ?? '';
+
+const setCellEdited = (rowId: string, cellKey: string, isEdited: boolean) => {
+	const cellId = `${rowId}-${cellKey}`;
+
+	if (isEdited) {
+		editedCells.value.add(cellId);
+	} else {
+		editedCells.value.delete(cellId);
+	}
+
+	if ([...editedCells.value].some((id) => id.startsWith(`${rowId}-`))) {
+		editedRows.value.add(rowId);
+	} else {
+		editedRows.value.delete(rowId);
+	}
+};
+
 const markVoteAsEdited = (rowId: string, cellKey: EditableVoteFields) => {
 	const current = voteEvent.value?.votes.find((v) => v.id === rowId);
 	const original = originalVotesMap.value[rowId];
 
 	if (!current || !original) return;
 
-	const currentValue = current[cellKey];
-	const originalValue = original[cellKey];
+	setCellEdited(rowId, cellKey, current[cellKey] !== original[cellKey]);
+};
 
-	const cellId = `${rowId}-${cellKey}`;
+const selectVoter = (rowId: string, voterId: string) => {
+	selectedVoterIds.value[rowId] = voterId;
 
-	if (currentValue !== originalValue) {
-		editedRows.value.add(rowId);
-		editedCells.value.add(cellId);
-	} else {
-		editedCells.value.delete(cellId);
-
-		const isStillEdited = (
-			[
-				'vote_order',
-				'badge_number',
-				'voter_name_raw',
-				'voter_party',
-				'option',
-			] as const
-		).some((key) => current[key] !== original[key]);
-
-		if (!isStillEdited) {
-			editedRows.value.delete(rowId);
-		}
-	}
+	setCellEdited(rowId, VOTER_CELL_KEY, voterId !== getLinkedVoterId(rowId));
 };
 
 async function onSaveChanges() {
 	if (isSaving.value || !voteEvent.value) return;
-	isSaving.value = true;
 
 	const summaryCountKeyChanges = Object.entries(originalCount)
 		.filter(
@@ -166,7 +178,13 @@ async function onSaveChanges() {
 	const existingIds = new Set(Object.keys(originalVotesMap.value));
 
 	const rowsToPatch = allVotes.filter(
-		(vote) => editedRows.value.has(vote.id) || !existingIds.has(vote.id),
+		(vote) =>
+			!toDeleteIds.value.has(vote.id) &&
+			(editedRows.value.has(vote.id) || !existingIds.has(vote.id)),
+	);
+
+	const idsToDelete = [...toDeleteIds.value].filter((id) =>
+		existingIds.has(id),
 	);
 
 	if (
@@ -176,6 +194,8 @@ async function onSaveChanges() {
 		0
 	)
 		return;
+
+	isSaving.value = true;
 
 	try {
 		if (
@@ -214,9 +234,10 @@ async function onSaveChanges() {
 
 		if (rowsToPatch.length) {
 			const mutationPromises = rowsToPatch.map((vote) => {
-				const voterId = vote.voter_name_raw;
+				const voterId = getEffectiveVoterId(vote, selectedVoterIds.value);
+				const linkedVoterId = getLinkedVoterId(vote.id);
 
-				if (voterId && existingIds.has(vote.id)) {
+				if (existingIds.has(vote.id)) {
 					// Update
 					return graphqlClient.mutation({
 						updateVotes: {
@@ -230,28 +251,36 @@ async function onSaveChanges() {
 									voter_name_raw: { set: vote.voter_name_raw },
 									voter_party: { set: vote.voter_party },
 									option: { set: vote.option },
-									voters: [
-										{
-											disconnect: [
-												{
-													where: {
-														node: {
-															id: { in: vote.voters.map((v) => v.id) },
-														},
+									...(voterId !== linkedVoterId
+										? {
+												voters: [
+													{
+														...(linkedVoterId
+															? {
+																	disconnect: [
+																		{
+																			where: {
+																				node: { id: { eq: linkedVoterId } },
+																			},
+																		},
+																	],
+																}
+															: {}),
+														...(voterId
+															? {
+																	connect: [
+																		{
+																			where: {
+																				node: { id: { eq: voterId } },
+																			},
+																		},
+																	],
+																}
+															: {}),
 													},
-												},
-											],
-											connect: [
-												{
-													where: {
-														node: {
-															id: { eq: voterId },
-														},
-													},
-												},
-											],
-										},
-									],
+												],
+											}
+										: {}),
 								},
 							},
 							votes: {
@@ -268,20 +297,26 @@ async function onSaveChanges() {
 									{
 										vote_order: vote.vote_order,
 										badge_number: vote.badge_number,
-										voter_name_raw: vote.voter_name_raw,
+										voter_name_raw:
+											vote.voter_name_raw ||
+											peopleOptions.value?.find((p) => p.value === voterId)
+												?.name ||
+											'',
 										voter_party: vote.voter_party,
 										option: vote.option,
-										voters: {
-											connect: [
-												{
-													where: {
-														node: {
-															id: { eq: voterId },
-														},
+										...(voterId
+											? {
+													voters: {
+														connect: [
+															{
+																where: {
+																	node: { id: { eq: voterId } },
+																},
+															},
+														],
 													},
-												},
-											],
-										},
+												}
+											: {}),
 										vote_events: {
 											connect: [
 												{
@@ -307,19 +342,15 @@ async function onSaveChanges() {
 			await Promise.all(mutationPromises);
 		}
 
-		if (toDeleteIds.value.size) {
-			try {
-				await graphqlClient.mutation({
-					deleteVotes: {
-						__args: {
-							where: { id: { in: [...toDeleteIds.value] } },
-						},
-						nodesDeleted: true,
+		if (idsToDelete.length) {
+			await graphqlClient.mutation({
+				deleteVotes: {
+					__args: {
+						where: { id: { in: idsToDelete } },
 					},
-				});
-			} catch (error) {
-				console.error('Delete failed', error);
-			}
+					nodesDeleted: true,
+				},
+			});
 		}
 
 		const rowChange = rowsToPatch.length + toDeleteIds.value.size;
@@ -453,7 +484,9 @@ function scrollToRow(id: string) {
 				:errors="voteValidationResult?.errors ?? []"
 				:edited-cells
 				:edited-rows
+				:selected-voter-ids
 				@edited="(arg) => markVoteAsEdited(...arg)"
+				@voter-selected="(arg) => selectVoter(...arg)"
 				@deleted="showRowDeleteNotification"
 			/>
 			<VotesSummary class="sticky top-16 max-w-xs" :vote-event />
@@ -463,17 +496,11 @@ function scrollToRow(id: string) {
 	<VotesBatchNameCorrectionModal
 		v-if="voteEvent && peopleOptions"
 		:visible="isShowBatchNameCorrectionModal"
-		:votes="voteEvent.votes.filter((v) => v.voters.length === 0)"
+		:votes="votesWithSelectedVoters.filter((v) => v.voters.length === 0)"
 		:people-options
 		@submit="
 			(values) => {
-				values.forEach(({ voteId, voterId }) => {
-					const vote = voteEvent?.votes.find((v) => v.id === voteId);
-					if (vote) {
-						vote.voter_name_raw = voterId;
-						markVoteAsEdited(voteId, 'voter_name_raw');
-					}
-				});
+				values.forEach(({ voteId, voterId }) => selectVoter(voteId, voterId));
 				isShowBatchNameCorrectionModal = false;
 			}
 		"

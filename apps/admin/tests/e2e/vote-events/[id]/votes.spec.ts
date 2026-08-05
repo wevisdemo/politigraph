@@ -6,6 +6,8 @@ import {
 	deleteVoteEvent,
 	editDropdown,
 	editTextInput,
+	fetchVote,
+	fetchVoteCount,
 	getVoteRow,
 	saveChanges,
 	VOTE_OPTIONS,
@@ -37,11 +39,14 @@ test.describe('Votes Management', () => {
 		await page.goto(`/vote-events/${voteEventId}/votes`);
 		await waitForTable(page);
 
+		await page.getByRole('button', { name: 'Save' }).click();
+		await page.waitForTimeout(500);
+
 		const voteRow = getVoteRow(page, votes[0].id);
 		await editTextInput(page, voteRow, 0, '5');
 		await editTextInput(page, voteRow, 1, '999');
 		await editTextInput(page, voteRow, 2, 'พรรคใหม่');
-		await editDropdown(page, voteRow, 5, VOTE_OPTIONS.DISAGREE);
+		await editDropdown(page, voteRow, 4, VOTE_OPTIONS.DISAGREE);
 
 		await saveChanges(page);
 
@@ -55,7 +60,7 @@ test.describe('Votes Management', () => {
 		await expect(refreshedRow.locator('input[type="text"]').nth(2)).toHaveValue(
 			'พรรคใหม่',
 		);
-		await expect(refreshedRow.locator('td').nth(5)).toContainText(
+		await expect(refreshedRow.locator('td').nth(4)).toContainText(
 			VOTE_OPTIONS.DISAGREE,
 		);
 	});
@@ -105,13 +110,36 @@ test.describe('Votes Management', () => {
 		await waitForTable(page);
 
 		const firstRow = getVoteRow(page, votes[0].id);
-		await firstRow.locator('label.bx--checkbox-label').click();
-		await page.waitForTimeout(300);
-
-		await page.getByRole('button', { name: 'Delete' }).click();
+		await firstRow.getByRole('button', { name: 'ลบ' }).click();
 		await page.waitForTimeout(500);
 
 		await saveChanges(page);
+		expect(await fetchVoteCount(page, voteEventId)).toBe(1);
+	});
+
+	test('discard a new row deleted before saving', async ({ page }) => {
+		const uniqueId = `${test.info().workerIndex}-${Date.now()}`;
+		const { voteEventId } = await createVoteEventWithVotes(
+			page,
+			`Test Discard New Vote ${uniqueId}`,
+		);
+		seededVoteEventIds.push(voteEventId);
+
+		await page.goto(`/vote-events/${voteEventId}/votes`);
+		await waitForTable(page);
+
+		await page.getByRole('button', { name: 'Add Vote' }).click();
+		await page.waitForTimeout(1000);
+
+		const newRow = page
+			.locator('tr[data-value]:has(input[type="text"])')
+			.last();
+		await editTextInput(page, newRow, 0, '2');
+		await newRow.getByRole('button', { name: 'ลบ' }).click();
+		await page.waitForTimeout(500);
+
+		await saveChanges(page);
+		expect(await fetchVoteCount(page, voteEventId)).toBe(1);
 	});
 
 	test('update voter name', async ({ page }) => {
@@ -172,6 +200,21 @@ test.describe('Votes Management', () => {
 		await expect(
 			refreshedRow.locator('td').filter({ hasText: personFullName }),
 		).toBeVisible();
+
+		const voterNames = (vote: { voters: { name: string }[] }) =>
+			vote.voters.map((v) => v.name.replace(/\s+/g, ' '));
+
+		const linkedVote = await fetchVote(page, votes[0].id);
+		expect(voterNames(linkedVote)).toEqual([personFullName]);
+		expect(linkedVote.voter_name_raw).toBe(invalidVoterName);
+
+		await editDropdown(page, refreshedRow, 4, VOTE_OPTIONS.DISAGREE);
+		await saveChanges(page);
+
+		const voteAfterOptionEdit = await fetchVote(page, votes[0].id);
+		expect(voteAfterOptionEdit.option).toBe(VOTE_OPTIONS.DISAGREE);
+		expect(voterNames(voteAfterOptionEdit)).toEqual([personFullName]);
+		expect(voteAfterOptionEdit.voter_name_raw).toBe(invalidVoterName);
 	});
 
 	test('show validation errors for invalid votes', async ({ page }) => {

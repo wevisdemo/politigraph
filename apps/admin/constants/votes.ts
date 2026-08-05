@@ -1,3 +1,5 @@
+export const VOTER_CELL_KEY = 'voter';
+
 export const standardVoteOptions = [
 	'เห็นด้วย',
 	'ไม่เห็นด้วย',

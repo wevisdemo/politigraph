@@ -14,6 +14,20 @@ export interface VoteIssue {
 }
 
 /**
+ * Resolves the voter a row points at, preferring an unsaved selection over the persisted link.
+ *
+ * @param vote - Vote row with its persisted voters.
+ * @param selectedVoterIds - Unsaved voter selections keyed by vote id.
+ * @returns The person id the row should be linked to, or an empty string when unlinked.
+ */
+export function getEffectiveVoterId(
+	vote: Pick<Vote, 'id'> & { voters: { id: string }[] },
+	selectedVoterIds: Record<string, string>,
+) {
+	return selectedVoterIds[vote.id] ?? vote.voters[0]?.id ?? '';
+}
+
+/**
  * Validates vote rows against the summary header and per-row constraints.
  *
  * @param votes - Vote rows plus the summary counts they should match.

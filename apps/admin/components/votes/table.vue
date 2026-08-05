@@ -1,16 +1,20 @@
 <script setup lang="ts">
-// @ts-expect-error carbon icons vue type
-import { Add16, Download16, WarningFilled16 } from '@carbon/icons-vue';
+import {
+	Add16,
+	Download16,
+	TrashCan16,
+	WarningFilled16,
+	// @ts-expect-error carbon icons vue type
+} from '@carbon/icons-vue';
 import type { Person, Vote, VoteEvent } from '@politigraph/graphql/genql';
-import { standardVoteOptions } from '~/constants/votes';
-import type { VoteIssue } from '~/utils/votes';
+import { standardVoteOptions, VOTER_CELL_KEY } from '~/constants/votes';
+import { getEffectiveVoterId, type VoteIssue } from '~/utils/votes';
 import { csvFormat } from 'd3-dsv';
 import { closest } from 'fastest-levenshtein';
 
 type EditableVoteFields =
 	| 'vote_order'
 	| 'badge_number'
-	| 'voter_name_raw'
 	| 'voter_party'
 	| 'option';
 
@@ -41,6 +45,7 @@ const props = defineProps<{
 	editedRows: Set<string>;
 	editedCells: Set<string>;
 	errors: VoteIssue[];
+	selectedVoterIds: Record<string, string>;
 }>();
 
 const activeEditingCell = defineModel<{
@@ -52,7 +57,11 @@ const toDeleteIds = defineModel<Set<string>>('toDeleteIds', { required: true });
 const emit = defineEmits<{
 	(e: 'deleted', count: number): void;
 	(e: 'edited', rowColumnId: [string, EditableVoteFields]): void;
+	(e: 'voterSelected', rowVoterId: [string, string]): void;
 }>();
+
+const getSelectedVoterId = (row: VoteEventProp['votes'][number]) =>
+	getEffectiveVoterId(row, props.selectedVoterIds);
 
 const searchQuery = ref('');
 
@@ -165,17 +174,8 @@ const addNewRow = () => {
 	}
 };
 
-const selectedRows = ref<string[]>([]);
-const onSelectRow = (ids: string[]) => {
-	selectedRows.value = ids;
-};
-
-const deleteSelected = async () => {
-	if (!props.voteEvent) return;
-	selectedRows.value.forEach((id) => toDeleteIds.value.add(id));
-
-	selectedRows.value = [];
-
+const deleteRow = (id: string) => {
+	toDeleteIds.value.add(id);
 	emit('deleted', toDeleteIds.value.size);
 };
 
@@ -226,13 +226,10 @@ const downloadCSV = () => {
 		/>
 		<cv-data-table
 			v-else
-			v-model:selected-rows="selectedRows"
 			title="Votes"
 			helper-text="การลงมติรายบุคคล"
 			:rows="filteredVotes"
-			use-batch-actions
 			class="w-full table-fixed"
-			@update:rows-selected="onSelectRow"
 			@search="onSearch"
 		>
 			<template #actions>
@@ -247,17 +244,13 @@ const downloadCSV = () => {
 					Add Vote
 				</cv-button>
 			</template>
-			<template #batch-actions>
-				<cv-button kind="danger--ghost" @click="deleteSelected">
-					Delete
-				</cv-button>
-			</template>
 			<template #headings>
 				<cv-data-table-heading heading="ลำดับที่" />
 				<cv-data-table-heading heading="เลขที่บัตร" />
 				<cv-data-table-heading heading="ชื่อ-สกุล" class="min-w-[30%]" />
 				<cv-data-table-heading heading="ชื่อสังกัด" />
 				<cv-data-table-heading heading="ผลการลงคะแนน" />
+				<cv-data-table-heading heading="Actions" align="right" />
 			</template>
 			<template #data>
 				<cv-data-table-row
@@ -293,12 +286,12 @@ const downloadCSV = () => {
 						/>
 					</cv-data-table-cell>
 					<cv-data-table-cell
-						:key="row.id + '-' + 'voter_name_raw'"
+						:key="row.id + '-' + VOTER_CELL_KEY"
 						:class="[
 							{
 								'text-[#DA1E28]':
-									row.voters.length === 0 &&
-									!isCellEdited(row.id, 'voter_name_raw') &&
+									!getSelectedVoterId(row) &&
+									!isCellEdited(row.id, VOTER_CELL_KEY) &&
 									!isNewRow(row.id),
 							},
 						]"
@@ -306,14 +299,16 @@ const downloadCSV = () => {
 					>
 						<div v-if="isActiveEditing(i, 2)">
 							<cv-combo-box
-								v-model="row.voter_name_raw"
+								:model-value="getSelectedVoterId(row)"
 								:label="row.voter_name_raw || 'Select voter name'"
-								:options="getVoterOptions(row.id, row.voters.length > 0)"
+								:options="getVoterOptions(row.id, !!getSelectedVoterId(row))"
 								item-value-key="value"
 								item-text-key="label"
 								auto-filter
 								auto-highlight
-								@change="onOptionChange(row as Vote, 'voter_name_raw')"
+								@change="
+									(voterId: string) => emit('voterSelected', [row.id, voterId])
+								"
 							/>
 						</div>
 						<div v-else class="flex items-center gap-2 pl-[16px]">
@@ -324,7 +319,7 @@ const downloadCSV = () => {
 							>
 								{{
 									peopleOptions?.find(
-										(option) => option.value === row.voter_name_raw,
+										(option) => option.value === getSelectedVoterId(row),
 									)?.label ||
 									row.voter_name_raw ||
 									'Select voter name'
@@ -332,8 +327,8 @@ const downloadCSV = () => {
 							</p>
 							<cv-tooltip
 								v-if="
-									row.voters.length === 0 &&
-									!isCellEdited(row.id, 'voter_name_raw') &&
+									!getSelectedVoterId(row) &&
+									!isCellEdited(row.id, VOTER_CELL_KEY) &&
 									!isNewRow(row.id)
 								"
 								:direction="i === filteredVotes.length - 1 ? 'top' : 'bottom'"
@@ -342,7 +337,7 @@ const downloadCSV = () => {
 								<WarningFilled16 class="inline-block" style="fill: #da1e28" />
 							</cv-tooltip>
 							<cv-tooltip
-								v-if="isCellEdited(row.id, 'voter_name_raw')"
+								v-if="isCellEdited(row.id, VOTER_CELL_KEY)"
 								:direction="i === filteredVotes.length - 1 ? 'top' : 'bottom'"
 								tip="Unsaved change"
 							>
@@ -404,6 +399,15 @@ const downloadCSV = () => {
 							</cv-tooltip>
 						</div>
 					</cv-data-table-cell>
+					<cv-data-table-cell align="right">
+						<cv-icon-button
+							label="ลบ"
+							kind="ghost"
+							:icon="TrashCan16"
+							class="p-0"
+							@click="deleteRow(row.id)"
+						/>
+					</cv-data-table-cell>
 				</cv-data-table-row>
 			</template>
 		</cv-data-table>
@@ -417,5 +421,9 @@ const downloadCSV = () => {
 
 table tr th {
 	@apply pl-[32px];
+}
+
+::v-deep(.bx--data-table th:last-of-type) {
+	width: 6rem;
 }
 </style>
