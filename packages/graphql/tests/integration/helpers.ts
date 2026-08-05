@@ -1,15 +1,12 @@
 import { Neo4jGraphQL } from '@neo4j/graphql';
-import { neo4jConfig } from '@politigraph/config/neo4j';
 import { graphql } from 'graphql';
-import neo4j, { type Session } from 'neo4j-driver';
+import { type Session } from 'neo4j-driver';
 import { resolvers } from '../../custom-resolvers';
 import { excludeDeprecatedFields } from '../../deprecated-fields';
+import { driver } from '../../driver';
 import { getGraphqlTypeDefs } from '../../schema';
 
-export const driver = neo4j.driver(
-	neo4jConfig.uri,
-	neo4j.auth.basic(neo4jConfig.username, neo4jConfig.password),
-);
+export { driver };
 
 const TEST_AUTH_KEY = 'test-secret-key-for-integration-tests';
 

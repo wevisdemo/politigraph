@@ -43,6 +43,14 @@
 		"test:unit": {
 			"cache": false
 		},
+		"@politigraph/graphql#test:unit": {
+			"dependsOn": ["build"],
+			"cache": false
+		},
+		"@politigraph/graphql#test:integration": {
+			"dependsOn": ["build"],
+			"cache": false
+		},
 		"test:integration": {
 			"dependsOn": ["^migrate"],
 			"cache": false

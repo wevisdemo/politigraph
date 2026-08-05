@@ -1,0 +1,6 @@
+type Query {
+	"""
+	เวลาที่ข้อมูลถูกเพิ่มหรือแก้ไขล่าสุด (UTC)
+	"""
+	lastUpdatedAt: DateTime
+}

@@ -5,6 +5,11 @@ import type {
 	Post,
 	Vote,
 } from './genql';
+import { getLastUpdatedAt } from './last-updated-at';
+
+const Query = {
+	lastUpdatedAt: () => getLastUpdatedAt(),
+};
 
 const Organization = {
 	abbreviation: ({ classification }: Organization) => {
@@ -81,6 +86,7 @@ const AlternatePersonName = {
 };
 
 export const resolvers = {
+	Query,
 	Organization,
 	Person,
 	Post,

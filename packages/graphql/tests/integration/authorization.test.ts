@@ -31,7 +31,6 @@ describe('Authorization filters', () => {
 
 	afterAll(async () => {
 		await session.close();
-		await driver.close();
 	});
 
 	beforeEach(async () => {
