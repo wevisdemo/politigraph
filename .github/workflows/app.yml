@@ -23,6 +23,7 @@ jobs:
       DATABASE_URL: postgresql://postgres:testpassword@127.0.0.1:5433/betterauth
       BETTER_AUTH_SECRET: testsecretkey123
       BETTER_AUTH_URL: http://localhost:8000
+      SEED_ADMIN_PASSWORD: testpassword123
     steps:
       - uses: actions/checkout@v7
       - name: Setup Bun

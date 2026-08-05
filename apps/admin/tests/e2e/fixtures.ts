@@ -1,8 +1,16 @@
 import { test as base, type Page } from '@playwright/test';
 
+const seedPassword = process.env.SEED_ADMIN_PASSWORD;
+
+if (!seedPassword) {
+	throw new Error(
+		'SEED_ADMIN_PASSWORD must be set to the password used by `bun run seed`',
+	);
+}
+
 export const TEST_USER = {
 	email: 'admin@wevis.info',
-	password: 'testpassword123',
+	password: seedPassword,
 };
 
 export const test = base.extend<{
