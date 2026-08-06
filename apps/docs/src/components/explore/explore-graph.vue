@@ -6,6 +6,7 @@ import {
 	normalizeAliasedFields,
 	pruneToMainLeaves,
 } from '../../utils/explore';
+import { EXPLORE_GRAPH_THEME_COLORS as THEME_COLORS } from '../../utils/graph-theme';
 import { fetchGraphql } from '../../utils/graphql';
 import { useTranslations, type Language } from '../../utils/i18n';
 import {
@@ -13,27 +14,12 @@ import {
 	type GraphqlDataResponse,
 	type GraphqlObject,
 } from '../../utils/schema';
-import { useTheme, type Theme } from '../../utils/theme';
+import { useTheme } from '../../utils/theme';
 import QueryGraph from '../query-graph.vue';
 import SearchOverlay from './search-overlay.vue';
 
 const NODE_TYPE_PARAM = 'type';
 const NODE_ID_PARAM = 'id';
-
-const THEME_COLORS = {
-	light: {
-		centerNode: '#f59e0b',
-		mainNode: '#4466cc',
-		subNode: '#8899dd',
-		edge: '#dddddd',
-	},
-	dark: {
-		centerNode: '#f59e0b',
-		mainNode: '#7f9bec',
-		subNode: '#4d5f9e',
-		edge: '#383838',
-	},
-} satisfies Record<Theme, Record<string, string>>;
 
 const props = defineProps<{
 	lang: Language;

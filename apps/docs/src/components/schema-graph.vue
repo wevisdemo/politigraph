@@ -10,6 +10,7 @@ import {
 import 'v-network-graph/lib/style.css';
 import { computed, ref } from 'vue';
 import { nodeIconMap } from '../constants/schema';
+import { SCHEMA_GRAPH_THEME_COLORS as THEME_COLORS } from '../utils/graph-theme';
 import {
 	enums,
 	interfaces,
@@ -17,7 +18,7 @@ import {
 	unions,
 	type SchemaNode,
 } from '../utils/schema';
-import { useTheme, type Theme } from '../utils/theme';
+import { useTheme } from '../utils/theme';
 import BaseView from './graph/base-view.vue';
 import Legend from './graph/legend.vue';
 
@@ -32,19 +33,6 @@ interface Edge {
 	isAbstracted?: boolean;
 	label?: string;
 }
-
-const THEME_COLORS = {
-	light: {
-		foreground: '#4466cc',
-		disabled: '#c2c2c2',
-		background: '#f6f6f6',
-	},
-	dark: {
-		foreground: '#7f9bec',
-		disabled: '#585858',
-		background: '#181818',
-	},
-} satisfies Record<Theme, Record<string, string>>;
 
 const theme = useTheme();
 const colors = computed(() => THEME_COLORS[theme.value]);

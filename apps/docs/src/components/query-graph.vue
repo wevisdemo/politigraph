@@ -26,6 +26,7 @@ import {
 	watch,
 } from 'vue';
 import { nodeIconMap } from '../constants/schema';
+import { QUERY_GRAPH_THEME_COLORS as THEME_COLORS } from '../utils/graph-theme';
 import { useTranslations, type Language } from '../utils/i18n';
 import {
 	getObjectLabel,
@@ -45,35 +46,6 @@ const MAX_GRAPH_LABEL_LENGTH = 20;
 const NODE_RADIUS = 14;
 const LABEL_GAP = 4;
 const LABEL_PADDING = 4;
-
-const THEME_COLORS = {
-	light: {
-		node: '#4466cc',
-		pictogram: '#ffffff',
-		edge: '#bbbbbb',
-		dimmedNode: '#e5e7eb',
-		dimmedPictogram: '#f9fafb',
-		dimmedEdge: '#eeeeee',
-		dimmedLabel: '#cccccc',
-		label: '#333333',
-		background: '#f6f6f6',
-		surface: '#ffffff',
-		shadow: '#000000',
-	},
-	dark: {
-		node: '#7f9bec',
-		pictogram: '#181818',
-		edge: '#585858',
-		dimmedNode: '#383838',
-		dimmedPictogram: '#272727',
-		dimmedEdge: '#272727',
-		dimmedLabel: '#585858',
-		label: '#c2c2c2',
-		background: '#181818',
-		surface: '#272727',
-		shadow: '#000000',
-	},
-} satisfies Record<Theme, Record<string, string>>;
 
 function getLabelCenterY(data: { y: number; size: number }, labelSize: number) {
 	return data.y + data.size + LABEL_GAP + labelSize / 2;
