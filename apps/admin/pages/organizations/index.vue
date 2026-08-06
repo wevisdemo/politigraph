@@ -50,10 +50,6 @@ const {
 	watch: [filters],
 });
 
-watch(filters, () => {
-	paginationData.value.page = 1;
-});
-
 const { data } = await useLazyAsyncData(
 	'organizations',
 	async () => {

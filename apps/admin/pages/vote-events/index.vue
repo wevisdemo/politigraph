@@ -153,7 +153,7 @@ const { data } = await useLazyAsyncData(
 );
 
 const { data: organizations } = await useAsyncData(
-	'OrganizationList',
+	'vote-events-filter-organizations',
 	async () => {
 		const result = await graphqlClient.query({
 			organizations: {

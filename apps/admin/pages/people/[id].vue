@@ -19,17 +19,11 @@ const graphqlClient = useGraphqlClient();
 const { previewImage, setImageBlob, uploadImage, clearImage } =
 	useImageUpload();
 
-useHead({
-	title: computed(
-		() => `${peopleData.value?.name || 'People'} | Politigraph Admin`,
-	),
-});
-
 const originalMemberships = ref<Partial<Membership>[] | null>(null);
 const originalLinks = ref<Pick<Link, 'id' | 'note' | 'url'>[]>([]);
 
 const { data: peopleData, refresh: refreshPeopleDetail } =
-	await useLazyAsyncData('people-detail', async () => {
+	await useLazyAsyncData(`people-detail-${route.params.id}`, async () => {
 		const { people } = await graphqlClient.query({
 			people: {
 				__args: {
@@ -91,6 +85,12 @@ const { data: peopleData, refresh: refreshPeopleDetail } =
 		originalLinks.value = JSON.parse(JSON.stringify(people[0].links));
 		return people[0];
 	});
+
+useHead({
+	title: computed(
+		() => `${peopleData.value?.name || 'People'} | Politigraph Admin`,
+	),
+});
 
 const editableMemberships = ref<MembershipProp[]>([]);
 

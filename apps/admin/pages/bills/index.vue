@@ -226,7 +226,7 @@ const { data } = await useLazyAsyncData(
 );
 
 const { data: organizations } = await useAsyncData(
-	'OrganizationList',
+	'bills-filter-organizations',
 	async () => {
 		const result = await graphqlClient.query({
 			organizations: {

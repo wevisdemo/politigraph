@@ -15,7 +15,7 @@ const successToast = useToastNotification();
 const { isSaving, guardSave } = useSaveGuard(successToast);
 
 const { data: voteEventData, refresh: refreshVoteEvent } =
-	await useLazyAsyncData(async () => {
+	await useLazyAsyncData(`vote-event-detail-${route.params.id}`, async () => {
 		const { voteEvents } = await graphqlClient.query({
 			voteEvents: {
 				__args: {
@@ -223,7 +223,7 @@ const voteEventFormInput = useForm({
 });
 
 const { data: OrganizationList } = await useAsyncData(
-	'OrganizationList',
+	'vote-event-detail-organizations',
 	async () => {
 		const { organizations } = await graphqlClient.query({
 			organizations: {

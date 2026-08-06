@@ -14,7 +14,7 @@ type PaginationOptions = {
 	defaultPageSize?: number;
 	getExtraQuery?: () => LocationQueryRaw;
 	totalCount?: MaybeRefOrGetter<number | null | undefined>;
-	watch?: unknown[];
+	watch?: MaybeRefOrGetter<unknown>[];
 };
 
 /**
@@ -98,6 +98,14 @@ export const usePaginationQuery = (options: PaginationOptions = {}) => {
 	const handlePageSizeChange = (pageSize: number) => {
 		paginationData.value.pageSize = pageSize;
 	};
+
+	watch(
+		() => (options.watch ?? []).map((source) => toValue(source)),
+		() => {
+			paginationData.value.page = defaultPage;
+		},
+		{ deep: true },
+	);
 
 	watch(
 		[paginationData, ...(options.watch ?? [])],

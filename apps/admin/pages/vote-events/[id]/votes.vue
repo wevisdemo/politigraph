@@ -58,7 +58,7 @@ const activeEditingCell = ref<{
 }>({ rowId: null, columnId: null });
 
 const { data: voteEvent, refresh } = useAsyncData(
-	'voteEventsConnection',
+	`vote-event-votes-${route.params.id}`,
 	async () => {
 		const {
 			voteEvents: [voteEvent],

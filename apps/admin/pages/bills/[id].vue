@@ -22,7 +22,7 @@ const {
 	data: billData,
 	refresh: refreshBillData,
 	pending: billPending,
-} = await useLazyAsyncData(async () => {
+} = await useLazyAsyncData(`bill-detail-${route.params.id}`, async () => {
 	const { bills } = await graphqlClient.query({
 		bills: {
 			__args: {
@@ -520,7 +520,7 @@ async function handleSave() {
 
 const { data: peopleList } = await usePeopleOptions();
 const { data: organizationList } = await useAsyncData(
-	'organizationList',
+	'bill-detail-organizations',
 	async () => {
 		const { organizations } = await graphqlClient.query({
 			organizations: {
