@@ -22,6 +22,22 @@ CREATE INDEX index_vote_event_id IF NOT EXISTS
 FOR (voteEvent:VoteEvent)
 ON (voteEvent.id);
 
+CREATE INDEX index_bill_id IF NOT EXISTS
+FOR (bill:Bill)
+ON (bill.id);
+
+CREATE INDEX index_membership_id IF NOT EXISTS
+FOR (membership:Membership)
+ON (membership.id);
+
+CREATE INDEX index_link_id IF NOT EXISTS
+FOR (link:Link)
+ON (link.id);
+
+CREATE INDEX index_vote_id IF NOT EXISTS
+FOR (vote:Vote)
+ON (vote.id);
+
 CREATE INDEX index_vote_option IF NOT EXISTS
 FOR (vote:Vote)
 ON (vote.option);

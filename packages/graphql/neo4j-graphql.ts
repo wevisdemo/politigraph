@@ -27,15 +27,21 @@ export async function createNeo4jIndex() {
 	const session = driver.session();
 	const tx = await session.beginTransaction();
 
-	let createdIndexes = 0;
+	try {
+		let createdIndexes = 0;
 
-	for (const query of queries) {
-		const result = await tx.run(query);
-		createdIndexes += result.summary.counters.updates().indexesAdded;
+		for (const query of queries) {
+			const result = await tx.run(query);
+			createdIndexes += result.summary.counters.updates().indexesAdded;
+		}
+
+		await tx.commit();
+
+		console.info(`[Neo4j] ${createdIndexes}/${queries.length} indexes created`);
+	} catch (error) {
+		await tx.rollback();
+		throw error;
+	} finally {
+		await session.close();
 	}
-
-	await tx.commit();
-	await session.close();
-
-	console.info(`[Neo4j] ${createdIndexes}/${queries.length} indexes created`);
 }

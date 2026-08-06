@@ -23,10 +23,8 @@ const { values } = parseArgs({
 if (values.watch) {
 	console.log('Watching for schema changes...');
 
-	const watcher = watch(
-		`${import.meta.dir}/schema`,
-		{ recursive: true },
-		build,
+	const watcher = watch(`${import.meta.dir}/schema`, { recursive: true }, () =>
+		build().catch(console.error),
 	);
 
 	process.on('SIGINT', () => {
@@ -34,7 +32,7 @@ if (values.watch) {
 		process.exit(0);
 	});
 } else {
-	build();
+	await build();
 }
 
 async function build() {
@@ -42,8 +40,8 @@ async function build() {
 
 	const OUTDIR = 'dist';
 
-	if (!exists(OUTDIR)) {
-		mkdir(OUTDIR);
+	if (!(await exists(OUTDIR))) {
+		await mkdir(OUTDIR);
 	}
 
 	const typeDefs = await getGraphqlTypeDefs();
@@ -57,8 +55,8 @@ async function build() {
 		features: { excludeDeprecatedFields },
 	}).getSchema();
 
-	generate({
+	await generate({
 		schema: printSchemaWithDirectives(schema),
 		output: 'genql',
-	}).catch(console.error);
+	});
 }
