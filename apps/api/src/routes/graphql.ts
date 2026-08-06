@@ -109,13 +109,25 @@ export class ElysiaApolloServer<
 						headers,
 					},
 					context: () => apolloContext(context),
-				}).catch((x) => x);
+				}).catch((error) => {
+					console.error('Failed to execute GraphQL request', error);
+					return null;
+				});
+
+				if (!res)
+					return new Response(
+						JSON.stringify({ errors: [{ message: 'Internal server error' }] }),
+						{
+							status: 500,
+							headers: { 'Content-Type': 'application/json' },
+						},
+					);
 
 				if (res.body.kind !== 'complete') return '';
 
 				return new Response(res.body.string, {
 					status: res.status ?? 200,
-					headers: res.headers,
+					headers: Object.fromEntries(res.headers),
 				});
 			},
 			{

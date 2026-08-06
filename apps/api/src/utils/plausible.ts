@@ -11,5 +11,7 @@ export function triggerPlausiblePageview(userAgent: string, clientIp: string) {
 			url: 'https://politigraph.wevis.info/graphql',
 			domain: 'politigraph.wevis.info',
 		}),
-	});
+	}).catch((error) =>
+		console.error('Failed to send Plausible pageview', error),
+	);
 }

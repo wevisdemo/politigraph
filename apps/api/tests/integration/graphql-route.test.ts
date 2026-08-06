@@ -17,7 +17,7 @@ const executableSchema = makeExecutableSchema({
 	},
 });
 
-const { apollo } = await import('../../src/routes/graphql');
+const { apollo, ElysiaApolloServer } = await import('../../src/routes/graphql');
 
 describe('graphql route', () => {
 	test('batch size over maxBatching returns 400 with validation error', async () => {
@@ -103,6 +103,57 @@ describe('graphql route', () => {
 		expect(response.status).toBe(200);
 		const body = await response.json();
 		expect(body.data.hello).toBe('world');
+	});
+
+	test('invalid variable type returns a graphql error, not a crash', async () => {
+		const app = new Elysia().use(
+			await apollo({
+				schema: makeExecutableSchema({
+					typeDefs: `type Query { echo(count: Int!): Int }`,
+					resolvers: { Query: { echo: (_, { count }) => count } },
+				}),
+			}),
+		);
+
+		const response = await app.handle(
+			new Request('http://localhost/graphql', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					query: 'query ($count: Int!) { echo(count: $count) }',
+					variables: { count: 'not-a-number' },
+				}),
+			}),
+		);
+
+		expect(response.status).toBe(200);
+		const body = await response.json();
+		expect(body.data).toBeUndefined();
+		expect(body.errors[0].message).toContain('count');
+	});
+
+	test('execution failure returns 500 with a generic error', async () => {
+		class FailingServer extends ElysiaApolloServer {
+			override async executeHTTPGraphQLRequest(): Promise<never> {
+				throw new Error('execution exploded');
+			}
+		}
+
+		const app = new Elysia().use(
+			await new FailingServer({ schema: executableSchema }).createHandler({}),
+		);
+
+		const response = await app.handle(
+			new Request('http://localhost/graphql', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ query: '{ hello }' }),
+			}),
+		);
+
+		expect(response.status).toBe(500);
+		const body = await response.json();
+		expect(body.errors[0].message).toBe('Internal server error');
 	});
 
 	test('batch within limit returns 200', async () => {
