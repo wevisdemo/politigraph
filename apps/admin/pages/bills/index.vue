@@ -31,16 +31,11 @@ type BillEvent = {
 const route = useRoute();
 const graphqlClient = useGraphqlClient();
 
-const searchQuery = ref('');
-const debouncedSearch = useDebounce(searchQuery, 1000);
-
-watch(debouncedSearch, () => {
-	paginationData.value.page = 1;
+const { debouncedSearch, handleSearchChange } = useDebouncedSearch({
+	onDebouncedChange: () => {
+		paginationData.value.page = 1;
+	},
 });
-
-const handleSearchChange = (query: string) => {
-	searchQuery.value = query;
-};
 
 const statusOption = Object.values(enumBillStatus);
 const creatorTypeOption = Object.values(enumBillCreatorType);
