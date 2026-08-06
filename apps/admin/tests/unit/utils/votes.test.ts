@@ -83,6 +83,22 @@ describe('validateVotes', () => {
 		);
 	});
 
+	test('detects duplicated votes by raw name when unlinked, without cross-flagging distinct voters', () => {
+		const votes = [
+			createVote({ id: 'v1', voters: [], voter_name_raw: 'สมชาย ใจดี' }),
+			createVote({ id: 'v2', voters: [], voter_name_raw: 'สมชาย ใจดี' }),
+			createVote({ id: 'v3', voters: [{ id: 'person-2' }] }),
+		];
+		const summary = createSummaryHeader({ agree_count: 3 });
+
+		const result = validateVotes({ votes, ...summary });
+
+		expect(result.errors.filter((e) => e.type === 'DUPLICATED')).toEqual([
+			{ type: 'DUPLICATED', id: 'v1' },
+			{ type: 'DUPLICATED', id: 'v2' },
+		]);
+	});
+
 	test('detects invalid option', () => {
 		const votes = [createVote({ option: 'INVALID_OPTION' })];
 		const summary = createSummaryHeader({ agree_count: 0 });

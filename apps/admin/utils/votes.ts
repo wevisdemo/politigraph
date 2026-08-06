@@ -55,11 +55,24 @@ export function validateVotes({
 	const errors: VoteIssue[] = [];
 	const warnings: VoteIssue[] = [];
 
+	const getVoterKey = (vote: (typeof votes)[number]) =>
+		vote.voters[0]?.id ?? vote.voter_name_raw;
+
+	const countByOption = new Map<string, number>();
+	const countByVoterKey = new Map<string, number>();
+
+	votes.forEach((vote) => {
+		countByOption.set(vote.option, (countByOption.get(vote.option) ?? 0) + 1);
+		countByVoterKey.set(
+			getVoterKey(vote),
+			(countByVoterKey.get(getVoterKey(vote)) ?? 0) + 1,
+		);
+	});
+
 	if (
 		[...voteCountKeyMap.entries()].some(
 			([option, key]) =>
-				votes.filter((vote) => vote.option === option).length !==
-				(summaryHeader[key] ?? 0),
+				(countByOption.get(option) ?? 0) !== (summaryHeader[key] ?? 0),
 		)
 	) {
 		errors.push({
@@ -67,7 +80,7 @@ export function validateVotes({
 		});
 	}
 
-	votes.forEach((vote, _i) => {
+	votes.forEach((vote) => {
 		if (!vote.id || !vote.vote_order || !vote.badge_number) {
 			warnings.push({ type: 'MISSING_INFORMATION', id: vote.id });
 		}
@@ -80,14 +93,7 @@ export function validateVotes({
 			errors.push({ type: 'INVALID_OPTION', id: vote.id });
 		}
 
-		if (
-			votes.some(
-				(otherVote) =>
-					otherVote.id !== vote.id &&
-					(vote.voters[0]?.id ?? vote.voter_name_raw) ===
-						(otherVote.voters[0]?.id ?? otherVote.voter_name_raw),
-			)
-		) {
+		if ((countByVoterKey.get(getVoterKey(vote)) ?? 0) > 1) {
 			errors.push({
 				type: 'DUPLICATED',
 				id: vote.id,
