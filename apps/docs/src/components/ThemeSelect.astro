@@ -42,6 +42,11 @@ import { Icon } from '@astrojs/starlight/components';
 	const getPreferredColorScheme = (): Theme =>
 		matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
 
+	const loadEffectiveTheme = (): Theme => {
+		const theme = loadTheme();
+		return theme === 'auto' ? getPreferredColorScheme() : theme;
+	};
+
 	function onThemeChange(theme: Theme): void {
 		// @ts-expect-error StarlightThemeProvider is injected by starlight
 		StarlightThemeProvider.updatePickers(theme);
@@ -63,9 +68,7 @@ import { Icon } from '@astrojs/starlight/components';
 			if (!toggle) return;
 
 			const updateIcons = () => {
-				const theme = loadTheme();
-				const effectiveTheme =
-					theme === 'auto' ? getPreferredColorScheme() : theme;
+				const effectiveTheme = loadEffectiveTheme();
 
 				const sunIcon = toggle.querySelector('.sun-icon') as HTMLElement;
 				const moonIcon = toggle.querySelector('.moon-icon') as HTMLElement;
@@ -81,8 +84,8 @@ import { Icon } from '@astrojs/starlight/components';
 			updateIcons();
 
 			toggle.addEventListener('click', () => {
-				const currentTheme = loadTheme();
-				const newTheme: Theme = currentTheme === 'dark' ? 'light' : 'dark';
+				const newTheme: Theme =
+					loadEffectiveTheme() === 'dark' ? 'light' : 'dark';
 				onThemeChange(newTheme);
 				updateIcons();
 			});

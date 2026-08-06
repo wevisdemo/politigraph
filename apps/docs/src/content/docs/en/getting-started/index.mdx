@@ -56,3 +56,5 @@ For example, if we want to know _"Which vote event did Anutin Charnvirakul were 
 	query="query People($where: PersonWhere, $votesWhere2: VoteWhere) { people(where: $where) { id name name_en image votes(where: $votesWhere2) { id option_en vote_events { id title nickname result start_date end_date } } } }"
 	variables='{ "where": { "firstname_en": { "eq": "Anutin" }, "lastname_en": { "eq": "Charnvirakul" } }, "votesWhere2": { "option": { "eq": "เห็นด้วย" } } }'
 />
+
+You can also visit [Explore](/en/explore) to browse the data in Politigraph without writing any code.

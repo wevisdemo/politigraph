@@ -4,13 +4,13 @@ sidebar:
   order: 2
 ---
 
-We use [Neo4jGraphQL](https://neo4j.com/docs/graphql/) as the primary tool for managing our data. Our API adheres to the [GraphQL](https://graphql.org) standard, which you can call or try building various queries for at https://politigraph.wevis.info/graphql
+We use [Neo4jGraphQL](https://neo4j.com/docs/graphql/) as the primary tool for managing our data. Our API adheres to the [GraphQL](https://graphql.org) standard, which you can call or try building various queries for at [GraphQL Playground](/graphql)
 
 ## Authentication
 
 Most data from the Politigraph API is publicly accessible and does not require authentication, with the following exceptions:
 
-- Data with the field `publish_status` that does not have the value `PUBLISHED` will not be hidden from the response because it is under review and not yet ready for disclosure.
+- Data with the field `publish_status` that does not have the value `PUBLISHED` will be hidden from the response because it is under review and not yet ready for disclosure.
 - Any GraphQL mutation, as we prevent external parties from modifying data on our system.
 
 Access to both of these exceptions is strictly reserved for the WeVis system administration team.
@@ -21,9 +21,9 @@ To ensure fair usage and protect the API from abuse, we enforce the following li
 
 - **Rate limit**: 30 requests per 10 seconds
 - **Batching**: 5 operations per batched request
-- **Aliases**: 10 aliases per operation
+- **Aliases**: 120 aliases per operation
 - **Depth**: 10 levels of nested operation
-- **Tokens**: 1000 tokens per operation
+- **Tokens**: 10,000 tokens per operation
 
 Exceeding these limits will result in an error response.
 

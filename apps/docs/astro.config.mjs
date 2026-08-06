@@ -5,8 +5,10 @@ import tailwindcss from '@tailwindcss/vite';
 import mermaid from 'astro-mermaid';
 import { defineConfig, passthroughImageService } from 'astro/config';
 
+const site = 'https://politigraph.wevis.info';
+
 export default defineConfig({
-	site: 'https://politigraph.wevis.info',
+	site,
 	// @ts-expect-error starlight config type doesn't include vite
 	vite: {
 		plugins: [tailwindcss()],
@@ -90,7 +92,7 @@ export default defineConfig({
 				},
 				{
 					label: 'GraphQL Playground',
-					link: '/graphql',
+					link: `${site}/graphql`,
 					attrs: { target: '_blank' },
 				},
 			],

@@ -59,3 +59,5 @@ graph TD
 	query="query People($where: PersonWhere, $votesWhere2: VoteWhere) { people(where: $where) { id name image votes(where: $votesWhere2) { id option vote_events { id title nickname result start_date end_date } } } }"
 	variables='{ "where": { "firstname": { "eq": "อนุทิน" }, "lastname": { "eq": "ชาญวีรกูล" } }, "votesWhere2": { "option": { "eq": "เห็นด้วย" } } }'
 />
+
+สามารถไปที่ [สำรวจข้อมูล](/explore) เพื่อดูข้อมูลใน Politigraph โดยที่ไม่ต้องเขียนโค้ด

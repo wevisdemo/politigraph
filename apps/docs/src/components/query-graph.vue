@@ -183,6 +183,7 @@ const props = defineProps<{
 }>();
 
 const t = useTranslations(props.labelLang ?? 'en');
+const schemaHref = `${(props.labelLang ?? 'en') === 'en' ? '/en' : ''}/schema`;
 
 const theme = useTheme();
 const colors = computed(() => THEME_COLORS[theme.value]);
@@ -733,7 +734,7 @@ const selectedNode = computed(() => {
 					</ul>
 					<p class="mt-auto text-xs italic leading-tight text-gray-400">
 						{{ t.graphPartialSchemaNote }}
-						<a href="/docs/schema" class="text-blue-700 dark:text-blue-400">{{
+						<a :href="schemaHref" class="text-blue-700 dark:text-blue-400">{{
 							t.graphFullSchemaLink
 						}}</a>
 					</p>
