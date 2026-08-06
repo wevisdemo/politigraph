@@ -56,13 +56,11 @@ export function validateVotes({
 	const warnings: VoteIssue[] = [];
 
 	if (
-		voteCountKeyMap
-			.entries()
-			.some(
-				([option, key]) =>
-					votes.filter((vote) => vote.option === option).length !==
-					(summaryHeader[key] ?? 0),
-			)
+		[...voteCountKeyMap.entries()].some(
+			([option, key]) =>
+				votes.filter((vote) => vote.option === option).length !==
+				(summaryHeader[key] ?? 0),
+		)
 	) {
 		errors.push({
 			type: 'COUNT_MISMATCHED',

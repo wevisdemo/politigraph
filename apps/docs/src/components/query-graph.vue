@@ -682,11 +682,9 @@ const selectedNode = computed(() => {
 			</template>
 			<template v-slot:legend>
 				<Legend
-					v-for="obj in typenameSchemaMap
-						.values()
-						.filter((obj) =>
-							Object.values(graph.nodes).some((n) => n.__typename === obj.name),
-						)"
+					v-for="obj in [...typenameSchemaMap.values()].filter((obj) =>
+						Object.values(graph.nodes).some((n) => n.__typename === obj.name),
+					)"
 					:term="obj.name"
 					:definition="obj.description"
 					circle
