@@ -4,6 +4,7 @@ import vue from '@astrojs/vue';
 import tailwindcss from '@tailwindcss/vite';
 import mermaid from 'astro-mermaid';
 import { defineConfig, passthroughImageService } from 'astro/config';
+import { sidebarGroups } from './src/constants/sidebar';
 
 const site = 'https://politigraph.wevis.info';
 
@@ -34,6 +35,14 @@ export default defineConfig({
 						defer: true,
 						'data-domain': 'politigraph.wevis.info',
 						src: 'https://analytics.punchup.world/js/script.js',
+					},
+				},
+				{
+					tag: 'link',
+					attrs: {
+						rel: 'llms',
+						type: 'text/plain',
+						href: `${site}/llms.txt`,
 					},
 				},
 				{
@@ -69,20 +78,11 @@ export default defineConfig({
 				},
 			],
 			sidebar: [
-				{
-					label: 'เริ่มต้น',
-					translations: {
-						en: 'Getting Started',
-					},
-					autogenerate: { directory: 'getting-started' },
-				},
-				{
-					label: 'โครงสร้างของข้อมูล',
-					translations: {
-						en: 'Schema',
-					},
-					autogenerate: { directory: 'schema' },
-				},
+				...sidebarGroups.map(({ directory, label, translations }) => ({
+					label,
+					translations,
+					autogenerate: { directory },
+				})),
 				{
 					label: 'สำรวจข้อมูล',
 					translations: {

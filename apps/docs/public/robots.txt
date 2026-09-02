@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://politigraph.wevis.info/sitemap-index.xml
+
+# Machine-readable documentation for AI agents (https://llmstxt.org)
+# https://politigraph.wevis.info/llms.txt

@@ -4,6 +4,9 @@ sidebar:
   order: 2
 ---
 
+import { Code } from '@astrojs/starlight/components';
+import { SITE_URL } from '../../../constants/site';
+
 เราใช้ [Neo4jGraphQL](https://neo4j.com/docs/graphql/) เป็นเครื่องมือหลักในการจัดการข้อมูล API ของเราอยู่ในมาตรฐาน [GraphQL](https://graphql.org) ซึ่งสามารถเรียกใช้หรือเข้าไปทดลองสร้าง Query ต่างๆ ได้ที่ [GraphQL Playground](/graphql)
 
 ## การยืนยันตัวตน
@@ -31,6 +34,23 @@ sidebar:
 
 ข้อมูลบางประเภท ได้แก่ คน (People) และ การลงคะแนนรายบุคคล (Vote) เป็นข้อมูลที่มี Node อยู่จำนวนมากในระบบ
 เราจำเป็นต้องจำกัดจำนวน Node ที่จะส่งกลับมายังผู้ใช้ ไม่เกิน 1,000 Node ต่อการ Query 1 ครั้ง หากต้องการเรียกข้อมูลมากกว่าจำนวนที่จำกัดไว้ [อ่านเพิ่มเติมเกี่ยวกับการใช้ Pagination บน GraphQL](https://neo4j.com/docs/graphql/current/queries-aggregations/pagination/)
+
+## การใช้งานร่วมกับ AI Agent
+
+คุณสามารถใช้งาน Politigraph ผ่าน AI Agent หรือ Chatbot ด้วยคู่มือการใช้ที่ AI สามารถอ่านได้ตามมาตรฐาน [llms.txt](https://llmstxt.org) ดังนี้
+
+- [`/llms.txt`](/llms.txt): สารบัญของเอกสารต่างๆ พร้อมลิงก์
+- [`/llms-full.txt`](/llms-full.txt): เอกสารทั้งหมดพร้อม GraphQL Schema ฉบับเต็ม รวมอยู่ในไฟล์เดียว
+- [`/schema.graphql`](/schema.graphql): GraphQL Schema (SDL) ฉบับเต็ม
+
+คุณสามารถส่ง URL <code>{SITE_URL}/llms.txt</code> ให้ AI Agent เลือกอ่านเฉพาะส่วนที่ต้องการ หรือส่ง <code>{SITE_URL}/llms-full.txt</code> เพื่อให้ข้อมูลทั้งหมดในครั้งเดียว นอกจากนี้ทุกหน้าเอกสารยังสามารถอ่านในรูปแบบ Markdown ได้โดยเติม `.md` ต่อท้าย URL ทั้งนี้ไฟล์ทั้งหมดถูกสร้างจากเอกสารภาษาอังกฤษเท่านั้น
+
+<Code
+	code={`ทำความเข้าใจ Politigraph จาก ${SITE_URL}/llms.txt แล้วหาว่า ส.ส. คนไหนขาดลงมติมากที่สุดในสมัยปัจจุบัน จากนั้นอธิบาย Query ที่ใช้และผลลัพธ์ที่ได้จาก Politigraph อย่างเป็นขั้นตอน`}
+	lang="text"
+	frame="terminal"
+	title="ตัวอย่าง Prompt"
+/>
 
 ## การอนุญาตใช้งาน (License)
 

@@ -4,6 +4,9 @@ sidebar:
   order: 2
 ---
 
+import { Code } from '@astrojs/starlight/components';
+import { SITE_URL } from '../../../../constants/site';
+
 We use [Neo4jGraphQL](https://neo4j.com/docs/graphql/) as the primary tool for managing our data. Our API adheres to the [GraphQL](https://graphql.org) standard, which you can call or try building various queries for at [GraphQL Playground](/graphql)
 
 ## Authentication
@@ -31,7 +34,24 @@ Exceeding these limits will result in an error response.
 
 Certain types of data, such as "People" and individual "Votes", contain a large number of nodes within the system.
 We must limit the number of nodes returned to the user to no more than 1,000 nodes per query.
-If you need to retrieve more data than this limit allows, please [read more about using Pagination on GraphQL](<(https://neo4j.com/docs/graphql/current/queries-aggregations/pagination/)>).
+If you need to retrieve more data than this limit allows, please [read more about using Pagination on GraphQL](https://neo4j.com/docs/graphql/current/queries-aggregations/pagination/).
+
+## Using with AI Agents
+
+If you build with Politigraph through an AI coding agent or chatbot, we publish our documentation as machine-readable plain text following the [llms.txt](https://llmstxt.org) convention:
+
+- [`/llms.txt`](/llms.txt): an index of every documentation page and resource, with links
+- [`/llms-full.txt`](/llms-full.txt): the entire documentation plus the full GraphQL schema in a single file
+- [`/schema.graphql`](/schema.graphql): the complete GraphQL schema (SDL)
+
+Give your agent <code>{SITE_URL}/llms.txt</code> to let it pick what it needs, or <code>{SITE_URL}/llms-full.txt</code> to hand it everything at once. Each documentation page is also available as markdown by adding `.md` to its URL. These files are generated from the English documentation only.
+
+<Code
+	code={`Understand Politigraph via ${SITE_URL}/llms.txt, then find which representative was absent from the most vote events in the current representative term. Break down the query you sent and the result you got from Politigraph.`}
+	lang="text"
+	frame="terminal"
+	title="Example prompt"
+/>
 
 ## License
 
