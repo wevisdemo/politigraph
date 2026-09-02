@@ -4,6 +4,7 @@ import * as graphql from 'prettier/plugins/graphql';
 import { format } from 'prettier/standalone';
 import { sidebarGroups } from '../constants/sidebar';
 import { SITE_URL } from '../constants/site';
+import type { Language } from './i18n';
 
 export const schemaSdl = typedefs;
 
@@ -16,6 +17,7 @@ export const SCHEMA_URL = `${SITE_URL}/schema.graphql`;
 
 export interface LlmsDoc {
 	id: string;
+	lang: Language;
 	section: string;
 	title: string;
 	description?: string;
@@ -31,10 +33,13 @@ const SECTION_LABELS = new Map(
 	]),
 );
 
+export function hasMarkdownVersion(entry: { data: { template?: string } }) {
+	return entry.data.template !== 'splash';
+}
+
 export async function getLlmsDocs(): Promise<LlmsDoc[]> {
 	const entries = (await getCollection('docs'))
-		.filter((entry) => entry.id.startsWith('en/'))
-		.filter((entry) => entry.data.template !== 'splash')
+		.filter(hasMarkdownVersion)
 		.sort(
 			(a, b) =>
 				(a.data.sidebar?.order ?? Number.MAX_SAFE_INTEGER) -
@@ -44,12 +49,15 @@ export async function getLlmsDocs(): Promise<LlmsDoc[]> {
 
 	return Promise.all(
 		entries.map(async (entry) => {
-			const [, section] = entry.id.split('/');
+			const [first, ...rest] = entry.id.split('/');
+			const isEnglish = first === 'en';
+			const [section] = isEnglish ? rest : [first];
 			const body = await toPlainMarkdown(entry.body ?? '');
 			const url = `${SITE_URL}/${entry.id}`;
 
 			return {
 				id: entry.id,
+				lang: isEnglish ? 'en' : 'th',
 				section: SECTION_LABELS.get(section ?? '') ?? 'Docs',
 				title: entry.data.title,
 				description: entry.data.description,
@@ -59,6 +67,10 @@ export async function getLlmsDocs(): Promise<LlmsDoc[]> {
 			};
 		}),
 	);
+}
+
+export async function getEnglishLlmsDocs() {
+	return (await getLlmsDocs()).filter((doc) => doc.lang === 'en');
 }
 
 export function toDocsLinkList(docs: LlmsDoc[]) {

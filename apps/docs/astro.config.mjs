@@ -104,6 +104,7 @@ export default defineConfig({
 			],
 			components: {
 				Header: './src/components/header.astro',
+				PageTitle: './src/components/page-title.astro',
 				SocialIcons: './src/components/social-icons.astro',
 				Footer: './src/components/footer.astro',
 				ThemeSelect: './src/components/ThemeSelect.astro',

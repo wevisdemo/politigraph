@@ -1,0 +1,27 @@
+---
+import { Icon } from '@astrojs/starlight/components';
+import StarlightPageTitle from '@astrojs/starlight/components/PageTitle.astro';
+import { getLanguage, useTranslations } from '../utils/i18n';
+import { hasMarkdownVersion } from '../utils/llms';
+
+const { entry, locale } = Astro.locals.starlightRoute;
+const t = useTranslations(getLanguage(locale));
+
+const showMarkdownLink = hasMarkdownVersion(entry);
+---
+
+<div class="flex flex-row flex-wrap gap-2 items-end">
+	<StarlightPageTitle />
+
+	{
+		showMarkdownLink && (
+			<a
+				href={`/${entry.id}.md`}
+				class="text-xs no-underline opacity-70 hover:opacity-100 ml-auto flex flex-row items-center gap-1"
+			>
+				<Icon name="document" />
+				{t.viewAsMarkdown}
+			</a>
+		)
+	}
+</div>

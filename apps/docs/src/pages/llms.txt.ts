@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro';
 import { SITE_URL } from '../constants/site';
 import {
-	getLlmsDocs,
+	getEnglishLlmsDocs,
 	GRAPHQL_ENDPOINT,
 	SCHEMA_URL,
 	SUMMARY,
@@ -9,7 +9,7 @@ import {
 } from '../utils/llms';
 
 export const GET: APIRoute = async () => {
-	const docs = await getLlmsDocs();
+	const docs = await getEnglishLlmsDocs();
 
 	const content = `# Politigraph
 
