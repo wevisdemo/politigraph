@@ -66,8 +66,12 @@
 	.sl-link-button.secondary {
 		@apply hover:bg-gray-100 dark:hover:bg-gray-800;
 	}
-}
 
-starlight-tabs > div {
-	@apply mt-0;
+	starlight-tabs > div {
+		@apply mt-0;
+	}
+
+	#starlight__on-this-page {
+		@apply text-sm;
+	}
 }

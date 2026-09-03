@@ -96,7 +96,6 @@ export default defineConfig({
 					attrs: { target: '_blank' },
 				},
 			],
-			tableOfContents: false,
 			lastUpdated: true,
 			customCss: [
 				'./src/styles/global.css',
