@@ -1,5 +1,5 @@
 ---
-title: API Usage
+title: Usage
 sidebar:
   order: 2
 ---
@@ -7,34 +7,12 @@ sidebar:
 import { Code } from '@astrojs/starlight/components';
 import { SITE_URL } from '../../../../constants/site';
 
-We use [Neo4jGraphQL](https://neo4j.com/docs/graphql/) as the primary tool for managing our data. Our API adheres to the [GraphQL](https://graphql.org) standard, which you can call or try building various queries for at [GraphQL Playground](/graphql)
+Our API adheres to the [GraphQL](https://graphql.org) standard, which you can query at <code>{SITE_URL}/graphql</code> through a [GraphQL Client or HTTP Request](https://www.graphql-js.org/docs/graphql-clients/)
 
-## Authentication
+We also provide
 
-Most data from the Politigraph API is publicly accessible and does not require authentication, with the following exceptions:
-
-- Data with the field `publish_status` that does not have the value `PUBLISHED` will be hidden from the response because it is under review and not yet ready for disclosure.
-- Any GraphQL mutation, as we prevent external parties from modifying data on our system.
-
-Access to both of these exceptions is strictly reserved for the WeVis system administration team.
-
-## Usage Limitations
-
-To ensure fair usage and protect the API from abuse, we enforce the following limits on GraphQL operations:
-
-- **Rate limit**: 30 requests per 10 seconds
-- **Batching**: 5 operations per batched request
-- **Aliases**: 120 aliases per operation
-- **Depth**: 10 levels of nested operation
-- **Tokens**: 10,000 tokens per operation
-
-Exceeding these limits will result in an error response.
-
-## Node Limits
-
-Certain types of data, such as "People" and individual "Votes", contain a large number of nodes within the system.
-We must limit the number of nodes returned to the user to no more than 1,000 nodes per query.
-If you need to retrieve more data than this limit allows, please [read more about using Pagination on GraphQL](https://neo4j.com/docs/graphql/current/queries-aggregations/pagination/).
+- [GraphQL Playground](/graphql) to try building various queries and explore the results
+- [Explore](/en/explore) the data through interactive visualization
 
 ## Using with AI Agents
 
@@ -51,7 +29,42 @@ Give your agent <code>{SITE_URL}/llms.txt</code> to let it pick what it needs, o
 	lang="text"
 	frame="terminal"
 	title="Example prompt"
+	wrap
 />
+
+:::caution[AI responses can be inaccurate or misleading]
+An AI agent may build a query that does not answer your question, misinterpret the schema, or state figures that never came from Politigraph at all.
+Before relying on or publishing an answer, you should verify the result yourself, for example by re-running it in the [GraphQL Playground](/graphql).
+:::
+
+## Limitations
+
+### Access
+
+Most data from the Politigraph API is publicly accessible and does not require authentication, with the following exceptions:
+
+- Data with the field `publish_status` that does not have the value `PUBLISHED` will be hidden from the response because it is under review and not yet ready for disclosure.
+- Any GraphQL mutation, as we prevent external parties from modifying data on our system.
+
+Access to both of these exceptions is strictly reserved for the WeVis system administration team.
+
+### API Usage Limits
+
+To ensure fair usage and protect the API from abuse, we enforce the following limits on GraphQL operations:
+
+- **Rate limit**: 30 requests per 10 seconds
+- **Batching**: 5 operations per batched request
+- **Aliases**: 120 aliases per operation
+- **Depth**: 10 levels of nested operation
+- **Tokens**: 10,000 tokens per operation
+
+Exceeding these limits will result in an error response.
+
+### Node Limits
+
+Certain types of data, such as "People" and individual "Votes", contain a large number of nodes within the system.
+We must limit the number of nodes returned to the user to no more than 1,000 nodes per query.
+If you need to retrieve more data than this limit allows, please [read more about using Pagination on GraphQL](https://neo4j.com/docs/graphql/current/queries-aggregations/pagination/).
 
 ## License
 

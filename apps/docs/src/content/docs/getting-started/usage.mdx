@@ -7,33 +7,12 @@ sidebar:
 import { Code } from '@astrojs/starlight/components';
 import { SITE_URL } from '../../../constants/site';
 
-เราใช้ [Neo4jGraphQL](https://neo4j.com/docs/graphql/) เป็นเครื่องมือหลักในการจัดการข้อมูล API ของเราอยู่ในมาตรฐาน [GraphQL](https://graphql.org) ซึ่งสามารถเรียกใช้หรือเข้าไปทดลองสร้าง Query ต่างๆ ได้ที่ [GraphQL Playground](/graphql)
+API ของเราอยู่ในมาตรฐาน [GraphQL](https://graphql.org) ซึ่งผู้ใช้สามารถขอข้อมูล (Query) ได้ที่ <code>{SITE_URL}/graphql</code> ผ่าน [GraphQL Client หรือ HTTP Request](https://www.graphql-js.org/docs/graphql-clients/)
 
-## การยืนยันตัวตน
+นอกจากนี้เรายังมี
 
-ข้อมูลส่วนใหญ่จาก Politigraph API เป็นแบบเปิดให้เข้าถึงโดยสาธารณะ ไม่จำเป็นต้องยืนยันตัวตน ยกเว้น
-
-- ข้อมูลที่มี Field `publish_status` และไม่ได้มีค่าเป็น `PUBLISHED` จะถูกซ่อนจาก Response เนื่องจากอยู่ระหว่างการตรวจสอบและยังไม่พร้อมเปิดเผย
-- การ Mutate ผ่าน GraphQL ใดๆ เราป้องกันไม่ให้คนภายนอกแก้ไขข้อมูลบนระบบของเรา
-
-ทั้งสองข้อสงวนสิทธ์การเข้าถึงให้กับทีมดูแลระบบของ WeVis เท่านั้น
-
-## การจำกัดการใช้งาน API
-
-เพื่อป้องกัน API ให้สามารถรองรับผู้ใช้งานได้ดีที่สุด เราจำกัดการใช้งาน API ดังนี้:
-
-- **การเรียกใช้ API** สูงสุดอยู่ที่ 30 Requests ต่อ 10 วินาที
-- **จำนวน Batched Request** สูงสุดอยู่ที่ 5 Operations ต่อ Batched Request
-- **จำนวน Alias**: 120 ต่อ Operation
-- **ความลึก**: 10 ระดับของ Operation ที่ซ้อนกัน
-- **จำนวน Token**: 10,000 Token ต่อ Request
-
-จะได้รับ Error Response หากใช้งานเกินข้อกำหนด
-
-## การจำกัดจำนวน Node
-
-ข้อมูลบางประเภท ได้แก่ คน (People) และ การลงคะแนนรายบุคคล (Vote) เป็นข้อมูลที่มี Node อยู่จำนวนมากในระบบ
-เราจำเป็นต้องจำกัดจำนวน Node ที่จะส่งกลับมายังผู้ใช้ ไม่เกิน 1,000 Node ต่อการ Query 1 ครั้ง หากต้องการเรียกข้อมูลมากกว่าจำนวนที่จำกัดไว้ [อ่านเพิ่มเติมเกี่ยวกับการใช้ Pagination บน GraphQL](https://neo4j.com/docs/graphql/current/queries-aggregations/pagination/)
+- [GraphQL Playground](/graphql) ให้เข้าไปทดลองสร้าง Query ต่างๆ และสำรวจผลลัพธ์ที่ได้
+- [พื้นที่สำรวจข้อมูล](/explore) ผ่าน Interactive Visualization
 
 ## การใช้งานร่วมกับ AI Agent
 
@@ -50,7 +29,41 @@ import { SITE_URL } from '../../../constants/site';
 	lang="text"
 	frame="terminal"
 	title="ตัวอย่าง Prompt"
+	wrap
 />
+
+:::caution[ผลลัพธ์จาก AI อาจคลาดเคลื่อนหรือไม่ตรงกับข้อมูลจริง]
+AI Agent อาจสร้าง Query ที่ไม่ตอบคำถามของคุณ ตีความ Schema ผิด หรือสรุปตัวเลขที่ไม่ได้มาจาก Politigraph เลย
+ก่อนนำผลลัพธ์ไปใช้อ้างอิงหรือเผยแพร่ โปรดตรวจสอบผลลัพธ์ด้วยตนเองอีกครั้ง เช่น รันซ้ำผ่าน [GraphQL Playground](/graphql)
+:::
+
+## ข้อจำกัด
+
+### การเข้าถึง
+
+ข้อมูลส่วนใหญ่จาก Politigraph API เป็นแบบเปิดให้เข้าถึงโดยสาธารณะ ไม่จำเป็นต้องยืนยันตัวตน ยกเว้น
+
+- ข้อมูลที่มี Field `publish_status` และไม่ได้มีค่าเป็น `PUBLISHED` จะถูกซ่อนจาก Response เนื่องจากอยู่ระหว่างการตรวจสอบและยังไม่พร้อมเปิดเผย
+- การ Mutate ผ่าน GraphQL ใดๆ เราป้องกันไม่ให้คนภายนอกแก้ไขข้อมูลบนระบบของเรา
+
+ทั้งสองข้อสงวนสิทธ์การเข้าถึงให้กับทีมดูแลระบบของ WeVis เท่านั้น
+
+### การจำกัดการใช้งาน API
+
+เพื่อป้องกัน API ให้สามารถรองรับผู้ใช้งานได้ดีที่สุด เราจำกัดการใช้งาน API ดังนี้:
+
+- **การเรียกใช้ API** สูงสุดอยู่ที่ 30 Requests ต่อ 10 วินาที
+- **จำนวน Batched Request** สูงสุดอยู่ที่ 5 Operations ต่อ Batched Request
+- **จำนวน Alias**: 120 ต่อ Operation
+- **ความลึก**: 10 ระดับของ Operation ที่ซ้อนกัน
+- **จำนวน Token**: 10,000 Token ต่อ Request
+
+จะได้รับ Error Response หากใช้งานเกินข้อกำหนด
+
+### การจำกัดจำนวน Node
+
+ข้อมูลบางประเภท ได้แก่ คน (People) และ การลงคะแนนรายบุคคล (Vote) เป็นข้อมูลที่มี Node อยู่จำนวนมากในระบบ
+เราจำเป็นต้องจำกัดจำนวน Node ที่จะส่งกลับมายังผู้ใช้ ไม่เกิน 1,000 Node ต่อการ Query 1 ครั้ง หากต้องการเรียกข้อมูลมากกว่าจำนวนที่จำกัดไว้ [อ่านเพิ่มเติมเกี่ยวกับการใช้ Pagination บน GraphQL](https://neo4j.com/docs/graphql/current/queries-aggregations/pagination/)
 
 ## การอนุญาตใช้งาน (License)
 
