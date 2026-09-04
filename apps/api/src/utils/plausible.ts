@@ -1,3 +1,5 @@
+import { serverConfig } from '@politigraph/config/server';
+
 export function triggerPlausiblePageview(userAgent: string, clientIp: string) {
 	fetch('https://analytics.punchup.world/api/event', {
 		method: 'POST',
@@ -8,8 +10,8 @@ export function triggerPlausiblePageview(userAgent: string, clientIp: string) {
 		},
 		body: JSON.stringify({
 			name: 'pageview',
-			url: 'https://politigraph.wevis.info/graphql',
-			domain: 'politigraph.wevis.info',
+			url: `${serverConfig.siteUrl}/graphql`,
+			domain: new URL(serverConfig.siteUrl).hostname,
 		}),
 	}).catch((error) =>
 		console.error('Failed to send Plausible pageview', error),

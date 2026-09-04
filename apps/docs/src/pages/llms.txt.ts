@@ -3,6 +3,7 @@ import { SITE_URL } from '../constants/site';
 import {
 	getEnglishLlmsDocs,
 	GRAPHQL_ENDPOINT,
+	MCP_ENDPOINT,
 	SCHEMA_URL,
 	SUMMARY,
 	toDocsLinkList,
@@ -16,6 +17,7 @@ export const GET: APIRoute = async () => {
 > ${SUMMARY}
 
 - Query the API by sending a POST request to ${GRAPHQL_ENDPOINT}, or explore it interactively in the playground at the same URL.
+- MCP-capable agents can connect to ${MCP_ENDPOINT} instead, an anonymous read-only Streamable HTTP endpoint with tools to read the schema and run queries.
 - Every page below is also available as plain markdown by appending \`.md\` to its URL.
 - These files are generated from the English documentation. The Thai originals are served at the same paths without the \`/en\` prefix.
 

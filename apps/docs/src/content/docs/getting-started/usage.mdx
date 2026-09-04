@@ -16,7 +16,11 @@ API ของเราอยู่ในมาตรฐาน [GraphQL](https://
 
 ## การใช้งานร่วมกับ AI Agent
 
-คุณสามารถใช้งาน Politigraph ผ่าน AI Agent หรือ Chatbot ด้วยคู่มือการใช้ที่ AI สามารถอ่านได้ตามมาตรฐาน [llms.txt](https://llmstxt.org) ดังนี้
+คุณสามารถใช้ Politigraph กับ AI Agent หรือ Chatbot ได้ 2 ช่องทาง
+
+### llms.txt
+
+เราเตรียมคู่มือการใช้ที่ AI สามารถอ่านได้ตามมาตรฐาน [llms.txt](https://llmstxt.org) ดังนี้
 
 - [`/llms.txt`](/llms.txt): สารบัญของเอกสารต่างๆ พร้อมลิงก์
 - [`/llms-full.txt`](/llms-full.txt): เอกสารทั้งหมดพร้อม GraphQL Schema ฉบับเต็ม รวมอยู่ในไฟล์เดียว
@@ -31,6 +35,30 @@ API ของเราอยู่ในมาตรฐาน [GraphQL](https://
 	title="ตัวอย่าง Prompt"
 	wrap
 />
+
+### MCP Server
+
+หาก AI Agent ของคุณรองรับ [Model Context Protocol](https://modelcontextprotocol.io) สามารถเชื่อมต่อกับ MCP Endpoint ของเราได้ที่ <code>{SITE_URL}/mcp</code> โดยไม่ต้องยืนยันตัวตนหรือใช้ API Key
+
+<Code
+	code={`{ "type": "http", "url": "${SITE_URL}/mcp" }`}
+	lang="json"
+	title="ตัวอย่างการตั้งค่า MCP Client"
+	wrap
+/>
+
+<details>
+<summary>วิธีเพิ่ม MCP Server ของแต่ละ Client</summary>
+
+- [Claude Code](https://docs.claude.com/en/docs/claude-code/mcp)
+- [Claude เวอร์ชัน Desktop และเว็บ](https://support.anthropic.com/en/articles/11175166-about-custom-connectors)
+- [ChatGPT](https://platform.openai.com/docs/guides/developer-mode)
+- [Cursor](https://cursor.com/docs/context/mcp)
+- [VS Code ที่ใช้ GitHub Copilot](https://code.visualstudio.com/docs/copilot/chat/mcp-servers)
+
+หากใช้ Client อื่น สามารถดู [รายชื่อ MCP Client ทั้งหมด](https://modelcontextprotocol.io/clients)
+
+</details>
 
 :::caution[ผลลัพธ์จาก AI อาจคลาดเคลื่อนหรือไม่ตรงกับข้อมูลจริง]
 AI Agent อาจสร้าง Query ที่ไม่ตอบคำถามของคุณ ตีความ Schema ผิด หรือสรุปตัวเลขที่ไม่ได้มาจาก Politigraph เลย

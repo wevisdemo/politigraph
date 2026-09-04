@@ -48,6 +48,10 @@
 			"dependsOn": ["build"],
 			"cache": false
 		},
+		"@politigraph/api#test:unit": {
+			"dependsOn": ["@politigraph/graphql#build"],
+			"cache": false
+		},
 		"@politigraph/graphql#test:integration": {
 			"dependsOn": ["build"],
 			"cache": false

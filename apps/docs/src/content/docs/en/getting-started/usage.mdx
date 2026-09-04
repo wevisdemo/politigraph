@@ -16,7 +16,11 @@ We also provide
 
 ## Using with AI Agents
 
-If you build with Politigraph through an AI coding agent or chatbot, we publish our documentation as machine-readable plain text following the [llms.txt](https://llmstxt.org) convention:
+We provide two interfaces for AI coding agent or chatbot.
+
+### llms.txt
+
+Our documentation are published as machine-readable plain text following the [llms.txt](https://llmstxt.org) convention:
 
 - [`/llms.txt`](/llms.txt): an index of every documentation page and resource, with links
 - [`/llms-full.txt`](/llms-full.txt): the entire documentation plus the full GraphQL schema in a single file
@@ -31,6 +35,30 @@ Give your agent <code>{SITE_URL}/llms.txt</code> to let it pick what it needs, o
 	title="Example prompt"
 	wrap
 />
+
+### MCP Server
+
+If your agent speaks the [Model Context Protocol](https://modelcontextprotocol.io), connect it to our MCP endpoint at <code>{SITE_URL}/mcp</code> instead. No authentication or API key is required.
+
+<Code
+	code={`{ "type": "http", "url": "${SITE_URL}/mcp" }`}
+	lang="json"
+	title="MCP client configuration"
+	wrap
+/>
+
+<details>
+<summary>How to add an MCP server in popular clients</summary>
+
+- [Claude Code](https://docs.claude.com/en/docs/claude-code/mcp)
+- [Claude desktop and web](https://support.anthropic.com/en/articles/11175166-about-custom-connectors)
+- [ChatGPT](https://platform.openai.com/docs/guides/developer-mode)
+- [Cursor](https://cursor.com/docs/context/mcp)
+- [VS Code with GitHub Copilot](https://code.visualstudio.com/docs/copilot/chat/mcp-servers)
+
+For any other client, see the [full list of MCP clients](https://modelcontextprotocol.io/clients).
+
+</details>
 
 :::caution[AI responses can be inaccurate or misleading]
 An AI agent may build a query that does not answer your question, misinterpret the schema, or state figures that never came from Politigraph at all.

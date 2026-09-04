@@ -11,19 +11,22 @@
 		"test": "bun test"
 	},
 	"dependencies": {
-		"@politigraph/config": "workspace:*",
 		"@apollo/server": "^4.11.2",
 		"@elysiajs/cors": "^1.4.0",
 		"@escape.tech/graphql-armor": "^3.2.0",
+		"@modelcontextprotocol/server": "2.0.0",
 		"@politigraph/auth": "workspace:*",
+		"@politigraph/config": "workspace:*",
 		"@politigraph/graphql": "workspace:*",
 		"bun-image-turbo-linux-x64-gnu": "^1.9.0",
 		"elysia": "^1.4.16",
-		"imgkit": "^2.2.1"
+		"graphql": "^16.9.0",
+		"imgkit": "^2.2.1",
+		"zod": "^4.4.3"
 	},
 	"devDependencies": {
 		"@graphql-tools/schema": "^10.0.35",
-		"bun-types": "latest",
-		"graphql": "^16.9.0"
+		"@modelcontextprotocol/client": "2.0.0",
+		"bun-types": "latest"
 	}
 }

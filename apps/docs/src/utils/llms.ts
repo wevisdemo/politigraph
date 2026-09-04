@@ -8,10 +8,11 @@ import type { Language } from './i18n';
 
 export const schemaSdl = typedefs;
 
-export const SUMMARY =
-	'Politigraph is a public GraphQL API of Thai political open data - politicians, political parties, parliamentary positions, votes and bills - stored as a graph and maintained by WeVis.';
+export { SUMMARY } from '@politigraph/graphql/summary';
 
 export const GRAPHQL_ENDPOINT = `${SITE_URL}/graphql`;
+
+export const MCP_ENDPOINT = `${SITE_URL}/mcp`;
 
 export const SCHEMA_URL = `${SITE_URL}/schema.graphql`;
 
@@ -122,6 +123,8 @@ async function toPlainMarkdown(body: string) {
 				return `${title ? `**${title}**\n\n` : ''}\`\`\`\n${code.trim()}\n\`\`\``;
 			},
 		)
+		.replace(/<summary>([\s\S]*?)<\/summary>/g, '**$1**')
+		.replace(/<\/?details[^>]*>/g, '')
 		.replace(/<code>([\s\S]*?)<\/code>/g, '`$1`')
 		.replace(/<\/?[A-Z][^>]*>/g, '')
 		.replace(/\]\(\/(?!\/)/g, `](${SITE_URL}/`)

@@ -3,7 +3,9 @@ import { auth } from '@politigraph/auth/auth';
 import { serverConfig } from '@politigraph/config/server';
 import { initNeo4jGraphql } from '@politigraph/graphql/neo4j-graphql';
 import { Elysia, type Context } from 'elysia';
+import { MAX_QUERY_TOKENS } from './constants/graphql';
 import { apollo } from './routes/graphql';
+import { mcp } from './routes/mcp';
 import { upload } from './routes/upload-image';
 import { getJwtToken } from './utils/auth';
 import { triggerPlausiblePageview } from './utils/plausible';
@@ -24,7 +26,7 @@ const armor = new ApolloArmor({
 		enabled: false,
 	},
 	maxTokens: {
-		n: 10000,
+		n: MAX_QUERY_TOKENS,
 	},
 	// Docs explore center node queries use up to 91 aliases (Organization)
 	maxAliases: {
@@ -57,6 +59,7 @@ const app = new Elysia()
 			},
 		}),
 	)
+	.use(mcp(origin))
 	.use(upload(origin))
 	.all('/auth/*', (ctx) => auth.handler(ctx.request));
 

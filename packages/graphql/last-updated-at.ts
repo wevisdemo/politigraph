@@ -1,7 +1,6 @@
-import { Kind, parse, type ObjectTypeDefinitionNode } from 'graphql';
-// @ts-expect-error graphql import with type assertion
-import typeDefs from './dist/typedefs.graphql' with { type: 'text' };
+import { Kind, type ObjectTypeDefinitionNode } from 'graphql';
 import { driver } from './driver';
+import { typeDefinitions } from './schema-sdl';
 
 const CACHE_TTL_MS = 60 * 60 * 1000;
 const TIMESTAMP_FIELDS = ['created_at', 'updated_at'];
@@ -62,7 +61,7 @@ async function queryLatestEpochMs() {
 export const latestTimestampQuery = buildLatestTimestampQuery();
 
 function buildLatestTimestampQuery() {
-	const labels = parse(typeDefs).definitions.flatMap((definition) =>
+	const labels = [...typeDefinitions.values()].flatMap((definition) =>
 		definition.kind === Kind.OBJECT_TYPE_DEFINITION
 			? getNodeLabel(definition)
 			: [],
