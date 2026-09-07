@@ -18,6 +18,11 @@ API ของเราอยู่ในมาตรฐาน [GraphQL](https://
 
 คุณสามารถใช้ Politigraph กับ AI Agent หรือ Chatbot ได้ 2 ช่องทาง
 
+:::caution[ผลลัพธ์จาก AI อาจคลาดเคลื่อนหรือไม่ตรงกับข้อมูลจริง]
+AI Agent อาจสร้าง Query ที่ไม่ตอบคำถามของคุณ ตีความ Schema ผิด หรือสรุปตัวเลขที่ไม่ได้มาจาก Politigraph เลย
+ก่อนนำผลลัพธ์ไปใช้อ้างอิงหรือเผยแพร่ โปรดตรวจสอบผลลัพธ์ด้วยตนเองอีกครั้ง เช่น รันซ้ำผ่าน [GraphQL Playground](/graphql)
+:::
+
 ### llms.txt
 
 เราเตรียมคู่มือการใช้ที่ AI สามารถอ่านได้ตามมาตรฐาน [llms.txt](https://llmstxt.org) ดังนี้
@@ -47,23 +52,31 @@ API ของเราอยู่ในมาตรฐาน [GraphQL](https://
 	wrap
 />
 
-<details>
-<summary>วิธีเพิ่ม MCP Server ของแต่ละ Client</summary>
+### การใช้งานผ่านช่องทางต่างๆ
 
-- [Claude Code](https://docs.claude.com/en/docs/claude-code/mcp)
-- [Claude เวอร์ชัน Desktop และเว็บ](https://support.anthropic.com/en/articles/11175166-about-custom-connectors)
-- [ChatGPT](https://platform.openai.com/docs/guides/developer-mode)
-- [Cursor](https://cursor.com/docs/context/mcp)
-- [VS Code ที่ใช้ GitHub Copilot](https://code.visualstudio.com/docs/copilot/chat/mcp-servers)
+AI Agent ที่ทำงานบนเครื่องของคุณสามารถอ่านคู่มือและส่ง Query เองเพื่อเข้าถึงข้อมูลจริงได้ ส่วน Chatbot บนเว็บโดยพื้นฐานทำได้เพียงแค่อ่านคู่มือและช่วยคุณเขียน Query เท่านั้น คุณต้องนำไปรันเองที่ [GraphQL Playground](/graphql) หากต้องการให้ Chatbot ตอบด้วยข้อมูลจริง ให้เชื่อมต่อกับ MCP Server ของเราแทน
 
-หากใช้ Client อื่น สามารถดู [รายชื่อ MCP Client ทั้งหมด](https://modelcontextprotocol.io/clients)
+#### Chatbot บนเว็บ
 
-</details>
+| ผู้ให้บริการ                                                                                                     | llms.txt                | MCP Server                                                                                      |
+| ---------------------------------------------------------------------------------------------------------------- | ----------------------- | ----------------------------------------------------------------------------------------------- |
+| [ChatGPT](https://platform.openai.com/docs/guides/developer-mode)                                                | อ่านได้ ช่วยเขียน Query | Custom Connector ใน Developer Mode สำหรับแพ็กเกจแบบเสียเงิน                                     |
+| [Claude](https://support.claude.com/en/articles/11175166-get-started-with-custom-connectors-using-remote-mcp)    | อ่านได้ ช่วยเขียน Query | Custom Connector ได้ทุกแพ็กเกจ ทั้งเว็บและ Desktop โดยแพ็กเกจฟรีเชื่อมได้ 1 รายการ              |
+| [Gemini](https://support.google.com/g/answer/17106276)                                                           | อ่านได้ ช่วยเขียน Query | เพิ่มเป็น Custom App ใน Spark สำหรับ AI Pro และ Ultra หรือให้ผู้ดูแลระบบเพิ่มในแพ็กเกจ Business |
+| [Perplexity](https://www.perplexity.ai/help-center/en/articles/13915507-adding-custom-remote-connectors)         | อ่านได้ ช่วยเขียน Query | Custom Remote Connector สำหรับแพ็กเกจแบบเสียเงิน                                                |
+| [Microsoft Copilot](https://learn.microsoft.com/en-us/microsoft-copilot-studio/mcp-add-existing-server-to-agent) | อ่านได้ ช่วยเขียน Query | ใช้ได้ผ่าน Agent ที่สร้างใน Copilot Studio เท่านั้น                                             |
 
-:::caution[ผลลัพธ์จาก AI อาจคลาดเคลื่อนหรือไม่ตรงกับข้อมูลจริง]
-AI Agent อาจสร้าง Query ที่ไม่ตอบคำถามของคุณ ตีความ Schema ผิด หรือสรุปตัวเลขที่ไม่ได้มาจาก Politigraph เลย
-ก่อนนำผลลัพธ์ไปใช้อ้างอิงหรือเผยแพร่ โปรดตรวจสอบผลลัพธ์ด้วยตนเองอีกครั้ง เช่น รันซ้ำผ่าน [GraphQL Playground](/graphql)
-:::
+#### AI Agent บนเครื่อง
+
+| Client                                                                                       | llms.txt                            | MCP Server                   |
+| -------------------------------------------------------------------------------------------- | ----------------------------------- | ---------------------------- |
+| [Claude Code](https://docs.claude.com/en/docs/claude-code/mcp)                               | อ่านได้และรัน Query ได้             | ได้                          |
+| [Codex CLI](https://developers.openai.com/codex/agent-approvals-security)                    | ต้องตั้งค่า `network_access = true` | ได้                          |
+| [Gemini CLI](https://google-gemini.github.io/gemini-cli/docs/tools/mcp-server.html)          | อ่านได้และรัน Query ได้             | ได้ โดยตั้งค่าผ่าน `httpUrl` |
+| [Cursor](https://cursor.com/docs/context/mcp)                                                | อ่านได้และรัน Query ได้             | ได้                          |
+| [VS Code ที่ใช้ GitHub Copilot](https://code.visualstudio.com/docs/copilot/chat/mcp-servers) | อ่านได้และรัน Query ได้             | ได้                          |
+
+_ตรวจสอบล่าสุดเมื่อ 7 กันยายน 2569_
 
 ## ข้อจำกัด
 
@@ -78,7 +91,7 @@ AI Agent อาจสร้าง Query ที่ไม่ตอบคำถา�
 
 ### การจำกัดการใช้งาน API
 
-เพื่อป้องกัน API ให้สามารถรองรับผู้ใช้งานได้ดีที่สุด เราจำกัดการใช้งาน API ดังนี้:
+เพื่อป้องกัน API ให้สามารถรองรับผู้ใช้งานได้ดีที่สุด เราจำกัดการใช้งานทั้่ง GraphQL Endpoint และ MCP รวมกันดังนี้:
 
 - **การเรียกใช้ API** สูงสุดอยู่ที่ 30 Requests ต่อ 10 วินาที
 - **จำนวน Batched Request** สูงสุดอยู่ที่ 5 Operations ต่อ Batched Request

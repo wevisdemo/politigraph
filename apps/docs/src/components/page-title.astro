@@ -17,7 +17,7 @@ const showMarkdownLink = hasMarkdownVersion(entry);
 		showMarkdownLink && (
 			<a
 				href={`/${entry.id}.md`}
-				class="text-xs no-underline opacity-70 hover:opacity-100 ml-auto flex flex-row items-center gap-1"
+				class="ml-auto flex flex-row items-center gap-1 text-xs text-(--sl-color-text-accent) hover:text-(--sl-color-white)"
 			>
 				<Icon name="document" />
 				{t.viewAsMarkdown}

@@ -18,6 +18,11 @@ We also provide
 
 We provide two interfaces for AI coding agent or chatbot.
 
+:::caution[AI responses can be inaccurate or misleading]
+An AI agent may build a query that does not answer your question, misinterpret the schema, or state figures that never came from Politigraph at all.
+Before relying on or publishing an answer, you should verify the result yourself, for example by re-running it in the [GraphQL Playground](/graphql).
+:::
+
 ### llms.txt
 
 Our documentation are published as machine-readable plain text following the [llms.txt](https://llmstxt.org) convention:
@@ -47,23 +52,31 @@ If your agent speaks the [Model Context Protocol](https://modelcontextprotocol.i
 	wrap
 />
 
-<details>
-<summary>How to add an MCP server in popular clients</summary>
+### Client Compatibility
 
-- [Claude Code](https://docs.claude.com/en/docs/claude-code/mcp)
-- [Claude desktop and web](https://support.anthropic.com/en/articles/11175166-about-custom-connectors)
-- [ChatGPT](https://platform.openai.com/docs/guides/developer-mode)
-- [Cursor](https://cursor.com/docs/context/mcp)
-- [VS Code with GitHub Copilot](https://code.visualstudio.com/docs/copilot/chat/mcp-servers)
+An agent on your machine can read our documentation and send the query itself, so it can answer with real data. A chatbot in the browser can only read the documentation and help you write a query, but you have to run it yourself in the [GraphQL Playground](/graphql). Connect the chatbot to our MCP server if you want it to return real data.
 
-For any other client, see the [full list of MCP clients](https://modelcontextprotocol.io/clients).
+#### Web chatbots
 
-</details>
+| Provider                                                                                                         | llms.txt                 | MCP server                                                                  |
+| ---------------------------------------------------------------------------------------------------------------- | ------------------------ | --------------------------------------------------------------------------- |
+| [ChatGPT](https://platform.openai.com/docs/guides/developer-mode)                                                | Reads it, drafts queries | Custom connector in developer mode, on paid plans                           |
+| [Claude](https://support.claude.com/en/articles/11175166-get-started-with-custom-connectors-using-remote-mcp)    | Reads it, drafts queries | Custom connector on every plan, web and desktop, one connector when on free |
+| [Gemini](https://support.google.com/g/answer/17106276)                                                           | Reads it, drafts queries | Custom app in Spark on AI Pro and Ultra, or through an admin on Business    |
+| [Perplexity](https://www.perplexity.ai/help-center/en/articles/13915507-adding-custom-remote-connectors)         | Reads it, drafts queries | Custom remote connector, on paid plans                                      |
+| [Microsoft Copilot](https://learn.microsoft.com/en-us/microsoft-copilot-studio/mcp-add-existing-server-to-agent) | Reads it, drafts queries | Only through an agent you build in Copilot Studio                           |
 
-:::caution[AI responses can be inaccurate or misleading]
-An AI agent may build a query that does not answer your question, misinterpret the schema, or state figures that never came from Politigraph at all.
-Before relying on or publishing an answer, you should verify the result yourself, for example by re-running it in the [GraphQL Playground](/graphql).
-:::
+#### Local coding agents
+
+| Client                                                                                     | llms.txt                      | MCP server                      |
+| ------------------------------------------------------------------------------------------ | ----------------------------- | ------------------------------- |
+| [Claude Code](https://docs.claude.com/en/docs/claude-code/mcp)                             | Reads it and runs queries     | Yes                             |
+| [Codex CLI](https://developers.openai.com/codex/agent-approvals-security)                  | Needs `network_access = true` | Yes                             |
+| [Gemini CLI](https://google-gemini.github.io/gemini-cli/docs/tools/mcp-server.html)        | Reads it and runs queries     | Yes, configured under `httpUrl` |
+| [Cursor](https://cursor.com/docs/context/mcp)                                              | Reads it and runs queries     | Yes                             |
+| [VS Code with GitHub Copilot](https://code.visualstudio.com/docs/copilot/chat/mcp-servers) | Reads it and runs queries     | Yes                             |
+
+_Last checked on 7 September 2026_
 
 ## Limitations
 
@@ -78,7 +91,7 @@ Access to both of these exceptions is strictly reserved for the WeVis system adm
 
 ### API Usage Limits
 
-To ensure fair usage and protect the API from abuse, we enforce the following limits on GraphQL operations:
+To ensure fair usage and protect the API from abuse, we enforce the following limits on GraphQL operations, both through GraphQL endpoint and MCP:
 
 - **Rate limit**: 30 requests per 10 seconds
 - **Batching**: 5 operations per batched request
