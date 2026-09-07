@@ -19,3 +19,4 @@ dist
 .data
 .astro
 genql
+.direnv/
