@@ -6,7 +6,7 @@ services:
     privileged: true
     network_mode: 'host'
     volumes:
-      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx:/etc/nginx/conf.d:ro
       - ./tls:/var/tls:ro
       - /var/htdocs:/var/htdocs:ro
     logging:
