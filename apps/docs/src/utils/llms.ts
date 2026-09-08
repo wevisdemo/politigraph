@@ -1,20 +1,15 @@
 import typedefs from '@politigraph/graphql/dist/typedefs.graphql?raw';
+import { toPlaygroundUrl } from '@politigraph/graphql/playground-url';
 import { getCollection } from 'astro:content';
 import * as graphql from 'prettier/plugins/graphql';
 import { format } from 'prettier/standalone';
 import { sidebarGroups } from '../constants/sidebar';
-import { SITE_URL } from '../constants/site';
+import { GRAPHQL_ENDPOINT, SCHEMA_URL, SITE_URL } from '../constants/site';
 import type { Language } from './i18n';
 
 export const schemaSdl = typedefs;
 
 export { SUMMARY } from '@politigraph/graphql/summary';
-
-export const GRAPHQL_ENDPOINT = `${SITE_URL}/graphql`;
-
-export const MCP_ENDPOINT = `${SITE_URL}/mcp`;
-
-export const SCHEMA_URL = `${SITE_URL}/schema.graphql`;
 
 export interface LlmsDoc {
 	id: string;
@@ -154,13 +149,18 @@ async function toQueryExample(attributes: string) {
 		plugins: [graphql],
 	});
 
-	const blocks = [`\`\`\`graphql\n${formattedQuery.trim()}\n\`\`\``];
+	const trimmedQuery = formattedQuery.trim();
+	const blocks = [`\`\`\`graphql\n${trimmedQuery}\n\`\`\``];
 
 	if (variables) {
 		blocks.push(
 			`Variables:\n\n\`\`\`json\n${JSON.stringify(JSON.parse(variables), null, 2)}\n\`\`\``,
 		);
 	}
+
+	blocks.push(
+		`[Run this query in the playground](${toPlaygroundUrl(GRAPHQL_ENDPOINT, trimmedQuery, variables)})`,
+	);
 
 	return blocks.join('\n\n');
 }

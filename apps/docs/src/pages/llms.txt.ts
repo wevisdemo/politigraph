@@ -1,13 +1,12 @@
 import type { APIRoute } from 'astro';
-import { SITE_URL } from '../constants/site';
 import {
-	getEnglishLlmsDocs,
 	GRAPHQL_ENDPOINT,
 	MCP_ENDPOINT,
+	PLAYGROUND_ENDPOINT,
 	SCHEMA_URL,
-	SUMMARY,
-	toDocsLinkList,
-} from '../utils/llms';
+	SITE_URL,
+} from '../constants/site';
+import { getEnglishLlmsDocs, SUMMARY, toDocsLinkList } from '../utils/llms';
 
 export const GET: APIRoute = async () => {
 	const docs = await getEnglishLlmsDocs();
@@ -18,6 +17,7 @@ export const GET: APIRoute = async () => {
 
 - Query the API by sending a POST request to ${GRAPHQL_ENDPOINT}, or explore it interactively in the playground at the same URL.
 - MCP-capable agents can connect to ${MCP_ENDPOINT} instead, an anonymous read-only Streamable HTTP endpoint with tools to read the schema and run queries.
+- If you cannot run the query yourself, hand the user a link to ${PLAYGROUND_ENDPOINT}?query=URL_ENCODED_GRAPHQL&variables=URL_ENCODED_JSON instead. It opens the playground with that operation and its variables filled in, ready to run.
 - Every page below is also available as plain markdown by appending \`.md\` to its URL.
 - These files are generated from the English documentation. The Thai originals are served at the same paths without the \`/en\` prefix.
 

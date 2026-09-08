@@ -6,6 +6,7 @@ import { Elysia, type Context } from 'elysia';
 import { MAX_QUERY_TOKENS } from './constants/graphql';
 import { apollo } from './routes/graphql';
 import { mcp } from './routes/mcp';
+import { playground } from './routes/playground';
 import { upload } from './routes/upload-image';
 import { getJwtToken } from './utils/auth';
 import { triggerPlausiblePageview } from './utils/plausible';
@@ -59,6 +60,7 @@ const app = new Elysia()
 			},
 		}),
 	)
+	.use(playground)
 	.use(mcp(origin))
 	.use(upload(origin))
 	.all('/auth/*', (ctx) => auth.handler(ctx.request));

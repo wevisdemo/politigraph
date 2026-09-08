@@ -14,6 +14,7 @@ const th = {
 	graphFullSchemaLink: 'ดู Schema ทั้งหมด',
 	graphSelectNodeHint: 'เลือก Node เพื่อดูคำอธิบายและ Properties',
 	viewAsMarkdown: 'ดูหน้านี้ในรูปแบบ Markdown',
+	openInPlayground: 'ลอง Query ใน GraphQL Playground',
 	exploreInteractHint:
 		'แสดงความสัมพันธ์ของ Node ที่อยู่ใกล้เท่านั้น เลือก Node ใดๆ เพื่อดู Properties และเลือกซ้ำอีกครั้งเพื่อสำรวจความสัมพันธ์ของ Node ถัดๆ ไป',
 };
@@ -32,6 +33,7 @@ const en: typeof th = {
 	graphFullSchemaLink: 'see full schema',
 	graphSelectNodeHint: 'Select any node to see the description and properties',
 	viewAsMarkdown: 'View this page as Markdown',
+	openInPlayground: 'Try this query in GraphQL Playground',
 	exploreInteractHint:
 		'Only showing relationships of nearby nodes. Select any node to see its properties, select it again to explore the further nodes',
 };

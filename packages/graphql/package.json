@@ -12,11 +12,12 @@
 		"test": "bun test"
 	},
 	"dependencies": {
-		"@politigraph/config": "workspace:*",
 		"@genql/cli": "^6.3.3",
 		"@graphql-tools/utils": "^10.6.2",
 		"@neo4j/graphql": "^7.4.2",
+		"@politigraph/config": "workspace:*",
 		"graphql": "^16.9.0",
+		"lz-string": "^1.5.0",
 		"neo4j-driver": "^6.0.1"
 	},
 	"devDependencies": {
