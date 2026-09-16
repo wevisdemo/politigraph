@@ -17,10 +17,3 @@ export async function getGraphqlTypeDefs(schemaDir = __dirname) {
 
 	return schemas.join('\n');
 }
-
-export async function getGraphqlCreateIndexQueries(schemaDir = __dirname) {
-	return (await Bun.file(join(schemaDir, 'indexes.cypher')).text())
-		.split(';')
-		.map((query) => query.trim())
-		.filter((query) => query);
-}

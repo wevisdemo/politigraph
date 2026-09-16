@@ -1,42 +1,54 @@
-CREATE INDEX index_organization_classification IF NOT EXISTS
+CREATE CONSTRAINT constraint_person_id IF NOT EXISTS
+FOR (person:Person)
+REQUIRE person.id IS UNIQUE;
+
+CREATE CONSTRAINT constraint_organization_id IF NOT EXISTS
 FOR (organization:Organization)
-ON (organization.classification);
+REQUIRE organization.id IS UNIQUE;
 
-CREATE INDEX index_organization_id IF NOT EXISTS
-FOR (organization:Organization)
-ON (organization.id);
-
-CREATE INDEX index_person_id IF NOT EXISTS
-FOR (person:Person)
-ON (person.id);
-
-CREATE INDEX index_person_firstname IF NOT EXISTS
-FOR (person:Person)
-ON (person.firstname);
-
-CREATE INDEX index_person_lastname IF NOT EXISTS
-FOR (person:Person)
-ON (person.lastname);
-
-CREATE INDEX index_vote_event_id IF NOT EXISTS
-FOR (voteEvent:VoteEvent)
-ON (voteEvent.id);
-
-CREATE INDEX index_bill_id IF NOT EXISTS
-FOR (bill:Bill)
-ON (bill.id);
-
-CREATE INDEX index_membership_id IF NOT EXISTS
+CREATE CONSTRAINT constraint_membership_id IF NOT EXISTS
 FOR (membership:Membership)
-ON (membership.id);
+REQUIRE membership.id IS UNIQUE;
 
-CREATE INDEX index_link_id IF NOT EXISTS
-FOR (link:Link)
-ON (link.id);
+CREATE CONSTRAINT constraint_post_id IF NOT EXISTS
+FOR (post:Post)
+REQUIRE post.id IS UNIQUE;
 
-CREATE INDEX index_vote_id IF NOT EXISTS
+CREATE CONSTRAINT constraint_bill_id IF NOT EXISTS
+FOR (bill:Bill)
+REQUIRE bill.id IS UNIQUE;
+
+CREATE CONSTRAINT constraint_vote_event_id IF NOT EXISTS
+FOR (voteEvent:VoteEvent)
+REQUIRE voteEvent.id IS UNIQUE;
+
+CREATE CONSTRAINT constraint_bill_vote_event_id IF NOT EXISTS
+FOR (billVoteEvent:BillVoteEvent)
+REQUIRE billVoteEvent.id IS UNIQUE;
+
+CREATE CONSTRAINT constraint_vote_id IF NOT EXISTS
 FOR (vote:Vote)
-ON (vote.id);
+REQUIRE vote.id IS UNIQUE;
+
+CREATE CONSTRAINT constraint_link_id IF NOT EXISTS
+FOR (link:Link)
+REQUIRE link.id IS UNIQUE;
+
+CREATE INDEX index_bill_lis_id IF NOT EXISTS
+FOR (bill:Bill)
+ON (bill.lis_id);
+
+CREATE INDEX index_vote_event_msbis_id IF NOT EXISTS
+FOR (voteEvent:VoteEvent)
+ON (voteEvent.msbis_id);
+
+CREATE INDEX index_bill_vote_event_msbis_id IF NOT EXISTS
+FOR (billVoteEvent:BillVoteEvent)
+ON (billVoteEvent.msbis_id);
+
+CREATE INDEX index_vote_event_start_date IF NOT EXISTS
+FOR (voteEvent:VoteEvent)
+ON (voteEvent.start_date);
 
 CREATE INDEX index_vote_option IF NOT EXISTS
 FOR (vote:Vote)

@@ -199,11 +199,10 @@ describe('Authorization filters', () => {
 				option: 'เห็นด้วย',
 				voteEventId: 've-published',
 			});
-			await seedVote(session, {
-				id: 'vote-mixed',
-				option: 'เห็นด้วย',
-				voteEventId: 've-unpublished',
-			});
+			await session.run(
+				`MATCH (v:Vote {id: 'vote-mixed'}), (ve:VoteEvent {id: 've-unpublished'})
+				CREATE (v)-[:VOTED_IN]->(ve)`,
+			);
 
 			const result = await execute(
 				schema,
