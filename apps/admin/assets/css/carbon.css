@@ -50,6 +50,20 @@
 	width: 100%;
 }
 
+.bx--modal {
+	height: 100dvh;
+	padding-block: 2rem;
+	overflow-y: auto;
+}
+
+.bx--modal-container {
+	position: relative;
+	height: auto;
+	max-height: none;
+	margin-block: auto;
+	overflow: visible;
+}
+
 .bx--modal-content {
 	overflow-y: visible;
 }

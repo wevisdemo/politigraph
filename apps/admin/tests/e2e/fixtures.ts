@@ -1,4 +1,9 @@
-import { test as base, type Page } from '@playwright/test';
+import {
+	test as base,
+	expect,
+	type Locator,
+	type Page,
+} from '@playwright/test';
 
 const seedPassword = process.env.SEED_ADMIN_PASSWORD;
 
@@ -47,4 +52,18 @@ export async function createTestPerson(
 
 	// Wait for URL to change to a UUID-based path (not /new)
 	await page.waitForURL(/\/people\/[0-9a-f]{8}-/, { timeout: 15000 });
+}
+
+export async function expectModalPrimaryButtonReachable(
+	page: Page,
+	modal: Locator,
+) {
+	const box = (await modal.locator('.bx--modal-container').boundingBox())!;
+
+	await page.mouse.move(box.x + box.width / 2, 100);
+	await page.mouse.wheel(0, 10000);
+
+	await expect(
+		modal.locator('.bx--modal-footer .bx--btn--primary'),
+	).toBeInViewport({ ratio: 1 });
 }

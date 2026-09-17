@@ -1,5 +1,9 @@
 import { expect, test } from '@playwright/test';
-import { createTestPerson, login } from '../../fixtures';
+import {
+	createTestPerson,
+	expectModalPrimaryButtonReachable,
+	login,
+} from '../../fixtures';
 import {
 	createVoteEventWithVotes,
 	DEFAULT_VOTE,
@@ -232,6 +236,33 @@ test.describe('Votes Management', () => {
 
 		await expect(page.getByText('Duplicate Votes')).toBeVisible();
 		await expect(page.getByText('Unrecognized Voter Names')).toBeVisible();
+	});
+
+	test('keep replace button reachable when reviewing many names', async ({
+		page,
+	}) => {
+		const uniqueId = `${test.info().workerIndex}-${Date.now()}`;
+
+		const { voteEventId } = await createVoteEventWithVotes(
+			page,
+			`Review Names Test ${uniqueId}`,
+			Array.from({ length: 30 }, (_, i) => ({
+				...DEFAULT_VOTE,
+				vote_order: `${i + 1}`,
+				badge_number: `${i + 1}`,
+				voter_name_raw: `ชื่อผิด ${i + 1}`,
+			})),
+		);
+		seededVoteEventIds.push(voteEventId);
+
+		await page.goto(`/vote-events/${voteEventId}/votes`);
+		await waitForTable(page);
+
+		await page.getByRole('button', { name: 'Review names' }).click();
+
+		const modal = page.locator('.bx--modal.is-visible');
+		await modal.locator('.bx--modal-container').waitFor({ state: 'visible' });
+		await expectModalPrimaryButtonReachable(page, modal);
 	});
 
 	test('edit summary counts', async ({ page }) => {

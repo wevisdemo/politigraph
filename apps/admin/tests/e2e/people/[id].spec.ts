@@ -1,5 +1,9 @@
 import { expect, test } from '@playwright/test';
-import { createTestPerson, login } from '../fixtures';
+import {
+	createTestPerson,
+	expectModalPrimaryButtonReachable,
+	login,
+} from '../fixtures';
 import {
 	createTestMembership,
 	createTestOrganization,
@@ -171,6 +175,34 @@ test.describe('Membership CRUD', () => {
 		const refreshedRows = getMembershipRows(page);
 		await expect(refreshedRows).toHaveCount(1);
 		await expect(refreshedRows.first()).toContainText('2568');
+	});
+
+	test('keep save button reachable after adding links', async ({ page }) => {
+		const membership = await createTestMembership(
+			page,
+			personId,
+			postId,
+			'Person',
+		);
+		seededMembershipIds.push(membership.id);
+
+		await page.goto(`/people/${personId}`);
+		await waitForMembershipTable(page);
+
+		await getMembershipRows(page)
+			.first()
+			.getByRole('button', { name: 'แก้ไข' })
+			.click();
+
+		const modal = page.locator('.membership-modal');
+		await modal.locator('.bx--modal-container').waitFor({ state: 'visible' });
+
+		const addLinkButton = modal.getByRole('button', { name: 'Add a link' });
+		for (let i = 0; i < 3; i++) {
+			await addLinkButton.click();
+		}
+
+		await expectModalPrimaryButtonReachable(page, modal);
 	});
 
 	test('delete membership then persist via Save Changes', async ({ page }) => {
