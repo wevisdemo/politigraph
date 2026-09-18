@@ -68,7 +68,7 @@ test.describe('Votes Management', () => {
 		);
 	});
 
-	test('add new vote row', async ({ page }) => {
+	test('add multiple new vote rows', async ({ page }) => {
 		const { voteEventId } = await createVoteEventWithVotes(
 			page,
 			`Test Add Vote ${genId(test.info().workerIndex)}`,
@@ -78,17 +78,21 @@ test.describe('Votes Management', () => {
 		await page.goto(`/vote-events/${voteEventId}/votes`);
 		await waitForTable(page);
 
-		await page.getByRole('button', { name: 'Add Vote' }).click();
+		await page.getByLabel('Number of votes to add').fill('2');
+		await page.getByRole('button', { name: 'Add 2 Votes' }).click();
 
-		const newRow = page
-			.locator('tr[data-value]:has(input[type="text"])')
-			.last();
-		await editTextInput(page, newRow, 0, '2');
-		await editTextInput(page, newRow, 1, '002');
-		await editTextInput(page, newRow, 2, 'พรรคใหม่');
+		const rows = page.locator('tr[data-value]:has(input[type="text"])');
+		await expect(rows).toHaveCount(3);
+
+		for (const [i, order] of ['2', '3'].entries()) {
+			const newRow = rows.nth(i + 1);
+			await editTextInput(page, newRow, 0, order);
+			await editTextInput(page, newRow, 1, `00${order}`);
+			await editTextInput(page, newRow, 2, 'พรรคใหม่');
+		}
 
 		await saveVotes(page);
-		expect(await fetchVoteCount(page, voteEventId)).toBe(2);
+		expect(await fetchVoteCount(page, voteEventId)).toBe(3);
 	});
 
 	test('delete vote row', async ({ page }) => {
@@ -128,7 +132,7 @@ test.describe('Votes Management', () => {
 		await page.goto(`/vote-events/${voteEventId}/votes`);
 		await waitForTable(page);
 
-		await page.getByRole('button', { name: 'Add Vote' }).click();
+		await page.getByRole('button', { name: 'Add 1 Vote' }).click();
 
 		const newRow = page
 			.locator('tr[data-value]:has(input[type="text"])')
@@ -235,12 +239,15 @@ test.describe('Votes Management', () => {
 			page.getByRole('heading', { name: 'Vote Summary' }),
 		).toBeVisible();
 
-		await page.locator('input[type="number"]').first().fill('5');
+		const firstSummaryInput = page
+			.locator('div:has(> h4:text("Vote Summary")) input[type="number"]')
+			.first();
+		await firstSummaryInput.fill('5');
 		await saveVotes(page);
 
 		await page.reload();
 		await waitForTable(page);
-		await expect(page.locator('input[type="number"]').first()).toHaveValue('5');
+		await expect(firstSummaryInput).toHaveValue('5');
 	});
 
 	test('open batch name correction modal', async ({ page }) => {

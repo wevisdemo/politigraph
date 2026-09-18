@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import {
-	Add16,
 	Download16,
 	TrashCan16,
+	UserFollow16,
 	WarningFilled16,
 	// @ts-expect-error carbon icons vue type
 } from '@carbon/icons-vue';
@@ -93,6 +93,8 @@ const getVoterOptions = (id: string, available: boolean) => {
 	return props.peopleOptions;
 };
 
+const isNewRow = (id: string) => !props.originalVotesMap[id];
+
 const filteredVotes = computed(() => {
 	if (!props.voteEvent?.votes || !Array.isArray(props.voteEvent.votes)) {
 		return [];
@@ -103,14 +105,13 @@ const filteredVotes = computed(() => {
 
 		return (
 			!toDeleteIds.value.has(vote.id) &&
-			(vote.voter_name_raw?.toLowerCase().includes(query) ||
+			(isNewRow(vote.id) ||
+				vote.voter_name_raw?.toLowerCase().includes(query) ||
 				vote.voter_party?.toLowerCase().includes(query) ||
 				vote.badge_number?.toString().includes(query))
 		);
 	});
 });
-
-const isNewRow = (id: string) => !props.originalVotesMap[id];
 
 const isCellEdited = (rowId: string, cellId: string) => {
 	return props.editedCells.has(`${rowId}-${cellId}`);
@@ -146,27 +147,26 @@ const onOptionChange = (row: Vote, cellKey: EditableVoteFields) => {
 	nextTick(() => emit('edited', [row.id, cellKey]));
 };
 
-const addNewRow = () => {
-	const newRow: Pick<
-		Vote,
-		| 'id'
-		| 'vote_order'
-		| 'badge_number'
-		| 'voter_name_raw'
-		| 'voter_party'
-		| 'option'
-		| 'voters'
-	> = {
-		id: crypto.randomUUID(),
-		vote_order: '',
-		badge_number: '',
-		voter_name_raw: '',
-		voter_party: '',
-		option: '',
-		voters: [],
-	};
+const newRowCountInput = ref(1);
+const newRowCount = computed(() =>
+	Math.max(1, Math.trunc(newRowCountInput.value) || 1),
+);
+
+const addNewRows = () => {
+	const newRows: VoteEventProp['votes'] = Array.from(
+		{ length: newRowCount.value },
+		() => ({
+			id: crypto.randomUUID(),
+			vote_order: '',
+			badge_number: '',
+			voter_name_raw: '',
+			voter_party: '',
+			option: '',
+			voters: [],
+		}),
+	);
 	if (props.voteEvent && props.voteEvent.votes) {
-		props.voteEvent.votes = [...props.voteEvent.votes, newRow];
+		props.voteEvent.votes = [...props.voteEvent.votes, ...newRows];
 		nextTick(() => {
 			const lastRowEl = document.querySelector('[data-last-row]');
 			lastRowEl?.scrollIntoView({ behavior: 'smooth' });
@@ -233,16 +233,27 @@ const downloadCSV = () => {
 			@search="onSearch"
 		>
 			<template #actions>
-				<cv-button
+				<cv-icon-button
 					:icon="Download16"
 					kind="ghost"
-					has-icon-only
 					class="text-black"
 					@click="downloadCSV"
 				/>
-				<cv-button :icon="Add16" kind="secondary" @click="addNewRow">
-					Add Vote
-				</cv-button>
+				<div class="text-md self-center px-3">Add new vote</div>
+				<div class="w-36">
+					<cv-number-input
+						v-model="newRowCountInput"
+						:min="1"
+						size="lg"
+						aria-label="Number of votes to add"
+					/>
+				</div>
+				<cv-icon-button
+					:label="`Add ${newRowCount} ${newRowCount > 1 ? 'Votes' : 'Vote'}`"
+					:icon="UserFollow16"
+					kind="secondary"
+					@click="addNewRows"
+				/>
 			</template>
 			<template #headings>
 				<cv-data-table-heading heading="ลำดับที่" />
@@ -259,7 +270,7 @@ const downloadCSV = () => {
 					:value="row.id"
 					:data-last-row="i === filteredVotes.length - 1 ? true : null"
 					:class="getRowClass(row as Vote)"
-					class="scroll-m-12"
+					class="scroll-m-24"
 				>
 					<cv-data-table-cell
 						:key="row.id + '-' + 'vote_order'"
@@ -416,6 +427,9 @@ const downloadCSV = () => {
 
 <style scoped>
 ::v-deep(.bx--table-toolbar) {
+	position: sticky;
+	top: 3rem;
+	z-index: 10;
 	background-color: white;
 }
 
@@ -425,5 +439,9 @@ table tr th {
 
 ::v-deep(.bx--data-table th:last-of-type) {
 	width: 6rem;
+}
+
+::v-deep(.bx--number--lg.bx--number input[type='number']) {
+	padding-right: 6rem;
 }
 </style>
