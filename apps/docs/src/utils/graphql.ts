@@ -40,14 +40,16 @@ export async function fetchGraphql(
 		}),
 	});
 
-	if (!response.ok) {
-		throw new Error(response.statusText);
+	const jsonResponse: GraphqlResponse | null = await response
+		.json()
+		.catch(() => null);
+
+	if (jsonResponse && 'errors' in jsonResponse) {
+		throw new Error(jsonResponse.errors.map((e) => e.message).join('\n'));
 	}
 
-	const jsonResponse: GraphqlResponse = await response.json();
-
-	if ('errors' in jsonResponse) {
-		throw new Error(jsonResponse.errors.map((e) => e.message).join('\n'));
+	if (!response.ok || !jsonResponse) {
+		throw new Error(response.statusText || `HTTP ${response.status}`);
 	}
 
 	return jsonResponse;

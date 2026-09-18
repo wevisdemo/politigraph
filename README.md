@@ -125,6 +125,18 @@ To make local neo4j have up-to-dated data, we have a script to use rsync to down
 bun run db:pull
 ```
 
+### 4.3 Maintenance mode for database migration
+
+To stop the API and MCP from querying or mutating data during a migration, stop the API container on the app server:
+
+```shell
+docker compose stop elysia
+# run the migration
+docker compose up -d elysia
+```
+
+While the container is down, nginx answers every API route (`/graphql`, `/mcp`, `/auth`, etc.) with `503` and a GraphQL-style error body. The docs and admin static pages are still served. Don't push to `main` during the migration, as the deployment will start the container again.
+
 ## 5. License
 
 Regarding the data, the team intends to open it as Open Data under the [Attribution-NonCommercial 4.0 International](https://creativecommons.org/licenses/by-nc/4.0/) terms. This means you can use, modify, and build upon the data, but it cannot be used for commercial purposes or to seek profit from the work, and credit must be given to WeVis.
