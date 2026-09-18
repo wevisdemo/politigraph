@@ -1,5 +1,4 @@
 <script setup lang="ts">
-// @ts-expect-error carbon icons vue type
 import { CheckmarkFilled16, WarningFilled16 } from '@carbon/icons-vue';
 import type { Vote, VoteEvent } from '@politigraph/graphql/genql';
 import { standardVoteOptions, voteCountKeyMap } from '~/constants/votes';
@@ -63,8 +62,7 @@ const options = computed(() => [
 						class="min-w-0 pr-2"
 						:model-value="voteEvent[headingCountKey] ?? 0"
 						@update:model-value="
-							(value: string) => {
-								// @ts-expect-error carbon icons vue type
+							(value: number) => {
 								voteEvent[headingCountKey] = value;
 							}
 						"
