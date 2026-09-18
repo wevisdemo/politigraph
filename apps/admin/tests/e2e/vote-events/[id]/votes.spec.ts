@@ -18,7 +18,7 @@ import {
 } from '../helpers';
 
 const saveVotes = (page: Parameters<typeof saveChanges>[0]) =>
-	saveChanges(page, { button: 'Save', toast: 'Changes Saved' });
+	saveChanges(page, { toast: 'Changes Saved' });
 
 test.describe('Votes Management', () => {
 	const seededVoteEventIds: string[] = [];
@@ -181,7 +181,7 @@ test.describe('Votes Management', () => {
 		await page
 			.locator(`.bx--list-box__menu-item:has-text("${personFullName}")`)
 			.click();
-		await page.keyboard.press('Tab');
+		await voteRow.locator('td').first().click();
 
 		await expect(
 			voteRow.locator('td').filter({ hasText: personFullName }),
