@@ -4,6 +4,9 @@ import { DocumentPdf16, NotebookReference16 } from '@carbon/icons-vue';
 import {
 	enumPublishStatus,
 	enumVoteEventType,
+	type PublishStatus,
+	type VoteEventType,
+	type VoteEventWhere,
 } from '@politigraph/graphql/genql';
 import { formatDate } from '~/utils/date';
 import { getArrayQueryParam, getStringQueryParam } from '~/utils/query';
@@ -19,6 +22,12 @@ useHead({
 
 const route = useRoute();
 const graphqlClient = useGraphqlClient();
+
+const { debouncedSearch, handleSearchChange } = useDebouncedSearch({
+	onDebouncedChange: () => {
+		paginationData.value.page = 1;
+	},
+});
 
 const statusOption = Object.values(enumPublishStatus);
 const classificationOption = [...Object.values(enumVoteEventType), '__NULL__'];
@@ -69,35 +78,50 @@ const {
 const { data } = await useLazyAsyncData(
 	'voteEvents',
 	async () => {
-		const where: Record<string, unknown> = {};
+		const where = {
+			AND: [] as VoteEventWhere[],
+		};
+
+		if (debouncedSearch.value) {
+			where.AND.push({
+				OR: [
+					{ title: { contains: debouncedSearch.value } },
+					{ nickname: { contains: debouncedSearch.value } },
+				],
+			});
+		}
 
 		if (filters.value.assembly !== 'ALL') {
 			const assemblyIds = filters.value.assembly.split('|');
-			where.AND = [
+			where.AND.push(
 				{ organizations_ALL: { id: { in: assemblyIds } } },
 				{ organizationsAggregate: { count: { eq: assemblyIds.length } } },
-			];
+			);
 		}
 
 		if (filters.value.status !== 'ALL') {
-			where.publish_status = { eq: filters.value.status };
+			where.AND.push({
+				publish_status: { eq: filters.value.status as PublishStatus },
+			});
 		}
 
 		const selectedClassifications = filters.value.classification || [];
 		const includeNull = selectedClassifications.includes('__NULL__');
 		const normalClassifications = selectedClassifications.filter(
 			(c) => c !== '__NULL__',
-		);
+		) as VoteEventType[];
 
 		if (includeNull && normalClassifications.length > 0) {
-			where.OR = [
-				{ classification: { in: normalClassifications } },
-				{ classification: { eq: null } },
-			];
+			where.AND.push({
+				OR: [
+					{ classification: { in: normalClassifications } },
+					{ classification: { eq: null } },
+				],
+			});
 		} else if (includeNull) {
-			where.classification = { eq: null };
+			where.AND.push({ classification: { eq: null } });
 		} else if (normalClassifications.length > 0) {
-			where.classification = { in: normalClassifications };
+			where.AND.push({ classification: { in: normalClassifications } });
 		} else {
 			return {
 				voteEvents: [],
@@ -134,6 +158,7 @@ const { data } = await useLazyAsyncData(
 				},
 			},
 			voteEventsConnection: {
+				__args: { where },
 				aggregate: {
 					count: {
 						nodes: true,
@@ -148,7 +173,7 @@ const { data } = await useLazyAsyncData(
 		};
 	},
 	{
-		watch: [paginationData.value, filters.value],
+		watch: [paginationData.value, filters.value, debouncedSearch],
 	},
 );
 
@@ -270,7 +295,11 @@ const organizationsOption = () => {
 				]"
 			/>
 			<div class="w-full">
-				<cv-data-table title="Vote Events" helper-text="การลงมติทั้งหมด">
+				<cv-data-table
+					title="Vote Events"
+					helper-text="การลงมติทั้งหมด"
+					@search="handleSearchChange"
+				>
 					<template #headings>
 						<cv-data-table-heading
 							id="sb-title"
