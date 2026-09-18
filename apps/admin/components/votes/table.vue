@@ -1,13 +1,9 @@
 <script setup lang="ts">
-import {
-	Download16,
-	TrashCan16,
-	UserFollow16,
-	WarningFilled16,
-	// @ts-expect-error carbon icons vue type
-} from '@carbon/icons-vue';
+// @ts-expect-error carbon icons vue type
+import { Download16, UserFollow16 } from '@carbon/icons-vue';
 import type { Person, Vote, VoteEvent } from '@politigraph/graphql/genql';
-import { standardVoteOptions, VOTER_CELL_KEY } from '~/constants/votes';
+import type { PeopleOption } from '~/composables/use-people-options';
+import { VOTER_CELL_KEY } from '~/constants/votes';
 import { getEffectiveVoterId, type VoteIssue } from '~/utils/votes';
 import { csvFormat } from 'd3-dsv';
 import { closest } from 'fastest-levenshtein';
@@ -35,13 +31,7 @@ type VoteEventProp = Pick<VoteEvent, 'id' | 'title' | 'publish_status'> & {
 const props = defineProps<{
 	voteEvent: VoteEventProp | null;
 	originalVotesMap: Record<string, Partial<Vote>>;
-	peopleOptions:
-		| {
-				value: string;
-				name: string;
-				label: string;
-		  }[]
-		| null;
+	peopleOptions: PeopleOption[] | null;
 	editedRows: Set<string>;
 	editedCells: Set<string>;
 	errors: VoteIssue[];
@@ -69,16 +59,48 @@ const onSearch = (event: string) => {
 	searchQuery.value = event;
 };
 
-const getVoterOptions = (id: string, available: boolean) => {
-	if (!props.peopleOptions) return [];
+const peopleLabelById = computed(
+	() => new Map(props.peopleOptions?.map((p) => [p.value, p.label])),
+);
+const peopleLabels = computed(
+	() => props.peopleOptions?.map((p) => p.label) ?? [],
+);
+const errorIds = computed(() => new Set(props.errors.map((e) => e.id)));
 
-	const original = props.originalVotesMap[id]?.voter_name_raw;
+const isNewRow = (id: string) => !props.originalVotesMap[id];
 
-	if (original && !available) {
-		const closestName = closest(
-			original,
-			props.peopleOptions.map((p) => p.label),
-		);
+const filteredVotes = computed(() => {
+	if (!props.voteEvent?.votes || !Array.isArray(props.voteEvent.votes)) {
+		return [];
+	}
+
+	const query = searchQuery.value.toLowerCase();
+
+	return props.voteEvent.votes.filter(
+		(vote) =>
+			!toDeleteIds.value.has(vote.id) &&
+			(isNewRow(vote.id) ||
+				vote.voter_name_raw?.toLowerCase().includes(query) ||
+				vote.voter_party?.toLowerCase().includes(query) ||
+				vote.badge_number?.toString().includes(query)),
+	);
+});
+
+const activeRow = computed(() =>
+	activeEditingCell.value.columnId === 2 &&
+	activeEditingCell.value.rowId !== null
+		? filteredVotes.value[activeEditingCell.value.rowId]
+		: undefined,
+);
+
+const activeVoterOptions = computed(() => {
+	const row = activeRow.value;
+	if (!props.peopleOptions || !row) return [];
+
+	const original = props.originalVotesMap[row.id]?.voter_name_raw;
+
+	if (original && !getSelectedVoterId(row)) {
+		const closestName = closest(original, peopleLabels.value);
 		const suggestion = props.peopleOptions.find(
 			(p) => p.label === closestName,
 		)!;
@@ -91,61 +113,30 @@ const getVoterOptions = (id: string, available: boolean) => {
 	}
 
 	return props.peopleOptions;
-};
-
-const isNewRow = (id: string) => !props.originalVotesMap[id];
-
-const filteredVotes = computed(() => {
-	if (!props.voteEvent?.votes || !Array.isArray(props.voteEvent.votes)) {
-		return [];
-	}
-
-	return props.voteEvent.votes.filter((vote) => {
-		const query = searchQuery.value.toLowerCase();
-
-		return (
-			!toDeleteIds.value.has(vote.id) &&
-			(isNewRow(vote.id) ||
-				vote.voter_name_raw?.toLowerCase().includes(query) ||
-				vote.voter_party?.toLowerCase().includes(query) ||
-				vote.badge_number?.toString().includes(query))
-		);
-	});
 });
 
-const isCellEdited = (rowId: string, cellId: string) => {
-	return props.editedCells.has(`${rowId}-${cellId}`);
-};
+const isCellEdited = (rowId: string, cellId: string) =>
+	props.editedCells.has(`${rowId}-${cellId}`);
 
-const getRowClass = (row: Vote): string => {
-	if (isNewRow(row.id)) {
+const getRowClass = (id: string): string => {
+	if (isNewRow(id)) {
 		return '';
 	}
-	if (props.editedRows.has(row.id)) {
+	if (props.editedRows.has(id)) {
 		return '[&>td]:bg-[#FCF4D6]';
 	}
-	if (props.errors.some((e) => e.id === row.id)) {
+	if (errorIds.value.has(id)) {
 		return '[&>td]:bg-[#FFF1F1]';
 	}
 	return '';
 };
 
-const startEditing = (rowId: number | null, columnId: number | null) => {
+const startEditing = (rowId: number, columnId: number) => {
 	activeEditingCell.value = { rowId, columnId };
 };
 
-const isActiveEditing = computed(() => {
-	return (rowId: number, columnId: number) => {
-		return (
-			activeEditingCell.value.rowId === rowId &&
-			activeEditingCell.value.columnId === columnId
-		);
-	};
-});
-
-const onOptionChange = (row: Vote, cellKey: EditableVoteFields) => {
-	nextTick(() => emit('edited', [row.id, cellKey]));
-};
+const onEdited = (arg: [string, EditableVoteFields]) => emit('edited', arg);
+const onVoterSelected = (arg: [string, string]) => emit('voterSelected', arg);
 
 const newRowCountInput = ref(1);
 const newRowCount = computed(() =>
@@ -204,7 +195,7 @@ const downloadCSV = () => {
 		csvData,
 		headers.map((h) => h.label),
 	);
-	const BOM = '\uFEFF';
+	const BOM = '﻿';
 	const blob = new Blob([BOM + csv], { type: 'text/csv;charset=utf-8;' });
 
 	const url = URL.createObjectURL(blob);
@@ -264,162 +255,27 @@ const downloadCSV = () => {
 				<cv-data-table-heading heading="Actions" align="right" />
 			</template>
 			<template #data>
-				<cv-data-table-row
+				<VotesTableRow
 					v-for="(row, i) in filteredVotes"
 					:key="row.id"
-					:value="row.id"
-					:data-last-row="i === filteredVotes.length - 1 ? true : null"
-					:class="getRowClass(row as Vote)"
-					class="scroll-m-24"
-				>
-					<cv-data-table-cell
-						:key="row.id + '-' + 'vote_order'"
-						@click="startEditing(i, 0)"
-					>
-						<cv-text-input
-							v-model="row.vote_order"
-							placeholder="Enter Order No."
-							type="text"
-							style="background: transparent; border: none"
-							@change="emit('edited', [row.id, 'vote_order'])"
-						/>
-					</cv-data-table-cell>
-					<cv-data-table-cell
-						:key="row.id + '-' + 'badge_number'"
-						@click="startEditing(i, 1)"
-					>
-						<cv-text-input
-							v-model="row.badge_number"
-							placeholder="Enter ID No."
-							type="text"
-							style="background: transparent; border: none"
-							@change="emit('edited', [row.id, 'badge_number'])"
-						/>
-					</cv-data-table-cell>
-					<cv-data-table-cell
-						:key="row.id + '-' + VOTER_CELL_KEY"
-						:class="[
-							{
-								'text-[#DA1E28]':
-									!getSelectedVoterId(row) &&
-									!isCellEdited(row.id, VOTER_CELL_KEY) &&
-									!isNewRow(row.id),
-							},
-						]"
-						@click="startEditing(i, 2)"
-					>
-						<div v-if="isActiveEditing(i, 2)">
-							<cv-combo-box
-								:model-value="getSelectedVoterId(row)"
-								:label="row.voter_name_raw || 'Select voter name'"
-								:options="getVoterOptions(row.id, !!getSelectedVoterId(row))"
-								item-value-key="value"
-								item-text-key="label"
-								auto-filter
-								auto-highlight
-								@change="
-									(voterId: string) => emit('voterSelected', [row.id, voterId])
-								"
-							/>
-						</div>
-						<div v-else class="flex items-center gap-2 pl-[16px]">
-							<p
-								:class="{
-									'text-[#707070]': !row.voter_name_raw,
-								}"
-							>
-								{{
-									peopleOptions?.find(
-										(option) => option.value === getSelectedVoterId(row),
-									)?.label ||
-									row.voter_name_raw ||
-									'Select voter name'
-								}}
-							</p>
-							<cv-tooltip
-								v-if="
-									!getSelectedVoterId(row) &&
-									!isCellEdited(row.id, VOTER_CELL_KEY) &&
-									!isNewRow(row.id)
-								"
-								:direction="i === filteredVotes.length - 1 ? 'top' : 'bottom'"
-								tip="Invalid name. Select a voter from the list."
-							>
-								<WarningFilled16 class="inline-block" style="fill: #da1e28" />
-							</cv-tooltip>
-							<cv-tooltip
-								v-if="isCellEdited(row.id, VOTER_CELL_KEY)"
-								:direction="i === filteredVotes.length - 1 ? 'top' : 'bottom'"
-								tip="Unsaved change"
-							>
-								<WarningFilled16 class="inline-block" style="fill: #ff8300" />
-							</cv-tooltip>
-						</div>
-					</cv-data-table-cell>
-					<cv-data-table-cell
-						:key="row.id + '-' + 'voter_party'"
-						@click="startEditing(i, 3)"
-					>
-						<cv-text-input
-							v-model="row.voter_party"
-							placeholder="Enter Party"
-							type="text"
-							style="background: transparent; border: none"
-							@change="emit('edited', [row.id, 'voter_party'])"
-						/>
-					</cv-data-table-cell>
-					<cv-data-table-cell
-						:key="row.id + '-' + 'option'"
-						@click="startEditing(i, 4)"
-					>
-						<div v-if="isActiveEditing(i, 4)">
-							<cv-dropdown
-								v-model="row.option"
-								:up="i >= filteredVotes.length - 5 ? true : false"
-								light
-								@change="onOptionChange(row as Vote, 'option')"
-							>
-								<cv-dropdown-item
-									v-for="item in standardVoteOptions"
-									:key="`${item}`"
-									:value="`${item}`"
-								>
-									{{ item }}
-								</cv-dropdown-item>
-							</cv-dropdown>
-						</div>
-						<div v-else class="flex items-center pl-[16px]">
-							<div v-if="row.option" class="flex flex-row items-center gap-2">
-								<p>{{ row.option }}</p>
-								<cv-tooltip
-									v-if="!standardVoteOptions.includes(row.option)"
-									:direction="i === filteredVotes.length - 1 ? 'top' : 'bottom'"
-									alignment="end"
-									tip="Unexpected value"
-								>
-									<WarningFilled16 class="inline-block" style="fill: #da1e28" />
-								</cv-tooltip>
-							</div>
-							<p v-else class="text-[#707070]">Chose...</p>
-							<cv-tooltip
-								v-if="isCellEdited(row.id, 'option')"
-								:direction="i === filteredVotes.length - 1 ? 'top' : 'bottom'"
-								tip="Unsaved change"
-							>
-								<WarningFilled16 class="inline-block" style="fill: #ff8300" />
-							</cv-tooltip>
-						</div>
-					</cv-data-table-cell>
-					<cv-data-table-cell align="right">
-						<cv-icon-button
-							label="ลบ"
-							kind="ghost"
-							:icon="TrashCan16"
-							class="p-0"
-							@click="deleteRow(row.id)"
-						/>
-					</cv-data-table-cell>
-				</cv-data-table-row>
+					:row
+					:index="i"
+					:total="filteredVotes.length"
+					:active-column="
+						activeEditingCell.rowId === i ? activeEditingCell.columnId : null
+					"
+					:row-class="getRowClass(row.id)"
+					:is-new="isNewRow(row.id)"
+					:is-voter-cell-edited="isCellEdited(row.id, VOTER_CELL_KEY)"
+					:is-option-cell-edited="isCellEdited(row.id, 'option')"
+					:selected-voter-id="getSelectedVoterId(row)"
+					:voter-label="peopleLabelById.get(getSelectedVoterId(row)) ?? ''"
+					:voter-options="activeRow === row ? activeVoterOptions : undefined"
+					@start-editing="startEditing"
+					@edited="onEdited"
+					@voter-selected="onVoterSelected"
+					@deleted="deleteRow"
+				/>
 			</template>
 		</cv-data-table>
 	</div>
