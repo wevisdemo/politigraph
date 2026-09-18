@@ -304,6 +304,12 @@ watch(
 			</div>
 		</div>
 		<div class="flex flex-wrap items-start gap-4">
+			<UiDeleteEntityButton
+				:id="route.params.id as string"
+				class="mt-4"
+				entity="person"
+				:name="peopleData?.name"
+			/>
 			<cv-button
 				class="mt-4"
 				kind="primary"

@@ -644,6 +644,12 @@ const saveChanges = async () => {
 			</h1>
 		</div>
 		<div class="flex flex-wrap items-start gap-4">
+			<UiDeleteEntityButton
+				:id="route.params.id as string"
+				class="mt-4"
+				entity="organization"
+				:name="organizationData?.name"
+			/>
 			<cv-button
 				class="mt-4"
 				kind="primary"

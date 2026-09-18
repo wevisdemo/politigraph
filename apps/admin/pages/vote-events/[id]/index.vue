@@ -313,6 +313,7 @@ async function togglePublishStatus() {
 	<voteEventFormInput.Subscribe>
 		<template #default="{ canSubmit }">
 			<VoteEventHeader
+				:vote-event-id="route.params.id as string"
 				:title="voteEventData?.title"
 				:publish-status="voteEventData?.publish_status"
 				:original-document-url="

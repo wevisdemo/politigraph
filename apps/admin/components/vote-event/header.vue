@@ -14,6 +14,7 @@ const props = defineProps<{
 	originalDocumentUrl?: string;
 	isPublishingDisabled?: boolean;
 	isSaveDisabled?: boolean;
+	voteEventId?: string;
 }>();
 
 defineEmits(['togglePublishStatus', 'save']);
@@ -38,6 +39,12 @@ const isPublished = computed(() => props.publishStatus === 'PUBLISHED');
 		</div>
 
 		<div class="flex gap-2">
+			<UiDeleteEntityButton
+				v-if="voteEventId"
+				:id="voteEventId"
+				entity="voteEvent"
+				:name="title"
+			/>
 			<a
 				v-if="originalDocumentUrl"
 				:href="originalDocumentUrl"

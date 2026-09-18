@@ -551,15 +551,21 @@ const { data: organizationList } = await useAsyncData(
 			{{ billData?.title }}
 		</h2>
 
-		<cv-button
-			class="mt-4"
-			kind="primary"
-			:icon="Save16"
-			:disabled="isSaving"
-			@click="guardSave(handleSave)"
-		>
-			Save Changes
-		</cv-button>
+		<div class="mt-4 flex gap-4">
+			<UiDeleteEntityButton
+				:id="route.params.id as string"
+				entity="bill"
+				:name="billData?.title"
+			/>
+			<cv-button
+				kind="primary"
+				:icon="Save16"
+				:disabled="isSaving"
+				@click="guardSave(handleSave)"
+			>
+				Save Changes
+			</cv-button>
+		</div>
 	</div>
 
 	<form
