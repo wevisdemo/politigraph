@@ -1,5 +1,4 @@
 <script lang="ts" setup>
-// @ts-expect-error carbon icons vue type
 import { Add16 } from '@carbon/icons-vue';
 import { formatDate, parseDate } from '~/utils/date';
 

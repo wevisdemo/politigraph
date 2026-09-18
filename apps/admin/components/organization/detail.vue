@@ -1,5 +1,4 @@
 <script setup lang="ts">
-// @ts-expect-error carbon icons vue type
 import { Enterprise32 } from '@carbon/icons-vue';
 import {
 	enumOrganizationType,

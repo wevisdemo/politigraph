@@ -1,5 +1,4 @@
 <script setup lang="ts">
-// @ts-expect-error carbon icons vue type
 import { CaretLeft16, CaretRight16 } from '@carbon/icons-vue';
 
 const props = defineProps({

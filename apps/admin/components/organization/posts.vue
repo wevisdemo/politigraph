@@ -1,5 +1,4 @@
 <script lang="ts" setup>
-// @ts-expect-error carbon icons vue type
 import { Add16, Close16, Edit16, TrashCan16 } from '@carbon/icons-vue';
 import type { Post } from '@politigraph/graphql/genql';
 import type { PeopleOption } from '~/composables/use-people-options';

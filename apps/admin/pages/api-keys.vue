@@ -1,5 +1,4 @@
 <script setup lang="ts">
-// @ts-expect-error carbon icons vue type
 import { Save16, TrashCan16 } from '@carbon/icons-vue';
 import { useForm } from '@tanstack/vue-form';
 

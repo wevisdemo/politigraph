@@ -1,8 +1,5 @@
 <script lang="ts" setup>
-import {
-	Close16,
-	// @ts-expect-error carbon icons vue type
-} from '@carbon/icons-vue';
+import { Close16 } from '@carbon/icons-vue';
 import { enumOrganizationType } from '@politigraph/graphql/genql';
 import type { OrganizationWithPostsOption } from '~/composables/use-organizations-with-posts-options';
 import type { PeopleOption } from '~/composables/use-people-options';

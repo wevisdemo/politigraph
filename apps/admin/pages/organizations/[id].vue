@@ -1,5 +1,4 @@
 <script lang="ts" setup>
-// @ts-expect-error carbon icons vue type
 import { Save16 } from '@carbon/icons-vue';
 import {
 	type Link,

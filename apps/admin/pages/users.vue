@@ -5,7 +5,6 @@ import {
 	TrashCan16,
 	UserIdentification16,
 	UserMilitary16,
-	// @ts-expect-error carbon icons vue type
 } from '@carbon/icons-vue';
 import type { UserWithRole } from '@politigraph/auth/betterauth';
 import { formatDate } from '~/utils/date';

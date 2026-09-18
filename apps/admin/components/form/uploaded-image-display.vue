@@ -1,5 +1,4 @@
 <script setup lang="ts">
-// @ts-expect-error carbon icons vue type
 import { Crop32, Download32, TrashCan32 } from '@carbon/icons-vue';
 import type { Component } from 'vue';
 import { CircleStencil, Cropper } from 'vue-advanced-cropper';

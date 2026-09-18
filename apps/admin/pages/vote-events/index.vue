@@ -1,5 +1,4 @@
 <script setup lang="ts">
-// @ts-expect-error carbon icons vue type
 import { DocumentPdf16, NotebookReference16 } from '@carbon/icons-vue';
 import {
 	enumPublishStatus,

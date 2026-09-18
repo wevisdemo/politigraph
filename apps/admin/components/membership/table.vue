@@ -4,7 +4,6 @@ import {
 	CheckmarkFilled16,
 	Edit16,
 	TrashCan16,
-	// @ts-expect-error carbon icons vue type
 } from '@carbon/icons-vue';
 import { enumOrganizationType } from '@politigraph/graphql/genql';
 import type { OrganizationWithPostsOption } from '~/composables/use-organizations-with-posts-options';

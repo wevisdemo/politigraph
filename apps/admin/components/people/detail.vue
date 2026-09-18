@@ -1,5 +1,4 @@
 <script setup lang="ts">
-// @ts-expect-error carbon icons vue type
 import { UserFilled32 } from '@carbon/icons-vue';
 import { enumGender, type Gender, type Link } from '@politigraph/graphql/genql';
 import { formatDate, parseDate } from '~/utils/date';

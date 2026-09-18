@@ -1,5 +1,4 @@
 <script lang="ts" setup>
-// @ts-expect-error carbon icons vue type
 import { Save16, View16, ViewOff16 } from '@carbon/icons-vue';
 import {
 	enumPublishStatus,

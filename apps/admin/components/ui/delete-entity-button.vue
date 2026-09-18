@@ -1,5 +1,4 @@
 <script setup lang="ts">
-// @ts-expect-error carbon icons vue type
 import { TrashCan16 } from '@carbon/icons-vue';
 import type {
 	DeletableEntity,

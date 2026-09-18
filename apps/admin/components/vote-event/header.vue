@@ -1,11 +1,5 @@
 <script setup lang="ts">
-import {
-	DocumentView16,
-	Save16,
-	View16,
-	ViewOff16,
-	// @ts-expect-error carbon icons vue type
-} from '@carbon/icons-vue';
+import { DocumentView16, Save16, View16, ViewOff16 } from '@carbon/icons-vue';
 import type { PublishStatus } from '@politigraph/graphql/genql';
 
 const props = defineProps<{
