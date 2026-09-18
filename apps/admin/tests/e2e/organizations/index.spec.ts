@@ -1,21 +1,14 @@
 import { expect, test } from '@playwright/test';
-import { login } from '../fixtures';
 import {
 	createTestOrganization,
 	deleteTestOrganization,
-	waitForOrganizationTable,
-} from './helpers';
-
-const genId = () => `${test.info().workerIndex}-${Date.now()}`;
+} from '../shared/graphql-helpers';
+import { genId } from '../shared/ui-helpers';
+import { waitForOrganizationTable } from './helpers';
 
 test.describe('Organization List', () => {
-	test.beforeEach(async ({ page }) => {
-		await login(page);
-	});
-
 	test('navigate from list to detail page', async ({ page }) => {
-		const uid = genId();
-		const orgName = `TestOrgNav${uid}`;
+		const orgName = `TestOrgNav${genId(test.info().workerIndex)}`;
 		const org = await createTestOrganization(page, orgName, 'POLITICAL_PARTY');
 
 		try {

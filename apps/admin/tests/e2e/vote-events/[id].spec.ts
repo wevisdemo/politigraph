@@ -1,17 +1,9 @@
 import { expect, test } from '@playwright/test';
-import { login } from '../fixtures';
-import {
-	createVoteEventWithVotes,
-	deleteVoteEvent,
-	saveChanges,
-} from './helpers';
+import { genId, saveChanges } from '../shared/ui-helpers';
+import { createVoteEventWithVotes, deleteVoteEvent } from './helpers';
 
 test.describe('Vote Event Detail', () => {
 	const seededVoteEventIds: string[] = [];
-
-	test.beforeEach(async ({ page }) => {
-		await login(page);
-	});
 
 	test.afterEach(async ({ page }) => {
 		for (const id of seededVoteEventIds) {
@@ -21,7 +13,7 @@ test.describe('Vote Event Detail', () => {
 	});
 
 	test('edit vote event details', async ({ page }) => {
-		const uniqueId = `${test.info().workerIndex}-${Date.now()}`;
+		const uniqueId = genId(test.info().workerIndex);
 		const { voteEventId } = await createVoteEventWithVotes(
 			page,
 			`Test Edit Details ${uniqueId}`,
@@ -31,20 +23,12 @@ test.describe('Vote Event Detail', () => {
 		await page.goto(`/vote-events/${voteEventId}`);
 		const titleInput = page.getByLabel('Title');
 		await expect(titleInput).toHaveValue(/Test Edit Details/);
-		await titleInput.clear();
 		await titleInput.fill(`Updated Title ${uniqueId}`);
-
-		const nicknameInput = page.getByLabel('Nickname');
-		await nicknameInput.clear();
-		await nicknameInput.fill('Test Nickname');
-
-		const descriptionInput = page.getByLabel('Description');
-		await descriptionInput.clear();
-		await descriptionInput.fill('Test description text');
-
+		await page.getByLabel('Nickname').fill('Test Nickname');
+		await page.getByLabel('Description').fill('Test description text');
 		await page.getByLabel('Classification').selectOption('MP_2');
 
-		await saveChanges(page, 'บันทึก');
+		await saveChanges(page, { button: 'Save', toast: 'บันทึก' });
 
 		await page.reload();
 		await expect(page.getByLabel('Classification')).toHaveValue('MP_2');

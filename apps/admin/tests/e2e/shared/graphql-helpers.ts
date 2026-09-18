@@ -1,5 +1,45 @@
 import { expect, type Page } from '@playwright/test';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function gql<T = any>(
+	page: Page,
+	query: string,
+	variables: Record<string, unknown> = {},
+): Promise<T> {
+	const response = await page.request.post('/graphql', {
+		headers: { 'Content-Type': 'application/json' },
+		data: { query, variables },
+	});
+	expect(response.ok(), await response.text()).toBeTruthy();
+	const body = await response.json();
+	expect(body.errors, JSON.stringify(body.errors)).toBeUndefined();
+	return body.data;
+}
+
+export async function createTestPerson(
+	page: Page,
+	person: { firstname: string; lastname: string },
+) {
+	const { createPeople } = await gql(
+		page,
+		`mutation ($firstname: String!, $lastname: String!) {
+			createPeople(input: [{
+				prefix: "นาย", firstname: $firstname, lastname: $lastname, publish_status: UNPUBLISHED
+			}]) { people { id } }
+		}`,
+		person,
+	);
+	return createPeople.people[0] as { id: string };
+}
+
+export async function deleteTestPerson(page: Page, id: string) {
+	await gql(
+		page,
+		`mutation ($id: ID!) { deletePeople(where: { id: { eq: $id } }) { nodesDeleted } }`,
+		{ id },
+	);
+}
+
 export async function createTestOrganization(
 	page: Page,
 	name: string,

@@ -1,5 +1,4 @@
 import { expect, test } from '@playwright/test';
-import { login } from '../fixtures';
 
 const listPages = [
 	{ url: '/bills', heading: 'Bills' },
@@ -8,12 +7,11 @@ const listPages = [
 	{ url: '/vote-events', heading: 'Vote Events' },
 ];
 
-for (const { url, heading } of listPages) {
-	test(`${heading} list page renders`, async ({ page }) => {
-		await login(page);
+test('list pages render a heading and a table', async ({ page }) => {
+	for (const { url, heading } of listPages) {
 		await page.goto(url);
 
 		await expect(page.locator(`h1:has-text("${heading}")`)).toBeVisible();
 		await expect(page.locator('table, [role="table"]')).toBeVisible();
-	});
-}
+	}
+});

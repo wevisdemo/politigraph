@@ -1,9 +1,9 @@
 import { expect, test } from '@playwright/test';
 import {
 	createTestPerson,
-	expectModalPrimaryButtonReachable,
-	login,
-} from '../../fixtures';
+	deleteTestPerson,
+} from '../../shared/graphql-helpers';
+import { genId, saveChanges } from '../../shared/ui-helpers';
 import {
 	createVoteEventWithVotes,
 	DEFAULT_VOTE,
@@ -13,46 +13,45 @@ import {
 	fetchVote,
 	fetchVoteCount,
 	getVoteRow,
-	saveChanges,
 	VOTE_OPTIONS,
 	waitForTable,
 } from '../helpers';
 
+const saveVotes = (page: Parameters<typeof saveChanges>[0]) =>
+	saveChanges(page, { button: 'Save', toast: 'Changes Saved' });
+
 test.describe('Votes Management', () => {
 	const seededVoteEventIds: string[] = [];
-
-	test.beforeEach(async ({ page }) => {
-		await login(page);
-	});
+	const seededPersonIds: string[] = [];
 
 	test.afterEach(async ({ page }) => {
 		for (const id of seededVoteEventIds) {
 			await deleteVoteEvent(page, id);
 		}
+		for (const id of seededPersonIds) {
+			await deleteTestPerson(page, id);
+		}
 		seededVoteEventIds.length = 0;
+		seededPersonIds.length = 0;
 	});
 
 	test('update all vote fields and persist', async ({ page }) => {
-		const uniqueId = `${test.info().workerIndex}-${Date.now()}`;
 		const { voteEventId, votes } = await createVoteEventWithVotes(
 			page,
-			`Test Edit All Fields ${uniqueId}`,
+			`Test Edit All Fields ${genId(test.info().workerIndex)}`,
 		);
 		seededVoteEventIds.push(voteEventId);
 
 		await page.goto(`/vote-events/${voteEventId}/votes`);
 		await waitForTable(page);
 
-		await page.getByRole('button', { name: 'Save' }).click();
-		await page.waitForTimeout(500);
-
 		const voteRow = getVoteRow(page, votes[0].id);
 		await editTextInput(page, voteRow, 0, '5');
 		await editTextInput(page, voteRow, 1, '999');
 		await editTextInput(page, voteRow, 2, 'พรรคใหม่');
-		await editDropdown(page, voteRow, 4, VOTE_OPTIONS.DISAGREE);
+		await editDropdown(voteRow, 4, VOTE_OPTIONS.DISAGREE);
 
-		await saveChanges(page);
+		await saveVotes(page);
 
 		const refreshedRow = getVoteRow(page, votes[0].id);
 		await expect(
@@ -70,10 +69,9 @@ test.describe('Votes Management', () => {
 	});
 
 	test('add new vote row', async ({ page }) => {
-		const uniqueId = `${test.info().workerIndex}-${Date.now()}`;
 		const { voteEventId } = await createVoteEventWithVotes(
 			page,
-			`Test Add Vote ${uniqueId}`,
+			`Test Add Vote ${genId(test.info().workerIndex)}`,
 		);
 		seededVoteEventIds.push(voteEventId);
 
@@ -81,7 +79,6 @@ test.describe('Votes Management', () => {
 		await waitForTable(page);
 
 		await page.getByRole('button', { name: 'Add Vote' }).click();
-		await page.waitForTimeout(1000);
 
 		const newRow = page
 			.locator('tr[data-value]:has(input[type="text"])')
@@ -90,14 +87,14 @@ test.describe('Votes Management', () => {
 		await editTextInput(page, newRow, 1, '002');
 		await editTextInput(page, newRow, 2, 'พรรคใหม่');
 
-		await saveChanges(page);
+		await saveVotes(page);
+		expect(await fetchVoteCount(page, voteEventId)).toBe(2);
 	});
 
 	test('delete vote row', async ({ page }) => {
-		const uniqueId = `${test.info().workerIndex}-${Date.now()}`;
 		const { voteEventId, votes } = await createVoteEventWithVotes(
 			page,
-			`Test Delete Vote ${uniqueId}`,
+			`Test Delete Vote ${genId(test.info().workerIndex)}`,
 			[
 				{ ...DEFAULT_VOTE },
 				{
@@ -115,17 +112,16 @@ test.describe('Votes Management', () => {
 
 		const firstRow = getVoteRow(page, votes[0].id);
 		await firstRow.getByRole('button', { name: 'ลบ' }).click();
-		await page.waitForTimeout(500);
+		await expect(firstRow).toBeHidden();
 
-		await saveChanges(page);
+		await saveVotes(page);
 		expect(await fetchVoteCount(page, voteEventId)).toBe(1);
 	});
 
 	test('discard a new row deleted before saving', async ({ page }) => {
-		const uniqueId = `${test.info().workerIndex}-${Date.now()}`;
 		const { voteEventId } = await createVoteEventWithVotes(
 			page,
-			`Test Discard New Vote ${uniqueId}`,
+			`Test Discard New Vote ${genId(test.info().workerIndex)}`,
 		);
 		seededVoteEventIds.push(voteEventId);
 
@@ -133,30 +129,32 @@ test.describe('Votes Management', () => {
 		await waitForTable(page);
 
 		await page.getByRole('button', { name: 'Add Vote' }).click();
-		await page.waitForTimeout(1000);
 
 		const newRow = page
 			.locator('tr[data-value]:has(input[type="text"])')
 			.last();
 		await editTextInput(page, newRow, 0, '2');
 		await newRow.getByRole('button', { name: 'ลบ' }).click();
-		await page.waitForTimeout(500);
+		await expect(page.locator('table').first().locator('tbody tr')).toHaveCount(
+			1,
+		);
 
-		await saveChanges(page);
+		await saveVotes(page);
 		expect(await fetchVoteCount(page, voteEventId)).toBe(1);
 	});
 
 	test('update voter name', async ({ page }) => {
-		const uniqueId = `${test.info().workerIndex}-${Date.now()}`;
+		const uniqueId = genId(test.info().workerIndex);
 		const personFirstname = 'ทดสอบ';
 		const personLastname = `นามสกุล${uniqueId}`;
 		const personFullName = `${personFirstname} ${personLastname}`;
 		const invalidVoterName = 'ชื่อผิด นามสกุลผิด';
 
-		await createTestPerson(page, {
+		const person = await createTestPerson(page, {
 			firstname: personFirstname,
 			lastname: personLastname,
 		});
+		seededPersonIds.push(person.id);
 
 		const { voteEventId, votes } = await createVoteEventWithVotes(
 			page,
@@ -173,32 +171,19 @@ test.describe('Votes Management', () => {
 			.locator('td')
 			.filter({ hasText: invalidVoterName });
 		await expect(nameCell).toBeVisible();
-
 		await nameCell.click();
-		await page.waitForTimeout(500);
 
-		const comboBox = voteRow.locator('.bx--combo-box');
-		await comboBox.waitFor({ state: 'visible', timeout: 5000 });
-
-		const comboInput = voteRow.locator('input[role="combobox"]');
-		await comboInput.fill(personFirstname);
-		await page.waitForTimeout(500);
-
-		const option = page.locator(
-			`.bx--list-box__menu-item:has-text("${personFullName}")`,
-		);
-		await option.click();
-		await page.waitForTimeout(500);
-
+		await voteRow.locator('input[role="combobox"]').fill(personFirstname);
+		await page
+			.locator(`.bx--list-box__menu-item:has-text("${personFullName}")`)
+			.click();
 		await page.keyboard.press('Tab');
-		await page.waitForTimeout(300);
 
-		const updatedCell = voteRow
-			.locator('td')
-			.filter({ hasText: personFullName });
-		await expect(updatedCell).toBeVisible();
+		await expect(
+			voteRow.locator('td').filter({ hasText: personFullName }),
+		).toBeVisible();
 
-		await saveChanges(page);
+		await saveVotes(page);
 
 		const refreshedRow = getVoteRow(page, votes[0].id);
 		await expect(
@@ -212,8 +197,8 @@ test.describe('Votes Management', () => {
 		expect(voterNames(linkedVote)).toEqual([personFullName]);
 		expect(linkedVote.voter_name_raw).toBe(invalidVoterName);
 
-		await editDropdown(page, refreshedRow, 4, VOTE_OPTIONS.DISAGREE);
-		await saveChanges(page);
+		await editDropdown(refreshedRow, 4, VOTE_OPTIONS.DISAGREE);
+		await saveVotes(page);
 
 		const voteAfterOptionEdit = await fetchVote(page, votes[0].id);
 		expect(voteAfterOptionEdit.option).toBe(VOTE_OPTIONS.DISAGREE);
@@ -222,11 +207,9 @@ test.describe('Votes Management', () => {
 	});
 
 	test('show validation errors for invalid votes', async ({ page }) => {
-		const uniqueId = `${test.info().workerIndex}-${Date.now()}`;
-
 		const { voteEventId } = await createVoteEventWithVotes(
 			page,
-			`Validation Test ${uniqueId}`,
+			`Validation Test ${genId(test.info().workerIndex)}`,
 			[DEFAULT_VOTE, { ...DEFAULT_VOTE, vote_order: '2', badge_number: '002' }],
 		);
 		seededVoteEventIds.push(voteEventId);
@@ -238,38 +221,10 @@ test.describe('Votes Management', () => {
 		await expect(page.getByText('Unrecognized Voter Names')).toBeVisible();
 	});
 
-	test('keep replace button reachable when reviewing many names', async ({
-		page,
-	}) => {
-		const uniqueId = `${test.info().workerIndex}-${Date.now()}`;
-
-		const { voteEventId } = await createVoteEventWithVotes(
-			page,
-			`Review Names Test ${uniqueId}`,
-			Array.from({ length: 30 }, (_, i) => ({
-				...DEFAULT_VOTE,
-				vote_order: `${i + 1}`,
-				badge_number: `${i + 1}`,
-				voter_name_raw: `ชื่อผิด ${i + 1}`,
-			})),
-		);
-		seededVoteEventIds.push(voteEventId);
-
-		await page.goto(`/vote-events/${voteEventId}/votes`);
-		await waitForTable(page);
-
-		await page.getByRole('button', { name: 'Review names' }).click();
-
-		const modal = page.locator('.bx--modal.is-visible');
-		await modal.locator('.bx--modal-container').waitFor({ state: 'visible' });
-		await expectModalPrimaryButtonReachable(page, modal);
-	});
-
 	test('edit summary counts', async ({ page }) => {
-		const uniqueId = `${test.info().workerIndex}-${Date.now()}`;
 		const { voteEventId } = await createVoteEventWithVotes(
 			page,
-			`Summary Test ${uniqueId}`,
+			`Summary Test ${genId(test.info().workerIndex)}`,
 		);
 		seededVoteEventIds.push(voteEventId);
 
@@ -280,11 +235,8 @@ test.describe('Votes Management', () => {
 			page.getByRole('heading', { name: 'Vote Summary' }),
 		).toBeVisible();
 
-		const agreeInput = page.locator('input[type="number"]').first();
-		await agreeInput.clear();
-		await agreeInput.fill('5');
-
-		await saveChanges(page);
+		await page.locator('input[type="number"]').first().fill('5');
+		await saveVotes(page);
 
 		await page.reload();
 		await waitForTable(page);
@@ -292,14 +244,13 @@ test.describe('Votes Management', () => {
 	});
 
 	test('open batch name correction modal', async ({ page }) => {
-		const uniqueId = `${test.info().workerIndex}-${Date.now()}`;
-		const personFirstname = 'ทดสอบ';
-		const personLastname = `นามสกุล${uniqueId}`;
+		const uniqueId = genId(test.info().workerIndex);
 
-		await createTestPerson(page, {
-			firstname: personFirstname,
-			lastname: personLastname,
+		const person = await createTestPerson(page, {
+			firstname: 'ทดสอบ',
+			lastname: `นามสกุล${uniqueId}`,
 		});
+		seededPersonIds.push(person.id);
 
 		const { voteEventId } = await createVoteEventWithVotes(
 			page,

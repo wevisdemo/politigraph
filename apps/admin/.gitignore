@@ -22,3 +22,6 @@ logs
 .env
 .env.*
 !.env.example
+
+# Playwright saved login session
+tests/e2e/.auth

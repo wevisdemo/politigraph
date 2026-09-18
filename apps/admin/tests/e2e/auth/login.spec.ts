@@ -1,6 +1,8 @@
 import { expect, test } from '@playwright/test';
 import { TEST_USER } from '../fixtures';
 
+test.use({ storageState: { cookies: [], origins: [] } });
+
 test.describe('Authentication', () => {
 	test('login success', async ({ page }) => {
 		await page.goto('/login');

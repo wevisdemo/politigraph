@@ -1,21 +1,5 @@
-import { expect, type Locator, type Page } from '@playwright/test';
-import { test } from '../fixtures';
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function gql<T = any>(
-	page: Page,
-	query: string,
-	variables: Record<string, unknown> = {},
-): Promise<T> {
-	const response = await page.request.post('/graphql', {
-		headers: { 'Content-Type': 'application/json' },
-		data: { query, variables },
-	});
-	expect(response.ok(), await response.text()).toBeTruthy();
-	const body = await response.json();
-	expect(body.errors, JSON.stringify(body.errors)).toBeUndefined();
-	return body.data;
-}
+import { expect, test, type Locator, type Page } from '@playwright/test';
+import { gql } from './graphql-helpers';
 
 async function countExisting(page: Page, field: string, ids: string[]) {
 	const data = await gql(
@@ -52,7 +36,7 @@ const suffix = () => Date.now().toString();
 
 test.describe('Delete entity', () => {
 	test('person deletes own memberships, links and names but keeps votes', async ({
-		authenticatedPage: page,
+		page,
 	}) => {
 		const { createPeople } = await gql(
 			page,
@@ -144,7 +128,7 @@ test.describe('Delete entity', () => {
 	});
 
 	test('organization deletes posts, memberships, links and names but keeps members and children', async ({
-		authenticatedPage: page,
+		page,
 	}) => {
 		const { createOrganizations } = await gql(
 			page,
@@ -242,7 +226,7 @@ test.describe('Delete entity', () => {
 	});
 
 	test('bill deletes own events and links but keeps events shared with other bills', async ({
-		authenticatedPage: page,
+		page,
 	}) => {
 		const billFields = (title: string) =>
 			`title: "${title}", lis_id: ${Math.floor(Math.random() * 1e9)}, creator_type: POLITICIAN, classification: NORMAL_BILL, status: IN_PROGRESS`;
@@ -332,7 +316,7 @@ test.describe('Delete entity', () => {
 	});
 
 	test('vote event deletes votes and links but keeps bill vote events', async ({
-		authenticatedPage: page,
+		page,
 	}) => {
 		const { createVoteEvents } = await gql(
 			page,

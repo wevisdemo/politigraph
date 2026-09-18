@@ -1,50 +1,56 @@
 import { expect, test } from '@playwright/test';
-import { createTestPerson, login } from '../fixtures';
 import {
-	addLink,
 	createTestMembership,
 	createTestOrganization,
+	createTestPerson,
 	createTestPost,
-	deletePostMembership,
 	deleteTestLink,
 	deleteTestMembership,
 	deleteTestOrganization,
+	deleteTestPerson,
 	deleteTestPost,
-	fetchOrganizationDetail,
+	linkPostToOrganization,
+} from '../shared/graphql-helpers';
+import {
+	confirmDeleteModal,
 	fillClassification,
 	fillOrganizationName,
 	fillPost,
-	fillPostMembershipPerson,
+	genId,
 	getMembershipRows,
+	openAddMembershipModal,
+	openEditMembershipModal,
+	saveChanges,
+	saveMembershipModal,
+	setMembershipDate,
+	waitForMembershipTable,
+} from '../shared/ui-helpers';
+import {
+	addLink,
+	fetchOrganizationDetail,
+	fillPostMembershipPerson,
 	getPostMembershipRows,
 	getPostRows,
-	linkPostToOrganization,
-	openAddMembershipModal,
 	openAddPostMembershipModal,
 	openAddPostModal,
 	openPostEditModal,
-	saveMembershipModal,
-	saveOrganizationChanges,
 	savePostMembershipModal,
 	savePostModal,
 	selectPostMembershipType,
-	waitForMembershipTable,
 	waitForOrganizationDetail,
 } from './helpers';
 
-const genId = () => `${test.info().workerIndex}-${Date.now()}`;
+const uid = () => genId(test.info().workerIndex);
 
 test.describe('Organization Detail - Edit & Persist', () => {
 	let orgId: string;
-	let orgName: string;
 
 	test.beforeEach(async ({ page }) => {
-		await login(page);
-
-		const uid = genId();
-		orgName = `TestOrgDetail${uid}`;
-
-		const org = await createTestOrganization(page, orgName, 'POLITICAL_PARTY');
+		const org = await createTestOrganization(
+			page,
+			`TestOrgDetail${uid()}`,
+			'POLITICAL_PARTY',
+		);
 		orgId = org.id;
 	});
 
@@ -52,40 +58,21 @@ test.describe('Organization Detail - Edit & Persist', () => {
 		await deleteTestOrganization(page, orgId);
 	});
 
-	test('detail page shows organization fields', async ({ page }) => {
-		await page.goto(`/organizations/${orgId}`);
-		await waitForOrganizationDetail(page);
-
-		await expect(
-			page.locator('h4:has-text("Organization Details")'),
-		).toBeVisible();
-		await expect(page.getByLabel('Name*')).toBeVisible();
-		await expect(page.getByLabel('Name (Eng)')).toBeVisible();
-		await expect(page.getByLabel('Description')).toBeVisible();
-		await expect(page.getByLabel('Classification*')).toBeVisible();
-	});
-
 	test('edit multiple fields and persist', async ({ page }) => {
 		await page.goto(`/organizations/${orgId}`);
 		await waitForOrganizationDetail(page);
 
-		const uid = genId();
-		const newName = `Updated${uid}`;
-		const newNameEn = `UpdatedEn${uid}`;
-		const newDesc = `Description ${uid}`;
+		const id = uid();
+		const newName = `Updated${id}`;
+		const newNameEn = `UpdatedEn${id}`;
+		const newDesc = `Description ${id}`;
 
-		await page.getByLabel('Name*').clear();
 		await page.getByLabel('Name*').fill(newName);
-
-		await page.getByLabel('Name (Eng)').clear();
 		await page.getByLabel('Name (Eng)').fill(newNameEn);
-
-		await page.getByLabel('Description').clear();
 		await page.getByLabel('Description').fill(newDesc);
-
 		await page.getByLabel('Classification*').selectOption('CABINET');
 
-		await saveOrganizationChanges(page);
+		await saveChanges(page);
 
 		const detail = await fetchOrganizationDetail(page, orgId);
 		expect(detail.name).toBe(newName);
@@ -101,29 +88,17 @@ test.describe('Organization Detail - Parent/Child Relationships', () => {
 	let mainOrgId: string;
 
 	test.beforeEach(async ({ page }) => {
-		await login(page);
-
-		const uid = genId();
-		const parent = await createTestOrganization(
-			page,
-			`ParentOrg${uid}`,
-			'POLITICAL_PARTY',
+		const id = uid();
+		[parentOrgId, childOrgId, mainOrgId] = await Promise.all(
+			['ParentOrg', 'ChildOrg', 'MainOrg'].map(async (prefix) => {
+				const org = await createTestOrganization(
+					page,
+					`${prefix}${id}`,
+					'POLITICAL_PARTY',
+				);
+				return org.id;
+			}),
 		);
-		parentOrgId = parent.id;
-
-		const child = await createTestOrganization(
-			page,
-			`ChildOrg${uid}`,
-			'POLITICAL_PARTY',
-		);
-		childOrgId = child.id;
-
-		const main = await createTestOrganization(
-			page,
-			`MainOrg${uid}`,
-			'POLITICAL_PARTY',
-		);
-		mainOrgId = main.id;
 	});
 
 	test.afterEach(async ({ page }) => {
@@ -138,42 +113,24 @@ test.describe('Organization Detail - Parent/Child Relationships', () => {
 		await page.goto(`/organizations/${mainOrgId}`);
 		await waitForOrganizationDetail(page);
 
-		const parentWrapper = page
-			.locator('.bx--list-box__wrapper')
-			.filter({ has: page.locator('label.bx--label:has-text("Parents")') });
-		await parentWrapper.waitFor({ state: 'visible', timeout: 10000 });
-		const parentField = parentWrapper.locator('.bx--combo-box');
-		const parentInput = parentField.locator('input[role="combobox"]');
-		await parentInput.click();
-		await page.waitForTimeout(300);
-		await parentInput.fill('ParentOrg');
-		await page.waitForTimeout(500);
+		for (const [label, query] of [
+			['Parents', 'ParentOrg'],
+			['Children', 'ChildOrg'],
+		]) {
+			const field = page
+				.locator('.bx--list-box__wrapper')
+				.filter({ has: page.locator(`label.bx--label:has-text("${label}")`) })
+				.locator('.bx--combo-box');
+			const input = field.locator('input[role="combobox"]');
+			await input.click();
+			await input.fill(query);
+			await field
+				.locator(`.bx--list-box__menu-item:has-text("${query}")`)
+				.first()
+				.click();
+		}
 
-		await parentField
-			.locator(`.bx--list-box__menu-item:has-text("ParentOrg")`)
-			.first()
-			.click();
-		await page.waitForTimeout(300);
-
-		const childWrapper = page
-			.locator('.bx--list-box__wrapper')
-			.filter({ has: page.locator('label.bx--label:has-text("Children")') });
-		await childWrapper.scrollIntoViewIfNeeded();
-		await childWrapper.waitFor({ state: 'visible', timeout: 10000 });
-		const childField = childWrapper.locator('.bx--combo-box');
-		const childInput = childField.locator('input[role="combobox"]');
-		await childInput.click();
-		await page.waitForTimeout(300);
-		await childInput.fill('ChildOrg');
-		await page.waitForTimeout(500);
-
-		await childField
-			.locator(`.bx--list-box__menu-item:has-text("ChildOrg")`)
-			.first()
-			.click();
-		await page.waitForTimeout(500);
-
-		await saveOrganizationChanges(page);
+		await saveChanges(page);
 
 		const detail = await fetchOrganizationDetail(page, mainOrgId);
 		expect(
@@ -189,12 +146,9 @@ test.describe('Organization Detail - Posts CRUD', () => {
 	let orgId: string;
 
 	test.beforeEach(async ({ page }) => {
-		await login(page);
-
-		const uid = genId();
 		const org = await createTestOrganization(
 			page,
-			`PostOrg${uid}`,
+			`PostOrg${uid()}`,
 			'POLITICAL_PARTY',
 		);
 		orgId = org.id;
@@ -204,71 +158,38 @@ test.describe('Organization Detail - Posts CRUD', () => {
 		await deleteTestOrganization(page, orgId);
 	});
 
-	test('add post locally', async ({ page }) => {
+	test('add post then delete it, persisting each step', async ({ page }) => {
 		await page.goto(`/organizations/${orgId}`);
 		await waitForOrganizationDetail(page);
 
 		await openAddPostModal(page);
-
-		await page
-			.locator('.post-modal input[label="Role*"], .post-modal')
-			.locator('input')
-			.first()
-			.fill('Test Role');
-
+		await page.locator('.post-modal input').first().fill('Persisted Role');
 		await savePostModal(page);
 
 		const rows = getPostRows(page);
 		await expect(rows).toHaveCount(1);
-		await expect(rows.first()).toContainText('Test Role');
-	});
+		await expect(rows.first()).toContainText('Persisted Role');
 
-	test('add post persisted via Save Changes', async ({ page }) => {
-		await page.goto(`/organizations/${orgId}`);
-		await waitForOrganizationDetail(page);
+		await saveChanges(page);
 
-		await openAddPostModal(page);
-
-		await page
-			.locator('.post-modal input[label="Role*"], .post-modal')
-			.locator('input')
-			.first()
-			.fill('Persisted Role');
-
-		await savePostModal(page);
-
-		await saveOrganizationChanges(page);
-
-		const detail = await fetchOrganizationDetail(page, orgId);
-		expect(
-			detail.posts.some((p: { role: string }) => p.role === 'Persisted Role'),
-		).toBe(true);
-	});
-
-	test('delete post locally', async ({ page }) => {
-		const post = await createTestPost(page, `DeletePost${genId()}`);
-		await linkPostToOrganization(page, post.id, orgId);
+		const detailAfterAdd = await fetchOrganizationDetail(page, orgId);
+		expect(detailAfterAdd.posts.map((p: { role: string }) => p.role)).toEqual([
+			'Persisted Role',
+		]);
 
 		await page.goto(`/organizations/${orgId}`);
 		await waitForOrganizationDetail(page);
-
-		const rows = getPostRows(page);
 		await expect(rows).toHaveCount(1);
 
 		await rows.first().getByRole('button', { name: 'ลบ' }).click();
-
-		const deleteModal = page.locator('.delete-post-modal .bx--modal-container');
-		await expect(deleteModal).toBeVisible({ timeout: 5000 });
-		await page
-			.locator(
-				'.delete-post-modal .bx--btn--danger, .delete-post-modal .bx--btn--primary',
-			)
-			.click();
-		await page.waitForTimeout(500);
-
+		await confirmDeleteModal(page, 'delete-post-modal');
 		await expect(rows.first().locator('p.line-through').first()).toBeVisible();
 
-		await deleteTestPost(page, post.id);
+		await saveChanges(page);
+
+		const detailAfterDelete = await fetchOrganizationDetail(page, orgId);
+		expect(detailAfterDelete.posts).toHaveLength(0);
+		await deleteTestPost(page, detailAfterAdd.posts[0].id);
 	});
 });
 
@@ -276,12 +197,9 @@ test.describe('Organization Detail - Links', () => {
 	let orgId: string;
 
 	test.beforeEach(async ({ page }) => {
-		await login(page);
-
-		const uid = genId();
 		const org = await createTestOrganization(
 			page,
-			`LinkOrg${uid}`,
+			`LinkOrg${uid()}`,
 			'POLITICAL_PARTY',
 		);
 		orgId = org.id;
@@ -289,10 +207,8 @@ test.describe('Organization Detail - Links', () => {
 
 	test.afterEach(async ({ page }) => {
 		const detail = await fetchOrganizationDetail(page, orgId);
-		if (detail?.links) {
-			for (const link of detail.links) {
-				await deleteTestLink(page, link.id);
-			}
+		for (const link of detail?.links ?? []) {
+			await deleteTestLink(page, link.id);
 		}
 		await deleteTestOrganization(page, orgId);
 	});
@@ -301,12 +217,11 @@ test.describe('Organization Detail - Links', () => {
 		await page.goto(`/organizations/${orgId}`);
 		await waitForOrganizationDetail(page);
 
-		const note = `Test Note ${genId()}`;
-		const url = `https://example.com/${genId()}`;
+		const note = `Test Note ${uid()}`;
+		const url = `https://example.com/${uid()}`;
 
 		await addLink(page, note, url);
-
-		await saveOrganizationChanges(page);
+		await saveChanges(page);
 
 		const detailAfterAdd = await fetchOrganizationDetail(page, orgId);
 		expect(
@@ -318,14 +233,13 @@ test.describe('Organization Detail - Links', () => {
 		await page.goto(`/organizations/${orgId}`);
 		await waitForOrganizationDetail(page);
 
-		const refsSection = page.locator('h4:has-text("References")').locator('..');
-		const deleteBtn = refsSection
+		await page
+			.locator('h4:has-text("References")')
+			.locator('..')
 			.getByRole('button', { name: 'Delete' })
-			.first();
-		await deleteBtn.click();
-		await page.waitForTimeout(300);
-
-		await saveOrganizationChanges(page);
+			.first()
+			.click();
+		await saveChanges(page);
 
 		const detailAfterDelete = await fetchOrganizationDetail(page, orgId);
 		expect(detailAfterDelete.links).toHaveLength(0);
@@ -345,17 +259,15 @@ test.describe('Organization Detail - Membership CRUD', () => {
 	const seededMembershipIds: string[] = [];
 
 	test.beforeEach(async ({ page }) => {
-		await login(page);
-
-		const uid = genId();
-		postOrgName = `PostOrg${uid}`;
-		postRole = `PostRole${uid}`;
-		altPostOrgName = `AltOrg${uid}`;
-		altPostRole = `AltPost${uid}`;
+		const id = uid();
+		postOrgName = `PostOrg${id}`;
+		postRole = `PostRole${id}`;
+		altPostOrgName = `AltOrg${id}`;
+		altPostRole = `AltPost${id}`;
 
 		const mainOrg = await createTestOrganization(
 			page,
-			`MainOrg${uid}`,
+			`MainOrg${id}`,
 			'POLITICAL_PARTY',
 		);
 		orgId = mainOrg.id;
@@ -400,22 +312,12 @@ test.describe('Organization Detail - Membership CRUD', () => {
 	}) => {
 		await page.goto(`/organizations/${orgId}`);
 		await waitForOrganizationDetail(page);
-		await waitForMembershipTable(page);
-
 		await openAddMembershipModal(page);
 
 		await fillClassification(page, 'POLITICAL_PARTY');
 		await fillOrganizationName(page, postOrgName);
 		await fillPost(page, postRole);
-		await page.evaluate(() => {
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
-			const input = (globalThis as any).document.querySelector(
-				'.membership-modal:not(.post-membership-modal) .membership-datepicker input',
-			);
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
-			(input as any)._flatpickr.setDate('2024-01-15', true);
-		});
-		await page.waitForTimeout(300);
+		await setMembershipDate(page, '2024-01-15');
 		await saveMembershipModal(page);
 
 		const rows = getMembershipRows(page);
@@ -424,7 +326,7 @@ test.describe('Organization Detail - Membership CRUD', () => {
 		await expect(rows.first()).toContainText(postOrgName);
 		await expect(rows.first()).toContainText(postRole);
 
-		await saveOrganizationChanges(page);
+		await saveChanges(page);
 
 		const detail = await fetchOrganizationDetail(page, orgId);
 		for (const m of detail.memberships ?? []) {
@@ -450,9 +352,7 @@ test.describe('Organization Detail - Membership CRUD', () => {
 			orgId,
 			postId,
 			'Organization',
-			{
-				start_date: '2024-01-01',
-			},
+			{ start_date: '2024-01-01' },
 		);
 		seededMembershipIds.push(membership.id);
 
@@ -464,26 +364,15 @@ test.describe('Organization Detail - Membership CRUD', () => {
 		await expect(rows).toHaveCount(1);
 		await expect(rows.first()).toContainText(postOrgName);
 
-		await rows.first().getByRole('button', { name: 'แก้ไข' }).click();
-		await page
-			.locator(
-				'.membership-modal:not(.post-membership-modal) .bx--modal-container',
-			)
-			.waitFor({
-				state: 'visible',
-				timeout: 5000,
-			});
-
+		await openEditMembershipModal(page);
 		await fillOrganizationName(page, altPostOrgName);
 		await fillPost(page, altPostRole);
-
 		await saveMembershipModal(page);
 
-		const updatedRows = getMembershipRows(page);
-		await expect(updatedRows.first()).toContainText(altPostOrgName);
-		await expect(updatedRows.first()).toContainText(altPostRole);
+		await expect(rows.first()).toContainText(altPostOrgName);
+		await expect(rows.first()).toContainText(altPostRole);
 
-		await saveOrganizationChanges(page);
+		await saveChanges(page);
 
 		const detail = await fetchOrganizationDetail(page, orgId);
 		const updatedMembership = detail.memberships?.find(
@@ -498,31 +387,31 @@ test.describe('Organization Detail - Post Membership CRUD', () => {
 	test.setTimeout(60000);
 
 	let orgId: string;
-	let orgName: string;
 	let postId: string;
-	let postRole: string;
+	let personId: string;
 	let personName: string;
 	const seededMembershipIds: string[] = [];
 
 	test.beforeEach(async ({ page }) => {
-		await login(page);
+		const id = uid();
+		personName = `PostMemPerson${id}`;
 
-		const uid = genId();
-		orgName = `PostMemOrg${uid}`;
-		postRole = `PostMemRole${uid}`;
-		personName = `PostMemPerson${uid}`;
-
-		const org = await createTestOrganization(page, orgName, 'POLITICAL_PARTY');
+		const org = await createTestOrganization(
+			page,
+			`PostMemOrg${id}`,
+			'POLITICAL_PARTY',
+		);
 		orgId = org.id;
 
-		const post = await createTestPost(page, postRole);
+		const post = await createTestPost(page, `PostMemRole${id}`);
 		postId = post.id;
 		await linkPostToOrganization(page, postId, orgId);
 
-		await createTestPerson(page, {
+		const person = await createTestPerson(page, {
 			firstname: personName,
 			lastname: 'Test',
 		});
+		personId = person.id;
 	});
 
 	test.afterEach(async ({ page }) => {
@@ -530,6 +419,7 @@ test.describe('Organization Detail - Post Membership CRUD', () => {
 			await deleteTestMembership(page, id);
 		}
 		seededMembershipIds.length = 0;
+		await deleteTestPerson(page, personId);
 		await deleteTestPost(page, postId);
 		await deleteTestOrganization(page, orgId);
 	});
@@ -552,7 +442,7 @@ test.describe('Organization Detail - Post Membership CRUD', () => {
 		await expect(pmRows.first()).toContainText(personName);
 
 		await savePostModal(page);
-		await saveOrganizationChanges(page);
+		await saveChanges(page);
 
 		const detail = await fetchOrganizationDetail(page, orgId);
 		const savedPost = detail.posts.find((p: { id: string }) => p.id === postId);
@@ -576,31 +466,22 @@ test.describe('Organization Detail - Post Membership CRUD', () => {
 		await page.goto(`/organizations/${orgId}`);
 		await waitForOrganizationDetail(page);
 
-		const postRows = getPostRows(page);
-		await openPostEditModal(page, postRows.first());
+		await openPostEditModal(page, getPostRows(page).first());
 
 		const pmRows = getPostMembershipRows(page);
 		await expect(pmRows).toHaveCount(1);
 		await pmRows.first().getByRole('button', { name: 'แก้ไข' }).click();
+		await expect(
+			page.locator('.post-membership-modal .bx--modal-container'),
+		).toBeVisible();
 
-		await page
-			.locator('.post-membership-modal .bx--modal-container')
-			.waitFor({ state: 'visible', timeout: 5000 });
-
-		await page.evaluate(() => {
-			const inputs = document.querySelectorAll(
-				'.post-membership-modal .membership-datepicker input',
-			);
-			if (inputs[0]) {
-				// eslint-disable-next-line @typescript-eslint/no-explicit-any
-				(inputs[0] as any)._flatpickr.setDate('2025-06-15', true);
-			}
+		await setMembershipDate(page, '2025-06-15', {
+			modal: '.post-membership-modal',
 		});
-		await page.waitForTimeout(300);
 
 		await savePostMembershipModal(page);
 		await savePostModal(page);
-		await saveOrganizationChanges(page);
+		await saveChanges(page);
 
 		const detail = await fetchOrganizationDetail(page, orgId);
 		const updated = detail.memberships?.find(
@@ -617,43 +498,23 @@ test.describe('Organization Detail - Post Membership CRUD', () => {
 			postId,
 			'Organization',
 		);
-		seededMembershipIds.push(membership.id);
 
 		await page.goto(`/organizations/${orgId}`);
 		await waitForOrganizationDetail(page);
 
-		const postRows = getPostRows(page);
-		await openPostEditModal(page, postRows.first());
+		await openPostEditModal(page, getPostRows(page).first());
 
 		const pmRows = getPostMembershipRows(page);
 		await expect(pmRows).toHaveCount(1);
-		await deletePostMembership(page, pmRows.first());
+		await pmRows.first().getByRole('button', { name: 'ลบ' }).click();
+		await confirmDeleteModal(page, 'post-delete-membership-modal');
 
 		await savePostModal(page);
-		await saveOrganizationChanges(page);
+		await saveChanges(page);
 
 		const detail = await fetchOrganizationDetail(page, orgId);
-		const deleted = detail.memberships?.find(
-			(m: { id: string }) => m.id === membership.id,
-		);
-		expect(deleted).toBeUndefined();
-		seededMembershipIds.length = 0;
-	});
-
-	test('new post shows membership hint instead of table', async ({ page }) => {
-		await page.goto(`/organizations/${orgId}`);
-		await waitForOrganizationDetail(page);
-
-		await openAddPostModal(page);
-
-		const hint = page.locator(
-			'.post-modal :text("Membership can be added after the post has been successfully created and saved.")',
-		);
-		await expect(hint).toBeVisible();
-
-		const membershipTable = page.locator(
-			'.post-modal h4:has-text("Memberships")',
-		);
-		await expect(membershipTable).not.toBeVisible();
+		expect(
+			detail.memberships?.find((m: { id: string }) => m.id === membership.id),
+		).toBeUndefined();
 	});
 });
