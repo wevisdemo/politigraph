@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { Link } from '@politigraph/graphql/genql';
 import { useForm } from '@tanstack/vue-form';
+import { voteEventTypes } from '~/constants/vote-event';
 import { validateVotes } from '~/utils/votes';
 import { diff } from 'radash';
 
@@ -75,6 +76,7 @@ useHead({
 const defaultValues = reactive({
 	title: computed(() => voteEventData?.value?.title),
 	nickname: computed(() => voteEventData?.value?.nickname),
+	classification: computed(() => voteEventData?.value?.classification),
 	start_date: computed(() => voteEventData?.value?.start_date),
 	result: computed(() => voteEventData?.value?.result),
 	description: computed(() => voteEventData?.value?.description),
@@ -135,6 +137,7 @@ const voteEventFormInput = useForm({
 					update: {
 						title: { set: value.title },
 						nickname: { set: value.nickname },
+						classification: { set: value.classification || null },
 						start_date: { set: value.start_date },
 						result: { set: value.result },
 						description: { set: value.description },
@@ -384,6 +387,24 @@ async function togglePublishStatus() {
 									:model-value="field.state.value"
 									@update:model-value="field.handleChange"
 								/>
+							</template>
+						</voteEventFormInput.Field>
+						<voteEventFormInput.Field name="classification">
+							<template #default="{ field }">
+								<cv-select
+									label="Classification"
+									:model-value="field.state.value"
+									@update:model-value="field.handleChange"
+								>
+									<cv-select-option :value="null" />
+									<cv-select-option
+										v-for="type in voteEventTypes"
+										:key="type.value"
+										:value="type.value"
+									>
+										{{ type.label }}
+									</cv-select-option>
+								</cv-select>
 							</template>
 						</voteEventFormInput.Field>
 						<voteEventFormInput.Field name="start_date">

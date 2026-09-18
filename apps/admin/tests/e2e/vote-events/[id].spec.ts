@@ -1,4 +1,4 @@
-import { test } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 import { login } from '../fixtures';
 import {
 	createVoteEventWithVotes,
@@ -29,9 +29,8 @@ test.describe('Vote Event Detail', () => {
 		seededVoteEventIds.push(voteEventId);
 
 		await page.goto(`/vote-events/${voteEventId}`);
-		await page.waitForTimeout(3000);
-
 		const titleInput = page.getByLabel('Title');
+		await expect(titleInput).toHaveValue(/Test Edit Details/);
 		await titleInput.clear();
 		await titleInput.fill(`Updated Title ${uniqueId}`);
 
@@ -43,6 +42,11 @@ test.describe('Vote Event Detail', () => {
 		await descriptionInput.clear();
 		await descriptionInput.fill('Test description text');
 
+		await page.getByLabel('Classification').selectOption('MP_2');
+
 		await saveChanges(page, 'บันทึก');
+
+		await page.reload();
+		await expect(page.getByLabel('Classification')).toHaveValue('MP_2');
 	});
 });
