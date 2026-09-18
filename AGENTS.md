@@ -44,6 +44,7 @@ Test commands:
   - On NixOS, must run inside the flake dev shell with `nix develop --command bun run test:e2e`, unless direnv already loaded it
   - `SEED_ADMIN_PASSWORD` must be set. The task migrates and seeds the `admin@wevis.info` user by itself, and the login fixture signs in with that password
   - Seeding is skipped when that user already exists, so recreate the test databases after changing the password
+  - Playwright starts its own API on port 3100 and admin on port 8100, so it can run alongside the dev servers and `compose.yml`
 
 Test databases via `docker compose -f compose.test.yml up -d --wait`:
 

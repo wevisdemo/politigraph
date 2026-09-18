@@ -9,6 +9,8 @@ import * as schema from './auth-schema';
 export const trustedOrigins = [
 	'http://localhost:3000',
 	'http://localhost:8000',
+	// Admin e2e server
+	'http://localhost:8100',
 	'https://politigraph.wevis.info',
 ];
 

@@ -1,5 +1,7 @@
 import tailwindcss from '@tailwindcss/vite';
 
+const apiUrl = process.env.API_URL ?? 'http://localhost:3000';
+
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
 	app: {
@@ -15,6 +17,7 @@ export default defineNuxtConfig({
 			],
 		},
 	},
+	buildDir: process.env.NUXT_BUILD_DIR,
 	compatibilityDate: '2024-11-01',
 	css: ['~/assets/css/main.css'],
 	devServer: {
@@ -34,9 +37,9 @@ export default defineNuxtConfig({
 	routeRules:
 		process.env.NODE_ENV !== 'production'
 			? {
-					'/auth/**': { proxy: 'http://localhost:3000/auth/**' },
-					'/graphql': { proxy: 'http://localhost:3000/graphql' },
-					'/upload-image': { proxy: 'http://localhost:3000/upload-image' },
+					'/auth/**': { proxy: `${apiUrl}/auth/**` },
+					'/graphql': { proxy: `${apiUrl}/graphql` },
+					'/upload-image': { proxy: `${apiUrl}/upload-image` },
 				}
 			: {},
 	runtimeConfig: {
@@ -46,5 +49,5 @@ export default defineNuxtConfig({
 	},
 	sourcemap: true,
 	ssr: false,
-	vite: { plugins: [tailwindcss()] },
+	vite: { cacheDir: process.env.VITE_CACHE_DIR, plugins: [tailwindcss()] },
 });
