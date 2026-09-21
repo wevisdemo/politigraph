@@ -17,6 +17,8 @@ const th = {
 	openInPlayground: 'ลอง Query ใน GraphQL Playground',
 	exploreInteractHint:
 		'แสดงความสัมพันธ์ของ Node ที่อยู่ใกล้เท่านั้น เลือก Node ใดๆ เพื่อดู Properties และเลือกซ้ำอีกครั้งเพื่อสำรวจความสัมพันธ์ของ Node ถัดๆ ไป',
+	developmentBanner:
+		'<strong>โปรเจกต์นี้อยู่ในช่วงเริ่มต้นของการพัฒนา</strong> API และ Schema อาจมีการเปลี่ยนแปลงหลายครั้งก่อนเปิดตัวเวอร์สู่สาธารณะอย่างเป็นทางการโดยไม่ได้แจ้งล่วงหน้า',
 };
 
 const en: typeof th = {
@@ -36,6 +38,8 @@ const en: typeof th = {
 	openInPlayground: 'Try this query in GraphQL Playground',
 	exploreInteractHint:
 		'Only showing relationships of nearby nodes. Select any node to see its properties, select it again to explore the further nodes',
+	developmentBanner:
+		'<strong>This project is under early active development.</strong> The API and schema may have breaking changes several times without prior notice before the first official public release.',
 };
 
 const dictionaries: Record<Language, typeof th> = { th, en };

@@ -30,6 +30,7 @@
 		"pluralize": "^8.0.0",
 		"prettier": "^3.6.2",
 		"sigma": "^3.0.3",
+		"starlight-announcement": "^2.0.0",
 		"tailwind": "^4.0.0",
 		"tailwindcss": "^4.1.18",
 		"typescript": "^6.0.3",
