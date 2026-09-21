@@ -36,8 +36,6 @@ jobs:
         run: bun turbo run lint check
       - name: Run unit tests
         run: bun run test:unit
-      - name: Start database containers
-        run: docker compose -f compose.test.yml up -d --wait --quiet-pull
       - name: Run integration tests
         run: bun run test:integration
       - name: Install Playwright browsers
@@ -45,9 +43,6 @@ jobs:
         run: bun playwright install --with-deps chromium
       - name: Run E2E tests
         run: bun run test:e2e
-      - name: Stop test containers
-        if: always()
-        run: docker compose -f compose.test.yml down
       - uses: actions/upload-artifact@v7
         if: ${{ !cancelled() }}
         with:

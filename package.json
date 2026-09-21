@@ -14,8 +14,10 @@
 		"format": "prettier --write --ignore-unknown --ignore-path .gitignore .",
 		"migrate": "turbo migrate",
 		"test:unit": "NODE_ENV=test turbo test:unit",
-		"test:integration": "NODE_ENV=test turbo test:integration",
-		"test:e2e": "NODE_ENV=test turbo test:e2e",
+		"test:db:up": "docker compose -f compose.test.yml up -d --force-recreate --wait --quiet-pull",
+		"test:db:down": "docker compose -f compose.test.yml down",
+		"test:integration": "bun run test:db:up && NODE_ENV=test turbo test:integration; code=$?; bun run test:db:down; exit $code",
+		"test:e2e": "bun run test:db:up && NODE_ENV=test turbo test:e2e; code=$?; bun run test:db:down; exit $code",
 		"db:pull": "rsync -azvP --delete politigraphdb:/var/server/neo4j/data .neo4j"
 	},
 	"lint-staged": {

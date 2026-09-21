@@ -39,14 +39,15 @@ More information on tech stack of each project can be found in the respective RE
 Test commands:
 
 - `bun run test:unit` — unit tests
-- `bun run test:integration` — integration tests (requires test databases)
-- `bun run test:e2e` — Playwright E2E tests (requires test databases)
+- `bun run test:integration` — integration tests (starts and stops the test databases itself)
+- `bun run test:e2e` — Playwright E2E tests (starts and stops the test databases itself)
   - On NixOS, must run inside the flake dev shell with `nix develop --command bun run test:e2e`, unless direnv already loaded it
   - `SEED_ADMIN_PASSWORD` must be set. The task migrates and seeds the `admin@wevis.info` user by itself, and the login fixture signs in with that password
-  - Seeding is skipped when that user already exists, so recreate the test databases after changing the password
   - Playwright starts its own API on port 3100 and admin on port 8100, so it can run alongside the dev servers and `compose.yml`
 
-Test databases via `docker compose -f compose.test.yml up -d --wait`:
+Both `test:integration` and `test:e2e` wrap their turbo task in `test:db:up` / `test:db:down`, which recreate the test containers before the run and remove them after, so every run starts from an empty database. `compose.test.yml` declares no volumes, so nothing survives the teardown. Use those two scripts directly to keep the databases up while debugging.
+
+Test databases (`compose.test.yml`):
 
 - Neo4j: port 7688
 - Postgres: port 5433
