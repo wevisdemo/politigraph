@@ -379,6 +379,8 @@ const downloadCSV = () => {
 </template>
 
 <style scoped>
+@reference '~/assets/css/main.css';
+
 ::v-deep(.bx--table-toolbar) {
 	@apply sticky top-12 z-10 bg-white;
 }
