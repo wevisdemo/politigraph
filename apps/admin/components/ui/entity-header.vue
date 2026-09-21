@@ -1,42 +1,41 @@
 <script setup lang="ts">
 import { DocumentView16, Save16, View16, ViewOff16 } from '@carbon/icons-vue';
 import type { PublishStatus } from '@politigraph/graphql/genql';
+import type { DeletableEntity } from '~/composables/use-entity-deletion';
+import type { FunctionalComponent } from 'vue';
 
 const props = defineProps<{
 	title?: string;
+	entity?: DeletableEntity;
+	entityId?: string;
 	publishStatus?: PublishStatus;
 	originalDocumentUrl?: string;
 	isPublishingDisabled?: boolean;
 	isSaveDisabled?: boolean;
-	voteEventId?: string;
+	saveLabel?: string;
+	saveIcon?: FunctionalComponent;
 }>();
 
 defineEmits(['togglePublishStatus', 'save']);
 
-const isPublished = computed(() => props.publishStatus === 'PUBLISHED');
+const status = computed(() => props.publishStatus ?? 'PUBLISHED');
+const isPublished = computed(() => status.value === 'PUBLISHED');
+const save = computed(() => ({
+	label: props.saveLabel ?? 'Save Changes',
+	icon: props.saveIcon ?? Save16,
+}));
 </script>
 
 <template>
 	<cv-skeleton-text v-if="!title" class="my-6" heading :line-count="2" />
-	<div
-		v-else
-		class="my-6 flex flex-col flex-wrap items-end justify-end gap-4 md:flex-row md:items-center"
-	>
-		<div class="flex flex-1 flex-row items-center gap-4">
-			<h2 class="md:min-w-xl">
-				{{ title }}
-			</h2>
+	<div v-else class="my-4 flex flex-col gap-4">
+		<div class="flex flex-row items-center gap-2">
+			<PublishStatusTag class="mr-auto" :status="status" />
 
-			<div>
-				<PublishStatusTag :status="publishStatus" />
-			</div>
-		</div>
-
-		<div class="flex gap-2">
 			<UiDeleteEntityButton
-				v-if="voteEventId"
-				:id="voteEventId"
-				entity="voteEvent"
+				v-if="entity && entityId"
+				:id="entityId"
+				:entity="entity"
 				:name="title"
 			/>
 			<a
@@ -45,11 +44,12 @@ const isPublished = computed(() => props.publishStatus === 'PUBLISHED');
 				rel="noopener noreferrer"
 				target="_blank"
 			>
-				<cv-button :icon="DocumentView16" kind="tertiary">
+				<cv-button :icon="DocumentView16" kind="ghost">
 					View Original
 				</cv-button>
 			</a>
 			<cv-button
+				v-if="publishStatus"
 				default="Unpublished"
 				:icon="isPublished ? ViewOff16 : View16"
 				kind="tertiary"
@@ -58,17 +58,19 @@ const isPublished = computed(() => props.publishStatus === 'PUBLISHED');
 			>
 				{{ isPublished ? 'Unpublished' : 'Published' }}
 			</cv-button>
-
 			<cv-button
-				default="Save Changes"
-				:icon="Save16"
+				:default="save.label"
+				:icon="save.icon"
 				:disabled="isSaveDisabled"
 				type="submit"
 				@click="$emit('save')"
 			>
-				Save Changes
+				{{ save.label }}
 			</cv-button>
 		</div>
+		<h1 class="md:min-w-xl font-normal">
+			{{ title }}
+		</h1>
 	</div>
 
 	<cv-inline-notification

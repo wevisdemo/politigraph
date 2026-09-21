@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { Save16 } from '@carbon/icons-vue';
 import type { Link } from '@politigraph/graphql/genql';
 import type { BillForm } from '~/components/bills/detail.vue';
 import type { BillEventForm } from '~/components/bills/events.vue';
@@ -545,27 +544,13 @@ const { data: organizationList } = await useAsyncData(
 		</cv-breadcrumb-item>
 	</cv-breadcrumb>
 
-	<div class="my-6 flex justify-between gap-4 md:flex-row md:items-center">
-		<h2 class="md:min-w-xl">
-			{{ billData?.title }}
-		</h2>
-
-		<div class="mt-4 flex gap-4">
-			<UiDeleteEntityButton
-				:id="route.params.id as string"
-				entity="bill"
-				:name="billData?.title"
-			/>
-			<cv-button
-				kind="primary"
-				:icon="Save16"
-				:disabled="isSaving"
-				@click="guardSave(handleSave)"
-			>
-				Save Changes
-			</cv-button>
-		</div>
-	</div>
+	<UiEntityHeader
+		entity="bill"
+		:entity-id="route.params.id as string"
+		:title="billData?.title"
+		:is-save-disabled="isSaving"
+		@save="guardSave(handleSave)"
+	/>
 
 	<form
 		@submit="

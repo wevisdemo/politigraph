@@ -37,6 +37,17 @@ const { isSaving, guardSave } = useSaveGuard(toast);
 
 const { setImageBlob, uploadImage } = useImageUpload();
 
+const personName = computed(
+	() =>
+		[
+			peopleDetailData.value.firstname,
+			peopleDetailData.value.middlename,
+			peopleDetailData.value.lastname,
+		]
+			.filter(Boolean)
+			.join(' ') || 'New Person',
+);
+
 const savePeople = async () => {
 	const mandatoryFields = [
 		{ value: peopleDetailData.value.prefix, name: 'Title' },
@@ -152,30 +163,13 @@ const savePeople = async () => {
 
 	<FeedbackToast :notification="toast.notification" @close="toast.hide" />
 
-	<div class="flex flex-wrap justify-between">
-		<h1 class="mb-8 mt-4 font-normal">
-			{{
-				[
-					peopleDetailData.firstname,
-					peopleDetailData.middlename,
-					peopleDetailData.lastname,
-				]
-					.filter(Boolean)
-					.join(' ') || 'New Person'
-			}}
-		</h1>
-		<div class="flex flex-wrap items-start gap-4">
-			<cv-button
-				class="mt-4"
-				kind="primary"
-				:icon="Add16"
-				:disabled="isSaving"
-				@click="guardSave(savePeople)"
-			>
-				Create
-			</cv-button>
-		</div>
-	</div>
+	<UiEntityHeader
+		:title="personName"
+		save-label="Create"
+		:save-icon="Add16"
+		:is-save-disabled="isSaving"
+		@save="guardSave(savePeople)"
+	/>
 	<div class="flex flex-col items-start gap-4 md:flex-row">
 		<div class="flex-1">
 			<PeopleDetail v-model="peopleDetailData" @crop="setImageBlob" />

@@ -1,5 +1,4 @@
 <script lang="ts" setup>
-import { Save16 } from '@carbon/icons-vue';
 import {
 	type Link,
 	type Membership,
@@ -636,30 +635,13 @@ const saveChanges = async () => {
 
 	<FeedbackToast :notification="toast.notification" @close="toast.hide" />
 
-	<div class="flex flex-wrap justify-between">
-		<div class="flex flex-wrap items-center gap-4">
-			<h1 class="mb-8 mt-4 font-normal">
-				{{ organizationData?.name }}
-			</h1>
-		</div>
-		<div class="flex flex-wrap items-start gap-4">
-			<UiDeleteEntityButton
-				:id="route.params.id as string"
-				class="mt-4"
-				entity="organization"
-				:name="organizationData?.name"
-			/>
-			<cv-button
-				class="mt-4"
-				kind="primary"
-				:icon="Save16"
-				:disabled="isSaving"
-				@click="guardSave(saveChanges)"
-			>
-				Save Changes
-			</cv-button>
-		</div>
-	</div>
+	<UiEntityHeader
+		entity="organization"
+		:entity-id="route.params.id as string"
+		:title="organizationData?.name"
+		:is-save-disabled="isSaving"
+		@save="guardSave(saveChanges)"
+	/>
 
 	<form
 		@submit="

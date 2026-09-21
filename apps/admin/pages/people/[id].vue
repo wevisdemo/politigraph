@@ -1,5 +1,4 @@
 <script lang="ts" setup>
-import { Save16, View16, ViewOff16 } from '@carbon/icons-vue';
 import {
 	enumPublishStatus,
 	type Link,
@@ -234,10 +233,6 @@ const saveChanges = async () => {
 	}
 };
 
-const isPublished = computed(
-	() => peopleData.value?.publish_status === enumPublishStatus.PUBLISHED,
-);
-
 const togglePublishStatus = async () => {
 	const { updatePeople } = await graphqlClient.mutation({
 		updatePeople: {
@@ -293,42 +288,15 @@ watch(
 
 	<FeedbackToast :notification="toast.notification" @close="toast.hide" />
 
-	<div class="flex flex-wrap justify-between">
-		<div class="flex flex-wrap items-center gap-4">
-			<h1 class="mb-8 mt-4 font-normal">
-				{{ peopleData?.name }}
-			</h1>
-			<div class="pb-2">
-				<PublishStatusTag :status="peopleData?.publish_status" />
-			</div>
-		</div>
-		<div class="flex flex-wrap items-start gap-4">
-			<UiDeleteEntityButton
-				:id="route.params.id as string"
-				class="mt-4"
-				entity="person"
-				:name="peopleData?.name"
-			/>
-			<cv-button
-				class="mt-4"
-				kind="primary"
-				:icon="Save16"
-				:disabled="isSaving"
-				@click="guardSave(saveChanges)"
-			>
-				Save Changes
-			</cv-button>
-			<cv-button
-				default="Unpublished"
-				:icon="isPublished ? ViewOff16 : View16"
-				class="mt-4"
-				kind="tertiary"
-				@click="togglePublishStatus"
-			>
-				{{ isPublished ? 'Unpublished' : 'Published' }}
-			</cv-button>
-		</div>
-	</div>
+	<UiEntityHeader
+		entity="person"
+		:entity-id="route.params.id as string"
+		:title="peopleData?.name"
+		:publish-status="peopleData?.publish_status"
+		:is-save-disabled="isSaving"
+		@toggle-publish-status="togglePublishStatus"
+		@save="guardSave(saveChanges)"
+	/>
 
 	<div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
 		<PeopleDetail

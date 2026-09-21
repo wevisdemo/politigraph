@@ -430,7 +430,7 @@ function scrollToRow(id: string) {
 			@close="successToast.hide"
 		/>
 
-		<VoteEventHeader
+		<UiEntityHeader
 			:title="voteEvent ? `Votes - ${voteEvent.title}` : undefined"
 			:publish-status="voteEvent?.publish_status"
 			:original-document-url="voteEvent?.links[0]?.url"
