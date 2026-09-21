@@ -53,7 +53,7 @@ const voteValidationResult = computed(
 );
 
 const activeEditingCell = ref<{
-	rowId: number | null;
+	rowId: string | null;
 	columnId: number | null;
 }>({ rowId: null, columnId: null });
 
@@ -445,12 +445,12 @@ function scrollToRow(id: string) {
 			:errors="voteValidationResult.errors"
 			:warnings="voteValidationResult.warnings"
 			:get-action-label="
-				(type, ids) =>
+				(type) =>
 					type === 'COUNT_MISMATCHED'
 						? undefined
 						: type === 'INVALID_VOTER_NAME'
 							? 'Review names'
-							: `Go to the first issue at row ${(voteEvent?.votes.findIndex((v) => v.id === ids[0]) as number) + 1}`
+							: 'Go to the first issue'
 			"
 			@action="
 				({ type, ids }) => {

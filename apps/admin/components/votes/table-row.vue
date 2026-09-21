@@ -33,7 +33,7 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-	(e: 'startEditing', rowIndex: number, columnId: number): void;
+	(e: 'startEditing', rowId: string, columnId: number): void;
 	(e: 'edited', rowColumnId: [string, EditableVoteFields]): void;
 	(e: 'voterSelected', rowVoterId: [string, string]): void;
 	(e: 'deleted', id: string): void;
@@ -53,7 +53,7 @@ const isVoterInvalid = computed(
 		:class="rowClass"
 		class="scroll-m-24"
 	>
-		<cv-data-table-cell @click="emit('startEditing', index, 0)">
+		<cv-data-table-cell @click="emit('startEditing', row.id, 0)">
 			<cv-text-input
 				v-model="row.vote_order"
 				placeholder="Enter Order No."
@@ -62,7 +62,7 @@ const isVoterInvalid = computed(
 				@change="emit('edited', [row.id, 'vote_order'])"
 			/>
 		</cv-data-table-cell>
-		<cv-data-table-cell @click="emit('startEditing', index, 1)">
+		<cv-data-table-cell @click="emit('startEditing', row.id, 1)">
 			<cv-text-input
 				v-model="row.badge_number"
 				placeholder="Enter ID No."
@@ -73,7 +73,7 @@ const isVoterInvalid = computed(
 		</cv-data-table-cell>
 		<cv-data-table-cell
 			:class="{ 'text-[#DA1E28]': isVoterInvalid }"
-			@click="emit('startEditing', index, 2)"
+			@click="emit('startEditing', row.id, 2)"
 		>
 			<div v-if="activeColumn === 2">
 				<cv-combo-box
@@ -89,7 +89,7 @@ const isVoterInvalid = computed(
 					"
 				/>
 			</div>
-			<div v-else class="flex items-center gap-2 pl-[16px]">
+			<div v-else class="flex items-center gap-2 pl-4">
 				<p :class="{ 'text-[#707070]': !row.voter_name_raw }">
 					{{ voterLabel || row.voter_name_raw || 'Select voter name' }}
 				</p>
@@ -109,7 +109,7 @@ const isVoterInvalid = computed(
 				</cv-tooltip>
 			</div>
 		</cv-data-table-cell>
-		<cv-data-table-cell @click="emit('startEditing', index, 3)">
+		<cv-data-table-cell @click="emit('startEditing', row.id, 3)">
 			<cv-text-input
 				v-model="row.voter_party"
 				placeholder="Enter Party"
@@ -118,7 +118,7 @@ const isVoterInvalid = computed(
 				@change="emit('edited', [row.id, 'voter_party'])"
 			/>
 		</cv-data-table-cell>
-		<cv-data-table-cell @click="emit('startEditing', index, 4)">
+		<cv-data-table-cell @click="emit('startEditing', row.id, 4)">
 			<div v-if="activeColumn === 4">
 				<cv-dropdown
 					v-model="row.option"
@@ -135,7 +135,7 @@ const isVoterInvalid = computed(
 					</cv-dropdown-item>
 				</cv-dropdown>
 			</div>
-			<div v-else class="flex items-center pl-[16px]">
+			<div v-else class="flex items-center pl-4">
 				<div v-if="row.option" class="flex flex-row items-center gap-2">
 					<p>{{ row.option }}</p>
 					<cv-tooltip

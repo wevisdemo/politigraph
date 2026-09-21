@@ -2,7 +2,7 @@
 import { Download16, UserFollow16 } from '@carbon/icons-vue';
 import type { Person, Vote, VoteEvent } from '@politigraph/graphql/genql';
 import type { PeopleOption } from '~/composables/use-people-options';
-import { VOTER_CELL_KEY } from '~/constants/votes';
+import { standardVoteOptions, VOTER_CELL_KEY } from '~/constants/votes';
 import { getEffectiveVoterId, type VoteIssue } from '~/utils/votes';
 import { csvFormat } from 'd3-dsv';
 import { closest } from 'fastest-levenshtein';
@@ -12,6 +12,20 @@ type EditableVoteFields =
 	| 'badge_number'
 	| 'voter_party'
 	| 'option';
+
+type SortKey = EditableVoteFields | 'voter_name_raw';
+
+const SORTABLE_COLUMNS: {
+	key: SortKey;
+	heading: string;
+	class?: string;
+}[] = [
+	{ key: 'vote_order', heading: 'ลำดับที่', class: 'w-36' },
+	{ key: 'badge_number', heading: 'เลขที่บัตร', class: 'w-36' },
+	{ key: 'voter_name_raw', heading: 'ชื่อ-สกุล' },
+	{ key: 'voter_party', heading: 'ชื่อสังกัด', class: 'w-48' },
+	{ key: 'option', heading: 'ผลการลงคะแนน', class: 'w-48' },
+];
 
 type VoteEventProp = Pick<VoteEvent, 'id' | 'title' | 'publish_status'> & {
 	votes: (Pick<
@@ -38,7 +52,7 @@ const props = defineProps<{
 }>();
 
 const activeEditingCell = defineModel<{
-	rowId: number | null;
+	rowId: string | null;
 	columnId: number | null;
 }>('activeEditingCell', { required: true });
 const toDeleteIds = defineModel<Set<string>>('toDeleteIds', { required: true });
@@ -88,9 +102,87 @@ const filteredVotes = computed(() => {
 const activeRow = computed(() =>
 	activeEditingCell.value.columnId === 2 &&
 	activeEditingCell.value.rowId !== null
-		? filteredVotes.value[activeEditingCell.value.rowId]
+		? filteredVotes.value.find((v) => v.id === activeEditingCell.value.rowId)
 		: undefined,
 );
+
+const getSortValue = (row: VoteEventProp['votes'][number], key: SortKey) => {
+	if (key === 'voter_name_raw') {
+		return peopleLabelById.value.get(getSelectedVoterId(row)) || row[key] || '';
+	}
+
+	if (key === 'option') {
+		if (!row[key]) return '';
+
+		const index = standardVoteOptions.indexOf(row[key]);
+		return index === -1 ? standardVoteOptions.length : index;
+	}
+
+	return row[key] ?? '';
+};
+
+const sortState = ref<{ key: SortKey; order: 'ascending' | 'descending' }>({
+	key: 'vote_order',
+	order: 'ascending',
+});
+// Only ever written for the sorted column: changing it back to 'none' would
+// make Carbon re-emit a sort event and steal the active heading marker
+const columnOrders = ref<Partial<Record<SortKey, 'ascending' | 'descending'>>>({
+	vote_order: 'ascending',
+});
+const rankById = ref(new Map<string, number>());
+
+const applySort = () => {
+	const { key, order } = sortState.value;
+	const direction = order === 'ascending' ? 1 : -1;
+
+	const sorted = (props.voteEvent?.votes ?? [])
+		.filter((vote) => !isNewRow(vote.id))
+		.sort((a, b) => {
+			const left = getSortValue(a, key);
+			const right = getSortValue(b, key);
+
+			if (left === '' || right === '') {
+				return left === right ? 0 : left === '' ? 1 : -1;
+			}
+
+			return (
+				direction *
+				(typeof left === 'number' && typeof right === 'number'
+					? left - right
+					: String(left).localeCompare(String(right), 'th', {
+							numeric: true,
+						}))
+			);
+		});
+
+	rankById.value = new Map(sorted.map((vote, rank) => [vote.id, rank]));
+};
+
+const onSort = ({ index, order }: { index: number; order: string }) => {
+	const column = SORTABLE_COLUMNS[index];
+	if (!column) return;
+
+	if (order === 'none' && column.key !== sortState.value.key) return;
+
+	const nextOrder = order === 'descending' ? 'descending' : 'ascending';
+
+	columnOrders.value[column.key] = nextOrder;
+	sortState.value = { key: column.key, order: nextOrder };
+	applySort();
+};
+
+watch(() => props.originalVotesMap, applySort);
+
+const displayedVotes = computed(() => {
+	const rank = rankById.value;
+
+	return [...filteredVotes.value].sort(
+		(a, b) =>
+			(rank.get(a.id) ?? Number.MAX_SAFE_INTEGER) -
+			(rank.get(b.id) ?? Number.MAX_SAFE_INTEGER),
+	);
+});
 
 const activeVoterOptions = computed(() => {
 	const row = activeRow.value;
@@ -130,7 +222,7 @@ const getRowClass = (id: string): string => {
 	return '';
 };
 
-const startEditing = (rowId: number, columnId: number) => {
+const startEditing = (rowId: string, columnId: number) => {
 	activeEditingCell.value = { rowId, columnId };
 };
 
@@ -218,9 +310,10 @@ const downloadCSV = () => {
 			v-else
 			title="Votes"
 			helper-text="การลงมติรายบุคคล"
-			:rows="filteredVotes"
+			:rows="displayedVotes"
 			class="w-full table-fixed"
 			@search="onSearch"
+			@sort="onSort"
 		>
 			<template #actions>
 				<cv-icon-button
@@ -246,22 +339,27 @@ const downloadCSV = () => {
 				/>
 			</template>
 			<template #headings>
-				<cv-data-table-heading heading="ลำดับที่" />
-				<cv-data-table-heading heading="เลขที่บัตร" />
-				<cv-data-table-heading heading="ชื่อ-สกุล" class="min-w-[30%]" />
-				<cv-data-table-heading heading="ชื่อสังกัด" />
-				<cv-data-table-heading heading="ผลการลงคะแนน" />
+				<cv-data-table-heading
+					v-for="column in SORTABLE_COLUMNS"
+					:key="column.key"
+					:heading="column.heading"
+					:class="column.class"
+					:order="columnOrders[column.key] ?? 'none'"
+					sortable
+				/>
 				<cv-data-table-heading heading="Actions" align="right" />
 			</template>
 			<template #data>
 				<VotesTableRow
-					v-for="(row, i) in filteredVotes"
+					v-for="(row, i) in displayedVotes"
 					:key="row.id"
 					:row
 					:index="i"
-					:total="filteredVotes.length"
+					:total="displayedVotes.length"
 					:active-column="
-						activeEditingCell.rowId === i ? activeEditingCell.columnId : null
+						activeEditingCell.rowId === row.id
+							? activeEditingCell.columnId
+							: null
 					"
 					:row-class="getRowClass(row.id)"
 					:is-new="isNewRow(row.id)"
@@ -282,21 +380,18 @@ const downloadCSV = () => {
 
 <style scoped>
 ::v-deep(.bx--table-toolbar) {
-	position: sticky;
-	top: 3rem;
-	z-index: 10;
-	background-color: white;
+	@apply sticky top-12 z-10 bg-white;
 }
 
 table tr th {
-	@apply pl-[32px];
+	@apply pl-4;
 }
 
 ::v-deep(.bx--data-table th:last-of-type) {
-	width: 6rem;
+	@apply w-24;
 }
 
 ::v-deep(.bx--number--lg.bx--number input[type='number']) {
-	padding-right: 6rem;
+	@apply pr-24;
 }
 </style>
