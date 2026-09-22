@@ -48,7 +48,6 @@ import { Icon } from '@astrojs/starlight/components';
 	};
 
 	function onThemeChange(theme: Theme): void {
-		// @ts-expect-error StarlightThemeProvider is injected by starlight
 		StarlightThemeProvider.updatePickers(theme);
 		document.documentElement.dataset.theme =
 			theme === 'auto' ? getPreferredColorScheme() : theme;
