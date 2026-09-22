@@ -118,7 +118,7 @@ type Person
 	created_motions: [Motion!]!
 		@relationship(type: "CREATED_BY", properties: "Relation", direction: IN)
 	"""
-	กฏหมายหรือร่างกฏหมายที่เสนอในนามบุคคล
+	กฏหมายหรือร่างกฏหมายที่ร่วมเสนอในนามบุคคล
 	"""
 	co_created_motions: [Motion!]!
 		@relationship(type: "CO_CREATED_BY", properties: "Relation", direction: IN)

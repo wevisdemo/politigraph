@@ -5,7 +5,18 @@ description: Dated list of changes that affect how clients use the Politigraph A
 
 This page lists every change that affects how a client uses the API: the GraphQL schema, query limits, endpoints, visibility rules, and MCP tools.
 
-When a client-visible field is renamed or removed, the old field is kept for a while with the GraphQL `@deprecated` directive. Their removal appears as a later entry on this page.
+When a client-visible field is renamed or removed, the old field is kept for a while with the GraphQL `@deprecated` directive wherever possible, and its removal appears as a later entry on this page. Relationship fields are the exception: they cannot coexist with their replacement, so renaming one is listed under `Breaking` right away.
+
+## 2026-09-22
+
+### Breaking
+
+- `Organization.motions` renamed to `Organization.considered_motions`, with no deprecation period: two fields cannot share the same relationship type and direction, so the old name could not be kept alongside the new one. Its description wrongly said "proposed in the name of the organization", while the field has always meant "considered in the organization" — use `Organization.created_motions` for the former
+
+### Added
+
+- `Organization.created_motions`, motions proposed in the name of the organization (the `CREATED_BY` back-reference, matching `Person.created_motions`)
+- `Organization.considered_motions`, motions considered in the organization
 
 ## 2026-09-04
 

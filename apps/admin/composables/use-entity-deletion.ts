@@ -90,7 +90,8 @@ export function useEntityDeletion(entity: DeletableEntity) {
 				linksConnection: TOTAL_COUNT,
 				other_namesConnection: TOTAL_COUNT,
 				childrenConnection: TOTAL_COUNT,
-				motionsConnection: TOTAL_COUNT,
+				considered_motionsConnection: TOTAL_COUNT,
+				created_motionsConnection: TOTAL_COUNT,
 				eventsConnection: TOTAL_COUNT,
 			},
 		});
@@ -119,7 +120,14 @@ export function useEntityDeletion(entity: DeletableEntity) {
 					label: 'Child organizations',
 					count: organization.childrenConnection.totalCount,
 				},
-				{ label: 'Bills', count: organization.motionsConnection.totalCount },
+				{
+					label: 'Bills considered',
+					count: organization.considered_motionsConnection.totalCount,
+				},
+				{
+					label: 'Bills created',
+					count: organization.created_motionsConnection.totalCount,
+				},
 				{
 					label: 'Vote events and bill events',
 					count: organization.eventsConnection.totalCount,

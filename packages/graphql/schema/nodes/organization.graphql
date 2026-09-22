@@ -74,10 +74,15 @@ type Organization @node {
 	memberships: [Membership!]!
 		@relationship(type: "HELD", properties: "Relation", direction: OUT)
 	"""
+	ญัตติ (กฏหมายหรือร่างกฏหมาย) ที่พิจารณาในองค์กรนี้
+	"""
+	considered_motions: [Motion!]!
+		@relationship(type: "CREATED_IN", properties: "Relation", direction: IN)
+	"""
 	กฏหมายหรือร่างกฏหมายที่เสนอในนามองค์กร
 	"""
-	motions: [Motion!]!
-		@relationship(type: "CREATED_IN", properties: "Relation", direction: IN)
+	created_motions: [Motion!]!
+		@relationship(type: "CREATED_BY", properties: "Relation", direction: IN)
 	"""
 	กิจกรรมที่องค์กรนี้เกี่ยวข้อง
 	"""
