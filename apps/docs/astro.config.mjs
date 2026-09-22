@@ -104,7 +104,7 @@ export default defineConfig({
 					announcements: [
 						{
 							id: 'early-development',
-							variant: 'caution',
+							variant: 'note',
 							content: {
 								th: useTranslations('th').developmentBanner,
 								en: useTranslations('en').developmentBanner,
