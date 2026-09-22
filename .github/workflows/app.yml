@@ -141,7 +141,9 @@ jobs:
       - name: Upload admin to server
         uses: burnett01/rsync-deployments@9.0.0
         with:
-          switches: -azvP --chown=bot:deployer --chmod=g+w --delete
+          # Protect filter keeps the previous build's hashed chunks so tabs opened
+          # before the deploy can still load them
+          switches: -azvP --chown=bot:deployer --chmod=g+w --delete --filter=P_/_nuxt/***
           path: ./apps/admin/.output/public/*
           remote_host: ${{ secrets.SSH_APP_HOST }}
           remote_user: bot
@@ -150,9 +152,35 @@ jobs:
       - name: Upload docs to server
         uses: burnett01/rsync-deployments@9.0.0
         with:
-          switches: -azvP --chown=bot:deployer --chmod=g+w --delete
+          switches: -azvP --chown=bot:deployer --chmod=g+w --delete --filter=P_/_astro/*** --filter=P_/pagefind/***
           path: ./apps/docs/dist/*
           remote_host: ${{ secrets.SSH_APP_HOST }}
           remote_user: bot
           remote_key: ${{ secrets.SSH_KEY }}
           remote_path: ${{ secrets.SSH_FRONTEND_DIR }}/docs
+      - name: Prune superseded build assets
+        uses: appleboy/ssh-action@v1.2.5
+        with:
+          host: ${{ secrets.SSH_APP_HOST }}
+          username: bot
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            #!/usr/bin/env bash
+            set -e
+            root="${{ secrets.SSH_FRONTEND_DIR }}"
+            markers="$root/.deploy-markers"
+            mkdir -p "$markers"
+            touch "$markers/$(date +%s)"
+            ls -1 "$markers" | sort -n | head -n -4 | while read -r expired; do
+              rm -f "$markers/$expired"
+            done
+            # Assets are only dropped once they have been absent from the last
+            # three builds and unused for a week, so a deploy never removes the
+            # chunks an already-open tab is still fetching
+            if [ "$(ls -1 "$markers" | wc -l)" -lt 4 ]; then exit 0; fi
+            oldest="$markers/$(ls -1 "$markers" | sort -n | head -n 1)"
+            for dir in "$root/docs/_astro" "$root/docs/pagefind" "$root/admin/_nuxt"; do
+              [ -d "$dir" ] || continue
+              find "$dir" -type f ! -newer "$oldest" -mtime +7 -delete
+              find "$dir" -mindepth 1 -type d -empty -delete
+            done
