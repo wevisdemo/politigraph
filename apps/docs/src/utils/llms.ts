@@ -22,12 +22,13 @@ export interface LlmsDoc {
 	markdown: string;
 }
 
-const SECTION_LABELS = new Map(
-	sidebarGroups.map(({ directory, translations }) => [
-		directory,
-		translations.en,
-	]),
-);
+const SECTION_LABELS = new Map<string, string>([
+	...sidebarGroups.map(
+		({ directory, translations }) =>
+			[directory, translations.en] as [string, string],
+	),
+	['changelog', 'Changelog'],
+]);
 
 export function hasMarkdownVersion(entry: { data: { template?: string } }) {
 	return entry.data.template !== 'splash';

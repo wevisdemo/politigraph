@@ -7,6 +7,8 @@ Close #<tag-related-issue-number-here>
 - Describe what you have done
 -
 
+- [ ] If this changes the schema, query limits, endpoints or MCP tools, an entry has been added to `apps/docs/src/content/docs/en/changelog.mdx`
+
 ## Screenshot (if any)
 
 ## Help needed (if any)

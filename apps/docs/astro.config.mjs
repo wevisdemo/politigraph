@@ -97,6 +97,7 @@ export default defineConfig({
 					link: `${site}/graphql`,
 					attrs: { target: '_blank' },
 				},
+				{ slug: 'changelog' },
 			],
 			plugins: [
 				starlightAnnouncement({

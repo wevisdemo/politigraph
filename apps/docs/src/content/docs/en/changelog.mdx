@@ -1,0 +1,52 @@
+---
+title: Changelog
+description: Dated list of changes that affect how clients use the Politigraph API, including breaking changes and deprecations.
+---
+
+This page lists every change that affects how a client uses the API: the GraphQL schema, query limits, endpoints, visibility rules, and MCP tools.
+
+When a client-visible field is renamed or removed, the old field is kept for a while with the GraphQL `@deprecated` directive. Their removal appears as a later entry on this page.
+
+## 2026-09-04
+
+### Added
+
+- `/mcp` endpoint with tools to run a query, read the schema, and list types
+- `/llms.txt`, `/llms-full.txt`, and a `.md` version of every documentation page
+
+## 2026-08-05
+
+### Added
+
+- `lastUpdatedAt` query, returning the UTC timestamp of the most recent data change
+
+## 2026-03-11
+
+### Breaking
+
+- `Person` and `Vote` queries now return at most 1,000 nodes per request. Use `limit` and `offset` to page through larger result sets
+
+## 2026-02-24
+
+### Breaking
+
+- `Bill.bill_events` renamed to `Bill.events`
+- `Vote.voter_name` renamed to `Vote.voter_name_raw`
+- Union `MotionProposer` renamed to `MotionCreator`
+- `Bill.proposers` and `Bill.co_proposers` renamed to `Bill.creators` and `Bill.co_creators`
+- `Person.proposed_motions` renamed to `Person.created_motions`, with `Person.co_created_motions` added alongside it
+
+### Added
+
+- `Bill.creator_type` and the `BillCreatorType` enum
+
+## 2025-12-16
+
+### Breaking
+
+- `Bill.bill_events` narrowed from `Event` to the new `BillEvent` union. `DraftVoteEvent` became `BillVoteEvent` and `BillEnforceEvent` became `BillEnactEvent`
+- `BillStatus.ENFORCED` removed, it duplicated `BillStatus.ENACTED`
+
+### Added
+
+- `Person.death_date`
