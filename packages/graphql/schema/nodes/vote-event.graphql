@@ -31,6 +31,7 @@ type VoteEvent implements Event
 	"""
 	bills: [Bill!]!
 		@relationship(type: "IN", properties: "Relation", direction: OUT)
+		@deprecated(reason: "Use bill_vote_events { bills } instead")
 	"""
 	อีเวนต์การโหวตในร่างกฎหมาย
 	"""
