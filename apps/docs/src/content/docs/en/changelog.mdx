@@ -12,6 +12,7 @@ When a client-visible field is renamed or removed, the old field is kept for a w
 ### Breaking
 
 - `Organization.motions` renamed to `Organization.considered_motions`, with no deprecation period: two fields cannot share the same relationship type and direction, so the old name could not be kept alongside the new one. Its description wrongly said "proposed in the name of the organization", while the field has always meant "considered in the organization" — use `Organization.created_motions` for the former
+- `/graphql` now responds with HTTP `400` instead of `200` when a variable does not match its declared type. The `errors` body is unchanged
 
 ### Added
 

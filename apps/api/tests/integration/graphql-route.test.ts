@@ -126,7 +126,7 @@ describe('graphql route', () => {
 			}),
 		);
 
-		expect(response.status).toBe(200);
+		expect(response.status).toBe(400);
 		const body = await response.json();
 		expect(body.data).toBeUndefined();
 		expect(body.errors[0].message).toContain('count');

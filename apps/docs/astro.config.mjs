@@ -83,7 +83,7 @@ export default defineConfig({
 				...sidebarGroups.map(({ directory, label, translations }) => ({
 					label,
 					translations,
-					autogenerate: { directory },
+					items: [{ autogenerate: { directory } }],
 				})),
 				{
 					label: 'สำรวจข้อมูล',
