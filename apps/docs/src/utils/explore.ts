@@ -80,7 +80,9 @@ export function buildSearchQuery() {
 function getRelationshipFields(typename: string) {
 	return objectMap
 		.get(typename)!
-		.fields.filter((field) => isNodeType(field.type.name));
+		.fields.filter(
+			(field) => isNodeType(field.type.name) && !field.deprecatedReason,
+		);
 }
 
 const centerNodeQueryCache = new Map<string, string>();

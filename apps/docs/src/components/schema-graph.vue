@@ -318,7 +318,7 @@ function isGraphicActive(item: Node | Edge) {
 						<button
 							v-for="type in selectedNode.interfaces"
 							:key="type"
-							class="cursor-pointer text-blue-700 dark:text-blue-400"
+							class="cursor-pointer bg-transparent p-0 text-blue-700 dark:text-blue-400"
 							@click="selectedNodes = [type]"
 						>
 							{{ type }}
@@ -358,7 +358,7 @@ function isGraphicActive(item: Node | Edge) {
 				>
 					<li v-for="type in selectedNode.types" :key="type">
 						<button
-							class="cursor-pointer text-blue-700 dark:text-blue-400"
+							class="cursor-pointer bg-transparent p-0 text-blue-700 dark:text-blue-400"
 							@click="selectedNodes = [type]"
 						>
 							{{ type }}
@@ -370,7 +370,12 @@ function isGraphicActive(item: Node | Edge) {
 					class="mt-0 flex list-none flex-col p-0 text-sm"
 				>
 					<li
-						v-for="{ name, description, type } in selectedNode.fields"
+						v-for="{
+							name,
+							description,
+							type,
+							deprecatedReason,
+						} in selectedNode.fields"
 						:key="name"
 						class="break-all border-t border-gray-300 pb-1 pt-2 leading-normal dark:border-gray-700"
 					>
@@ -378,7 +383,7 @@ function isGraphicActive(item: Node | Edge) {
 						>:
 						<button
 							v-if="graph.nodes[type.name]"
-							class="cursor-pointer text-blue-700 dark:text-blue-400"
+							class="cursor-pointer bg-transparent p-0 text-blue-700 dark:text-blue-400"
 							@click="selectedNodes = [type.name]"
 						>
 							{{ type.name }}</button
@@ -386,6 +391,9 @@ function isGraphicActive(item: Node | Edge) {
 						>{{ type.hasMany ? '[]' : '' }}{{ type.isRequired ? '!' : '' }}
 						<br />
 						<span class="text-sm text-gray-400">{{ description }}</span>
+						<span v-if="deprecatedReason" class="text-xs text-orange-500"
+							><br /><strong>Deprecated</strong>: {{ deprecatedReason }}</span
+						>
 						<ul
 							v-if="enums.find((e) => e.name === type.name)"
 							class="ml-4 mt-0 list-disc flex-col p-0 text-sm"

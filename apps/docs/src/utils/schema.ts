@@ -105,11 +105,17 @@ function parseNodeFields(
 		fields?.map((f) => {
 			const type = extractFieldType(f.type)!;
 			const rel = f.directives?.find((d) => d.name.value === 'relationship');
+			const deprecated = f.directives?.find(
+				(d) => d.name.value === 'deprecated',
+			);
 
 			return {
 				name: f.name.value,
 				description: f.description?.value,
 				type,
+				deprecatedReason: deprecated?.arguments
+					? getArgumentValue(deprecated.arguments, 'reason')
+					: undefined,
 				relationship: rel?.arguments
 					? {
 							type: getArgumentValue(rel.arguments, 'type'),
