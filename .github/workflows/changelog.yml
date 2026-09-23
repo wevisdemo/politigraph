@@ -18,8 +18,8 @@ jobs:
         run: |
           git merge-base --is-ancestor "$BASE" HEAD || exit 0
           CHANGED=$(git diff --name-only "$BASE"...HEAD)
-          grep -qE '^(packages/graphql/(schema/|custom-resolvers\.ts$|last-updated-at\.ts$)|apps/api/src/routes/(graphql|mcp)\.ts$)' <<< "$CHANGED" || exit 0
+          grep -qE '^packages/graphql/(schema/.+\.graphql|custom-resolvers\.ts|deprecated-fields\.ts)$' <<< "$CHANGED" || exit 0
           if grep -qx 'apps/docs/src/content/docs/en/changelog.mdx' <<< "$CHANGED"; then exit 0; fi
           if git log --format=%B "$BASE"..HEAD | grep -q '\[skip changelog\]'; then exit 0; fi
-          echo '::error::Schema or API changed without a changelog entry. Add one to apps/docs/src/content/docs/en/changelog.mdx or put [skip changelog] in a commit message.'
+          echo '::error::GraphQL schema or resolvers changed without a changelog entry. Add one to apps/docs/src/content/docs/en/changelog.mdx or put [skip changelog] in a commit message.'
           exit 1

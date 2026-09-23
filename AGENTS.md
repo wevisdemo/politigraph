@@ -9,7 +9,7 @@
 - Avoid mutating variables, prefer functional approach when possible
 - Don't write arbitrary comment if the code is self-explainable
 - Add/update test cases if your changes effect business logic, only add high value test case and grouped it if possible to reduce redundancy and test time
-- If your changes affect the GraphQL schema, query limits, API endpoints or MCP tools, add a dated entry to `apps/docs/src/content/docs/en/changelog.mdx`. CI enforces this, put `[skip changelog]` in a commit message when the change is not client-facing
+- If your changes affect the GraphQL schema, query limits, API endpoints or MCP tools, add a dated entry to `apps/docs/src/content/docs/en/changelog.mdx`. CI enforces this only for schema `.graphql` files, `custom-resolvers.ts` and `deprecated-fields.ts` in `packages/graphql`
 - After finishing any task, run the following commands:
   - Check type with `bun run check`
   - Lint with `bun run lint`, all errors and warnings must be fixed
