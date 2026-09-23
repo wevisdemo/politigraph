@@ -43,7 +43,7 @@ type Bill implements Motion @node {
 	"""
 	เงื่อนไขของการผ่านร่าง
 	"""
-	requirement: String
+	requirement: String @deprecated(reason: "Not used. Will be removed.")
 	"""
 	ขั้นตอนในประบวนการพิจารณากฏหมาย
 	"""

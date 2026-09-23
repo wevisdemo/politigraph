@@ -30,5 +30,5 @@ interface Motion {
 	"""
 	เงื่อนไขของการผ่านญัตติ
 	"""
-	requirement: String
+	requirement: String @deprecated(reason: "Not used. Will be removed.")
 }

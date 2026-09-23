@@ -21,6 +21,8 @@ When a client-visible field is renamed or removed, the old field is kept for a w
 ### Deprecated
 
 - `VoteEvent.bills`, use `VoteEvent.bill_vote_events.bills` instead
+- `Bill.requirement` and `Motion.requirement`, never populated. Will be removed
+- `BillVoteEvent.pass_condition`, never populated. Use `BillVoteEvent.vote_events.pass_condition` instead. Will be removed
 
 ## 2026-09-04
 
