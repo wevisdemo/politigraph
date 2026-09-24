@@ -1,6 +1,22 @@
 import { serverConfig } from '@politigraph/config/server';
 
-export function triggerPlausiblePageview(userAgent: string, clientIp: string) {
+interface PlausibleEvent {
+	name: string;
+	path: string;
+	props?: Record<string, string>;
+	userAgent: string;
+	clientIp?: string;
+}
+
+export function trackEvent({
+	name,
+	path,
+	props,
+	userAgent,
+	clientIp,
+}: PlausibleEvent) {
+	if (!serverConfig.isProduction || !clientIp) return;
+
 	fetch('https://analytics.punchup.world/api/event', {
 		method: 'POST',
 		headers: {
@@ -9,11 +25,12 @@ export function triggerPlausiblePageview(userAgent: string, clientIp: string) {
 			'x-forwarded-for': clientIp,
 		},
 		body: JSON.stringify({
-			name: 'pageview',
-			url: `${serverConfig.siteUrl}/graphql`,
+			name,
+			url: `${serverConfig.siteUrl}${path}`,
 			domain: new URL(serverConfig.siteUrl).hostname,
+			props,
 		}),
 	}).catch((error) =>
-		console.error('Failed to send Plausible pageview', error),
+		console.error(`Failed to send Plausible event ${name}`, error),
 	);
 }

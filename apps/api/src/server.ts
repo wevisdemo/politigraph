@@ -12,7 +12,8 @@ import { mcp } from './routes/mcp';
 import { playground } from './routes/playground';
 import { upload } from './routes/upload-image';
 import { getJwtToken } from './utils/auth';
-import { triggerPlausiblePageview } from './utils/plausible';
+import { trackEvent } from './utils/plausible';
+import { usagePlugin } from './utils/usage';
 
 const port = serverConfig.port;
 const origin = `http://127.0.0.1:${port}`;
@@ -42,26 +43,26 @@ const armor = new ApolloArmor({
 	},
 });
 
+const { plugins: armorPlugins, ...armorProtection } = armor.protect();
+
 const app = new Elysia()
 	.use(
 		apollo({
 			schema,
-			...armor.protect(),
+			...armorProtection,
+			plugins: [...armorPlugins, usagePlugin],
 			allowBatchedHttpRequests: true,
 			maxBatching: 5,
 			introspection: true,
 			context: async ({ request: { headers } }) =>
 				(await getJwtToken(headers, origin)) ?? {},
-			onLandingPageRequested: ({ server, request }: Context) => {
-				const host = request.headers.get('host');
-
-				if (host && !host.includes('localhost')) {
-					triggerPlausiblePageview(
-						request.headers.get('user-agent') ?? '',
-						server?.requestIP(request)?.address ?? '',
-					);
-				}
-			},
+			onLandingPageRequested: ({ request: { headers } }: Context) =>
+				trackEvent({
+					name: 'pageview',
+					path: '/graphql',
+					userAgent: headers.get('user-agent') ?? '',
+					clientIp: headers.get('x-real-ip') ?? undefined,
+				}),
 		}),
 	)
 	.use(playground)

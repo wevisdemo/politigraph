@@ -14,6 +14,24 @@ API ของเราอยู่ในมาตรฐาน [GraphQL](https://
 - [GraphQL Playground](/graphql) ให้เข้าไปทดลองสร้าง Query ต่างๆ และสำรวจผลลัพธ์ที่ได้
 - [พื้นที่สำรวจข้อมูล](/explore) ผ่าน Interactive Visualization
 
+### การระบุชื่อแอปพลิเคชัน
+
+หากเรียกใช้ API จาก server, script หรือ SSR กรุณาส่ง Header `apollographql-client-name` และ `apollographql-client-version` (ไม่บังคับ) เพื่อให้เราทราบสถิติการใช้งาน ส่วน Request ที่มาจากเบราว์เซอร์นั้นระบุที่มาจาก Origin โดยอัตโนมัติ
+
+<Code
+	code={`fetch('${SITE_URL}/graphql', {
+	method: 'POST',
+	headers: {
+		'content-type': 'application/json',
+		'apollographql-client-name': 'my-app',
+		'apollographql-client-version': '1.0.0',
+	},
+	body: JSON.stringify({ query: '{ lastUpdatedAt }' }),
+});`}
+	lang="js"
+	title="ตัวอย่าง Request"
+/>
+
 ## การใช้งานร่วมกับ AI Agent
 
 คุณสามารถใช้ Politigraph กับ AI Agent หรือ Chatbot ได้ 2 ช่องทาง

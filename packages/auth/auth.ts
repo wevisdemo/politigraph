@@ -1,3 +1,4 @@
+import { inspect } from 'node:util';
 import { databaseUrl } from '@politigraph/config/postgres';
 import { serverConfig } from '@politigraph/config/server';
 import { betterAuth } from 'better-auth';
@@ -13,6 +14,8 @@ export const trustedOrigins = [
 	'http://localhost:8100',
 	'https://politigraph.wevis.info',
 ];
+
+const EMAIL_PATTERN = /[\w.%+-]+@[\w-]+(\.[\w-]+)+/g;
 
 const db = drizzle(databaseUrl);
 
@@ -38,4 +41,14 @@ export const auth = betterAuth({
 		enabled: true,
 	},
 	trustedOrigins,
+	logger: {
+		// PDPA: failed sign-ins log the email, which would persist in container logs
+		log: (level, message, ...args) =>
+			console[level](
+				`[Better Auth] ${[message, ...args]
+					.map((part) => (typeof part === 'string' ? part : inspect(part)))
+					.join(' ')
+					.replace(EMAIL_PATTERN, '[email]')}`,
+			),
+	},
 });

@@ -20,3 +20,6 @@ dist
 .astro
 genql
 .direnv/
+
+# Generated on deploy
+servers/app/nginx/cloudflare.conf

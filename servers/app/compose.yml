@@ -35,6 +35,51 @@ services:
       timeout: 5s
       retries: 3
       start_period: 30s
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '200m'
+        max-file: '5'
+
+  openobserve:
+    image: public.ecr.aws/zinclabs/openobserve:v1.0.3
+    container_name: openobserve
+    restart: always
+    network_mode: host
+    mem_limit: 512m
+    cpus: 0.5
+    volumes:
+      - ./openobserve:/data
+    labels:
+      - docker-volume-backup.stop-during-backup=true
+    environment:
+      ZO_DATA_DIR: /data
+      ZO_HTTP_ADDR: 127.0.0.1
+      ZO_GRPC_ADDR: 127.0.0.1
+      ZO_BASE_URI: /observe
+      ZO_WEB_URL: https://politigraph.wevis.info/observe
+      ZO_ROOT_USER_EMAIL: ${OPENOBSERVE_USER:?}
+      ZO_ROOT_USER_PASSWORD: ${OPENOBSERVE_PASSWORD:?}
+      ZO_COMPACT_DATA_RETENTION_DAYS: 180
+      ZO_MEMORY_CACHE_ENABLED: false
+      ZO_MEM_TABLE_MAX_SIZE: 128
+      ZO_TELEMETRY: false
+
+  vector:
+    image: timberio/vector:0.58.0-alpine
+    container_name: vector
+    restart: always
+    network_mode: host
+    mem_limit: 128m
+    depends_on:
+      - openobserve
+    volumes:
+      - ./vector:/etc/vector:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      VECTOR_DANGEROUSLY_ALLOW_ENV_VAR_INTERPOLATION: true
+      OPENOBSERVE_USER: ${OPENOBSERVE_USER:?}
+      OPENOBSERVE_PASSWORD: ${OPENOBSERVE_PASSWORD:?}
 
   beszel-agent:
     image: henrygd/beszel-agent:0.16
@@ -57,8 +102,10 @@ services:
     restart: always
     network_mode: host
     volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
       - /var/backup:/archive
-      - ./var/htdocs/assets:/backup/assets:ro
+      - /var/htdocs/assets:/backup/assets:ro
+      - ./openobserve:/backup/openobserve:ro
     environment:
       AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
       AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY

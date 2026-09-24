@@ -63,11 +63,20 @@ jobs:
         run: docker build -t wevisdemo/politigraph .
       - name: Save image
         run: docker save wevisdemo/politigraph | gzip > politigraph-image.tar.gz
+      - name: Generate Cloudflare real IP config
+        run: |
+          RANGES=$(for v in 4 6; do curl -fsS "https://www.cloudflare.com/ips-v$v"; echo; done | grep .)
+          [ "$(wc -l <<< "$RANGES")" -ge 10 ] || { echo "::error::Unexpected Cloudflare IP ranges"; exit 1; }
+          {
+            echo "# Generated on deploy from https://www.cloudflare.com/ips"
+            echo "real_ip_header CF-Connecting-IP;"
+            sed 's/.*/set_real_ip_from &;/' <<< "$RANGES"
+          } > servers/app/nginx/cloudflare.conf
       - name: Upload image and configs to server
         uses: burnett01/rsync-deployments@9.0.0
         with:
           switches: -azvP --chown=bot:deployer --chmod=g+w
-          path: servers/app/compose.yml servers/app/nginx politigraph-image.tar.gz
+          path: servers/app/compose.yml servers/app/nginx servers/app/vector politigraph-image.tar.gz
           remote_host: ${{ secrets.SSH_APP_HOST }}
           remote_user: bot
           remote_key: ${{ secrets.SSH_KEY }}

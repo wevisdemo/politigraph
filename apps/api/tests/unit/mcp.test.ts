@@ -93,6 +93,7 @@ describe('mcp server', () => {
 			const forwarded = new Headers(init.headers);
 			expect(forwarded.has('authorization')).toBeFalse();
 			expect(forwarded.has('cookie')).toBeFalse();
+			expect(forwarded.get('x-politigraph-source')).toBe('mcp');
 			expect(JSON.parse(init.body as string)).toEqual({
 				query: 'query People($limit: Int) { people(limit: $limit) { id } }',
 				variables: { limit: 1 },

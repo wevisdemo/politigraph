@@ -27,6 +27,8 @@ Main routes of the final application:
 - `/` A landing page and documentation for public
 - `/admin` Admin panel for managing politigraph data (required an account)
 - `/graphql` GraphQL endpoint and playground for querying and updating data.
+- `/mcp` MCP server for AI agents
+- `/observe` OpenObserve dashboard for usage analytics and logs (required an account)
 
 https://politigraph.wevis.info will be deployed through GitHub Actions every time the repository code has updated.
 
@@ -136,6 +138,27 @@ docker compose up -d elysia
 ```
 
 While the container is down, nginx answers every API route (`/graphql`, `/mcp`, `/auth`, etc.) with `503` and a GraphQL-style error body. The docs and admin static pages are still served. Don't push to `main` during the migration, as the deployment will start the container again.
+
+### 4.4 Usage analytics and logs
+
+The app server ships container logs to a self-hosted [OpenObserve](https://openobserve.ai) at `/observe`:
+
+```
+elysia, nginx (stdout) → Vector (servers/app/vector) → OpenObserve (servers/app/compose.yml)
+```
+
+Vector routes lines into three streams:
+
+- **`usage`**: one event per GraphQL operation (`fields` and `deprecated` as `Type.field`, `source`, `client`, duration, errors) and per MCP connect, tool call, and resource read, written by `apps/api/src/utils/usage.ts`. Query text, variables, and responses are never logged
+- **`nginx`**: JSON access log, without static asset hits under 400
+- **`elysia`**: everything else the API prints, e.g. startup, crashes, and errors
+
+`client` is the `Origin` host for browsers, or the `apollographql-client-name` header for server-side consumers, otherwise `direct`. The same events, without field details, are also sent to Plausible. To comply with PDPA, no raw IP or email is stored
+
+Operation notes:
+
+- `OPENOBSERVE_USER` and `OPENOBSERVE_PASSWORD` must be set on the app server, compose refuses to start without them
+- Field names are lowercased on ingestion, and array fields are stored as strings, so unnest them with `unnest(cast_to_arr(fields))` in SQL
 
 ## 5. License
 

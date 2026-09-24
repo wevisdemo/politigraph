@@ -11,6 +11,7 @@ import { OperationTypeNode, parse } from 'graphql';
 import { z } from 'zod';
 import { version } from '../../package.json';
 import { MAX_QUERY_TOKENS } from '../constants/graphql';
+import { SOURCE_HEADER, trackMcpRequest } from '../utils/usage';
 
 const GRAPHQL_TIMEOUT_MS = 30 * 1000;
 const DOCS_TIMEOUT_MS = 10 * 1000;
@@ -85,7 +86,7 @@ function createMcpServer(origin: string) {
 
 			const response = await fetch(`${origin}/graphql`, {
 				method: 'POST',
-				headers: { 'content-type': 'application/json' },
+				headers: { 'content-type': 'application/json', [SOURCE_HEADER]: 'mcp' },
 				body: JSON.stringify({ query, variables, operationName }),
 				signal: AbortSignal.timeout(GRAPHQL_TIMEOUT_MS),
 			});
@@ -204,5 +205,15 @@ function safeParseJson(body: string) {
 export const mcp = (origin: string) => {
 	const handler = createMcpHandler(() => createMcpServer(origin));
 
-	return new Elysia().mount('/mcp', (request) => handler.fetch(request));
+	return new Elysia().mount('/mcp', (request) => {
+		if (request.method === 'POST') {
+			request
+				.clone()
+				.json()
+				.then((message) => trackMcpRequest(message, request.headers))
+				.catch(() => {});
+		}
+
+		return handler.fetch(request);
+	});
 };
