@@ -24,13 +24,36 @@ async function waitForSlot() {
 	await slot;
 }
 
+const RETRY_DELAYS = [1000, 5000, 15000];
+
+const isRetriable = ({ status }: Response) => status === 429 || status >= 500;
+
+async function post(
+	init: RequestInit,
+	retryDelays = RETRY_DELAYS,
+): Promise<Response> {
+	const [delay, ...remainingDelays] = retryDelays;
+
+	await waitForSlot();
+
+	try {
+		const response = await fetch(GRAPHQL_URL, init);
+
+		if (delay === undefined || !isRetriable(response)) return response;
+	} catch (error) {
+		if (delay === undefined) throw error;
+	}
+
+	await new Promise((resolve) => setTimeout(resolve, delay));
+
+	return post(init, remainingDelays);
+}
+
 export async function fetchGraphql(
 	query: string,
 	variables?: Record<string, unknown>,
 ) {
-	await waitForSlot();
-
-	const response = await fetch(GRAPHQL_URL, {
+	const response = await post({
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json',
