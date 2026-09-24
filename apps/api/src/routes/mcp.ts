@@ -19,7 +19,7 @@ const DOCS_TIMEOUT_MS = 10 * 1000;
 
 const INSTRUCTIONS = `${SUMMARY}
 
-Workflow: call \`list-types\` to see what exists, \`get-schema\` to read the exact fields of the types you need, then \`query\` to fetch data. Never guess field names.
+Workflow: call \`list-types\` to see what exists, \`get-schema\` to read the exact fields of the types you need, then \`query\` to fetch data. Never guess field names. Before writing a non-trivial query, call \`get-docs\` for the documentation index and read the pages about the types involved: they explain how the data is modeled and include example queries.
 
 Notes:
 - Read-only and anonymous. Mutations are rejected, and nodes whose \`publish_status\` is not \`PUBLISHED\` are hidden.
@@ -156,6 +156,43 @@ function createMcpServer(origin: string, client?: string | null) {
 			),
 	);
 
+	server.registerTool(
+		'get-docs',
+		{
+			title: 'Read the documentation',
+			description:
+				'Return the Politigraph documentation index (llms.txt) as markdown, or a single documentation page linked from it.',
+			inputSchema: z.object({
+				page: z
+					.string()
+					.optional()
+					.describe(
+						'Markdown URL or path of a page listed in the index, e.g. /en/schema/bill.md. Omit for the index.',
+					),
+			}),
+			annotations: { readOnlyHint: true },
+		},
+		async ({ page = '/llms.txt' }) => {
+			const url = new URL(page, serverConfig.siteUrl);
+
+			if (url.origin !== new URL(serverConfig.siteUrl).origin) {
+				return textResult(
+					'Only pages of the Politigraph documentation can be read. Call get-docs without a page to see them.',
+					true,
+				);
+			}
+
+			const response = await fetchDocs(url);
+
+			return response.ok
+				? textResult(await response.text())
+				: textResult(
+						`Failed to read ${url.pathname}: ${response.status} ${response.statusText}. Call get-docs without a page to see the available pages.`,
+						true,
+					);
+		},
+	);
+
 	server.registerResource(
 		'schema',
 		'politigraph://schema',
@@ -185,10 +222,13 @@ function createMcpServer(origin: string, client?: string | null) {
 	return server;
 }
 
+const fetchDocs = (url: URL) =>
+	fetch(url, { signal: AbortSignal.timeout(DOCS_TIMEOUT_MS) });
+
 async function getDocs() {
-	const response = await fetch(`${serverConfig.siteUrl}/llms-full.txt`, {
-		signal: AbortSignal.timeout(DOCS_TIMEOUT_MS),
-	});
+	const response = await fetchDocs(
+		new URL('/llms-full.txt', serverConfig.siteUrl),
+	);
 
 	if (!response.ok) {
 		throw new Error(

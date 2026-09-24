@@ -2,6 +2,7 @@ import {
 	Client,
 	StreamableHTTPClientTransport,
 } from '@modelcontextprotocol/client';
+import { serverConfig } from '@politigraph/config/server';
 import { afterAll, beforeEach, describe, expect, spyOn, test } from 'bun:test';
 import { MAX_QUERY_TOKENS } from '../../src/constants/graphql';
 import { mcp } from '../../src/routes/mcp';
@@ -52,6 +53,7 @@ describe('mcp server', () => {
 		const { tools } = await client.listTools();
 
 		expect(tools.map(({ name }) => name).sort()).toEqual([
+			'get-docs',
 			'get-schema',
 			'list-types',
 			'query',
@@ -187,6 +189,60 @@ describe('mcp server', () => {
 
 			expect(firstText(result.content)).toInclude('- type Person');
 			expect(firstText(result.content)).toInclude('- union OtherNames');
+
+			await client.close();
+		});
+	});
+
+	describe('docs tool', () => {
+		test.each([
+			[undefined, '/llms.txt'],
+			['/en/schema/bill.md', '/en/schema/bill.md'],
+			[`${serverConfig.siteUrl}/en/schema/bill.md`, '/en/schema/bill.md'],
+		])('reads %p from the docs site', async (page, path) => {
+			graphqlFetch.mockResolvedValue(new Response('# Politigraph'));
+
+			const client = await connect();
+			const result = await client.callTool({
+				name: 'get-docs',
+				arguments: { page },
+			});
+
+			expect(result.isError).toBeFalsy();
+			expect(firstText(result.content)).toBe('# Politigraph');
+			expect(String(graphqlFetch.mock.calls[0]?.[0])).toBe(
+				`${serverConfig.siteUrl}${path}`,
+			);
+
+			await client.close();
+		});
+
+		test.each(['https://example.com/llms.txt', '//example.com/llms.txt'])(
+			'rejects %p without fetching it',
+			async (page) => {
+				const client = await connect();
+				const result = await client.callTool({
+					name: 'get-docs',
+					arguments: { page },
+				});
+
+				expect(result.isError).toBeTrue();
+				expect(graphqlFetch).not.toHaveBeenCalled();
+
+				await client.close();
+			},
+		);
+
+		test('reports a missing page as a tool error', async () => {
+			graphqlFetch.mockResolvedValue(new Response('', { status: 404 }));
+
+			const client = await connect();
+			const result = await client.callTool({
+				name: 'get-docs',
+				arguments: { page: '/en/unicorn.md' },
+			});
+
+			expect(result.isError).toBeTrue();
 
 			await client.close();
 		});
