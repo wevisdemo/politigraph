@@ -86,6 +86,11 @@ export default defineConfig({
 					items: [{ autogenerate: { directory } }],
 				})),
 				{
+					label: 'อัปเดตและนโยบาย',
+					translations: { en: 'Updates & Policies' },
+					items: [{ slug: 'changelog' }, { slug: 'privacy-policy' }],
+				},
+				{
 					label: 'สำรวจข้อมูล',
 					translations: {
 						en: 'Explore',
@@ -97,7 +102,6 @@ export default defineConfig({
 					link: `${site}/graphql`,
 					attrs: { target: '_blank' },
 				},
-				{ slug: 'changelog' },
 			],
 			plugins: [
 				starlightAnnouncement({

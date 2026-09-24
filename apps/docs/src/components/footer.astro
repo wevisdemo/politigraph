@@ -1,5 +1,7 @@
 ---
 import AstroFooter from '@astrojs/starlight/components/Footer.astro';
+
+const { locale } = Astro.locals.starlightRoute;
 ---
 
 <AstroFooter />
@@ -25,6 +27,13 @@ import AstroFooter from '@astrojs/starlight/components/Footer.astro';
 	</a>
 
 	<div class="flex flex-row items-center gap-2 md:gap-3">
+		<a
+			class="text-xs whitespace-nowrap text-(--sl-color-gray-2) hover:text-(--sl-color-white)"
+			href={`${locale ? `/${locale}` : ''}/privacy-policy/`}
+		>
+			Privacy Policy
+		</a>
+		<span class="h-4 w-px bg-(--sl-color-gray-5)" aria-hidden="true"></span>
 		<span class="text-xs hidden sm:block">Follow Us</span>
 		<a
 			target="_blank"

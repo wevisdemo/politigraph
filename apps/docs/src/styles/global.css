@@ -21,6 +21,12 @@
 	--color-gray-900: #181818;
 }
 
+@layer base {
+	html {
+		@apply scroll-smooth motion-reduce:scroll-auto;
+	}
+}
+
 @layer carbonized {
 	.sl-link-button,
 	site-search > button > kbd,

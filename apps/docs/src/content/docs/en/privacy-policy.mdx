@@ -1,0 +1,104 @@
+---
+title: Privacy Policy
+description: How Politigraph collects, uses, and protects the personal data of website visitors, API and MCP users, and people in the dataset.
+lastUpdated: false
+---
+
+_Effective from 24 September 2026_
+
+This policy applies to "personal data" processed through Politigraph, which is operated by WeVis (the "data controller"), and by third parties that process personal data on behalf of WeVis (the "data processors"), across the following services: the website and documentation at [politigraph.wevis.info](https://politigraph.wevis.info), the data explorer, the GraphQL API with its GraphQL Playground (`/graphql`), and the MCP server (`/mcp`) (together, the "services").
+
+Politigraph is a civil society project that opens Thai political data to everyone without sign-up, so we design our services to collect as little data about their users as necessary.
+
+## Types of Personal Data Collected
+
+### GraphQL API and MCP Server Users
+
+These services can be used without authentication. For every call, we record the following usage data:
+
+- The parts of the schema each query uses, as `Type.field`, the operation name, and the processing time
+- The name of the calling application, from the browser's origin or from the `apollographql-client-name` header set by the user
+- The name and version of the MCP client, and the name of the tool called
+- Website access data, limited to the requested path (without its query string), response status, response time, user agent, and the network prefix of the IP address
+- A hash of the IP address and user agent to count unique users. It is created with a random value that changes daily and is never stored, so it cannot be traced back to an IP address or linked across days
+
+We do not record query text, variables, responses, or full IP addresses.
+
+### Website Visitors
+
+We use [Plausible Analytics](https://plausible.io) to measure website traffic, without cookies and without storing IP addresses. It records:
+
+- The pages visited, and the website that referred you (referrer)
+- Browser, operating system, and device type
+- Approximate country and region, derived from the IP address when the visit is received, without storing the IP address itself
+
+### People Who Contact Us
+
+The data you choose to send us, such as your name, email address, and message, when you contact us by email or report an issue on GitHub.
+
+## Personal Data of People in the Dataset
+
+The Politigraph dataset contains information about politicians and people holding political office, such as names, photos, birth dates, education and work history, positions held, political party affiliations, and parliamentary votes. This information is collected from publicly available sources, such as documents from the parliament and government agencies, in the public interest of promoting transparency and scrutiny of elected representatives.
+
+We only publish data that has been verified. If you are in the dataset and find that your information is inaccurate or incomplete, you can request a correction as described in [Contact and Exercising Your Rights](#contact-and-exercising-your-rights).
+
+## Use and Processing of Personal Data
+
+We process personal data for the following purposes:
+
+- To run the website, API, and MCP server reliably, including finding and fixing errors
+- To prevent abnormal usage or attacks, and to keep the services secure
+- To analyze overall usage, such as which data is most popular, to improve the services and plan schema changes without disrupting users
+- To reply to and act on requests from people who contact us
+- To publish, present, or report statistical summaries that do not identify anyone
+
+We do not use personal data for advertising, and we do not sell or share it with third parties. We may disclose data when necessary to comply with the law, or at the request of government agencies or other authorities.
+
+## Cookies
+
+Politigraph's website and services do not use cookies for visitors or API users, and do not use cookies for tracking or advertising. Display settings, such as the light or dark theme, are stored on your device and never sent to us.
+
+## Storage and Security of Personal Data
+
+We keep personal data only as long as necessary for its purpose:
+
+- API and MCP server usage data is kept for up to 180 days, and website access data for up to 30 days
+- System backups are kept for up to 30 days
+- Statistics that cannot identify anyone may be kept further for analysis
+
+We protect personal data by restricting access to the team members responsible for running the system, encrypting all traffic over HTTPS, truncating IP addresses and replacing email addresses in system logs before they are stored, and keeping the database on a separate server from the one serving the services.
+
+## Transfer of Personal Data Abroad
+
+The servers that run Politigraph and store its data are located in Thailand. However, in some cases your personal data may be sent or transferred abroad to provide the services, namely through the network of Cloudflare, whose servers are located worldwide, and to backups stored on the Amazon Web Services cloud in Singapore.
+
+## Data Processors
+
+In some cases, we assign third parties (data processors) to process personal data. You can read the privacy policies of these data processors below:
+
+- [Nimblo](https://nimblo.cloud), server provider
+- [Cloudflare](https://www.cloudflare.com/privacypolicy)
+- [Amazon Web Services](https://aws.amazon.com/privacy)
+- [Plausible Analytics](https://plausible.io/data-policy), hosted and managed by Punch Up
+
+## Your Rights
+
+The Personal Data Protection Act B.E. 2562 (2019) grants data subjects the following rights:
+
+- **Right of access**: you may request access to, and a copy of, the personal data we hold about you, and ask us to disclose where it came from, unless we are entitled to refuse by law or court order, or exercising this right could harm the rights and freedoms of others
+- **Right to rectification**: if your personal data is inaccurate, incomplete, or out of date, you may ask us to correct it so it is not misleading
+- **Right to erasure**: you may ask us to delete or destroy your personal data, or to make it no longer identify you, subject to the conditions set by law
+- **Right to restriction of processing**: you may ask us to temporarily stop using your personal data, for example while we review your request for correction
+- **Right to object**: you may object to the collection, use, or disclosure of personal data about you, unless we have lawful grounds to refuse
+- **Right to withdraw consent**: where you have given us consent, you may withdraw it at any time, unless restricted by law
+- **Right to data portability**: you may request your personal data, and ask us to send or transfer it to another data controller, subject to the conditions set by law
+
+Since most usage data from the website, API, and MCP server cannot identify anyone, in some cases we may be unable to find data related to you to act on your request.
+
+## Changes to This Privacy Policy
+
+We may review, revise, or change this policy as we see fit, and will show the date of the latest revision at the top of this page. Continuing to use Politigraph after a new policy takes effect means you acknowledge the new policy. If you do not agree with this policy, please stop using the services and contact us to clarify the matter.
+
+## Contact and Exercising Your Rights
+
+If you have any questions, suggestions, or concerns about how we collect, use, and disclose personal data, or about this policy, or would like to exercise your rights under personal data protection law, please contact [team@wevis.info](mailto:team@wevis.info).

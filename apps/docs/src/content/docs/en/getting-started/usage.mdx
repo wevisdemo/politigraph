@@ -18,20 +18,6 @@ We also provide
 
 If you call the API from a server, script, or server-side rendered website, please send the `apollographql-client-name` header, and optionally `apollographql-client-version`. It lets us see which applications depend on which parts of the schema for usage analytics purpose. Requests from a browser are already identified by their origin.
 
-<Code
-	code={`fetch('${SITE_URL}/graphql', {
-	method: 'POST',
-	headers: {
-		'content-type': 'application/json',
-		'apollographql-client-name': 'my-app',
-		'apollographql-client-version': '1.0.0',
-	},
-	body: JSON.stringify({ query: '{ lastUpdatedAt }' }),
-});`}
-	lang="js"
-	title="Example request"
-/>
-
 ## Using with AI Agents
 
 We provide two interfaces for AI coding agent or chatbot.
