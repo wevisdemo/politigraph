@@ -5,7 +5,11 @@ import {
 	parse,
 	type OperationDefinitionNode,
 } from 'graphql';
-import { getFieldUsage, getMcpUsage } from '../../src/utils/usage';
+import {
+	getFieldUsage,
+	getMcpUsage,
+	getUserAgentName,
+} from '../../src/utils/usage';
 
 const schema = buildSchema(`
   type Query {
@@ -94,6 +98,23 @@ describe('getMcpUsage', () => {
 			props: { client: 'claude-ai', client_version: '1.0.0' },
 		});
 		expect(
+			getMcpUsage({
+				method: 'tools/call',
+				params: {
+					name: 'query',
+					_meta: {
+						'io.modelcontextprotocol/clientInfo': {
+							name: 'claude-code',
+							version: '2.1.0',
+						},
+					},
+				},
+			}),
+		).toEqual({
+			name: 'MCP Tool',
+			props: { client: 'claude-code', client_version: '2.1.0', tool: 'query' },
+		});
+		expect(
 			getMcpUsage({ method: 'tools/call', params: { name: 'query' } }),
 		).toEqual({ name: 'MCP Tool', props: { tool: 'query' } });
 		expect(
@@ -102,6 +123,16 @@ describe('getMcpUsage', () => {
 				params: { uri: 'politigraph://schema' },
 			}),
 		).toEqual({ name: 'MCP Resource', props: { uri: 'politigraph://schema' } });
+	});
+
+	test('falls back to the user agent product name', () => {
+		expect(getUserAgentName('claude-code/2.1.0 (external, cli)')).toBe(
+			'claude-code',
+		);
+		expect(getUserAgentName('Claude-User (+https://anthropic.com)')).toBe(
+			'Claude-User',
+		);
+		expect(getUserAgentName('')).toBeUndefined();
 	});
 
 	test('ignores untracked methods and oversized values', () => {

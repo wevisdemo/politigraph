@@ -1,5 +1,6 @@
 import { createHash, randomBytes } from 'node:crypto';
 import type { ApolloServerPlugin, BaseContext } from '@apollo/server';
+import { CLIENT_INFO_META_KEY } from '@modelcontextprotocol/server';
 import { serverConfig } from '@politigraph/config/server';
 import {
 	TypeInfo,
@@ -134,64 +135,96 @@ export const usagePlugin: ApolloServerPlugin<BaseContext> = {
 
 const label = z.string().max(200);
 
-const mcpUsage = z.union([
-	z
+const MCP_EVENTS: Record<string, string> = {
+	initialize: 'MCP Connect',
+	'tools/call': 'MCP Tool',
+	'resources/read': 'MCP Resource',
+};
+
+const clientInfo = z.object({ name: label, version: label.optional() });
+
+const mcpMessage = z.object({
+	method: z.string(),
+	params: z
 		.object({
-			method: z.literal('initialize'),
-			params: z.object({
-				clientInfo: z.object({ name: label, version: label }),
-			}),
+			name: label.optional(),
+			uri: label.optional(),
+			clientInfo: clientInfo.optional(),
+			_meta: z
+				.object({ [CLIENT_INFO_META_KEY]: clientInfo.optional() })
+				.optional(),
 		})
-		.transform(({ params: { clientInfo } }) => ({
-			name: 'MCP Connect',
-			props: { client: clientInfo.name, client_version: clientInfo.version },
-		})),
-	z
-		.object({
-			method: z.literal('tools/call'),
-			params: z.object({ name: label }),
-		})
-		.transform(({ params }) => ({
-			name: 'MCP Tool',
-			props: { tool: params.name },
-		})),
-	z
-		.object({
-			method: z.literal('resources/read'),
-			params: z.object({ uri: label }),
-		})
-		.transform(({ params }) => ({
-			name: 'MCP Resource',
-			props: { uri: params.uri },
-		})),
-]);
+		.optional(),
+});
+
+interface McpUsage {
+	name: string;
+	props: {
+		client?: string;
+		client_version?: string;
+		tool?: string;
+		uri?: string;
+	};
+}
 
 /**
  * @returns the usage event of a JSON-RPC message, or `undefined` when it is not tracked
  */
-export const getMcpUsage = (message: unknown) =>
-	mcpUsage.safeParse(message).data;
+export function getMcpUsage(message: unknown): McpUsage | undefined {
+	const { data } = mcpMessage.safeParse(message);
+	const name = data && MCP_EVENTS[data.method];
 
+	if (!name) return;
+
+	const { params } = data;
+	// Protocol 2026-07-28 has no `initialize` and sends client info on every request
+	// https://modelcontextprotocol.io/specification/2026-07-28/basic
+	const info = params?.clientInfo ?? params?._meta?.[CLIENT_INFO_META_KEY];
+
+	return {
+		name,
+		props: {
+			client: info?.name,
+			client_version: info?.version,
+			tool: params?.name,
+			uri: params?.uri,
+		},
+	};
+}
+
+/**
+ * @returns the product name of a user agent, e.g. `claude-code` from `claude-code/2.1.0 (cli)`
+ */
+export const getUserAgentName = (userAgent: string) =>
+	userAgent.match(/^[^\s/;(]+/)?.[0].slice(0, 100);
+
+/**
+ * @returns the client name, to attribute the GraphQL queries the request runs
+ */
 export function trackMcpRequest(message: unknown, headers: Headers) {
 	const usage = getMcpUsage(message);
 	const ip = headers.get('x-real-ip');
-
-	if (!usage || !ip) return;
-
 	const userAgent = headers.get('user-agent') ?? '';
+	const client = usage?.props.client ?? getUserAgentName(userAgent);
 
-	logUsage({
-		event: usage.name,
-		source: 'mcp',
-		...usage.props,
-		visitor: getVisitorHash(ip, userAgent),
-	});
+	if (usage && ip) {
+		const props = { ...usage.props, client: client ?? 'unknown' };
 
-	trackEvent({
-		name: usage.name,
-		path: '/mcp',
-		props: usage.props,
-		userAgent,
-		clientIp: ip,
-	});
+		logUsage({
+			event: usage.name,
+			source: 'mcp',
+			...props,
+			visitor: getVisitorHash(ip, userAgent),
+		});
+
+		trackEvent({
+			name: usage.name,
+			path: '/mcp',
+			props,
+			userAgent,
+			clientIp: ip,
+		});
+	}
+
+	return client;
 }

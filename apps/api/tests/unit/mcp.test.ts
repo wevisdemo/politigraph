@@ -72,6 +72,7 @@ describe('mcp server', () => {
 			const client = await connect({
 				authorization: 'Bearer caller-token',
 				cookie: 'better-auth.session_token=caller-session',
+				'user-agent': 'test-agent/1.0',
 			});
 			const result = await client.callTool({
 				name: 'query',
@@ -94,6 +95,7 @@ describe('mcp server', () => {
 			expect(forwarded.has('authorization')).toBeFalse();
 			expect(forwarded.has('cookie')).toBeFalse();
 			expect(forwarded.get('x-politigraph-source')).toBe('mcp');
+			expect(forwarded.get('apollographql-client-name')).toBe('test-agent');
 			expect(JSON.parse(init.body as string)).toEqual({
 				query: 'query People($limit: Int) { people(limit: $limit) { id } }',
 				variables: { limit: 1 },

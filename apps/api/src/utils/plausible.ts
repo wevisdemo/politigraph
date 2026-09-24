@@ -3,7 +3,7 @@ import { serverConfig } from '@politigraph/config/server';
 interface PlausibleEvent {
 	name: string;
 	path: string;
-	props?: Record<string, string>;
+	props?: Record<string, string | undefined>;
 	userAgent: string;
 	clientIp?: string;
 }

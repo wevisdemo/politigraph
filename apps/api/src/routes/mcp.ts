@@ -14,6 +14,7 @@ import { MAX_QUERY_TOKENS } from '../constants/graphql';
 import { SOURCE_HEADER, trackMcpRequest } from '../utils/usage';
 
 const GRAPHQL_TIMEOUT_MS = 30 * 1000;
+const MCP_CLIENT_HEADER = 'x-politigraph-mcp-client';
 const DOCS_TIMEOUT_MS = 10 * 1000;
 
 const INSTRUCTIONS = `${SUMMARY}
@@ -52,7 +53,7 @@ function getRejectionReason(query: string) {
 	}
 }
 
-function createMcpServer(origin: string) {
+function createMcpServer(origin: string, client?: string | null) {
 	const server = new McpServer(
 		{ name: 'politigraph', version },
 		{ instructions: INSTRUCTIONS },
@@ -86,7 +87,11 @@ function createMcpServer(origin: string) {
 
 			const response = await fetch(`${origin}/graphql`, {
 				method: 'POST',
-				headers: { 'content-type': 'application/json', [SOURCE_HEADER]: 'mcp' },
+				headers: {
+					'content-type': 'application/json',
+					[SOURCE_HEADER]: 'mcp',
+					...(client && { 'apollographql-client-name': client }),
+				},
 				body: JSON.stringify({ query, variables, operationName }),
 				signal: AbortSignal.timeout(GRAPHQL_TIMEOUT_MS),
 			});
@@ -203,17 +208,28 @@ function safeParseJson(body: string) {
 }
 
 export const mcp = (origin: string) => {
-	const handler = createMcpHandler(() => createMcpServer(origin));
+	const handler = createMcpHandler(({ requestInfo }) =>
+		createMcpServer(origin, requestInfo?.headers.get(MCP_CLIENT_HEADER)),
+	);
 
-	return new Elysia().mount('/mcp', (request) => {
-		if (request.method === 'POST') {
-			request
-				.clone()
-				.json()
-				.then((message) => trackMcpRequest(message, request.headers))
-				.catch(() => {});
+	return new Elysia().mount('/mcp', async (request) => {
+		const client =
+			request.method === 'POST'
+				? await request
+						.clone()
+						.json()
+						.then((message) => trackMcpRequest(message, request.headers))
+						.catch(() => undefined)
+				: undefined;
+
+		const headers = new Headers(request.headers);
+
+		if (client) {
+			headers.set(MCP_CLIENT_HEADER, client);
+		} else {
+			headers.delete(MCP_CLIENT_HEADER);
 		}
 
-		return handler.fetch(request);
+		return handler.fetch(new Request(request, { headers }));
 	});
 };
