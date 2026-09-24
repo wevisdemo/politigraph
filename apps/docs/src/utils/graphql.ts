@@ -10,29 +10,34 @@ const GRAPHQL_URL =
 	import.meta.env.PUBLIC_POLITIGRAPH_URL ??
 	'https://politigraph.wevis.info/graphql';
 
-const RATE_LIMIT_DELAY = 1000 / 2.9;
+// Below the API rate limit of 30 requests per 10 seconds
+const RATE_LIMIT_DELAY = 1000 / 2.5;
 
-let lastRequestTime = 0;
+let nextSlot = Promise.resolve();
+
+/** Queues callers so concurrent requests are spaced out instead of fired together */
+async function waitForSlot() {
+	const slot = nextSlot;
+	nextSlot = slot.then(
+		() => new Promise<void>((resolve) => setTimeout(resolve, RATE_LIMIT_DELAY)),
+	);
+	await slot;
+}
 
 export async function fetchGraphql(
 	query: string,
 	variables?: Record<string, unknown>,
 ) {
-	const now = Date.now();
-	const timeSinceLastRequest = now - lastRequestTime;
-
-	if (timeSinceLastRequest < RATE_LIMIT_DELAY) {
-		await new Promise((resolve) =>
-			setTimeout(resolve, RATE_LIMIT_DELAY - timeSinceLastRequest),
-		);
-	}
-
-	lastRequestTime = Date.now();
+	await waitForSlot();
 
 	const response = await fetch(GRAPHQL_URL, {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json',
+			// Browser requests are identified by their origin
+			...(import.meta.env.SSR && {
+				'apollographql-client-name': 'politigraph-docs',
+			}),
 		},
 		body: JSON.stringify({
 			query: query.replaceAll(' id ', ' __typename id '),
@@ -49,7 +54,7 @@ export async function fetchGraphql(
 	}
 
 	if (!response.ok || !jsonResponse) {
-		throw new Error(response.statusText || `HTTP ${response.status}`);
+		throw new Error(`HTTP ${response.status} ${response.statusText}`.trim());
 	}
 
 	return jsonResponse;
