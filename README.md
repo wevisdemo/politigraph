@@ -149,7 +149,7 @@ elysia, nginx (stdout) → Vector (servers/app/vector) → OpenObserve (servers/
 
 Vector routes lines into three streams:
 
-- **`usage`**: one event per GraphQL operation (`fields` and `deprecated` as `Type.field`, `source`, `client`, duration, errors) and per MCP connect, tool call, and resource read, written by `apps/api/src/utils/usage.ts`. Query text, variables, and responses are never logged
+- **`api_usage`**: one event per GraphQL operation (`fields` and `deprecated` as `Type.field`, `source`, `client`, duration, errors) and per MCP connect, tool call, and resource read, written by `apps/api/src/utils/usage.ts`. Query text, variables, and responses are never logged
 - **`nginx`**: JSON access log, without static asset hits under 400
 - **`elysia`**: everything else the API prints, e.g. startup, crashes, and errors
 

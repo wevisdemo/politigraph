@@ -15,9 +15,10 @@ transforms:
       } else {
         # PDPA: nginx error lines carry the full visitor IP
         .message = replace(string!(.message), r'\b(\d{1,3}\.\d{1,3}\.\d{1,3})\.\d{1,3}\b', "$$1.0")
-        .message = replace(.message, r'(?i)client: [0-9a-f]*:[0-9a-f:]*', "client: ::")      }
+        .message = replace(.message, r'(?i)client: [0-9a-f]*:[0-9a-f:]*', "client: ::")
+      }
       del(.label)
-      .oo_stream = if .type == "usage" { "usage" } else { .container_name }
+      .oo_stream = if .type == "usage" { "api_usage" } else { .container_name }
 
   # Successful static asset hits are the bulk of nginx lines and carry no signal
   without_static:

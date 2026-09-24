@@ -20,7 +20,7 @@ process.on('message', (message: { usageSalt?: string }) => {
 	if (message?.usageSalt) salt = message.usageSalt;
 });
 
-/** Written to stdout for the log collector to ship into the `usage` stream */
+/** Written to stdout for the log collector to ship into the `api_usage` stream */
 export function logUsage(event: Record<string, unknown>) {
 	if (serverConfig.isProduction) {
 		console.log(JSON.stringify({ type: 'usage', ...event }));
