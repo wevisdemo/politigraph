@@ -127,8 +127,10 @@ jobs:
             docker image tag wevisdemo/politigraph:latest wevisdemo/politigraph:previous
             docker load --input politigraph-image.tar.gz
             docker compose run --rm --no-deps --entrypoint nginx nginx -t
+            docker compose run --rm --no-deps vector validate --no-environment
             docker compose up -d --remove-orphans
             docker exec nginx nginx -s reload
+            docker compose restart vector
             docker container prune --force
             docker image prune --all --force --filter "until=72h"
   frontend:
