@@ -107,8 +107,9 @@ export default defineConfig({
 				starlightAnnouncement({
 					announcements: [
 						{
-							id: 'early-development',
+							id: 'early-development-notice',
 							variant: 'note',
+							dismissible: false,
 							content: {
 								th: useTranslations('th').developmentBanner,
 								en: useTranslations('en').developmentBanner,
