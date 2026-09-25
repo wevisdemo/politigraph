@@ -8,10 +8,7 @@ definePageMeta({
 });
 
 type EditableVoteFields =
-	| 'vote_order'
-	| 'badge_number'
-	| 'voter_party'
-	| 'option';
+	'vote_order' | 'badge_number' | 'voter_party' | 'option';
 
 const route = useRoute();
 const graphqlClient = useGraphqlClient();

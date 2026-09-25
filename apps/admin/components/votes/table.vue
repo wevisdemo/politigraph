@@ -8,10 +8,7 @@ import { csvFormat } from 'd3-dsv';
 import { closest } from 'fastest-levenshtein';
 
 type EditableVoteFields =
-	| 'vote_order'
-	| 'badge_number'
-	| 'voter_party'
-	| 'option';
+	'vote_order' | 'badge_number' | 'voter_party' | 'option';
 
 type SortKey = EditableVoteFields | 'voter_name_raw';
 

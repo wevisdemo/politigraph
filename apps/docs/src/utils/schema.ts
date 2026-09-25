@@ -48,10 +48,7 @@ export const enums = definitions
 	}));
 
 export type SchemaNode = (
-	| typeof objects
-	| typeof unions
-	| typeof interfaces
-	| typeof enums
+	typeof objects | typeof unions | typeof interfaces | typeof enums
 )[number];
 
 export const typenameSchemaMap = new Map(

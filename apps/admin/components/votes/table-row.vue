@@ -5,10 +5,7 @@ import type { PeopleOption } from '~/composables/use-people-options';
 import { standardVoteOptions } from '~/constants/votes';
 
 type EditableVoteFields =
-	| 'vote_order'
-	| 'badge_number'
-	| 'voter_party'
-	| 'option';
+	'vote_order' | 'badge_number' | 'voter_party' | 'option';
 
 const props = defineProps<{
 	row: Pick<

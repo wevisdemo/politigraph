@@ -14,13 +14,13 @@
 		"./server": "./src/server.ts"
 	},
 	"dependencies": {
-		"dotenv": "^17.2.3",
-		"zod": "^4.4.3"
+		"dotenv": "^17.4.2",
+		"zod": "^4.6.5"
 	},
 	"peerDependencies": {
-		"typescript": "^5"
+		"typescript": "^5.9.3"
 	},
 	"devDependencies": {
-		"@types/bun": "^1.3.14"
+		"@types/bun": "^1.4.2"
 	}
 }

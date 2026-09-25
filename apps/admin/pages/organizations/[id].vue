@@ -179,8 +179,7 @@ const { data: organizationData, refresh: refreshOrganizationDetail } =
 						post.membershipsConnection?.aggregate?.count?.nodes ?? 0,
 					memberships: (post.memberships ?? []).map((m) => {
 						const member = m.members?.[0] as
-							| { __typename?: string; id: string; name: string }
-							| undefined;
+							{ __typename?: string; id: string; name: string } | undefined;
 						const resolvedMember = member
 							? { id: member.id, name: member.name }
 							: undefined;
