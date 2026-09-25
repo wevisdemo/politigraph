@@ -1,9 +1,72 @@
 ---
 title: Changelog
-description: Dated list of changes that affect how clients use the Politigraph API, including breaking changes and deprecations.
-lastUpdated: false
+description: รายการการเปลี่ยนแปลงที่กระทบการใช้งาน Politigraph API เรียงตามวันที่ รวมถึงการเปลี่ยนแปลงที่ไม่รองรับของเดิมและการเลิกใช้งาน
 ---
 
-import Changelog from './en/changelog.mdx';
+หน้านี้รวบรวมการเปลี่ยนแปลงทุกอย่างที่กระทบการใช้งาน API ได้แก่ GraphQL Schema, ข้อจำกัดการ Query, Endpoint, กฎการมองเห็นข้อมูล และ MCP Tool
 
-<Changelog />
+เมื่อมีการเปลี่ยนชื่อหรือลบ Field ที่ผู้ใช้เข้าถึงได้ เราจะพยายามคง Field เดิมไว้ระยะหนึ่งพร้อมกับ Directive `@deprecated` ของ GraphQL และจะแจ้งการลบ Field นั้นเป็นรายการถัดไปในหน้านี้ ยกเว้น Relationship Field ที่ไม่สามารถมีอยู่คู่กับ Field ใหม่ได้ การเปลี่ยนชื่อจึงถูกระบุไว้ในหัวข้อ `Breaking` ทันที
+
+## 2026-09-24
+
+### Breaking
+
+- เปลี่ยนชื่อ `Organization.motions` เป็น `Organization.considered_motions` คำอธิบายเดิมระบุผิดว่าเป็น "ญัตติที่เสนอในนามองค์กร" ในขณะที่ Field นี้หมายถึง "ญัตติที่พิจารณาในองค์กร" มาตลอด หากต้องการความหมายแรก ให้ใช้ `Organization.created_motions`
+- `/graphql` ตอบกลับด้วย HTTP `400` แทน `200` เมื่อ Variable ไม่ตรงกับประเภทที่ประกาศไว้ โดย Body ที่เป็น `errors` ยังเหมือนเดิม
+
+### Added
+
+- `Organization.created_motions` ญัตติที่เสนอในนามองค์กร (Back-reference ของ `CREATED_BY` เช่นเดียวกับ `Person.created_motions`)
+- `Organization.considered_motions` ญัตติที่พิจารณาในองค์กร
+- `/graphql` รองรับ Header `apollographql-client-name` และ `apollographql-client-version` ที่ไม่บังคับ เพื่อให้ Client ฝั่ง Server ระบุชื่อแอปพลิเคชันของตนได้
+- MCP Tool `get-docs` สำหรับดึงสารบัญเอกสาร (`/llms.txt`) หรือหน้าเอกสารแต่ละหน้าในรูปแบบ Markdown เพื่อให้ Agent อ่านวิธีการจัดโครงสร้างข้อมูลและตัวอย่าง Query ได้
+
+### Deprecated
+
+- `VoteEvent.bills` ให้ใช้ `VoteEvent.bill_vote_events.bills` แทน
+- `Bill.requirement` และ `Motion.requirement` ไม่เคยมีข้อมูล และจะถูกลบในอนาคต
+- `BillVoteEvent.pass_condition` ไม่เคยมีข้อมูล ให้ใช้ `BillVoteEvent.vote_events.pass_condition` แทน และจะถูกลบในอนาคต
+
+## 2026-09-04
+
+### Added
+
+- Endpoint `/mcp` พร้อม Tool สำหรับรัน Query อ่าน Schema และแสดงรายการประเภทข้อมูล
+- `/llms.txt`, `/llms-full.txt` และเอกสารทุกหน้าในรูปแบบ `.md`
+
+## 2026-08-05
+
+### Added
+
+- Query `lastUpdatedAt` สำหรับดึงเวลา (UTC) ที่ข้อมูลถูกเปลี่ยนแปลงล่าสุด
+
+## 2026-03-11
+
+### Breaking
+
+- Query `Person` และ `Vote` คืนค่าได้สูงสุด 1,000 Node ต่อคำขอ ให้ใช้ `limit` และ `offset` เพื่อแบ่งหน้าข้อมูลที่มีจำนวนมากกว่านั้น
+
+## 2026-02-24
+
+### Breaking
+
+- เปลี่ยนชื่อ `Bill.bill_events` เป็น `Bill.events`
+- เปลี่ยนชื่อ `Vote.voter_name` เป็น `Vote.voter_name_raw`
+- เปลี่ยนชื่อ Union `MotionProposer` เป็น `MotionCreator`
+- เปลี่ยนชื่อ `Bill.proposers` และ `Bill.co_proposers` เป็น `Bill.creators` และ `Bill.co_creators`
+- เปลี่ยนชื่อ `Person.proposed_motions` เป็น `Person.created_motions` และเพิ่ม `Person.co_created_motions`
+
+### Added
+
+- `Bill.creator_type` และ Enum `BillCreatorType`
+
+## 2025-12-16
+
+### Breaking
+
+- เปลี่ยนประเภทของ `Bill.bill_events` จาก `Event` เป็น Union ใหม่ `BillEvent` โดย `DraftVoteEvent` เปลี่ยนเป็น `BillVoteEvent` และ `BillEnforceEvent` เปลี่ยนเป็น `BillEnactEvent`
+- ลบ `BillStatus.ENFORCED` เนื่องจากซ้ำกับ `BillStatus.ENACTED`
+
+### Added
+
+- `Person.death_date`

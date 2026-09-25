@@ -11,14 +11,14 @@ When a client-visible field is renamed or removed, the old field is kept for a w
 
 ### Breaking
 
-- `Organization.motions` renamed to `Organization.considered_motions`, with no deprecation period: two fields cannot share the same relationship type and direction, so the old name could not be kept alongside the new one. Its description wrongly said "proposed in the name of the organization", while the field has always meant "considered in the organization" — use `Organization.created_motions` for the former
+- `Organization.motions` renamed to `Organization.considered_motions`. Its description wrongly said "proposed in the name of the organization", while the field has always meant "considered in the organization" — use `Organization.created_motions` for the former
 - `/graphql` now responds with HTTP `400` instead of `200` when a variable does not match its declared type. The `errors` body is unchanged
 
 ### Added
 
 - `Organization.created_motions`, motions proposed in the name of the organization (the `CREATED_BY` back-reference, matching `Person.created_motions`)
 - `Organization.considered_motions`, motions considered in the organization
-- `/graphql` accepts the optional `apollographql-client-name` and `apollographql-client-version` headers, so server-side clients can identify their application. See [Identifying Your Application](/en/getting-started/usage/#identifying-your-application)
+- `/graphql` accepts the optional `apollographql-client-name` and `apollographql-client-version` headers, so server-side clients can identify their application.
 - `get-docs` MCP tool, returning the documentation index (`/llms.txt`) or a single documentation page as markdown, so agents can read how the data is modeled and example queries
 
 ### Deprecated
