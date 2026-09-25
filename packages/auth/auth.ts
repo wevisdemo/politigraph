@@ -1,9 +1,10 @@
 import { inspect } from 'node:util';
+import { apiKey } from '@better-auth/api-key';
 import { databaseUrl } from '@politigraph/config/postgres';
 import { serverConfig } from '@politigraph/config/server';
 import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
-import { admin, apiKey, jwt, openAPI } from 'better-auth/plugins';
+import { admin, jwt, openAPI } from 'better-auth/plugins';
 import { drizzle } from 'drizzle-orm/bun-sql';
 import * as schema from './auth-schema';
 

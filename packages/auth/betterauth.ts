@@ -1,7 +1,4 @@
+export { apiKeyClient } from '@better-auth/api-key/client';
 export type { User } from 'better-auth';
-export {
-	adminClient,
-	apiKeyClient,
-	type UserWithRole,
-} from 'better-auth/client/plugins';
+export { adminClient, type UserWithRole } from 'better-auth/client/plugins';
 export { createAuthClient } from 'better-auth/vue';

@@ -10,14 +10,15 @@
 		"seed": "bun run seed.ts"
 	},
 	"dependencies": {
+		"@better-auth/api-key": "^1.7.6",
 		"@politigraph/config": "workspace:*",
-		"better-auth": "~1.4.22",
+		"better-auth": "^1.7.6",
 		"drizzle-kit": "^0.31.11",
 		"drizzle-orm": "^0.45.3",
 		"postgres": "^3.4.9"
 	},
 	"devDependencies": {
-		"@better-auth/cli": "^1.4.21"
+		"auth": "^1.7.6"
 	},
 	"peerDependencies": {
 		"typescript": "^5.9.3"

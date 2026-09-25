@@ -17,7 +17,9 @@ const {
 	data: apiKeys,
 	status,
 	refresh,
-} = await useLazyAsyncData(() => apiKey.list());
+} = await useLazyAsyncData(() =>
+	apiKey.list({ query: { sortBy: 'createdAt', sortDirection: 'desc' } }),
+);
 
 const Form = useForm({
 	defaultValues: {
@@ -42,7 +44,10 @@ const Form = useForm({
 		<div class="mx-auto w-full max-w-2xl">
 			<cv-data-table-skeleton v-if="status === 'pending'" title="API Keys" />
 			<div v-else-if="apiKeys?.data" class="flex flex-col gap-4">
-				<cv-data-table title="API Keys">
+				<cv-data-table
+					title="API Keys"
+					helper-text="ใช้สำหรับเพิ่ม แก้ไข หรือลบข้อมูลผ่าน GraphQL API โดยแนบ Header 'x-api-key' ไปกับ Request"
+				>
 					<template #headings>
 						<cv-data-table-heading heading="Name" />
 						<cv-data-table-heading heading="Created On" /><cv-data-table-heading
@@ -51,9 +56,7 @@ const Form = useForm({
 					</template>
 					<template #data>
 						<cv-data-table-row
-							v-for="key in apiKeys.data.sort(
-								(a, z) => z.createdAt.getTime() - a.createdAt.getTime(),
-							)"
+							v-for="key in apiKeys.data.apiKeys"
 							:key="key.id"
 							:value="key.id"
 						>
@@ -81,7 +84,7 @@ const Form = useForm({
 					</template>
 				</cv-data-table>
 				<p
-					v-if="apiKeys.data.length === 0"
+					v-if="apiKeys.data.total === 0"
 					class="text-center text-sm opacity-50"
 				>
 					No API keys found

@@ -87,13 +87,15 @@ export const apikeys = pgTable(
 	'apikeys',
 	{
 		id: text('id').primaryKey(),
+		configId: text('config_id').default('default').notNull(),
 		name: text('name'),
 		start: text('start'),
-		prefix: text('prefix'),
-		key: text('key').notNull(),
-		userId: text('user_id')
+		// Not generated: the api-key plugin never deletes keys of a removed user, so keep the cascade
+		referenceId: text('reference_id')
 			.notNull()
 			.references(() => users.id, { onDelete: 'cascade' }),
+		prefix: text('prefix'),
+		key: text('key').notNull(),
 		refillInterval: integer('refill_interval'),
 		refillAmount: integer('refill_amount'),
 		lastRefillAt: timestamp('last_refill_at'),
@@ -111,8 +113,9 @@ export const apikeys = pgTable(
 		metadata: text('metadata'),
 	},
 	(table) => [
+		index('apikeys_configId_idx').on(table.configId),
+		index('apikeys_referenceId_idx').on(table.referenceId),
 		index('apikeys_key_idx').on(table.key),
-		index('apikeys_userId_idx').on(table.userId),
 	],
 );
 
@@ -122,31 +125,25 @@ export const jwkss = pgTable('jwkss', {
 	privateKey: text('private_key').notNull(),
 	createdAt: timestamp('created_at').notNull(),
 	expiresAt: timestamp('expires_at'),
+	alg: text('alg'),
+	crv: text('crv'),
 });
 
 export const usersRelations = relations(users, ({ many }) => ({
 	sessions: many(sessions),
 	accounts: many(accounts),
-	apikeys: many(apikeys),
 }));
 
 export const sessionsRelations = relations(sessions, ({ one }) => ({
-	users: one(users, {
+	user: one(users, {
 		fields: [sessions.userId],
 		references: [users.id],
 	}),
 }));
 
 export const accountsRelations = relations(accounts, ({ one }) => ({
-	users: one(users, {
+	user: one(users, {
 		fields: [accounts.userId],
-		references: [users.id],
-	}),
-}));
-
-export const apikeysRelations = relations(apikeys, ({ one }) => ({
-	users: one(users, {
-		fields: [apikeys.userId],
 		references: [users.id],
 	}),
 }));
