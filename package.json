@@ -24,6 +24,11 @@
 		"*": "prettier --write --ignore-unknown"
 	},
 	"packageManager": "bun@1.3.2",
+	"overrides": {
+		"@genql/cli": {
+			"undici": "^6.28.0"
+		}
+	},
 	"dependencies": {
 		"turbo": "^2.11.4"
 	},
