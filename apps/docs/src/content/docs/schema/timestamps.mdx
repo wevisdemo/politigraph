@@ -1,0 +1,31 @@
+---
+title: เวลาอัปเดตข้อมูล
+sidebar:
+  order: 8
+---
+
+Query **`timestamps`** ใช้ตรวจสอบว่าข้อมูลใน Politigraph ถูกเปลี่ยนแปลงล่าสุดเมื่อไหร่ และ[ระบบ Automation ดึงข้อมูลผ่าน GitHub Actions](https://github.com/wevisdemo/politigraph-automation/actions) สำเร็จล่าสุดเมื่อไหร่
+
+```graphql
+query {
+	timestamps {
+		lastNodeUpdatedAt
+		lastVoteEventScrapedAt
+		lastBillScrapedAt
+	}
+}
+```
+
+ทุก Field เป็นเวลาในรูปแบบ UTC และจะเป็น `null` หากยังไม่มีข้อมูล
+
+| Field                    | ความหมาย                                                                                                        |
+| ------------------------ | --------------------------------------------------------------------------------------------------------------- |
+| `lastNodeUpdatedAt`      | เวลาล่าสุดที่มี Node ถูกเพิ่มหรือแก้ไข ไม่ว่าจะมาจากระบบ Automation หรือทีมงาน                                  |
+| `lastVoteEventScrapedAt` | เวลาที่ระบบ Automation ดึงข้อมูล[การลงมติ](/schema/vote-event/) (**`VoteEvent`** และ **`Vote`**) สำเร็จล่าสุด   |
+| `lastBillScrapedAt`      | เวลาที่ระบบ Automation ดึงข้อมูล[ร่างกฎหมาย](/schema/bill/) (**`Bill`** และ **`BillEvent`** ต่างๆ) สำเร็จล่าสุด |
+
+:::note
+ระบบ Automation ทำงานทุกสัปดาห์ในคืนวันอาทิตย์ การดึงข้อมูลที่สำเร็จไม่ได้หมายความว่ามีข้อมูลใหม่เสมอไป หากสัปดาห์นั้นไม่มีการลงมติหรือความเคลื่อนไหวของร่างกฎหมาย `lastVoteEventScrapedAt` และ `lastBillScrapedAt` จะเปลี่ยน แต่ `lastNodeUpdatedAt` อาจไม่เปลี่ยน
+:::
+
+ค่าเหล่านี้ถูกเก็บไว้ในแคชนานสูงสุด 1 ชั่วโมง จึงอาจช้ากว่าเวลาจริงเล็กน้อย

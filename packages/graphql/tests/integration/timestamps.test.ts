@@ -7,7 +7,7 @@ import {
 	test,
 } from 'bun:test';
 import { type Session } from 'neo4j-driver';
-import { resetLastUpdatedAtCache } from '../../last-updated-at';
+import { resetTimestampsCache } from '../../timestamps';
 import {
 	buildSchema,
 	cleanDatabase,
@@ -17,11 +17,25 @@ import {
 	seedVoteEvent,
 } from './helpers';
 
-const QUERY = '{ lastUpdatedAt }';
+const QUERY = '{ lastUpdatedAt timestamps { lastNodeUpdatedAt } }';
 
-describe('Query.lastUpdatedAt', () => {
+describe('Query.timestamps.lastNodeUpdatedAt', () => {
 	let schema: Awaited<ReturnType<typeof buildSchema>>;
 	let session: Session;
+
+	const queryTimestamps = async () => {
+		const { data, errors } = await execute(schema, QUERY);
+
+		return {
+			errors,
+			data: data as
+				| {
+						lastUpdatedAt: string | null;
+						timestamps: { lastNodeUpdatedAt: string | null };
+				  }
+				| undefined,
+		};
+	};
 
 	beforeAll(async () => {
 		schema = await buildSchema();
@@ -34,14 +48,14 @@ describe('Query.lastUpdatedAt', () => {
 
 	beforeEach(async () => {
 		await cleanDatabase();
-		resetLastUpdatedAtCache();
+		resetTimestampsCache();
 	});
 
 	test('returns null when there is no data', async () => {
-		const { data, errors } = await execute(schema, QUERY);
+		const { data, errors } = await queryTimestamps();
 
 		expect(errors).toBeUndefined();
-		expect(data?.lastUpdatedAt).toBeNull();
+		expect(data?.timestamps.lastNodeUpdatedAt).toBeNull();
 	});
 
 	test('returns the latest timestamp across all node labels', async () => {
@@ -62,9 +76,10 @@ describe('Query.lastUpdatedAt', () => {
 				ve.updated_at = null`,
 		);
 
-		const { data, errors } = await execute(schema, QUERY);
+		const { data, errors } = await queryTimestamps();
 
 		expect(errors).toBeUndefined();
+		expect(data?.timestamps.lastNodeUpdatedAt).toBe('2026-08-05T18:00:00.000Z');
 		expect(data?.lastUpdatedAt).toBe('2026-08-05T18:00:00.000Z');
 	});
 
@@ -86,10 +101,10 @@ describe('Query.lastUpdatedAt', () => {
 				ve.updated_at = null`,
 		);
 
-		const { data, errors } = await execute(schema, QUERY);
+		const { data, errors } = await queryTimestamps();
 
 		expect(errors).toBeUndefined();
-		expect(data?.lastUpdatedAt).toBe('2025-03-14T05:00:00.000Z');
+		expect(data?.timestamps.lastNodeUpdatedAt).toBe('2025-03-14T05:00:00.000Z');
 	});
 
 	test('serves a cached value until it is reset', async () => {
@@ -104,12 +119,14 @@ describe('Query.lastUpdatedAt', () => {
 				p.updated_at = datetime('2024-03-01T00:00:00Z')`,
 		);
 
-		const { data } = await execute(schema, QUERY);
-		expect(data?.lastUpdatedAt).toBe('2024-03-01T00:00:00.000Z');
+		const { data } = await queryTimestamps();
+		expect(data?.timestamps.lastNodeUpdatedAt).toBe('2024-03-01T00:00:00.000Z');
 
 		await cleanDatabase();
 
-		const { data: cached } = await execute(schema, QUERY);
-		expect(cached?.lastUpdatedAt).toBe('2024-03-01T00:00:00.000Z');
+		const { data: cached } = await queryTimestamps();
+		expect(cached?.timestamps.lastNodeUpdatedAt).toBe(
+			'2024-03-01T00:00:00.000Z',
+		);
 	});
 });

@@ -7,6 +7,20 @@ description: รายการการเปลี่ยนแปลงที�
 
 เมื่อมีการเปลี่ยนชื่อหรือลบ Field ที่ผู้ใช้เข้าถึงได้ เราจะพยายามคง Field เดิมไว้ระยะหนึ่งพร้อมกับ Directive `@deprecated` ของ GraphQL และจะแจ้งการลบ Field นั้นเป็นรายการถัดไปในหน้านี้ ยกเว้น Relationship Field ที่ไม่สามารถมีอยู่คู่กับ Field ใหม่ได้ การเปลี่ยนชื่อจึงถูกระบุไว้ในหัวข้อ `Breaking` ทันที
 
+## 2026-09-29
+
+### Added
+
+- Query `timestamps` สำหรับดึงเวลา (UTC) ที่บอกความใหม่ของข้อมูล ได้แก่
+  - `lastNodeUpdatedAt` เวลาที่ข้อมูลถูกเปลี่ยนแปลงล่าสุด
+  - `lastVoteEventScrapedAt` เวลาที่ระบบอัตโนมัติดึงข้อมูลการลงมติ (`VoteEvent` และ `Vote`) สำเร็จล่าสุด
+  - `lastBillScrapedAt` เวลาที่ระบบอัตโนมัติดึงข้อมูลร่างกฎหมายและเหตุการณ์ของร่างกฎหมายสำเร็จล่าสุด
+- เพิ่มคำแนะนำของ MCP Server ให้ Agent ใช้ Query `timestamps` เพื่อตรวจสอบว่าข้อมูลเป็นปัจจุบันแค่ไหน
+
+### Deprecated
+
+- `lastUpdatedAt` ให้ใช้ `timestamps { lastNodeUpdatedAt }` แทน
+
 ## 2026-09-24
 
 ### Breaking

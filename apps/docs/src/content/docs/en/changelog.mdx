@@ -7,6 +7,20 @@ This page lists every change that affects how a client uses the API: the GraphQL
 
 When a client-visible field is renamed or removed, the old field is kept for a while with the GraphQL `@deprecated` directive wherever possible, and its removal appears as a later entry on this page. Relationship fields are the exception: they cannot coexist with their replacement, so renaming one is listed under `Breaking` right away.
 
+## 2026-09-29
+
+### Added
+
+- `timestamps` query, returning UTC timestamps of data freshness:
+  - `lastNodeUpdatedAt`, the most recent data change
+  - `lastVoteEventScrapedAt`, the last successful automated scrape of votes (`VoteEvent` and `Vote`)
+  - `lastBillScrapedAt`, the last successful automated scrape of bills and their events
+- MCP server instructions point agents to the `timestamps` query to check how current the data is
+
+### Deprecated
+
+- `lastUpdatedAt`, use `timestamps { lastNodeUpdatedAt }` instead
+
 ## 2026-09-24
 
 ### Breaking

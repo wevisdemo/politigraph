@@ -1,0 +1,31 @@
+---
+title: Data Timestamps
+sidebar:
+  order: 8
+---
+
+The **`timestamps`** query tells when data in Politigraph last changed, and when the [automation system on GitHub Actions](https://github.com/wevisdemo/politigraph-automation/actions) last scraped data successfully.
+
+```graphql
+query {
+	timestamps {
+		lastNodeUpdatedAt
+		lastVoteEventScrapedAt
+		lastBillScrapedAt
+	}
+}
+```
+
+Every field is a UTC timestamp, and is `null` when there is no data yet.
+
+| Field                    | Meaning                                                                                                                 |
+| ------------------------ | ----------------------------------------------------------------------------------------------------------------------- |
+| `lastNodeUpdatedAt`      | The last time any node was added or edited, whether by the automation system or our team                                |
+| `lastVoteEventScrapedAt` | The last successful scrape of [votes](/en/schema/vote-event/) (**`VoteEvent`** and **`Vote`**) by the automation system |
+| `lastBillScrapedAt`      | The last successful scrape of [bills](/en/schema/bill/) (**`Bill`** and its **`BillEvent`**) by the automation system   |
+
+:::note
+The automation system runs weekly on Sunday night. A successful scrape does not always bring new data. In a week without any vote or bill activity, `lastVoteEventScrapedAt` and `lastBillScrapedAt` change, but `lastNodeUpdatedAt` may not.
+:::
+
+These values are cached for up to an hour, so they may lag slightly behind.

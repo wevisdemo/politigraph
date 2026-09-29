@@ -5,10 +5,21 @@ import type {
 	Post,
 	Vote,
 } from './genql';
-import { getLastUpdatedAt } from './last-updated-at';
+import {
+	getLastBillScrapedAt,
+	getLastNodeUpdatedAt,
+	getLastVoteEventScrapedAt,
+} from './timestamps';
 
 const Query = {
-	lastUpdatedAt: () => getLastUpdatedAt(),
+	lastUpdatedAt: () => getLastNodeUpdatedAt(),
+	timestamps: () => ({}),
+};
+
+const Timestamps = {
+	lastNodeUpdatedAt: () => getLastNodeUpdatedAt(),
+	lastVoteEventScrapedAt: () => getLastVoteEventScrapedAt(),
+	lastBillScrapedAt: () => getLastBillScrapedAt(),
 };
 
 const Organization = {
@@ -87,6 +98,7 @@ const AlternatePersonName = {
 
 export const resolvers = {
 	Query,
+	Timestamps,
 	Organization,
 	Person,
 	Post,

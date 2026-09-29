@@ -3,4 +3,27 @@ type Query {
 	เวลาที่ข้อมูลถูกเพิ่มหรือแก้ไขล่าสุด (UTC)
 	"""
 	lastUpdatedAt: DateTime
+		@deprecated(reason: "Use timestamps { lastNodeUpdatedAt } instead")
+	"""
+	เวลาล่าสุดของการเปลี่ยนแปลงข้อมูลและการดึงข้อมูลอัตโนมัติ
+	"""
+	timestamps: Timestamps!
+}
+
+"""
+เวลาล่าสุดของการเปลี่ยนแปลงข้อมูลและการดึงข้อมูลอัตโนมัติ (UTC)
+"""
+type Timestamps {
+	"""
+	เวลาที่ข้อมูลถูกเพิ่มหรือแก้ไขล่าสุด (UTC)
+	"""
+	lastNodeUpdatedAt: DateTime
+	"""
+	เวลาที่ระบบอัตโนมัติดึงข้อมูลการลงมติ (VoteEvent และ Vote) สำเร็จล่าสุด (UTC) การดึงข้อมูลสำเร็จไม่ได้หมายความว่ามีข้อมูลใหม่เสมอไป
+	"""
+	lastVoteEventScrapedAt: DateTime
+	"""
+	เวลาที่ระบบอัตโนมัติดึงข้อมูลร่างกฎหมาย (Bill และเหตุการณ์ของร่างกฎหมาย) สำเร็จล่าสุด (UTC) การดึงข้อมูลสำเร็จไม่ได้หมายความว่ามีข้อมูลใหม่เสมอไป
+	"""
+	lastBillScrapedAt: DateTime
 }

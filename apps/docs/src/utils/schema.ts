@@ -11,9 +11,7 @@ export type GraphqlDataResponse = Record<string, GraphqlObject[]>;
 
 export const objects = definitions
 	.filter((d) => d.kind === 'ObjectTypeDefinition')
-	.filter(
-		(d) => d.name!.value !== 'Query' && !d.name!.value.startsWith('Relation'),
-	)
+	.filter((d) => d.directives?.some(({ name }) => name.value === 'node'))
 	.map((d) => ({
 		name: d.name!.value,
 		description: d.description?.value,

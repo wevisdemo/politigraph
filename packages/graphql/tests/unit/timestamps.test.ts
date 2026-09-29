@@ -5,6 +5,7 @@ import {
 	expect,
 	mock,
 	setSystemTime,
+	spyOn,
 	test,
 } from 'bun:test';
 
@@ -25,8 +26,12 @@ mock.module('../../driver', () => ({
 	},
 }));
 
-const { getLastUpdatedAt, latestTimestampQuery, resetLastUpdatedAtCache } =
-	await import('../../last-updated-at');
+const {
+	getLastNodeUpdatedAt,
+	getLastVoteEventScrapedAt,
+	latestTimestampQuery,
+	resetTimestampsCache,
+} = await import('../../timestamps');
 
 const HOUR_MS = 60 * 60 * 1000;
 
@@ -59,43 +64,43 @@ describe('latestTimestampQuery', () => {
 	});
 });
 
-describe('getLastUpdatedAt', () => {
+describe('getLastNodeUpdatedAt', () => {
 	beforeEach(() => {
 		runCount = 0;
 		latestEpochMs = Date.parse('2026-08-05T03:00:00Z');
-		resetLastUpdatedAtCache();
+		resetTimestampsCache();
 		setSystemTime(new Date('2026-08-05T09:00:00Z'));
 	});
 
 	test('returns the latest timestamp as a UTC ISO string', async () => {
-		expect(await getLastUpdatedAt()).toBe('2026-08-05T03:00:00.000Z');
+		expect(await getLastNodeUpdatedAt()).toBe('2026-08-05T03:00:00.000Z');
 	});
 
 	test('queries once within the cache window', async () => {
-		await getLastUpdatedAt();
+		await getLastNodeUpdatedAt();
 
 		setSystemTime(new Date('2026-08-05T09:59:00Z'));
 		latestEpochMs = Date.parse('2026-08-06T03:00:00Z');
 
-		expect(await getLastUpdatedAt()).toBe('2026-08-05T03:00:00.000Z');
+		expect(await getLastNodeUpdatedAt()).toBe('2026-08-05T03:00:00.000Z');
 		expect(runCount).toBe(1);
 	});
 
 	test('re-queries after the cache expires', async () => {
-		await getLastUpdatedAt();
+		await getLastNodeUpdatedAt();
 
 		setSystemTime(new Date(Date.now() + HOUR_MS));
 		latestEpochMs = Date.parse('2026-08-06T03:00:00Z');
 
-		expect(await getLastUpdatedAt()).toBe('2026-08-06T03:00:00.000Z');
+		expect(await getLastNodeUpdatedAt()).toBe('2026-08-06T03:00:00.000Z');
 		expect(runCount).toBe(2);
 	});
 
 	test('shares a single query between concurrent cache misses', async () => {
 		const results = await Promise.all([
-			getLastUpdatedAt(),
-			getLastUpdatedAt(),
-			getLastUpdatedAt(),
+			getLastNodeUpdatedAt(),
+			getLastNodeUpdatedAt(),
+			getLastNodeUpdatedAt(),
 		]);
 
 		expect(results).toEqual([
@@ -104,5 +109,53 @@ describe('getLastUpdatedAt', () => {
 			'2026-08-05T03:00:00.000Z',
 		]);
 		expect(runCount).toBe(1);
+	});
+});
+
+describe('getLastVoteEventScrapedAt', () => {
+	const fetchSpy = spyOn(globalThis, 'fetch');
+
+	const respondWith = (workflow_runs: object[]) =>
+		fetchSpy.mockResolvedValue(Response.json({ workflow_runs }));
+
+	beforeEach(() => {
+		fetchSpy.mockReset();
+		resetTimestampsCache();
+		setSystemTime(new Date('2026-09-28T00:00:00Z'));
+	});
+
+	afterAll(() => {
+		fetchSpy.mockRestore();
+	});
+
+	test('returns the completion time of the latest successful run', async () => {
+		respondWith([
+			{ conclusion: null, updated_at: '2026-09-28T00:00:00Z' },
+			{ conclusion: 'failure', updated_at: '2026-09-27T21:00:00Z' },
+			{ conclusion: 'success', updated_at: '2026-09-20T19:19:20Z' },
+			{ conclusion: 'success', updated_at: '2026-09-13T19:31:03Z' },
+		]);
+
+		expect(await getLastVoteEventScrapedAt()).toBe('2026-09-20T19:19:20.000Z');
+		expect(String(fetchSpy.mock.calls[0]?.[0])).toContain(
+			'/workflows/scrape_and_ocr_votes.yml/runs',
+		);
+	});
+
+	test('serves the previous value when a reload fails, and throws without one', async () => {
+		fetchSpy.mockResolvedValue(new Response(null, { status: 503 }));
+
+		await expect(getLastVoteEventScrapedAt()).rejects.toThrow('503');
+
+		respondWith([
+			{ conclusion: 'success', updated_at: '2026-09-20T19:19:20Z' },
+		]);
+		await getLastVoteEventScrapedAt();
+
+		setSystemTime(new Date(Date.now() + HOUR_MS));
+		fetchSpy.mockResolvedValue(new Response(null, { status: 503 }));
+
+		expect(await getLastVoteEventScrapedAt()).toBe('2026-09-20T19:19:20.000Z');
+		expect(fetchSpy).toHaveBeenCalledTimes(3);
 	});
 });
