@@ -1,0 +1,32 @@
+---
+import { GRAPHQL_ENDPOINT } from '../constants/site';
+
+const { entry } = Astro.locals.starlightRoute;
+
+const jsonLd = {
+	'@context': 'https://schema.org',
+	'@type': 'Dataset',
+	name: 'Politigraph',
+	description: entry.data.description,
+	url: new URL(Astro.url.pathname, Astro.site).href,
+	inLanguage: 'th',
+	isAccessibleForFree: true,
+	license: 'https://creativecommons.org/licenses/by-nc/4.0/',
+	creator: {
+		'@type': 'Organization',
+		name: 'WeVis',
+		url: 'https://wevis.info',
+	},
+	distribution: {
+		'@type': 'DataDownload',
+		encodingFormat: 'application/json',
+		contentUrl: GRAPHQL_ENDPOINT,
+	},
+};
+---
+
+<script
+	is:inline
+	type="application/ld+json"
+	set:html={JSON.stringify(jsonLd)}
+/>

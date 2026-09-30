@@ -1,6 +1,6 @@
 ---
 title: Open API การเมืองไทย สำหรับทุกคน
-description: Politigraph Open API การเมืองไทย สำหรับทุกคน
+description: Politigraph คือ Open API ข้อมูลการเมืองไทยสำหรับทุกคน เชื่อมโยงข้อมูลนักการเมือง พรรคการเมือง การดำรงตำแหน่งในสภา การลงมติ และร่างกฎหมายในรูปแบบกราฟ
 template: splash
 sidebar:
   hidden: true
@@ -11,6 +11,7 @@ hero:
   image:
     dark: '../../assets/banner-white.png'
     light: '../../assets/banner-black.png'
+    alt: Politigraph
   actions:
     - text: เริ่มทำความรู้จัก Politigraph
       link: /getting-started
@@ -22,7 +23,10 @@ hero:
 ---
 
 import { Card, CardGrid } from '@astrojs/starlight/components';
+import DatasetJsonLd from '../../components/dataset-json-ld.astro';
 import Sponsors from '../../components/sponsors.astro';
+
+<DatasetJsonLd />
 
 <CardGrid>
 	<Card title="ฐานข้อมูลที่เชื่อมโยงถึงกัน" icon="seti:graphql">
