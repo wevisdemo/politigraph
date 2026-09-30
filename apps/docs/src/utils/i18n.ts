@@ -5,6 +5,8 @@ const th = {
 	navExplore: 'สำรวจข้อมูล',
 	navPlayground: 'GraphQL Playground',
 	exploreTitle: 'สำรวจข้อมูล',
+	exploreDescription:
+		'สำรวจความสัมพันธ์ของนักการเมือง พรรคการเมือง การลงมติ และร่างกฎหมายไทยจาก Politigraph ผ่าน Interactive Graph',
 	exploreHint: 'เลือก Node เริ่มต้นเพื่อสำรวจข้อมูลโดยรอบในรูปแบบ Graph',
 	exploreNodeNotFound: (label: string) => `ไม่พบข้อมูลของ "${label}"`,
 	searchPlaceholder: 'พิมพ์คำค้นหา เช่น ชื่อบุคคล องค์กร หรือกฎหมาย',
@@ -26,6 +28,8 @@ const en: typeof th = {
 	navExplore: 'Explore',
 	navPlayground: 'GraphQL Playground',
 	exploreTitle: 'Explore',
+	exploreDescription:
+		'Explore the relationships between Thai politicians, political parties, votes and bills from Politigraph in an interactive graph',
 	exploreHint: 'Select starting node to explore its surrounding data graph',
 	exploreNodeNotFound: (label: string) => `No data found for "${label}"`,
 	searchPlaceholder: 'Search by person, organization or bill name',
