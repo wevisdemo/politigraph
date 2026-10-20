@@ -17,6 +17,7 @@
 		"POSTGRES_PASSWORD",
 		"SEED_ADMIN_PASSWORD"
 	],
+	"globalPassThroughEnv": ["TMPDIR"],
 	"tasks": {
 		"build": {
 			"dependsOn": ["^build"],

@@ -14,7 +14,7 @@
 		"@apollo/server": "^5.5.1",
 		"@elysiajs/cors": "^1.4.2",
 		"@escape.tech/graphql-armor": "^3.2.0",
-		"@modelcontextprotocol/server": "2.0.0",
+		"@modelcontextprotocol/server": "2.3.1",
 		"@politigraph/auth": "workspace:*",
 		"@politigraph/config": "workspace:*",
 		"@politigraph/graphql": "workspace:*",
@@ -26,7 +26,7 @@
 	},
 	"devDependencies": {
 		"@graphql-tools/schema": "^10.1.1",
-		"@modelcontextprotocol/client": "2.0.0",
+		"@modelcontextprotocol/client": "2.3.1",
 		"bun-types": "latest"
 	}
 }
