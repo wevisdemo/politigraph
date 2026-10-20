@@ -13,7 +13,7 @@ const TEST_AUTH_KEY = 'test-secret-key-for-integration-tests';
 export async function cleanDatabase() {
 	const session = driver.session();
 	try {
-		await session.run('MATCH (n) DETACH DELETE n');
+		await session.run('MATCH (n) WHERE NOT n:__Migration DETACH DELETE n');
 	} finally {
 		await session.close();
 	}

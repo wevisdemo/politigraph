@@ -98,11 +98,18 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_KEY }}
       - name: Open SSH tunnel
-        run: ssh -f -N -M -S /tmp/tunnel-socket -o StrictHostKeyChecking=no -o ControlMaster=yes -L 5432:127.0.0.1:5432 bot@${{ secrets.SSH_DB_HOST }}
-      - name: Run auth migrations
+        run: ssh -f -N -M -S /tmp/tunnel-socket -o StrictHostKeyChecking=no -o ControlMaster=yes -L 5432:127.0.0.1:5432 -L 7687:127.0.0.1:7687 bot@${{ secrets.SSH_DB_HOST }}
+      - name: Run Postgres migrations
         working-directory: packages/auth
         env:
           DATABASE_URL: 'postgresql://${{ secrets.POSTGRES_CREDENTIAL }}@127.0.0.1:5432/betterauth'
+        run: bun run migrate
+      - name: Run Neo4j migrations
+        working-directory: packages/graphql
+        env:
+          NEO4J_URI: bolt://127.0.0.1:7687
+          NEO4J_USERNAME: ${{ secrets.NEO4J_USERNAME }}
+          NEO4J_PASSWORD: ${{ secrets.NEO4J_PASSWORD }}
         run: bun run migrate
       - name: Close SSH tunnel
         run: ssh -S /tmp/tunnel-socket -O exit bot@${{ secrets.SSH_DB_HOST }}

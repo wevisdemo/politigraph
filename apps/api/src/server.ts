@@ -1,10 +1,8 @@
 import { ApolloArmor } from '@escape.tech/graphql-armor';
 import { auth } from '@politigraph/auth/auth';
 import { serverConfig } from '@politigraph/config/server';
-import {
-	createNeo4jIndex,
-	initNeo4jGraphql,
-} from '@politigraph/graphql/neo4j-graphql';
+import { assertNoPendingMigrations } from '@politigraph/graphql/migrate';
+import { initNeo4jGraphql } from '@politigraph/graphql/neo4j-graphql';
 import { Elysia, type Context } from 'elysia';
 import { MAX_QUERY_TOKENS } from './constants/graphql';
 import { apollo } from './routes/graphql';
@@ -21,8 +19,8 @@ const origin = `http://127.0.0.1:${port}`;
 const neo4jGraphql = initNeo4jGraphql(`${origin}/auth/jwks`);
 const schema = await neo4jGraphql.getSchema();
 await neo4jGraphql.checkNeo4jCompat();
+await assertNoPendingMigrations();
 await neo4jGraphql.assertIndexesAndConstraints();
-await createNeo4jIndex();
 
 const armor = new ApolloArmor({
 	blockFieldSuggestion: {

@@ -5,6 +5,7 @@
 	"scripts": {
 		"dev": "bun run build.ts --watch",
 		"build": "bun run build.ts",
+		"migrate": "bun migrate.ts",
 		"lint": "eslint . --fix",
 		"check": "tsc --noEmit",
 		"test:unit": "bun test tests/unit",

@@ -10,6 +10,7 @@
 - Don't write arbitrary comment if the code is self-explainable
 - Add/update test cases if your changes effect business logic, only add high value test case and grouped it if possible to reduce redundancy and test time
 - If your changes affect the GraphQL schema, query limits, API endpoints or MCP tools, add a dated entry to `apps/docs/src/content/docs/en/changelog.mdx` and its Thai translation in `apps/docs/src/content/docs/changelog.mdx`. CI enforces this only for schema `.graphql` files, `custom-resolvers.ts` and `deprecated-fields.ts` in `packages/graphql`
+- Neo4j indexes, constraints and data changes go in a new numbered file in `packages/graphql/migrations/`, which is discovered automatically. Never edit an applied migration, and keep it idempotent and compatible with the previous release. See `packages/graphql/README.md`
 - After finishing any task, run the following commands:
   - Check type with `bun run check`
   - Lint with `bun run lint`, all errors and warnings must be fixed
@@ -40,10 +41,10 @@ More information on tech stack of each project can be found in the respective RE
 Test commands:
 
 - `bun run test:unit` — unit tests
-- `bun run test:integration` — integration tests (starts and stops the test databases itself)
+- `bun run test:integration` — integration tests (starts and stops the test databases itself, and applies Neo4j and Postgres migrations first)
 - `bun run test:e2e` — Playwright E2E tests (starts and stops the test databases itself)
   - On NixOS, must run inside the flake dev shell with `nix develop --command bun run test:e2e`, unless direnv already loaded it
-  - `SEED_ADMIN_PASSWORD` must be set. The task migrates and seeds the `admin@wevis.info` user by itself, and the login fixture signs in with that password
+  - `SEED_ADMIN_PASSWORD` must be set. The task runs the Postgres and Neo4j migrations and seeds the `admin@wevis.info` user by itself, and the login fixture signs in with that password
   - Playwright starts its own API on port 3100 and admin on port 8100, so it can run alongside the dev servers and `compose.yml`
 
 Both `test:integration` and `test:e2e` wrap their turbo task in `test:db:up` / `test:db:down`, which recreate the test containers before the run and remove them after, so every run starts from an empty database. `compose.test.yml` declares no volumes, so nothing survives the teardown. Use those two scripts directly to keep the databases up while debugging.
