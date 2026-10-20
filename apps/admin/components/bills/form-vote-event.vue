@@ -26,7 +26,7 @@ const selectedVoteEventId = computed({
 });
 
 const { data: matchingVoteEvents, refresh } = await useLazyAsyncData(
-	`vote-events-for-bill-vote-${props.event.start_date}`,
+	`vote-events-for-bill-vote-${props.event.id}`,
 	async () => {
 		if (!props.event.start_date) return [];
 		const { voteEvents } = await graphqlClient.query({
@@ -34,6 +34,9 @@ const { data: matchingVoteEvents, refresh } = await useLazyAsyncData(
 				__args: {
 					where: {
 						start_date: { eq: props.event.start_date },
+						...(props.event.classification && {
+							classification: { eq: props.event.classification },
+						}),
 					},
 				},
 				id: true,
@@ -53,12 +56,11 @@ const { data: matchingVoteEvents, refresh } = await useLazyAsyncData(
 				},
 			},
 		});
-		console.log(voteEvents);
 		return voteEvents ?? [];
 	},
 );
 
-watch(() => props.event.start_date, refresh);
+watch(() => [props.event.start_date, props.event.classification], refresh);
 </script>
 
 <template>
