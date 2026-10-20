@@ -8,7 +8,7 @@ import {
 } from '@graphql-tools/utils';
 import { Neo4jGraphQL } from '@neo4j/graphql';
 import { excludeDeprecatedFields } from './deprecated-fields';
-import { getGraphqlTypeDefs } from './schema';
+import { getGraphqlTypeDefs } from './domains/type-defs';
 
 const { values } = parseArgs({
 	args: Bun.argv,
@@ -23,7 +23,7 @@ const { values } = parseArgs({
 if (values.watch) {
 	console.log('Watching for schema changes...');
 
-	const watcher = watch(`${import.meta.dir}/schema`, { recursive: true }, () =>
+	const watcher = watch(`${import.meta.dir}/domains`, { recursive: true }, () =>
 		build().catch(console.error),
 	);
 

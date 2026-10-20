@@ -2,10 +2,21 @@
 	"name": "@politigraph/graphql",
 	"type": "module",
 	"private": true,
+	"exports": {
+		"./genql": "./genql/index.ts",
+		"./resolvers": "./domains/resolvers.ts",
+		"./deprecated-fields": "./deprecated-fields.ts",
+		"./neo4j-graphql": "./neo4j/init.ts",
+		"./migrate": "./neo4j/migrate.ts",
+		"./playground-url": "./support/playground-url.ts",
+		"./summary": "./support/summary.ts",
+		"./schema-sdl": "./support/schema-sdl.ts",
+		"./dist/*": "./dist/*"
+	},
 	"scripts": {
 		"dev": "bun run build.ts --watch",
 		"build": "bun run build.ts",
-		"migrate": "bun migrate.ts",
+		"migrate": "bun neo4j/migrate.ts",
 		"lint": "eslint . --fix",
 		"check": "tsc --noEmit",
 		"test:unit": "bun test tests/unit",

@@ -12,7 +12,7 @@ import {
 let runCount = 0;
 let latestEpochMs = 0;
 
-mock.module('../../driver', () => ({
+mock.module('../../neo4j/driver', () => ({
 	driver: {
 		session: () => ({
 			run: async () => {
@@ -31,7 +31,7 @@ const {
 	getLastVoteEventScrapedAt,
 	latestTimestampQuery,
 	resetTimestampsCache,
-} = await import('../../timestamps');
+} = await import('../../domains/timestamps/freshness');
 
 const HOUR_MS = 60 * 60 * 1000;
 

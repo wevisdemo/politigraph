@@ -7,7 +7,7 @@ import {
 	test,
 } from 'bun:test';
 import { type Session } from 'neo4j-driver';
-import { resetTimestampsCache } from '../../timestamps';
+import { resetTimestampsCache } from '../../domains/timestamps/freshness';
 import {
 	buildSchema,
 	cleanDatabase,

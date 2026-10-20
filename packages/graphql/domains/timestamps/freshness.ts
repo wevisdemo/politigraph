@@ -1,6 +1,6 @@
 import { Kind, type ObjectTypeDefinitionNode } from 'graphql';
-import { driver } from './driver';
-import { typeDefinitions } from './schema-sdl';
+import { driver } from '../../neo4j/driver';
+import { typeDefinitions } from '../../support/schema-sdl';
 
 const CACHE_TTL_MS = 60 * 60 * 1000;
 const GITHUB_TIMEOUT_MS = 10 * 1000;

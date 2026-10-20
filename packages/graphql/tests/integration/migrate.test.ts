@@ -3,8 +3,8 @@ import {
 	assertNoPendingMigrations,
 	getPendingMigrations,
 	runMigrations,
-} from '../../migrate';
-import { migrations } from '../../migrations';
+} from '../../neo4j/migrate';
+import { migrations } from '../../neo4j/migrations';
 import { driver } from './helpers';
 
 async function run(cypher: string) {

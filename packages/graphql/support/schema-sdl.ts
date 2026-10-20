@@ -6,7 +6,7 @@ import {
 	type TypeDefinitionNode,
 } from 'graphql';
 // @ts-expect-error graphql import with type assertion
-import typeDefs from './dist/typedefs.graphql' with { type: 'text' };
+import typeDefs from '../dist/typedefs.graphql' with { type: 'text' };
 
 const KIND_LABELS = new Map<TypeDefinitionNode['kind'], string>([
 	[Kind.OBJECT_TYPE_DEFINITION, 'type'],

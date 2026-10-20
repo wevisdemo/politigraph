@@ -9,9 +9,16 @@ export interface GraphqlObject {
 
 export type GraphqlDataResponse = Record<string, GraphqlObject[]>;
 
+function hasDirective(
+	directives: { name: { value: string } }[] | undefined,
+	name: string,
+) {
+	return directives?.some((directive) => directive.name.value === name);
+}
+
 export const objects = definitions
 	.filter((d) => d.kind === 'ObjectTypeDefinition')
-	.filter((d) => d.directives?.some(({ name }) => name.value === 'node'))
+	.filter((d) => hasDirective(d.directives, 'node'))
 	.map((d) => ({
 		name: d.name!.value,
 		description: d.description?.value,

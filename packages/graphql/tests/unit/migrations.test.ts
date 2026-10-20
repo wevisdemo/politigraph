@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
-import { toStatements } from '../../migrate';
-import { migrations } from '../../migrations';
+import { toStatements } from '../../neo4j/migrate';
+import { migrations } from '../../neo4j/migrations';
 
 describe('migrations', () => {
 	test('discovers numbered files in order without gaps', () => {

@@ -1,10 +1,10 @@
 import { Neo4jGraphQL } from '@neo4j/graphql';
 import { graphql } from 'graphql';
 import { type Session } from 'neo4j-driver';
-import { resolvers } from '../../custom-resolvers';
 import { excludeDeprecatedFields } from '../../deprecated-fields';
-import { driver } from '../../driver';
-import { getGraphqlTypeDefs } from '../../schema';
+import { resolvers } from '../../domains/resolvers';
+import { getGraphqlTypeDefs } from '../../domains/type-defs';
+import { driver } from '../../neo4j/driver';
 
 export { driver };
 

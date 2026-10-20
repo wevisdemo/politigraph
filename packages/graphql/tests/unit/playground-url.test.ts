@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 import { decompressFromEncodedURIComponent } from 'lz-string';
-import { toPlaygroundUrl } from '../../playground-url';
+import { toPlaygroundUrl } from '../../support/playground-url';
 
 function decodeState(url: string) {
 	const state = new URL(url, 'http://localhost').searchParams.get(

@@ -1,4 +1,8 @@
 import { Neo4jGraphQL } from '@neo4j/graphql';
+import { excludeDeprecatedFields } from '@politigraph/graphql/deprecated-fields';
+// @ts-expect-error graphql import with type assertion
+import typeDefs from '@politigraph/graphql/dist/typedefs.graphql' with { type: 'text' };
+import { resolvers } from '@politigraph/graphql/resolvers';
 import { describe, expect, test } from 'bun:test';
 import { parse, validate } from 'graphql';
 import {
@@ -6,12 +10,8 @@ import {
 	buildSearchQuery,
 	pruneToMainLeaves,
 	searchableTypes,
-} from '../../../../apps/docs/src/utils/explore';
-import type { GraphqlObject } from '../../../../apps/docs/src/utils/schema';
-import { resolvers } from '../../custom-resolvers';
-import { excludeDeprecatedFields } from '../../deprecated-fields';
-// @ts-expect-error graphql import with type assertion
-import typeDefs from '../../dist/typedefs.graphql' with { type: 'text' };
+} from '../../src/utils/explore';
+import type { GraphqlObject } from '../../src/utils/schema';
 
 // Guard the docs explore page queries, which are generated from
 // dist/definitions.json, against drifting from the augmented schema

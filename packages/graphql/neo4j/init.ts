@@ -1,8 +1,8 @@
 import { Neo4jGraphQL } from '@neo4j/graphql';
-import { resolvers } from './custom-resolvers';
-import { excludeDeprecatedFields } from './deprecated-fields';
+import { excludeDeprecatedFields } from '../deprecated-fields';
 // @ts-expect-error graphql import with type assertion
-import typeDefs from './dist/typedefs.graphql' with { type: 'text' };
+import typeDefs from '../dist/typedefs.graphql' with { type: 'text' };
+import { resolvers } from '../domains/resolvers';
 import { driver } from './driver';
 
 export function initNeo4jGraphql(jwksUrl: string) {

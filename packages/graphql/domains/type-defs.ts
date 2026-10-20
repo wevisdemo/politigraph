@@ -1,13 +1,9 @@
 import { join } from 'node:path';
 
 export async function getGraphqlTypeDefs(schemaDir = __dirname) {
-	const schemaFilesGlob = new Bun.Glob('**/*.graphql').scan(schemaDir);
-
-	const schemaFiles: string[] = [];
-
-	for await (const file of schemaFilesGlob) {
-		schemaFiles.push(file);
-	}
+	const schemaFiles = (
+		await Array.fromAsync(new Bun.Glob('**/*.graphql').scan(schemaDir))
+	).toSorted();
 
 	const schemas = await Promise.all(
 		schemaFiles.map((schemaFile) =>

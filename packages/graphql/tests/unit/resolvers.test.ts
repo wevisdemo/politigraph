@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { resolvers } from '../../custom-resolvers';
+import { resolvers } from '../../domains/resolvers';
 import type {
 	AlternatePersonName,
 	Organization,

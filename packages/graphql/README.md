@@ -7,6 +7,22 @@ Schemas and custom resolvers implementation
 - Neo4j GraphQL library
 - GenQL
 
+## Code layout
+
+- `domains/` one folder per domain, each holding its GraphQL SDL (`*.graphql`) and, when it has custom logic, a `resolvers.ts`. All `.graphql` files are concatenated into one schema, so types can reference each other across domains.
+  - `people` Person, alternate person names, gender, and the `OtherNames` union (which also covers the organizations' `AlternateName`)
+  - `organizations` Organization, Post, Membership, alternate names, and the `Member` and `NamedEntity` unions
+  - `bills` Bill, its events, enums, `Motion` and its creators
+  - `votes` VoteEvent, Vote
+  - `timestamps` the `Query` root and data freshness
+  - `shared` types every domain uses: Link, Relation, Event, PublishStatus, authentication
+  - `resolvers.ts` merges the per-domain resolvers; `type-defs.ts` loads the SDL
+- `neo4j/` driver, `initNeo4jGraphql`, and the migration runner with its `migrations/`
+- `support/` small helpers shared by the API and docs (`playground-url`, `summary`, `schema-sdl`)
+- `build.ts` and `deprecated-fields.ts` at the root: the build entry and the schema policy it applies
+
+Other packages may only import what `package.json` `exports` lists, so files can move without touching consumers. A resolver for a type with no custom logic yet does not need a file.
+
 ## Deprecating a client-visible field
 
 When renaming or removing a field that clients can query, keep the old field with the standard GraphQL `@deprecated` directive and a reason naming the replacement:
@@ -21,7 +37,7 @@ A `@relationship` field cannot be renamed this way. Keeping the old name alongsi
 
 ## Neo4j migrations
 
-Indexes, constraints and data changes live in `migrations/` as numbered Cypher files (`0002-short-name.cypher`). Applied migrations are recorded as `(:__Migration)` nodes, so each one runs once per database.
+Indexes, constraints and data changes live in `neo4j/migrations/` as numbered Cypher files (`0002-short-name.cypher`). Applied migrations are recorded as `(:__Migration)` nodes, so each one runs once per database.
 
 To add a migration:
 

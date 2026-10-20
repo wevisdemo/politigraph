@@ -9,7 +9,8 @@
 		"preview": "bunx --bun astro preview",
 		"astro": "astro",
 		"lint": "eslint . --fix",
-		"check": "bunx --bun astro check"
+		"check": "bunx --bun astro check && tsc -p tests",
+		"test:unit": "bun test tests/unit"
 	},
 	"dependencies": {
 		"@astrojs/check": "^0.9.10",
@@ -38,9 +39,12 @@
 		"vue": "^3.5.43"
 	},
 	"devDependencies": {
+		"@neo4j/graphql": "^7.6.3",
+		"@types/bun": "^1.4.2",
 		"@types/d3-force": "^3.0.10",
 		"@types/dagre": "^0.7.54",
 		"@types/pluralize": "^0.0.33",
-		"eslint-plugin-astro": "^1.7.0"
+		"eslint-plugin-astro": "^1.7.0",
+		"graphql": "^16.14.2"
 	}
 }
