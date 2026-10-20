@@ -21,9 +21,9 @@ type Bill implements Motion @node {
 	"""
 	creator_type: BillCreatorType!
 	"""
-	เลข ID ของหน้าข้อมูลกฎหมายในเว็บไซต์ lis.parliament
+	เลข ID ของหน้าข้อมูลกฎหมายในเว็บไซต์ lis.parliament (กฎหมายหนึ่งฉบับอาจมีได้หลายหน้า)
 	"""
-	lis_id: Int!
+	lis_ids: [Int!]!
 	"""
 	จำนวนรายชื่อของประชาชนที่สนับสนุน (ในกรณีที่ประชาชนเป็นคนเสนอ)
 	"""

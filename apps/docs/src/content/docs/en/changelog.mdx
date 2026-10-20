@@ -7,6 +7,16 @@ This page lists every change that affects how a client uses the API: the GraphQL
 
 When a client-visible field is renamed or removed, the old field is kept for a while with the GraphQL `@deprecated` directive wherever possible, and its removal appears as a later entry on this page. Relationship fields are the exception: they cannot coexist with their replacement, so renaming one is listed under `Breaking` right away.
 
+## 2026-10-21
+
+**Breaking**
+
+- `Bill.lis_id` is replaced by `Bill.lis_ids`, and the `createBills` mutation now requires `lis_ids` instead of `lis_id`
+
+**Added**
+
+- `Bill.lis_ids`, because one bill can have several IDs on the lis.parliament website, for example when it spans several parliamentary terms
+
 ## 2026-09-29
 
 **Added**

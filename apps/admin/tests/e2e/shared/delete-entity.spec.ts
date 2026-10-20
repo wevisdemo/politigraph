@@ -229,7 +229,7 @@ test.describe('Delete entity', () => {
 		page,
 	}) => {
 		const billFields = (title: string) =>
-			`title: "${title}", lis_id: ${Math.floor(Math.random() * 1e9)}, creator_type: POLITICIAN, classification: NORMAL_BILL, status: IN_PROGRESS`;
+			`title: "${title}", lis_ids: [${Math.floor(Math.random() * 1e9)}], creator_type: POLITICIAN, classification: NORMAL_BILL, status: IN_PROGRESS`;
 		const title = `ลบ${suffix()}`;
 
 		const { createBills } = await gql(
