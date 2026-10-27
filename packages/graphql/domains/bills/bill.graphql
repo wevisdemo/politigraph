@@ -10,7 +10,7 @@ type Bill implements Motion @node {
 	องค์กรที่มีส่วนเกี่ยวข้องในการพิจารณา เช่น สส. สว. ชุดใด
 	"""
 	organizations: [Organization!]!
-		@relationship(type: "CREATED_IN", properties: "Relation", direction: OUT)
+		@relationship(type: "CONSIDERED_IN", properties: "Relation", direction: OUT)
 	"""
 	ผู้เสนอ
 	"""

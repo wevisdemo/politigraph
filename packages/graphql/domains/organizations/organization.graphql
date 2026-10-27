@@ -77,7 +77,7 @@ type Organization @node {
 	ญัตติ (กฏหมายหรือร่างกฏหมาย) ที่พิจารณาในองค์กรนี้
 	"""
 	considered_motions: [Motion!]!
-		@relationship(type: "CREATED_IN", properties: "Relation", direction: IN)
+		@relationship(type: "CONSIDERED_IN", properties: "Relation", direction: IN)
 	"""
 	กฏหมายหรือร่างกฏหมายที่เสนอในนามองค์กร
 	"""
