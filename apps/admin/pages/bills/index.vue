@@ -310,7 +310,7 @@ const isComplete = (data: unknown[]) => {
 		<div class="flex flex-col items-start gap-12 md:flex-row">
 			<BillsFilter
 				v-model:filters="filters"
-				class="w-xs sticky top-16"
+				class="w-xs sticky top-16 -mr-4 max-h-[calc(100dvh-5rem)] shrink-0 overflow-y-auto pr-4"
 				:organization-option="[
 					allOption,
 					...organizationsOption.map((o) => ({
@@ -340,7 +340,7 @@ const isComplete = (data: unknown[]) => {
 					})),
 				]"
 			/>
-			<div class="w-full">
+			<div class="w-full min-w-0 overflow-x-auto">
 				<cv-data-table
 					title="Bills"
 					helper-text="กฏหมายและร่างกฏหมาย"

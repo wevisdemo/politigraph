@@ -7,6 +7,7 @@ import {
 	type VoteEventType,
 	type VoteEventWhere,
 } from '@politigraph/graphql/genql';
+import { voteEventTypes } from '~/constants/vote-event';
 import { formatDate } from '~/utils/date';
 import { getArrayQueryParam, getStringQueryParam } from '~/utils/query';
 import { ref } from 'vue';
@@ -30,13 +31,8 @@ const { debouncedSearch, handleSearchChange } = useDebouncedSearch({
 
 const statusOption = Object.values(enumPublishStatus);
 const classificationOption = [...Object.values(enumVoteEventType), '__NULL__'];
-const voteEventType: Record<string, string> = {
-	MP_1: 'สส. วาระที่ 1',
-	MP_2: 'สส. วาระที่ 2',
-	MP_3: 'สส. วาระที่ 3',
-	SENATE_1: 'สว. วาระที่ 1',
-	SENATE_2: 'สว. วาระที่ 2',
-	SENATE_3: 'สว. วาระที่ 3',
+const voteEventTypeLabel: Record<string, string> = {
+	...Object.fromEntries(voteEventTypes.map((t) => [t.value, t.label])),
 	__NULL__: 'ไม่ระบุ',
 };
 
@@ -93,8 +89,12 @@ const { data } = await useLazyAsyncData(
 		if (filters.value.assembly !== 'ALL') {
 			const assemblyIds = filters.value.assembly.split('|');
 			where.AND.push(
-				{ organizations_ALL: { id: { in: assemblyIds } } },
-				{ organizationsAggregate: { count: { eq: assemblyIds.length } } },
+				{ organizations: { all: { id: { in: assemblyIds } } } },
+				{
+					organizationsConnection: {
+						aggregate: { count: { nodes: { eq: assemblyIds.length } } },
+					},
+				},
 			);
 		}
 
@@ -271,7 +271,7 @@ const organizationsOption = () => {
 		<div class="flex flex-col items-start gap-12 md:flex-row">
 			<VoteEventFilter
 				v-model:filters="filters"
-				class="w-xs sticky top-16"
+				class="w-xs sticky top-16 -mr-4 max-h-[calc(100dvh-5rem)] shrink-0 overflow-y-auto pr-4"
 				:assemblies-option="[
 					{ label: 'All assemblies', value: 'ALL' },
 					...(organizationsOption() ?? []).map((o) => ({
@@ -288,12 +288,12 @@ const organizationsOption = () => {
 				]"
 				:classification-option="[
 					...classificationOption.map((c) => ({
-						label: voteEventType[c],
+						label: voteEventTypeLabel[c],
 						value: c,
 					})),
 				]"
 			/>
-			<div class="w-full">
+			<div class="w-full min-w-0 overflow-x-auto">
 				<cv-data-table
 					title="Vote Events"
 					helper-text="การลงมติทั้งหมด"

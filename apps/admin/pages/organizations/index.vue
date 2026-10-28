@@ -117,7 +117,9 @@ const { data } = await useLazyAsyncData(
 	/>
 	<div v-else class="relative">
 		<div class="flex flex-col items-start gap-12 md:flex-row">
-			<div class="w-xs sticky top-16 flex flex-col">
+			<div
+				class="w-xs sticky top-16 -mr-4 flex max-h-[calc(100dvh-5rem)] shrink-0 flex-col overflow-y-auto pr-4"
+			>
 				<cv-radio-group legend-text="Classification" vertical>
 					<cv-radio-button
 						v-for="classification in classificationOptions"
@@ -132,7 +134,7 @@ const { data } = await useLazyAsyncData(
 					/>
 				</cv-radio-group>
 			</div>
-			<div class="w-full">
+			<div class="w-full min-w-0 overflow-x-auto">
 				<cv-data-table
 					title="Organizations"
 					helper-text="ข้อมูลองค์กรทั้งหมด"

@@ -189,7 +189,7 @@ const membershipOptions = [
 		<div class="flex flex-col items-start gap-12 md:flex-row">
 			<PeopleFilter
 				v-model:filters="filters"
-				class="w-xs sticky top-16"
+				class="w-xs sticky top-16 -mr-4 max-h-[calc(100dvh-5rem)] shrink-0 overflow-y-auto pr-4"
 				:membership-options
 				:status-options="[
 					{ label: 'ทั้งหมด', value: 'ALL' },
@@ -199,7 +199,7 @@ const membershipOptions = [
 					})),
 				]"
 			/>
-			<div class="w-full">
+			<div class="w-full min-w-0 overflow-x-auto">
 				<PeopleTable
 					:people="data.people"
 					:total-count="data.totalCount"
