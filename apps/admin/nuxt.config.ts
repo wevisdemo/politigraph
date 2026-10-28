@@ -49,5 +49,23 @@ export default defineNuxtConfig({
 	},
 	sourcemap: true,
 	ssr: false,
-	vite: { cacheDir: process.env.VITE_CACHE_DIR, plugins: [tailwindcss()] },
+	vite: {
+		cacheDir: process.env.VITE_CACHE_DIR,
+		plugins: [tailwindcss()],
+		// Dependencies discovered late make the dev server re-optimize and full-reload open pages, which flakes e2e on a cold cache
+		optimizeDeps: {
+			include: [
+				'@politigraph/auth > better-auth/vue',
+				'@politigraph/auth > better-auth/client/plugins',
+				'@politigraph/auth > @better-auth/api-key/client',
+				'@carbon/icons-vue',
+				'@tanstack/vue-form',
+				'radash',
+				'vue-pick-colors',
+				'vue-advanced-cropper',
+				'd3-dsv',
+				'fastest-levenshtein',
+			],
+		},
+	},
 });

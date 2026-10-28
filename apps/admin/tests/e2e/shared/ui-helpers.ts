@@ -82,13 +82,19 @@ async function pickComboBoxOption(
 ) {
 	const field = page.locator(`${MEMBERSHIP_MODAL} .bx--combo-box`).nth(index);
 	const input = field.locator('input[role="combobox"]');
-	await input.click();
-	if (query === null) {
-		await input.press('ArrowDown');
-	} else {
-		await input.fill(query);
-	}
-	await field.locator(`.bx--list-box__menu-item:has-text("${label}")`).click();
+	const option = field.locator(`.bx--list-box__menu-item:has-text("${label}")`);
+	// The menu can close when the modal re-renders after its options load, so reopen it until the option is clickable
+	await expect(async () => {
+		if (!(await option.isVisible())) {
+			await input.click();
+			if (query === null) {
+				await input.press('ArrowDown');
+			} else {
+				await input.fill(query);
+			}
+		}
+		await option.click({ timeout: 2000 });
+	}).toPass();
 }
 
 export function fillClassification(page: Page, value: string) {
