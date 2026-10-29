@@ -16,6 +16,8 @@ import { SOURCE_HEADER, trackMcpRequest } from '../utils/usage';
 const GRAPHQL_TIMEOUT_MS = 30 * 1000;
 const MCP_CLIENT_HEADER = 'x-politigraph-mcp-client';
 const DOCS_TIMEOUT_MS = 10 * 1000;
+const DOCS_INDEX_PATHS = { en: '/llms.txt', th: '/llms-th.txt' };
+const DOCS_FULL_PATHS = { en: '/llms-full.txt', th: '/llms-full-th.txt' };
 
 const INSTRUCTIONS = `${SUMMARY}
 
@@ -25,7 +27,7 @@ Notes:
 - Read-only and anonymous. Mutations are rejected, and nodes whose \`publish_status\` is not \`PUBLISHED\` are hidden.
 - \`Person\` and \`Vote\` return at most 1,000 nodes per query. Use pagination (\`limit\`/\`offset\`) for larger result sets.
 - To check how current the data is, query \`timestamps\`.
-- Descriptions in the schema are written in Thai, and so is most of the data.
+- Descriptions in the schema are written in Thai, and so is most of the data. The documentation is available in English (default) and Thai: when the user writes in Thai or asks about a Thai term, call \`get-docs\` with \`lang: "th"\` instead of translating the term yourself.
 - The data is licensed CC BY-NC 4.0: credit WeVis and do not use it commercially.`;
 
 const textResult = (text: string, isError = false) => ({
@@ -162,7 +164,7 @@ function createMcpServer(origin: string, client?: string | null) {
 		{
 			title: 'Read the documentation',
 			description:
-				'Return the Politigraph documentation index (llms.txt) as markdown, or a single documentation page linked from it.',
+				'Return the Politigraph documentation index (llms.txt) as markdown, or a single documentation page linked from it. The documentation is available in English and Thai.',
 			inputSchema: z.object({
 				page: z
 					.string()
@@ -170,10 +172,16 @@ function createMcpServer(origin: string, client?: string | null) {
 					.describe(
 						'Markdown URL or path of a page listed in the index, e.g. /en/schema/bill.md. Omit for the index.',
 					),
+				lang: z
+					.enum(['en', 'th'])
+					.default('en')
+					.describe(
+						'Language of the index returned when page is omitted. Use th when the user writes in Thai or asks about a Thai term. Pages linked from the index are already in that language.',
+					),
 			}),
 			annotations: { readOnlyHint: true },
 		},
-		async ({ page = '/llms.txt' }) => {
+		async ({ lang, page = DOCS_INDEX_PATHS[lang] }) => {
 			const url = new URL(page, serverConfig.siteUrl);
 
 			if (url.origin !== new URL(serverConfig.siteUrl).origin) {
@@ -216,7 +224,21 @@ function createMcpServer(origin: string, client?: string | null) {
 			mimeType: 'text/markdown',
 		},
 		async (uri) => ({
-			contents: [{ uri: uri.href, text: await getDocs() }],
+			contents: [{ uri: uri.href, text: await getDocs('en') }],
+		}),
+	);
+
+	server.registerResource(
+		'docs-th',
+		'politigraph://docs/th',
+		{
+			title: 'Documentation (Thai)',
+			description:
+				'The entire Politigraph documentation in Thai, the source of truth for Thai terms, as plain markdown',
+			mimeType: 'text/markdown',
+		},
+		async (uri) => ({
+			contents: [{ uri: uri.href, text: await getDocs('th') }],
 		}),
 	);
 
@@ -226,9 +248,9 @@ function createMcpServer(origin: string, client?: string | null) {
 const fetchDocs = (url: URL) =>
 	fetch(url, { signal: AbortSignal.timeout(DOCS_TIMEOUT_MS) });
 
-async function getDocs() {
+async function getDocs(lang: keyof typeof DOCS_FULL_PATHS) {
 	const response = await fetchDocs(
-		new URL('/llms-full.txt', serverConfig.siteUrl),
+		new URL(DOCS_FULL_PATHS[lang], serverConfig.siteUrl),
 	);
 
 	if (!response.ok) {

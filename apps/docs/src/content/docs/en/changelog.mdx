@@ -7,6 +7,12 @@ This page lists every change that affects how a client uses the API: the GraphQL
 
 When a client-visible field is renamed or removed, the old field is kept for a while with the GraphQL `@deprecated` directive wherever possible, and its removal appears as a later entry on this page. Relationship fields are the exception: they cannot coexist with their replacement, so renaming one is listed under `Breaking` right away.
 
+## 2026-10-29
+
+**Added**
+
+- Thai support for llms.txt (`/llms-th.txt` and `/llms-full-th.txt`), the MCP `get-docs` tool (new `lang` parameter) and the `politigraph://docs/th` resource, with instructions telling AI agents to read the Thai documentation when the user asks in Thai
+
 ## 2026-10-21
 
 **Breaking**

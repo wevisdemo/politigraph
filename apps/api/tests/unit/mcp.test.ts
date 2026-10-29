@@ -196,16 +196,22 @@ describe('mcp server', () => {
 
 	describe('docs tool', () => {
 		test.each([
-			[undefined, '/llms.txt'],
-			['/en/schema/bill.md', '/en/schema/bill.md'],
-			[`${serverConfig.siteUrl}/en/schema/bill.md`, '/en/schema/bill.md'],
-		])('reads %p from the docs site', async (page, path) => {
+			[undefined, undefined, '/llms.txt'],
+			[undefined, 'th', '/llms-th.txt'],
+			['/en/schema/bill.md', undefined, '/en/schema/bill.md'],
+			['/schema/bill.md', 'th', '/schema/bill.md'],
+			[
+				`${serverConfig.siteUrl}/en/schema/bill.md`,
+				undefined,
+				'/en/schema/bill.md',
+			],
+		])('reads %p (lang %p) from the docs site', async (page, lang, path) => {
 			graphqlFetch.mockResolvedValue(new Response('# Politigraph'));
 
 			const client = await connect();
 			const result = await client.callTool({
 				name: 'get-docs',
-				arguments: { page },
+				arguments: { page, lang },
 			});
 
 			expect(result.isError).toBeFalsy();
@@ -246,6 +252,23 @@ describe('mcp server', () => {
 
 			await client.close();
 		});
+	});
+
+	test.each([
+		['politigraph://docs', '/llms-full.txt'],
+		['politigraph://docs/th', '/llms-full-th.txt'],
+	])('exposes %s as a resource', async (uri, path) => {
+		graphqlFetch.mockResolvedValue(new Response('# Politigraph'));
+
+		const client = await connect();
+		const { contents } = await client.readResource({ uri });
+
+		expect(firstText(contents)).toBe('# Politigraph');
+		expect(String(graphqlFetch.mock.calls[0]?.[0])).toBe(
+			`${serverConfig.siteUrl}${path}`,
+		);
+
+		await client.close();
 	});
 
 	test('exposes the schema as a resource', async () => {

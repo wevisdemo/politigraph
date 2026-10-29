@@ -1,15 +1,20 @@
 import typedefs from '@politigraph/graphql/dist/typedefs.graphql?raw';
 import { toPlaygroundUrl } from '@politigraph/graphql/playground-url';
+import { SUMMARY } from '@politigraph/graphql/summary';
 import { getCollection } from 'astro:content';
 import * as graphql from 'prettier/plugins/graphql';
 import { format } from 'prettier/standalone';
 import { sidebarGroups } from '../constants/sidebar';
-import { GRAPHQL_ENDPOINT, SCHEMA_URL, SITE_URL } from '../constants/site';
+import {
+	GRAPHQL_ENDPOINT,
+	MCP_ENDPOINT,
+	PLAYGROUND_ENDPOINT,
+	SCHEMA_URL,
+	SITE_URL,
+} from '../constants/site';
 import type { Language } from './i18n';
 
 export const schemaSdl = typedefs;
-
-export { SUMMARY } from '@politigraph/graphql/summary';
 
 export interface LlmsDoc {
 	id: string;
@@ -22,13 +27,21 @@ export interface LlmsDoc {
 	markdown: string;
 }
 
-const SECTION_LABELS = new Map<string, string>([
-	...sidebarGroups.map(
-		({ directory, translations }) =>
-			[directory, translations.en] as [string, string],
-	),
-	['changelog', 'Changelog'],
-]);
+const SECTION_LABELS: Record<Language, Map<string, string>> = {
+	en: new Map([
+		...sidebarGroups.map(
+			({ directory, translations }) =>
+				[directory, translations.en] as [string, string],
+		),
+		['changelog', 'Changelog'],
+	]),
+	th: new Map([
+		...sidebarGroups.map(
+			({ directory, label }) => [directory, label] as [string, string],
+		),
+		['changelog', 'บันทึกการเปลี่ยนแปลง'],
+	]),
+};
 
 export function hasMarkdownVersion(entry: { data: { template?: string } }) {
 	return entry.data.template !== 'splash';
@@ -47,15 +60,15 @@ export async function getLlmsDocs(): Promise<LlmsDoc[]> {
 	return Promise.all(
 		entries.map(async (entry) => {
 			const [first, ...rest] = entry.id.split('/');
-			const isEnglish = first === 'en';
-			const [section] = isEnglish ? rest : [first];
+			const lang: Language = first === 'en' ? 'en' : 'th';
+			const [section] = lang === 'en' ? rest : [first];
 			const body = await toPlainMarkdown(entry.body ?? '');
 			const url = `${SITE_URL}/${entry.id}`;
 
 			return {
 				id: entry.id,
-				lang: isEnglish ? 'en' : 'th',
-				section: SECTION_LABELS.get(section ?? '') ?? 'Docs',
+				lang,
+				section: SECTION_LABELS[lang].get(section ?? '') ?? 'Docs',
 				title: entry.data.title,
 				description: entry.data.description,
 				url,
@@ -66,8 +79,8 @@ export async function getLlmsDocs(): Promise<LlmsDoc[]> {
 	);
 }
 
-export async function getEnglishLlmsDocs() {
-	return (await getLlmsDocs()).filter((doc) => doc.lang === 'en');
+export async function getLlmsDocsByLanguage(lang: Language) {
+	return (await getLlmsDocs()).filter((doc) => doc.lang === lang);
 }
 
 export function toDocsLinkList(docs: LlmsDoc[]) {
@@ -83,6 +96,74 @@ export function toDocsLinkList(docs: LlmsDoc[]) {
 			return `## ${section}\n\n${links.join('\n')}`;
 		})
 		.join('\n\n');
+}
+
+const LLMS_LANGUAGES = {
+	en: {
+		name: 'English',
+		indexUrl: `${SITE_URL}/llms.txt`,
+		fullUrl: `${SITE_URL}/llms-full.txt`,
+		exploreUrl: `${SITE_URL}/en/explore`,
+		otherNote: `These files are generated from the English documentation. The Thai originals are the source of truth and use the exact Thai terms of the data: if the user writes in Thai or asks about a Thai term, read ${SITE_URL}/llms-th.txt instead.`,
+	},
+	th: {
+		name: 'Thai',
+		indexUrl: `${SITE_URL}/llms-th.txt`,
+		fullUrl: `${SITE_URL}/llms-full-th.txt`,
+		exploreUrl: `${SITE_URL}/explore`,
+		otherNote: `These files are the original Thai documentation, the source of truth for the Thai terms used in the data. The English translation is at ${SITE_URL}/llms.txt.`,
+	},
+} satisfies Record<Language, Record<string, string>>;
+
+export async function toLlmsIndex(lang: Language) {
+	const docs = await getLlmsDocsByLanguage(lang);
+	const { fullUrl, exploreUrl, otherNote } = LLMS_LANGUAGES[lang];
+
+	return `# Politigraph
+
+> ${SUMMARY}
+
+- Query the API by sending a POST request to ${GRAPHQL_ENDPOINT}, or explore it interactively in the playground at the same URL.
+- MCP-capable agents can connect to ${MCP_ENDPOINT} instead, an anonymous read-only Streamable HTTP endpoint with tools to read the schema and run queries.
+- If you cannot run the query yourself, hand the user a link to ${PLAYGROUND_ENDPOINT}?query=URL_ENCODED_GRAPHQL&variables=URL_ENCODED_JSON instead. It opens the playground with that operation and its variables filled in, ready to run.
+- Every page below is also available as plain markdown by appending \`.md\` to its URL.
+- ${otherNote}
+
+${toDocsLinkList(docs)}
+
+## Reference
+
+- [Complete GraphQL schema](${SCHEMA_URL}): full SDL of every node type, property and relationship. Read it before writing queries.
+
+## Optional
+
+- [All documentation in one file](${fullUrl}): every page above plus the schema, for one-shot context
+- [Explore](${exploreUrl}): interactive graph browser for humans
+- [Source code](https://github.com/wevisdemo/politigraph): report data errors or issues here
+`;
+}
+
+export async function toLlmsFull(lang: Language) {
+	const docs = await getLlmsDocsByLanguage(lang);
+
+	return `# Politigraph
+
+> ${SUMMARY} Query it by sending a POST request to ${GRAPHQL_ENDPOINT}.
+
+If you cannot run the query yourself, hand the user a link to ${PLAYGROUND_ENDPOINT}?query=URL_ENCODED_GRAPHQL&variables=URL_ENCODED_JSON instead. It opens the playground with that operation and its variables filled in, ready to run.
+
+This file contains the complete ${LLMS_LANGUAGES[lang].name} documentation followed by the full GraphQL schema.
+
+${docs.map((doc) => doc.markdown).join('\n\n---\n\n')}
+
+---
+
+# GraphQL Schema
+
+\`\`\`graphql
+${schemaSdl.trim()}
+\`\`\`
+`;
 }
 
 async function toPlainMarkdown(body: string) {
