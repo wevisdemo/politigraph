@@ -11,7 +11,8 @@ When a client-visible field is renamed or removed, the old field is kept for a w
 
 **Added**
 
-- Thai support for llms.txt (`/llms-th.txt` and `/llms-full-th.txt`), the MCP `get-docs` tool (new `lang` parameter) and the `politigraph://docs/th` resource, with instructions telling AI agents to read the Thai documentation when the user asks in Thai
+- `created_at` and `updated_at` are marked as internal fields, not dates of real-world events, in the schema, MCP server instructions and llms.txt, so AI agents don't use them in place of a node's own date fields such as `Bill.proposal_date`
+- Thai support for llms.txt (`/llms-th.txt` and `/llms-full-th.txt`), the MCP `get-docs` tool and the `politigraph://docs/th` resource, with instructions for AI agents to read the Thai documentation when the user asks in Thai
 
 ## 2026-10-21
 

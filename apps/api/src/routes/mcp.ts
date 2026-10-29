@@ -5,7 +5,7 @@ import {
 	listTypes,
 	schemaSdl,
 } from '@politigraph/graphql/schema-sdl';
-import { SUMMARY } from '@politigraph/graphql/summary';
+import { SUMMARY, TIMESTAMP_NOTE } from '@politigraph/graphql/summary';
 import { Elysia } from 'elysia';
 import { OperationTypeNode, parse } from 'graphql';
 import { z } from 'zod';
@@ -27,6 +27,7 @@ Notes:
 - Read-only and anonymous. Mutations are rejected, and nodes whose \`publish_status\` is not \`PUBLISHED\` are hidden.
 - \`Person\` and \`Vote\` return at most 1,000 nodes per query. Use pagination (\`limit\`/\`offset\`) for larger result sets.
 - To check how current the data is, query \`timestamps\`.
+- ${TIMESTAMP_NOTE}
 - Descriptions in the schema are written in Thai, and so is most of the data. The documentation is available in English (default) and Thai: when the user writes in Thai or asks about a Thai term, call \`get-docs\` with \`lang: "th"\` instead of translating the term yourself.
 - The data is licensed CC BY-NC 4.0: credit WeVis and do not use it commercially.`;
 
