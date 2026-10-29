@@ -13,6 +13,7 @@ When a client-visible field is renamed or removed, the old field is kept for a w
 
 - `created_at` and `updated_at` are marked as internal fields, not dates of real-world events, in the schema, MCP server instructions and llms.txt, so AI agents don't use them in place of a node's own date fields such as `Bill.proposal_date`
 - Thai support for llms.txt (`/llms-th.txt` and `/llms-full-th.txt`), the MCP `get-docs` tool and the `politigraph://docs/th` resource, with instructions for AI agents to read the Thai documentation when the user asks in Thai
+- `Person.id`, `Bill.id`, `VoteEvent.id` and `Organization.id` descriptions give the matching [Parliament Watch](https://parliamentwatch.wevis.info) page URL, and the MCP server instructions and llms.txt tell AI agents to cite `links` and those pages as references
 
 ## 2026-10-21
 

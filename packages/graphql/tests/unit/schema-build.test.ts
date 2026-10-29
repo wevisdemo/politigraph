@@ -2,6 +2,7 @@ import { join } from 'node:path';
 import { describe, expect, test } from 'bun:test';
 import { Kind, parse } from 'graphql';
 import { getGraphqlTypeDefs } from '../../domains/type-defs';
+import { PARLIAMENT_WATCH_ID_NOTES } from '../../support/parliament-watch';
 import { TIMESTAMP_FIELD_NOTE } from '../../support/summary';
 
 const DOMAINS_DIR = join(import.meta.dir, '../../domains');
@@ -45,6 +46,30 @@ describe('getGraphqlTypeDefs', () => {
 			expect(field.description?.value).toEndWith(`(${TIMESTAMP_FIELD_NOTE})`);
 			expect(field.description?.value).toMatch(/^[฀-๿]/);
 		}
+	});
+
+	test('notes the Parliament Watch page on the id of the types it covers', async () => {
+		const { definitions } = parse(await getGraphqlTypeDefs(DOMAINS_DIR));
+
+		const idDescriptions = Object.fromEntries(
+			definitions.flatMap((definition) =>
+				definition.kind === Kind.OBJECT_TYPE_DEFINITION
+					? [
+							[
+								definition.name.value,
+								definition.fields?.find((field) => field.name.value === 'id')
+									?.description?.value,
+							],
+						]
+					: [],
+			),
+		);
+
+		for (const [type, note] of Object.entries(PARLIAMENT_WATCH_ID_NOTES)) {
+			expect(idDescriptions[type]).toEndWith(`(${note})`);
+		}
+
+		expect(idDescriptions['Vote']).not.toInclude('Parliament Watch');
 	});
 
 	test('returns a non-empty string', async () => {

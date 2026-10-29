@@ -5,7 +5,12 @@ import {
 	listTypes,
 	schemaSdl,
 } from '@politigraph/graphql/schema-sdl';
-import { SUMMARY, TIMESTAMP_NOTE } from '@politigraph/graphql/summary';
+import {
+	REFERENCES_NOTE,
+	SCHEMA_FIRST_NOTE,
+	SUMMARY,
+	TIMESTAMP_NOTE,
+} from '@politigraph/graphql/summary';
 import { Elysia } from 'elysia';
 import { OperationTypeNode, parse } from 'graphql';
 import { z } from 'zod';
@@ -21,12 +26,13 @@ const DOCS_FULL_PATHS = { en: '/llms-full.txt', th: '/llms-full-th.txt' };
 
 const INSTRUCTIONS = `${SUMMARY}
 
-Workflow: call \`list-types\` to see what exists, \`get-schema\` to read the exact fields of the types you need, then \`query\` to fetch data. Never guess field names. Before writing a non-trivial query, call \`get-docs\` for the documentation index and read the pages about the types involved: they explain how the data is modeled and include example queries.
+Workflow: call \`list-types\` to see what exists, \`get-schema\` to read the exact fields of the types you need, then \`query\` to fetch data. ${SCHEMA_FIRST_NOTE} Before writing a non-trivial query, call \`get-docs\` for the documentation index and read the pages about the types involved: they explain how the data is modeled and include example queries.
 
 Notes:
 - Read-only and anonymous. Mutations are rejected, and nodes whose \`publish_status\` is not \`PUBLISHED\` are hidden.
 - \`Person\` and \`Vote\` return at most 1,000 nodes per query. Use pagination (\`limit\`/\`offset\`) for larger result sets.
 - To check how current the data is, query \`timestamps\`.
+- ${REFERENCES_NOTE}
 - ${TIMESTAMP_NOTE}
 - Descriptions in the schema are written in Thai, and so is most of the data. The documentation is available in English (default) and Thai: when the user writes in Thai or asks about a Thai term, call \`get-docs\` with \`lang: "th"\` instead of translating the term yourself.
 - The data is licensed CC BY-NC 4.0: credit WeVis and do not use it commercially.`;
@@ -68,7 +74,7 @@ function createMcpServer(origin: string, client?: string | null) {
 		{
 			title: 'Run a GraphQL query',
 			description:
-				'Execute a read-only GraphQL query against the Politigraph API and return the raw JSON response.',
+				'Execute a read-only GraphQL query against the Politigraph API and return the raw JSON response. Read the schema with get-schema first, and never guess field names.',
 			inputSchema: z.object({
 				query: z.string().describe('GraphQL query document'),
 				variables: z

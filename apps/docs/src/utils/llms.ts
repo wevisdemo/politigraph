@@ -1,6 +1,11 @@
 import typedefs from '@politigraph/graphql/dist/typedefs.graphql?raw';
 import { toPlaygroundUrl } from '@politigraph/graphql/playground-url';
-import { SUMMARY, TIMESTAMP_NOTE } from '@politigraph/graphql/summary';
+import {
+	REFERENCES_NOTE,
+	SCHEMA_FIRST_NOTE,
+	SUMMARY,
+	TIMESTAMP_NOTE,
+} from '@politigraph/graphql/summary';
 import { getCollection } from 'astro:content';
 import * as graphql from 'prettier/plugins/graphql';
 import { format } from 'prettier/standalone';
@@ -127,6 +132,8 @@ export async function toLlmsIndex(lang: Language) {
 - MCP-capable agents can connect to ${MCP_ENDPOINT} instead, an anonymous read-only Streamable HTTP endpoint with tools to read the schema and run queries.
 - If you cannot run the query yourself, hand the user a link to ${PLAYGROUND_ENDPOINT}?query=URL_ENCODED_GRAPHQL&variables=URL_ENCODED_JSON instead. It opens the playground with that operation and its variables filled in, ready to run.
 - Every page below is also available as plain markdown by appending \`.md\` to its URL.
+- ${SCHEMA_FIRST_NOTE} The complete schema is linked under Reference below.
+- ${REFERENCES_NOTE}
 - ${TIMESTAMP_NOTE}
 - ${otherNote}
 
