@@ -2,6 +2,7 @@ import { Neo4jGraphQL } from '@neo4j/graphql';
 import { excludeDeprecatedFields } from '@politigraph/graphql/deprecated-fields';
 // @ts-expect-error graphql import with type assertion
 import typeDefs from '@politigraph/graphql/dist/typedefs.graphql' with { type: 'text' };
+import { populatedBy } from '@politigraph/graphql/populated-by';
 import { resolvers } from '@politigraph/graphql/resolvers';
 import { describe, expect, test } from 'bun:test';
 import { parse, validate } from 'graphql';
@@ -21,6 +22,7 @@ const schema = await new Neo4jGraphQL({
 	features: {
 		authorization: { key: 'unused-in-schema-validation' },
 		excludeDeprecatedFields,
+		populatedBy,
 	},
 }).getSchema();
 

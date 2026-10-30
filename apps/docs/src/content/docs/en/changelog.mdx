@@ -7,6 +7,12 @@ This page lists every change that affects how a client uses the API: the GraphQL
 
 When a client-visible field is renamed or removed, the old field is kept for a while with the GraphQL `@deprecated` directive wherever possible, and its removal appears as a later entry on this page. Relationship fields are the exception: they cannot coexist with their replacement, so renaming one is listed under `Breaking` right away.
 
+## 2026-11-03
+
+**Fixed**
+
+- Selecting `id` or `created_at` from `edges.properties` no longer fails with `Cannot return null for non-nullable field Relation.id`. Relationships missing these values now have them, with `created_at` approximated from the source node, and new relationships get them automatically
+
 ## 2026-10-29
 
 **Added**

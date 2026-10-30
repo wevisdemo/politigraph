@@ -9,6 +9,7 @@ import {
 import { Neo4jGraphQL } from '@neo4j/graphql';
 import { excludeDeprecatedFields } from './deprecated-fields';
 import { getGraphqlTypeDefs } from './domains/type-defs';
+import { populatedBy } from './populated-by';
 
 const { values } = parseArgs({
 	args: Bun.argv,
@@ -52,7 +53,7 @@ async function build() {
 
 	const schema = await new Neo4jGraphQL({
 		typeDefs,
-		features: { excludeDeprecatedFields },
+		features: { excludeDeprecatedFields, populatedBy },
 	}).getSchema();
 
 	await generate({

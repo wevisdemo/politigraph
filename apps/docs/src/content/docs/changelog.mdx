@@ -7,6 +7,12 @@ description: รายการการเปลี่ยนแปลงที�
 
 เมื่อมีการเปลี่ยนชื่อหรือลบ Field ที่ผู้ใช้เข้าถึงได้ เราจะพยายามคง Field เดิมไว้ระยะหนึ่งพร้อมกับ Directive `@deprecated` ของ GraphQL และจะแจ้งการลบ Field นั้นเป็นรายการถัดไปในหน้านี้ ยกเว้น Relationship Field ที่ไม่สามารถมีอยู่คู่กับ Field ใหม่ได้ การเปลี่ยนชื่อจึงถูกระบุไว้ในหัวข้อ `Breaking` ทันที
 
+## 2026-11-03
+
+**Fixed**
+
+- การเลือก `id` หรือ `created_at` จาก `edges.properties` จะไม่เกิดข้อผิดพลาด `Cannot return null for non-nullable field Relation.id` อีกต่อไป Relationship ที่เคยขาดค่าเหล่านี้ได้รับการเติมค่าแล้ว โดย `created_at` เป็นค่าโดยประมาณจาก Node ต้นทาง และ Relationship ใหม่จะได้รับค่าโดยอัตโนมัติ
+
 ## 2026-10-29
 
 **Added**

@@ -3,7 +3,7 @@ import { describe, expect, test } from 'bun:test';
 import { Kind, parse } from 'graphql';
 import { getGraphqlTypeDefs } from '../../domains/type-defs';
 import { PARLIAMENT_WATCH_ID_NOTES } from '../../support/parliament-watch';
-import { TIMESTAMP_FIELD_NOTE } from '../../support/summary';
+import { TIMESTAMP_FIELD_NOTE, TIMESTAMP_FIELDS } from '../../support/summary';
 
 const DOMAINS_DIR = join(import.meta.dir, '../../domains');
 
@@ -26,7 +26,7 @@ describe('getGraphqlTypeDefs', () => {
 		expect(result).toContain('enum Gender');
 	});
 
-	test('notes every @timestamp field as an internal system field', async () => {
+	test('notes every timestamp field as an internal system field', async () => {
 		const { definitions } = parse(await getGraphqlTypeDefs(DOMAINS_DIR));
 
 		const timestampFields = definitions
@@ -36,8 +36,10 @@ describe('getGraphqlTypeDefs', () => {
 					? (definition.fields ?? [])
 					: [],
 			)
-			.filter((field) =>
-				field.directives?.some(({ name }) => name.value === 'timestamp'),
+			.filter(
+				(field) =>
+					TIMESTAMP_FIELDS.includes(field.name.value) ||
+					field.directives?.some(({ name }) => name.value === 'timestamp'),
 			);
 
 		expect(timestampFields.length).toBeGreaterThan(0);

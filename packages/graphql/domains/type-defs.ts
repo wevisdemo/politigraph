@@ -9,7 +9,7 @@ import {
 	type ObjectTypeDefinitionNode,
 } from 'graphql';
 import { PARLIAMENT_WATCH_ID_NOTES } from '../support/parliament-watch';
-import { TIMESTAMP_FIELD_NOTE } from '../support/summary';
+import { TIMESTAMP_FIELD_NOTE, TIMESTAMP_FIELDS } from '../support/summary';
 
 export async function getGraphqlTypeDefs(schemaDir = __dirname) {
 	const schemaFiles = (
@@ -46,7 +46,7 @@ function noteFields(typeDefs: string) {
 }
 
 function getFieldNote(typeName: string, field: FieldDefinitionNode) {
-	if (field.directives?.some(({ name }) => name.value === 'timestamp')) {
+	if (TIMESTAMP_FIELDS.includes(field.name.value)) {
 		return TIMESTAMP_FIELD_NOTE;
 	}
 
