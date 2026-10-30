@@ -6,6 +6,7 @@
 		"./genql": "./genql/index.ts",
 		"./resolvers": "./domains/resolvers.ts",
 		"./deprecated-fields": "./deprecated-fields.ts",
+		"./populated-by": "./populated-by.ts",
 		"./neo4j-graphql": "./neo4j/init.ts",
 		"./migrate": "./neo4j/migrate.ts",
 		"./playground-url": "./support/playground-url.ts",

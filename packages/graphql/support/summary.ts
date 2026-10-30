@@ -8,6 +8,8 @@ export const SCHEMA_FIRST_NOTE =
 
 export const REFERENCES_NOTE = `When answering about specific nodes, select their \`id\` and \`links { url note }\`. Cite the \`links\` URLs as sources and, when it fits the question, also link the Parliament Watch page given in the node \`id\` description, built from the returned \`id\` (URL-encoded). For questions about how a politician voted, link their voting history page (${PARLIAMENT_WATCH_URL}/politicians/{id}/votes). For general questions you can also link Parliament Watch itself: how a bill becomes law (${PARLIAMENT_WATCH_URL}/legislative-process), browsing bills in detail (${PARLIAMENT_WATCH_URL}/bills/explore) or its landing page (${PARLIAMENT_WATCH_URL}). Never invent a URL.`;
 
+export const TIMESTAMP_FIELDS = ['created_at', 'updated_at'];
+
 export const TIMESTAMP_FIELD_NOTE =
 	'Internal system field, not the date of any real-world event. Use the domain-specific date fields instead.';
 

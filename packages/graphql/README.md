@@ -19,7 +19,7 @@ Schemas and custom resolvers implementation
   - `resolvers.ts` merges the per-domain resolvers; `type-defs.ts` loads the SDL
 - `neo4j/` driver, `initNeo4jGraphql`, and the migration runner with its `migrations/`
 - `support/` small helpers shared by the API and docs (`playground-url`, `summary`, `schema-sdl`)
-- `build.ts` and `deprecated-fields.ts` at the root: the build entry and the schema policy it applies
+- `build.ts`, `deprecated-fields.ts` and `populated-by.ts` at the root: the build entry and the schema policy and `@populatedBy` callbacks it applies
 
 Other packages may only import what `package.json` `exports` lists, so files can move without touching consumers. A resolver for a type with no custom logic yet does not need a file.
 

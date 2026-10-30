@@ -1,10 +1,10 @@
 import { Kind, type ObjectTypeDefinitionNode } from 'graphql';
 import { driver } from '../../neo4j/driver';
 import { typeDefinitions } from '../../support/schema-sdl';
+import { TIMESTAMP_FIELDS } from '../../support/summary';
 
 const CACHE_TTL_MS = 60 * 60 * 1000;
 const GITHUB_TIMEOUT_MS = 10 * 1000;
-const TIMESTAMP_FIELDS = ['created_at', 'updated_at'];
 const AUTOMATION_WORKFLOWS_URL =
 	'https://api.github.com/repos/wevisdemo/politigraph-automation/actions/workflows';
 

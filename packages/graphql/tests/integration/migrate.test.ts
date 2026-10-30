@@ -69,6 +69,9 @@ describe('runMigrations', () => {
 			const nodes = await run(
 				'MATCH (n) WHERE NOT n:__Migration RETURN labels(n) AS labels, properties(n) AS props ORDER BY n.id',
 			);
+			const relationships = await run(
+				'MATCH ()-[r]->() RETURN properties(r) AS props ORDER BY r.id',
+			);
 			const indexes = await run(
 				'SHOW INDEXES YIELD name RETURN collect(name) AS names',
 			);
@@ -77,15 +80,32 @@ describe('runMigrations', () => {
 
 			return JSON.stringify([
 				nodes.records.map((r) => [r.get('labels'), r.get('props')]),
+				relationships.records.map((r) => r.get('props')),
 				indexNames.toSorted(),
 			]);
 		};
 
 		await run(
-			"CREATE (:Bill {id: 'b', lis_id: 7}), (:Bill {id: 'c', lis_ids: [8, 9]}), (:VoteEvent {id: 'v', msbis_id: 3})",
+			`CREATE (:Bill {id: 'b', lis_id: 7}), (:Bill {id: 'c', lis_ids: [8, 9]}), (:VoteEvent {id: 'v', msbis_id: 3})
+			CREATE (:Vote {id: 'iso', created_at: '2025-05-26T02:45:16.884Z'})-[:VOTED_BY]->(:Person {id: 'p'})
+			CREATE (:Vote {id: 'kept'})-[:VOTED_BY {id: 'existing', created_at: datetime('2024-01-01T00:00:00Z')}]->(:Person {id: 'q'})`,
 		);
 		await applyAll();
 		const afterFirstRun = await snapshot();
+		const relations = await run(
+			`MATCH (vote:Vote)-[r:VOTED_BY]->()
+			RETURN r.id IS NOT NULL AND r.id <> 'existing' AS generated, r.created_at.epochMillis AS createdAt
+			ORDER BY vote.id`,
+		);
+		expect(
+			relations.records.map((r) => [
+				r.get('generated'),
+				new Date(r.get('createdAt').toNumber()).toISOString(),
+			]),
+		).toEqual([
+			[true, '2025-05-26T02:45:16.884Z'],
+			[false, '2024-01-01T00:00:00.000Z'],
+		]);
 		const bills = await run(
 			'MATCH (b:Bill) RETURN [x IN b.lis_ids | toString(x)] AS lis_ids, b.lis_id IS NULL AS removed ORDER BY b.id',
 		);

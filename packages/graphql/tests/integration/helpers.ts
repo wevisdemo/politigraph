@@ -5,6 +5,7 @@ import { excludeDeprecatedFields } from '../../deprecated-fields';
 import { resolvers } from '../../domains/resolvers';
 import { getGraphqlTypeDefs } from '../../domains/type-defs';
 import { driver } from '../../neo4j/driver';
+import { populatedBy } from '../../populated-by';
 
 export { driver };
 
@@ -35,6 +36,7 @@ export async function buildSchema({ withAuth = false } = {}) {
 					}
 				: {}),
 			excludeDeprecatedFields,
+			populatedBy,
 		},
 	});
 }

@@ -3,6 +3,7 @@ import { excludeDeprecatedFields } from '../deprecated-fields';
 // @ts-expect-error graphql import with type assertion
 import typeDefs from '../dist/typedefs.graphql' with { type: 'text' };
 import { resolvers } from '../domains/resolvers';
+import { populatedBy } from '../populated-by';
 import { driver } from './driver';
 
 export function initNeo4jGraphql(jwksUrl: string) {
@@ -17,6 +18,7 @@ export function initNeo4jGraphql(jwksUrl: string) {
 				},
 			},
 			excludeDeprecatedFields,
+			populatedBy,
 		},
 	});
 }
