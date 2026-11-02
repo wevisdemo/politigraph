@@ -3,9 +3,17 @@ import { databaseUrl } from '@politigraph/config/postgres';
 import { hashPassword } from 'better-auth/crypto';
 import { eq } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/bun-sql';
+import { auth } from './auth';
 import * as schema from './auth-schema';
 
 const SEED_EMAIL = 'admin@wevis.info';
+
+async function seedApiKey(userId: string) {
+	const { key } = await auth.api.createApiKey({
+		body: { userId, name: 'Local test key' },
+	});
+	console.log(`Test API key (shown once): ${key}`);
+}
 
 async function seed() {
 	if (
@@ -30,6 +38,7 @@ async function seed() {
 			console.log(
 				'Seed user already exists, skipping. Its password is left unchanged.',
 			);
+			await seedApiKey(existing.id);
 			return;
 		}
 
@@ -64,6 +73,7 @@ async function seed() {
 		if (!providedPassword) {
 			console.log(`Generated password (shown once): ${password}`);
 		}
+		await seedApiKey(userId);
 	} finally {
 		await db.$client.close();
 	}
