@@ -48,6 +48,8 @@ function getErrorTitle(type: VoteIssueType): string {
 			return 'Unrecognized Voter Names';
 		case 'MISSING_INFORMATION':
 			return 'Missing Info';
+		case 'UNLINKED_AFFILIATION':
+			return 'Unlinked Affiliations';
 	}
 }
 </script>

@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { TrashCan16, WarningFilled16 } from '@carbon/icons-vue';
 import type { Vote } from '@politigraph/graphql/genql';
+import type { AffiliationOption } from '~/composables/use-affiliation-options';
 import type { PeopleOption } from '~/composables/use-people-options';
 import { standardVoteOptions } from '~/constants/votes';
 
-type EditableVoteFields =
-	'vote_order' | 'badge_number' | 'voter_party' | 'option';
+type EditableVoteFields = 'vote_order' | 'badge_number' | 'option';
 
 const props = defineProps<{
 	row: Pick<
@@ -13,7 +13,7 @@ const props = defineProps<{
 		| 'id'
 		| 'vote_order'
 		| 'voter_name_raw'
-		| 'voter_party'
+		| 'voter_affiliation_raw'
 		| 'option'
 		| 'badge_number'
 	>;
@@ -23,16 +23,21 @@ const props = defineProps<{
 	rowClass: string;
 	isNew: boolean;
 	isVoterCellEdited: boolean;
+	isAffiliationCellEdited: boolean;
 	isOptionCellEdited: boolean;
 	selectedVoterId: string;
 	voterLabel: string;
 	voterOptions?: PeopleOption[];
+	selectedAffiliationId: string;
+	affiliationLabel: string;
+	affiliationOptions?: AffiliationOption[];
 }>();
 
 const emit = defineEmits<{
 	(e: 'startEditing', rowId: string, columnId: number): void;
 	(e: 'edited', rowColumnId: [string, EditableVoteFields]): void;
 	(e: 'voterSelected', rowVoterId: [string, string]): void;
+	(e: 'affiliationSelected', rowAffiliationId: [string, string]): void;
 	(e: 'deleted', id: string): void;
 }>();
 
@@ -40,6 +45,12 @@ const isLast = computed(() => props.index === props.total - 1);
 const tooltipDirection = computed(() => (isLast.value ? 'top' : 'bottom'));
 const isVoterInvalid = computed(
 	() => !props.selectedVoterId && !props.isVoterCellEdited && !props.isNew,
+);
+const isAffiliationInvalid = computed(
+	() =>
+		!props.selectedAffiliationId &&
+		!props.isAffiliationCellEdited &&
+		!props.isNew,
 );
 </script>
 
@@ -69,6 +80,7 @@ const isVoterInvalid = computed(
 			/>
 		</cv-data-table-cell>
 		<cv-data-table-cell
+			colspan="3"
 			:class="{ 'text-[#DA1E28]': isVoterInvalid }"
 			@click="emit('startEditing', row.id, 2)"
 		>
@@ -106,14 +118,53 @@ const isVoterInvalid = computed(
 				</cv-tooltip>
 			</div>
 		</cv-data-table-cell>
-		<cv-data-table-cell @click="emit('startEditing', row.id, 3)">
-			<cv-text-input
-				v-model="row.voter_party"
-				placeholder="Enter Party"
-				type="text"
-				style="background: transparent; border: none"
-				@change="emit('edited', [row.id, 'voter_party'])"
-			/>
+		<cv-data-table-cell
+			colspan="2"
+			:class="{ 'text-[#DA1E28]': isAffiliationInvalid }"
+			@click="emit('startEditing', row.id, 3)"
+		>
+			<div v-if="activeColumn === 3">
+				<cv-combo-box
+					:model-value="selectedAffiliationId"
+					:label="row.voter_affiliation_raw || 'Select organization'"
+					:options="affiliationOptions ?? []"
+					item-value-key="value"
+					item-text-key="label"
+					auto-filter
+					auto-highlight
+					@change="
+						(affiliationId: string) =>
+							emit('affiliationSelected', [row.id, affiliationId])
+					"
+				/>
+			</div>
+			<div v-else class="flex items-center gap-2 pl-4">
+				<p
+					:class="{
+						'text-[#707070]': !affiliationLabel && !row.voter_affiliation_raw,
+					}"
+				>
+					{{
+						affiliationLabel ||
+						row.voter_affiliation_raw ||
+						'Select organization'
+					}}
+				</p>
+				<cv-tooltip
+					v-if="isAffiliationInvalid"
+					:direction="tooltipDirection"
+					tip="Unlinked affiliation. Select an organization from the list."
+				>
+					<WarningFilled16 class="inline-block" style="fill: #da1e28" />
+				</cv-tooltip>
+				<cv-tooltip
+					v-if="isAffiliationCellEdited"
+					:direction="tooltipDirection"
+					tip="Unsaved change"
+				>
+					<WarningFilled16 class="inline-block" style="fill: #ff8300" />
+				</cv-tooltip>
+			</div>
 		</cv-data-table-cell>
 		<cv-data-table-cell @click="emit('startEditing', row.id, 4)">
 			<div v-if="activeColumn === 4">

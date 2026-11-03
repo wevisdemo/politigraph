@@ -54,12 +54,15 @@ const { data: voteEventData, refresh: refreshVoteEvent } =
 					id: true,
 					vote_order: true,
 					voter_name_raw: true,
-					voter_party: true,
+					voter_affiliation_raw: true,
 					option: true,
 					badge_number: true,
 					voters: {
 						id: true,
 						name: true,
+					},
+					voter_affiliations: {
+						id: true,
 					},
 				},
 			},

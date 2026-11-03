@@ -9,9 +9,10 @@ type VoteInput = Pick<
 	| 'badge_number'
 	| 'option'
 	| 'voter_name_raw'
-	| 'voter_party'
+	| 'voter_affiliation_raw'
 > & {
 	voters: { id: string }[];
+	voter_affiliations: { id: string }[];
 };
 
 type SummaryHeader = Pick<
@@ -26,8 +27,9 @@ function createVote(overrides: Partial<VoteInput> = {}): VoteInput {
 		badge_number: '001',
 		option: 'เห็นด้วย',
 		voter_name_raw: 'สมชาย ใจดี',
-		voter_party: 'พรรค A',
+		voter_affiliation_raw: 'พรรค A',
 		voters: [{ id: 'person-1' }],
+		voter_affiliations: [{ id: 'org-1' }],
 		...overrides,
 	};
 }
@@ -129,16 +131,16 @@ describe('validateVotes', () => {
 		});
 	});
 
-	test('warns about invalid voter names when no voters', () => {
-		const votes = [createVote({ voters: [] })];
+	test('warns about unlinked voters and affiliations', () => {
+		const votes = [createVote({ voters: [], voter_affiliations: [] })];
 		const summary = createSummaryHeader({ agree_count: 1 });
 
 		const result = validateVotes({ votes, ...summary });
 
-		expect(result.warnings).toContainEqual({
-			type: 'INVALID_VOTER_NAME',
-			id: 'vote-1',
-		});
+		expect(result.warnings).toEqual([
+			{ type: 'INVALID_VOTER_NAME', id: 'vote-1' },
+			{ type: 'UNLINKED_AFFILIATION', id: 'vote-1' },
+		]);
 	});
 
 	test('returns empty errors and warnings for valid votes', () => {

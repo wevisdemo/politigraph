@@ -1,14 +1,17 @@
 <script setup lang="ts">
 import type { Vote } from '@politigraph/graphql/genql';
-import { VOTER_CELL_KEY } from '~/constants/votes';
-import { getEffectiveVoterId, validateVotes } from '~/utils/votes';
+import { AFFILIATION_CELL_KEY, VOTER_CELL_KEY } from '~/constants/votes';
+import {
+	getEffectiveAffiliationId,
+	getEffectiveVoterId,
+	validateVotes,
+} from '~/utils/votes';
 
 definePageMeta({
 	layout: 'admin-layout',
 });
 
-type EditableVoteFields =
-	'vote_order' | 'badge_number' | 'voter_party' | 'option';
+type EditableVoteFields = 'vote_order' | 'badge_number' | 'option';
 
 const route = useRoute();
 const graphqlClient = useGraphqlClient();
@@ -34,12 +37,21 @@ const editedRows = ref<Set<string>>(new Set());
 const editedCells = ref<Set<string>>(new Set());
 const toDeleteIds = ref<Set<string>>(new Set());
 const selectedVoterIds = ref<Record<string, string>>({});
+const selectedAffiliationIds = ref<Record<string, string>>({});
 
 const votesWithSelectedVoters = computed(
 	() =>
 		voteEvent.value?.votes.map((vote) => {
 			const voterId = getEffectiveVoterId(vote, selectedVoterIds.value);
-			return { ...vote, voters: voterId ? [{ id: voterId }] : [] };
+			const affiliationId = getEffectiveAffiliationId(
+				vote,
+				selectedAffiliationIds.value,
+			);
+			return {
+				...vote,
+				voters: voterId ? [{ id: voterId }] : [],
+				voter_affiliations: affiliationId ? [{ id: affiliationId }] : [],
+			};
 		}) ?? [],
 );
 
@@ -86,10 +98,13 @@ const { data: voteEvent, refresh } = useAsyncData(
 					id: true,
 					vote_order: true,
 					voter_name_raw: true,
-					voter_party: true,
+					voter_affiliation_raw: true,
 					option: true,
 					badge_number: true,
 					voters: {
+						id: true,
+					},
+					voter_affiliations: {
 						id: true,
 					},
 				},
@@ -103,11 +118,12 @@ const { data: voteEvent, refresh } = useAsyncData(
 		originalCount.abstain_count = voteEvent.abstain_count;
 		originalVotesMap.value = {};
 		selectedVoterIds.value = {};
+		selectedAffiliationIds.value = {};
 
 		voteEvent.votes.sort((a, b) => Number(a.vote_order) - Number(b.vote_order));
 
 		voteEvent.votes?.forEach((vote) => {
-			const { voters: _, ...rest } = vote;
+			const { voters: _, voter_affiliations: __, ...rest } = vote;
 			originalVotesMap.value[vote.id] = { ...rest };
 		});
 
@@ -124,9 +140,13 @@ useHead({
 });
 
 const { data: peopleOptions } = await usePeopleOptions();
+const { data: affiliationOptions } = await useAffiliationOptions();
 
 const getLinkedVoterId = (voteId: string) =>
 	voteEvent.value?.votes.find((v) => v.id === voteId)?.voters[0]?.id ?? '';
+const getLinkedAffiliationId = (voteId: string) =>
+	voteEvent.value?.votes.find((v) => v.id === voteId)?.voter_affiliations[0]
+		?.id ?? '';
 
 const setCellEdited = (rowId: string, cellKey: string, isEdited: boolean) => {
 	const cellId = `${rowId}-${cellKey}`;
@@ -157,6 +177,16 @@ const selectVoter = (rowId: string, voterId: string) => {
 	selectedVoterIds.value[rowId] = voterId;
 
 	setCellEdited(rowId, VOTER_CELL_KEY, voterId !== getLinkedVoterId(rowId));
+};
+
+const selectAffiliation = (rowId: string, affiliationId: string) => {
+	selectedAffiliationIds.value[rowId] = affiliationId;
+
+	setCellEdited(
+		rowId,
+		AFFILIATION_CELL_KEY,
+		affiliationId !== getLinkedAffiliationId(rowId),
+	);
 };
 
 async function onSaveChanges() {
@@ -230,6 +260,11 @@ async function onSaveChanges() {
 		const mutationPromises = rowsToPatch.map((vote) => {
 			const voterId = getEffectiveVoterId(vote, selectedVoterIds.value);
 			const linkedVoterId = getLinkedVoterId(vote.id);
+			const affiliationId = getEffectiveAffiliationId(
+				vote,
+				selectedAffiliationIds.value,
+			);
+			const linkedAffiliationId = getLinkedAffiliationId(vote.id);
 
 			if (existingIds.has(vote.id)) {
 				// Update
@@ -243,7 +278,6 @@ async function onSaveChanges() {
 								vote_order: { set: vote.vote_order },
 								badge_number: { set: vote.badge_number },
 								voter_name_raw: { set: vote.voter_name_raw },
-								voter_party: { set: vote.voter_party },
 								option: { set: vote.option },
 								...(voterId !== linkedVoterId
 									? {
@@ -275,6 +309,36 @@ async function onSaveChanges() {
 											],
 										}
 									: {}),
+								...(affiliationId !== linkedAffiliationId
+									? {
+											voter_affiliations: [
+												{
+													...(linkedAffiliationId
+														? {
+																disconnect: [
+																	{
+																		where: {
+																			node: { id: { eq: linkedAffiliationId } },
+																		},
+																	},
+																],
+															}
+														: {}),
+													...(affiliationId
+														? {
+																connect: [
+																	{
+																		where: {
+																			node: { id: { eq: affiliationId } },
+																		},
+																	},
+																],
+															}
+														: {}),
+												},
+											],
+										}
+									: {}),
 							},
 						},
 						votes: {
@@ -296,7 +360,12 @@ async function onSaveChanges() {
 										peopleOptions.value?.find((p) => p.value === voterId)
 											?.name ||
 										'',
-									voter_party: vote.voter_party,
+									voter_affiliation_raw:
+										vote.voter_affiliation_raw ||
+										affiliationOptions.value?.find(
+											(a) => a.value === affiliationId,
+										)?.label ||
+										'',
 									option: vote.option,
 									...(voterId
 										? {
@@ -305,6 +374,19 @@ async function onSaveChanges() {
 														{
 															where: {
 																node: { id: { eq: voterId } },
+															},
+														},
+													],
+												},
+											}
+										: {}),
+									...(affiliationId
+										? {
+												voter_affiliations: {
+													connect: [
+														{
+															where: {
+																node: { id: { eq: affiliationId } },
 															},
 														},
 													],
@@ -468,12 +550,15 @@ function scrollToRow(id: string) {
 				:vote-event
 				:original-votes-map
 				:people-options
+				:affiliation-options
 				:errors="voteValidationResult?.errors ?? []"
 				:edited-cells
 				:edited-rows
 				:selected-voter-ids
+				:selected-affiliation-ids
 				@edited="(arg) => markVoteAsEdited(...arg)"
 				@voter-selected="(arg) => selectVoter(...arg)"
+				@affiliation-selected="(arg) => selectAffiliation(...arg)"
 				@deleted="showRowDeleteNotification"
 			/>
 			<VotesSummary class="sticky top-16 max-w-xs" :vote-event />

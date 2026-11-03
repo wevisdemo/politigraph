@@ -48,7 +48,6 @@ test.describe('Votes Management', () => {
 		const voteRow = getVoteRow(page, votes[0].id);
 		await editTextInput(page, voteRow, 0, '5');
 		await editTextInput(page, voteRow, 1, '999');
-		await editTextInput(page, voteRow, 2, 'พรรคใหม่');
 		await editDropdown(voteRow, 4, VOTE_OPTIONS.DISAGREE);
 
 		await saveVotes(page);
@@ -59,9 +58,6 @@ test.describe('Votes Management', () => {
 		).toHaveValue('5');
 		await expect(refreshedRow.locator('input[type="text"]').nth(1)).toHaveValue(
 			'999',
-		);
-		await expect(refreshedRow.locator('input[type="text"]').nth(2)).toHaveValue(
-			'พรรคใหม่',
 		);
 		await expect(refreshedRow.locator('td').nth(4)).toContainText(
 			VOTE_OPTIONS.DISAGREE,
@@ -88,7 +84,6 @@ test.describe('Votes Management', () => {
 			const newRow = rows.nth(i + 1);
 			await editTextInput(page, newRow, 0, order);
 			await editTextInput(page, newRow, 1, `00${order}`);
-			await editTextInput(page, newRow, 2, 'พรรคใหม่');
 		}
 
 		await saveVotes(page);

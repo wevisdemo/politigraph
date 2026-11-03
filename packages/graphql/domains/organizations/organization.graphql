@@ -94,6 +94,15 @@ type Organization @node {
 	links: [Link!]!
 		@relationship(type: "HAVE", properties: "Relation", direction: OUT)
 	"""
+	การลงคะแนนเสียงของสมาชิกองค์กรนี้
+	"""
+	member_votes: [Vote!]!
+		@relationship(
+			type: "AFFILIATED_WITH"
+			properties: "Relation"
+			direction: IN
+		)
+	"""
 	วันที่เพิ่มลงในฐานข้อมูล
 	"""
 	created_at: DateTime! @timestamp(operations: [CREATE])

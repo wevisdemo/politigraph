@@ -44,7 +44,7 @@ To add a migration:
 1. Create the next numbered `.cypher` file (`NNNN-short-name.cypher`, no gaps). It is discovered automatically: a Bun macro reads the folder at bundle time, so the files are embedded in the compiled API. A unit test checks the numbering.
 2. Never edit an applied file, the runner rejects a changed checksum. Add a new migration instead.
 3. Make every statement safe to re-run (`IF NOT EXISTS`, guarded `SET`). Neo4j cannot mix schema and data changes in one transaction, so statements run one by one and a failed file is retried from its first statement.
-4. Keep it compatible with the previous release. In production migrations run before the new API is deployed, while the old one is still serving.
+4. Prefer compatibility with the previous release: in production migrations run before the new API is deployed, while the old one is still serving. A breaking data change is acceptable when it ships with the matching API in the same deploy. Note it in the PR, because a failed deploy leaves the old API on migrated data until fixed forward.
 
 Migrations are forward-only. They run through `bun run migrate`, which turbo triggers for `dev`, `test:integration` and `test:e2e`, and in CI before deploy. The API refuses to start while migrations are pending.
 
