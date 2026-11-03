@@ -9,6 +9,15 @@ description: รายการการเปลี่ยนแปลงที�
 
 ## 2026-11-03
 
+**Added**
+
+- `Vote.voter_affiliations: [Organization!]!` และ `Organization.member_votes: [Vote!]!` เชื่อมการลงคะแนนเสียงกับพรรคหรือวุฒิสภาที่ผู้ลงคะแนนสังกัดในขณะนั้น
+- `Vote.voter_affiliation_raw` แทนที่ `Vote.voter_party`
+
+**Deprecated**
+
+- `Vote.voter_party` ให้ใช้ `Vote.voter_affiliation_raw` แทน
+
 **Fixed**
 
 - การเลือก `id` หรือ `created_at` จาก `edges.properties` จะไม่เกิดข้อผิดพลาด `Cannot return null for non-nullable field Relation.id` อีกต่อไป Relationship ที่เคยขาดค่าเหล่านี้ได้รับการเติมค่าแล้ว โดย `created_at` เป็นค่าโดยประมาณจาก Node ต้นทาง และ Relationship ใหม่จะได้รับค่าโดยอัตโนมัติ

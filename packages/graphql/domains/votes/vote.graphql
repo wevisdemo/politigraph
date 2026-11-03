@@ -48,7 +48,22 @@ type Vote
 	"""
 	ชื่อสังกัด (จากตารางในรายงานการประชุมของ MSBIS)
 	"""
+	voter_affiliation_raw: String
+	"""
+	ชื่อสังกัด (จากตารางในรายงานการประชุมของ MSBIS)
+	"""
 	voter_party: String
+		@alias(property: "voter_affiliation_raw")
+		@deprecated(reason: "Use `voter_affiliation_raw` instead.")
+	"""
+	องค์กรที่สังกัดในขณะลงคะแนนเสียง
+	"""
+	voter_affiliations: [Organization!]!
+		@relationship(
+			type: "AFFILIATED_WITH"
+			properties: "Relation"
+			direction: OUT
+		)
 	"""
 	การออกเสียงลงคะแนน
 	"""

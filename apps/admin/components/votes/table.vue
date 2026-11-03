@@ -1,26 +1,40 @@
 <script setup lang="ts">
 import { Download16, UserFollow16 } from '@carbon/icons-vue';
-import type { Person, Vote, VoteEvent } from '@politigraph/graphql/genql';
+import type {
+	Organization,
+	Person,
+	Vote,
+	VoteEvent,
+} from '@politigraph/graphql/genql';
+import type { AffiliationOption } from '~/composables/use-affiliation-options';
 import type { PeopleOption } from '~/composables/use-people-options';
-import { standardVoteOptions, VOTER_CELL_KEY } from '~/constants/votes';
-import { getEffectiveVoterId, type VoteIssue } from '~/utils/votes';
+import {
+	AFFILIATION_CELL_KEY,
+	standardVoteOptions,
+	VOTER_CELL_KEY,
+} from '~/constants/votes';
+import {
+	getEffectiveAffiliationId,
+	getEffectiveVoterId,
+	type VoteIssue,
+} from '~/utils/votes';
 import { csvFormat } from 'd3-dsv';
 import { closest } from 'fastest-levenshtein';
 
-type EditableVoteFields =
-	'vote_order' | 'badge_number' | 'voter_party' | 'option';
+type EditableVoteFields = 'vote_order' | 'badge_number' | 'option';
 
-type SortKey = EditableVoteFields | 'voter_name_raw';
+type SortKey = EditableVoteFields | 'voter_name_raw' | 'voter_affiliation_raw';
 
 const SORTABLE_COLUMNS: {
 	key: SortKey;
 	heading: string;
 	class?: string;
+	colspan?: number;
 }[] = [
-	{ key: 'vote_order', heading: 'ลำดับที่', class: 'w-36' },
-	{ key: 'badge_number', heading: 'เลขที่บัตร', class: 'w-36' },
-	{ key: 'voter_name_raw', heading: 'ชื่อ-สกุล' },
-	{ key: 'voter_party', heading: 'ชื่อสังกัด', class: 'w-48' },
+	{ key: 'vote_order', heading: 'ลำดับที่', class: 'w-32' },
+	{ key: 'badge_number', heading: 'เลขที่บัตร', class: 'w-32' },
+	{ key: 'voter_name_raw', heading: 'ชื่อ-สกุล', colspan: 3 },
+	{ key: 'voter_affiliation_raw', heading: 'ชื่อสังกัด', colspan: 2 },
 	{ key: 'option', heading: 'ผลการลงคะแนน', class: 'w-48' },
 ];
 
@@ -30,11 +44,12 @@ type VoteEventProp = Pick<VoteEvent, 'id' | 'title' | 'publish_status'> & {
 		| 'id'
 		| 'vote_order'
 		| 'voter_name_raw'
-		| 'voter_party'
+		| 'voter_affiliation_raw'
 		| 'option'
 		| 'badge_number'
 	> & {
 		voters: Pick<Person, 'id'>[];
+		voter_affiliations: Pick<Organization, 'id'>[];
 	})[];
 };
 
@@ -42,10 +57,12 @@ const props = defineProps<{
 	voteEvent: VoteEventProp | null;
 	originalVotesMap: Record<string, Partial<Vote>>;
 	peopleOptions: PeopleOption[] | null;
+	affiliationOptions: AffiliationOption[] | null;
 	editedRows: Set<string>;
 	editedCells: Set<string>;
 	errors: VoteIssue[];
 	selectedVoterIds: Record<string, string>;
+	selectedAffiliationIds: Record<string, string>;
 }>();
 
 const activeEditingCell = defineModel<{
@@ -58,10 +75,13 @@ const emit = defineEmits<{
 	(e: 'deleted', count: number): void;
 	(e: 'edited', rowColumnId: [string, EditableVoteFields]): void;
 	(e: 'voterSelected', rowVoterId: [string, string]): void;
+	(e: 'affiliationSelected', rowAffiliationId: [string, string]): void;
 }>();
 
 const getSelectedVoterId = (row: VoteEventProp['votes'][number]) =>
 	getEffectiveVoterId(row, props.selectedVoterIds);
+const getSelectedAffiliationId = (row: VoteEventProp['votes'][number]) =>
+	getEffectiveAffiliationId(row, props.selectedAffiliationIds);
 
 const searchQuery = ref('');
 
@@ -74,6 +94,9 @@ const peopleLabelById = computed(
 );
 const peopleLabels = computed(
 	() => props.peopleOptions?.map((p) => p.label) ?? [],
+);
+const affiliationLabelById = computed(
+	() => new Map(props.affiliationOptions?.map((a) => [a.value, a.label])),
 );
 const errorIds = computed(() => new Set(props.errors.map((e) => e.id)));
 
@@ -91,7 +114,7 @@ const filteredVotes = computed(() => {
 			!toDeleteIds.value.has(vote.id) &&
 			(isNewRow(vote.id) ||
 				vote.voter_name_raw?.toLowerCase().includes(query) ||
-				vote.voter_party?.toLowerCase().includes(query) ||
+				vote.voter_affiliation_raw?.toLowerCase().includes(query) ||
 				vote.badge_number?.toString().includes(query)),
 	);
 });
@@ -106,6 +129,14 @@ const activeRow = computed(() =>
 const getSortValue = (row: VoteEventProp['votes'][number], key: SortKey) => {
 	if (key === 'voter_name_raw') {
 		return peopleLabelById.value.get(getSelectedVoterId(row)) || row[key] || '';
+	}
+
+	if (key === 'voter_affiliation_raw') {
+		return (
+			affiliationLabelById.value.get(getSelectedAffiliationId(row)) ||
+			row[key] ||
+			''
+		);
 	}
 
 	if (key === 'option') {
@@ -225,6 +256,8 @@ const startEditing = (rowId: string, columnId: number) => {
 
 const onEdited = (arg: [string, EditableVoteFields]) => emit('edited', arg);
 const onVoterSelected = (arg: [string, string]) => emit('voterSelected', arg);
+const onAffiliationSelected = (arg: [string, string]) =>
+	emit('affiliationSelected', arg);
 
 const newRowCountInput = ref(1);
 const newRowCount = computed(() =>
@@ -239,9 +272,10 @@ const addNewRows = () => {
 			vote_order: '',
 			badge_number: '',
 			voter_name_raw: '',
-			voter_party: '',
+			voter_affiliation_raw: '',
 			option: '',
 			voters: [],
+			voter_affiliations: [],
 		}),
 	);
 	if (props.voteEvent && props.voteEvent.votes) {
@@ -267,7 +301,7 @@ const downloadCSV = () => {
 		{ key: 'vote_order', label: 'ลำดับ' },
 		{ key: 'badge_number', label: 'เลขที่บัตร' },
 		{ key: 'voter_name_raw', label: 'ชื่อ-สกุล' },
-		{ key: 'voter_party', label: 'พรรค' },
+		{ key: 'voter_affiliation_raw', label: 'พรรค' },
 		{ key: 'option', label: 'ผลลงคะแนน' },
 	];
 
@@ -308,7 +342,7 @@ const downloadCSV = () => {
 			title="Votes"
 			helper-text="การลงมติรายบุคคล"
 			:rows="displayedVotes"
-			class="w-full table-fixed"
+			class="w-full"
 			@search="onSearch"
 			@sort="onSort"
 		>
@@ -341,6 +375,7 @@ const downloadCSV = () => {
 					:key="column.key"
 					:heading="column.heading"
 					:class="column.class"
+					:colspan="column.colspan"
 					:order="columnOrders[column.key] ?? 'none'"
 					sortable
 				/>
@@ -361,13 +396,22 @@ const downloadCSV = () => {
 					:row-class="getRowClass(row.id)"
 					:is-new="isNewRow(row.id)"
 					:is-voter-cell-edited="isCellEdited(row.id, VOTER_CELL_KEY)"
+					:is-affiliation-cell-edited="
+						isCellEdited(row.id, AFFILIATION_CELL_KEY)
+					"
 					:is-option-cell-edited="isCellEdited(row.id, 'option')"
 					:selected-voter-id="getSelectedVoterId(row)"
 					:voter-label="peopleLabelById.get(getSelectedVoterId(row)) ?? ''"
 					:voter-options="activeRow === row ? activeVoterOptions : undefined"
+					:selected-affiliation-id="getSelectedAffiliationId(row)"
+					:affiliation-label="
+						affiliationLabelById.get(getSelectedAffiliationId(row)) ?? ''
+					"
+					:affiliation-options="affiliationOptions ?? []"
 					@start-editing="startEditing"
 					@edited="onEdited"
 					@voter-selected="onVoterSelected"
+					@affiliation-selected="onAffiliationSelected"
 					@deleted="deleteRow"
 				/>
 			</template>
@@ -384,6 +428,10 @@ const downloadCSV = () => {
 
 table tr th {
 	@apply pl-4;
+}
+
+::v-deep(.bx--data-table) {
+	@apply table-fixed;
 }
 
 ::v-deep(.bx--data-table th:last-of-type) {

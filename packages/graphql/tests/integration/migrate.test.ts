@@ -88,7 +88,13 @@ describe('runMigrations', () => {
 		await run(
 			`CREATE (:Bill {id: 'b', lis_id: 7}), (:Bill {id: 'c', lis_ids: [8, 9]}), (:VoteEvent {id: 'v', msbis_id: 3})
 			CREATE (:Vote {id: 'iso', created_at: '2025-05-26T02:45:16.884Z'})-[:VOTED_BY]->(:Person {id: 'p'})
-			CREATE (:Vote {id: 'kept'})-[:VOTED_BY {id: 'existing', created_at: datetime('2024-01-01T00:00:00Z')}]->(:Person {id: 'q'})`,
+			CREATE (:Vote {id: 'kept'})-[:VOTED_BY {id: 'existing', created_at: datetime('2024-01-01T00:00:00Z')}]->(:Person {id: 'q'})
+			CREATE (:Organization {id: 'party', classification: 'POLITICAL_PARTY', name: 'ปาร์ตี้'})
+			CREATE (senateA:Organization {id: 'senateA', classification: 'HOUSE_OF_SENATE', name: 'สว. A'})
+			CREATE (:Organization {id: 'senateB', classification: 'HOUSE_OF_SENATE', name: 'สว. B'})			CREATE (senateA)-[:HELD_EVENT]->(ve:VoteEvent {id: 've'})
+			CREATE (:Vote {id: 'partyVote', voter_party: 'ปาร์ตี้'})
+			CREATE (:Vote {id: 'senateVote', voter_party: 'สมาชิกวุฒิสภา'})-[:VOTED_IN]->(ve)
+			CREATE (:Vote {id: 'noMatchVote', voter_party: 'ไม่มีพรรค'})`,
 		);
 		await applyAll();
 		const afterFirstRun = await snapshot();
@@ -114,6 +120,23 @@ describe('runMigrations', () => {
 		).toEqual([
 			[['7'], true],
 			[['8', '9'], true],
+		]);
+		const affiliations = await run(
+			`MATCH (vote:Vote) WHERE vote.id IN ['partyVote', 'senateVote', 'noMatchVote']
+			OPTIONAL MATCH (vote)-[:AFFILIATED_WITH]->(org)
+			RETURN vote.id AS voteId, vote.voter_affiliation_raw AS raw, vote.voter_party IS NULL AS removed, collect(org.id) AS orgIds ORDER BY voteId`,
+		);
+		expect(
+			affiliations.records.map((r) => [
+				r.get('voteId'),
+				r.get('raw'),
+				r.get('removed'),
+				r.get('orgIds'),
+			]),
+		).toEqual([
+			['noMatchVote', 'ไม่มีพรรค', true, []],
+			['partyVote', 'ปาร์ตี้', true, ['party']],
+			['senateVote', 'สมาชิกวุฒิสภา', true, ['senateA']],
 		]);
 		await applyAll();
 

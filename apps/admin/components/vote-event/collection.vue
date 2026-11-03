@@ -9,7 +9,7 @@ const props = defineProps<{
 		| 'id'
 		| 'vote_order'
 		| 'voter_name_raw'
-		| 'voter_party'
+		| 'voter_affiliation_raw'
 		| 'option'
 		| 'badge_number'
 	> & {
@@ -71,7 +71,9 @@ const router = useRouter();
 					<cv-data-table-cell>
 						{{ row.voters.at(0)?.name || row.voter_name_raw }}
 					</cv-data-table-cell>
-					<cv-data-table-cell>{{ row.voter_party }}</cv-data-table-cell>
+					<cv-data-table-cell>{{
+						row.voter_affiliation_raw
+					}}</cv-data-table-cell>
 					<cv-data-table-cell>{{ row.option }}</cv-data-table-cell>
 				</cv-data-table-row>
 			</template>

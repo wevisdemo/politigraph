@@ -6,7 +6,8 @@ export type VoteIssueType =
 	| 'DUPLICATED'
 	| 'INVALID_OPTION'
 	| 'INVALID_VOTER_NAME'
-	| 'MISSING_INFORMATION';
+	| 'MISSING_INFORMATION'
+	| 'UNLINKED_AFFILIATION';
 
 export interface VoteIssue {
 	type: VoteIssueType;
@@ -25,6 +26,22 @@ export function getEffectiveVoterId(
 	selectedVoterIds: Record<string, string>,
 ) {
 	return selectedVoterIds[vote.id] ?? vote.voters[0]?.id ?? '';
+}
+
+/**
+ * Resolves the organization a row is affiliated with, preferring an unsaved selection over the persisted link.
+ *
+ * @param vote - Vote row with its persisted affiliations.
+ * @param selectedAffiliationIds - Unsaved affiliation selections keyed by vote id.
+ * @returns The organization id the row should be linked to, or an empty string when unlinked.
+ */
+export function getEffectiveAffiliationId(
+	vote: Pick<Vote, 'id'> & { voter_affiliations: { id: string }[] },
+	selectedAffiliationIds: Record<string, string>,
+) {
+	return (
+		selectedAffiliationIds[vote.id] ?? vote.voter_affiliations[0]?.id ?? ''
+	);
 }
 
 /**
@@ -47,9 +64,10 @@ export function validateVotes({
 		| 'badge_number'
 		| 'option'
 		| 'voter_name_raw'
-		| 'voter_party'
+		| 'voter_affiliation_raw'
 	> & {
 		voters: { id: string }[];
+		voter_affiliations: { id: string }[];
 	})[];
 }) {
 	const errors: VoteIssue[] = [];
@@ -87,6 +105,10 @@ export function validateVotes({
 
 		if (vote.voters.length === 0) {
 			warnings.push({ type: 'INVALID_VOTER_NAME', id: vote.id });
+		}
+
+		if (vote.voter_affiliations.length === 0) {
+			warnings.push({ type: 'UNLINKED_AFFILIATION', id: vote.id });
 		}
 
 		if (!standardVoteOptions.includes(vote.option)) {

@@ -13,7 +13,7 @@ export interface VoteInput {
 	vote_order: string;
 	badge_number: string;
 	voter_name_raw: string;
-	voter_party: string;
+	voter_affiliation_raw: string;
 	option: string;
 }
 
@@ -21,7 +21,7 @@ export const DEFAULT_VOTE: VoteInput = {
 	vote_order: '1',
 	badge_number: '001',
 	voter_name_raw: 'ทดสอบ ชื่อ',
-	voter_party: 'พรรคทดสอบ',
+	voter_affiliation_raw: 'พรรคทดสอบ',
 	option: VOTE_OPTIONS.AGREE,
 };
 

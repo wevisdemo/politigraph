@@ -10,7 +10,7 @@
 - Don't write arbitrary comment if the code is self-explainable
 - Add/update test cases if your changes effect business logic, only add high value test case and grouped it if possible to reduce redundancy and test time
 - If your changes affect the GraphQL schema, query limits, API endpoints or MCP tools, add a dated entry to `apps/docs/src/content/docs/en/changelog.mdx` and its Thai translation in `apps/docs/src/content/docs/changelog.mdx`. CI enforces this only for `domains/**` (`.graphql` and `.ts`) and `deprecated-fields.ts` in `packages/graphql`
-- Neo4j indexes, constraints and data changes go in a new numbered file in `packages/graphql/neo4j/migrations/`, which is discovered automatically. Never edit an applied migration, and keep it idempotent and compatible with the previous release. See `packages/graphql/README.md`
+- Neo4j indexes, constraints and data changes go in a new numbered file in `packages/graphql/neo4j/migrations/`, which is discovered automatically. Never edit an applied migration, and keep it idempotent. Prefer compatibility with the previous release; a breaking data change must ship with the matching API in the same deploy and be noted in the PR. See `packages/graphql/README.md`
 - After finishing any task, run the following commands:
   - Check type with `bun run check`
   - Lint with `bun run lint`, all errors and warnings must be fixed

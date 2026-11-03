@@ -1,4 +1,5 @@
 export const VOTER_CELL_KEY = 'voter';
+export const AFFILIATION_CELL_KEY = 'affiliation';
 
 export const standardVoteOptions = [
 	'เห็นด้วย',
