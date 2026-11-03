@@ -96,12 +96,12 @@ The bill merging stage is an event that occurs when multiple bills with similar 
 
 In terms of data structure, all **`Bill`** nodes within the same deliberation group link to the same **`BillMergeEvent`**, representing their common point of consideration.
 
-The **`BillMergeEvent`** stores the **ID** (`id`) of the bill that the chamber resolved to use as the primary draft for further consideration (property `main_bill_id` in **`BillMergeEvent`**).
+The **`BillMergeEvent`** also links to the bill that the chamber resolved to use as the primary draft for further consideration (relationship `main_bill` in **`BillMergeEvent`**, or `main_bill_merge_events` in **`Bill`** from the other direction).
 
 Example of a bill being designated as the Primary Bill by the House of Representatives:
 
 <QueryTabs
-	query="query BillMergeEvents($where: BillMergeEventWhere) { billMergeEvents(where: $where) { id main_bill_id total_merged_bills bills { id title } }}"
+	query="query BillMergeEvents($where: BillMergeEventWhere) { billMergeEvents(where: $where) { id main_bill { id title } total_merged_bills bills { id title } }}"
 	variables='{ "where": { "id": { "eq": "f54b6def-9b4f-41d0-a6f3-72bdc7ae36af" } }}'
 />
 

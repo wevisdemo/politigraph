@@ -94,7 +94,8 @@ describe('runMigrations', () => {
 			CREATE (:Organization {id: 'senateB', classification: 'HOUSE_OF_SENATE', name: 'สว. B'})			CREATE (senateA)-[:HELD_EVENT]->(ve:VoteEvent {id: 've'})
 			CREATE (:Vote {id: 'partyVote', voter_party: 'ปาร์ตี้'})
 			CREATE (:Vote {id: 'senateVote', voter_party: 'สมาชิกวุฒิสภา'})-[:VOTED_IN]->(ve)
-			CREATE (:Vote {id: 'noMatchVote', voter_party: 'ไม่มีพรรค'})`,
+			CREATE (:Vote {id: 'noMatchVote', voter_party: 'ไม่มีพรรค'})
+			CREATE (:BillMergeEvent {id: 'merge', main_bill_id: 'b'}), (:BillMergeEvent {id: 'mergeMissing', main_bill_id: 'gone'})`,
 		);
 		await applyAll();
 		const afterFirstRun = await snapshot();
@@ -137,6 +138,22 @@ describe('runMigrations', () => {
 			['noMatchVote', 'ไม่มีพรรค', true, []],
 			['partyVote', 'ปาร์ตี้', true, ['party']],
 			['senateVote', 'สมาชิกวุฒิสภา', true, ['senateA']],
+		]);
+		const mergeEvents = await run(
+			`MATCH (event:BillMergeEvent)
+			OPTIONAL MATCH (event)-[relation:HAS_MAIN_BILL]->(bill)
+			RETURN event.id AS eventId, event.main_bill_id IS NULL AS removed, bill.id AS billId, relation.id IS NOT NULL AS hasId ORDER BY eventId`,
+		);
+		expect(
+			mergeEvents.records.map((r) => [
+				r.get('eventId'),
+				r.get('removed'),
+				r.get('billId'),
+				r.get('hasId'),
+			]),
+		).toEqual([
+			['merge', true, 'b', true],
+			['mergeMissing', true, null, false],
 		]);
 		await applyAll();
 

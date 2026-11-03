@@ -78,7 +78,7 @@ const {
 					description: true,
 					start_date: true,
 					end_date: true,
-					main_bill_id: true,
+					main_bill: { id: true },
 					publish_status: true,
 					bills: {
 						id: true,
@@ -414,18 +414,50 @@ async function handleSave() {
 				},
 			});
 		} else if (event.__typename === 'BillMergeEvent') {
+			const originalEvent = billData.value?.events?.find(
+				(e) => e.id === event.id,
+			);
+			const originalMainBillId =
+				originalEvent?.__typename === 'BillMergeEvent'
+					? originalEvent.main_bill?.id
+					: undefined;
+			const newMainBillId = event.main_bill?.id;
+			const eventWhere = { where: { node: { id: { eq: event.id } } } };
+
 			await graphqlClient.mutation({
 				updateBillMergeEvents: {
-					__args: {
-						where,
-						update: {
-							...baseUpdate,
-							main_bill_id: { set: event.main_bill_id },
-						},
-					},
+					__args: { where, update: baseUpdate },
 					billMergeEvents: { id: true },
 				},
 			});
+
+			if (newMainBillId !== originalMainBillId) {
+				await graphqlClient.mutation({
+					updateBills: {
+						__args: {
+							where: { main_bill_merge_events: { some: where } },
+							update: {
+								main_bill_merge_events: [{ disconnect: [eventWhere] }],
+							},
+						},
+						bills: { id: true },
+					},
+				});
+
+				if (newMainBillId) {
+					await graphqlClient.mutation({
+						updateBills: {
+							__args: {
+								where: { id: { eq: newMainBillId } },
+								update: {
+									main_bill_merge_events: [{ connect: [eventWhere] }],
+								},
+							},
+							bills: { id: true },
+						},
+					});
+				}
+			}
 		} else if (event.__typename === 'BillRejectEvent') {
 			await graphqlClient.mutation({
 				updateBillRejectEvents: {

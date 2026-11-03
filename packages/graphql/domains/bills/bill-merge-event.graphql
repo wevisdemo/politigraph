@@ -31,7 +31,17 @@ type BillMergeEvent implements Event @node {
 	"""
 	กฏหมายร่างหลัก
 	"""
+	main_bill: Bill
+		@relationship(type: "HAS_MAIN_BILL", properties: "Relation", direction: OUT)
+	"""
+	ID ของกฏหมายร่างหลัก
+	"""
 	main_bill_id: String
+		@cypher(
+			statement: "MATCH (this)-[:HAS_MAIN_BILL]->(bill:Bill) RETURN bill.id AS id LIMIT 1"
+			columnName: "id"
+		)
+		@deprecated(reason: "Use `main_bill { id }` instead.")
 	"""
 	จำนวนร่างกฎหมายที่ถูกรวม
 	"""

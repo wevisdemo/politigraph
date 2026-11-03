@@ -22,7 +22,7 @@ useHead({
 
 type BillEvent = {
 	__typename?: unknown;
-	main_bill_id?: unknown;
+	main_bill?: unknown;
 	vote_eventsConnection?: {
 		totalCount?: unknown;
 	};
@@ -138,7 +138,7 @@ const { data } = await useLazyAsyncData(
 				OR: [
 					{
 						events: {
-							some: { BillMergeEvent: { main_bill_id: { eq: null } } },
+							some: { BillMergeEvent: { main_bill: null } },
 						},
 					},
 					{
@@ -186,7 +186,7 @@ const { data } = await useLazyAsyncData(
 					__typename: true,
 
 					on_BillMergeEvent: {
-						main_bill_id: true,
+						main_bill: { id: true },
 					},
 
 					on_BillVoteEvent: {
@@ -267,7 +267,7 @@ const getEventCompleteness = (data: unknown[]) => {
 
 		const event = item as BillEvent;
 
-		if (event.__typename === 'BillMergeEvent' && event.main_bill_id === null) {
+		if (event.__typename === 'BillMergeEvent' && event.main_bill === null) {
 			return count - 1;
 		}
 

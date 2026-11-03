@@ -50,6 +50,11 @@ type Bill implements Motion @node {
 	events: [BillEvent!]!
 		@relationship(type: "IN", properties: "Relation", direction: IN)
 	"""
+	การรวมร่างที่ใช้ร่างนี้เป็นร่างหลัก
+	"""
+	main_bill_merge_events: [BillMergeEvent!]!
+		@relationship(type: "HAS_MAIN_BILL", properties: "Relation", direction: IN)
+	"""
 	ประเภท
 	"""
 	classification: BillType!

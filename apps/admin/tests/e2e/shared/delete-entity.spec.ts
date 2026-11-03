@@ -270,11 +270,11 @@ test.describe('Delete entity', () => {
 
 		await gql(
 			page,
-			`mutation ($eventId: ID!, $billId: String!) {
-				updateBillMergeEvents(
-					where: { id: { eq: $eventId } }
-					update: { main_bill_id: { set: $billId } }
-				) { billMergeEvents { id } }
+			`mutation ($eventId: ID!, $billId: ID!) {
+				updateBills(
+					where: { id: { eq: $billId } }
+					update: { main_bill_merge_events: [{ connect: [{ where: { node: { id: { eq: $eventId } } } }] }] }
+				) { bills { id } }
 			}`,
 			{ eventId: mergeEvent.id, billId: bill.id },
 		);
@@ -299,10 +299,10 @@ test.describe('Delete entity', () => {
 		).toBe(0);
 		const { billMergeEvents } = await gql(
 			page,
-			`query ($id: ID!) { billMergeEvents(where: { id: { eq: $id } }) { main_bill_id } }`,
+			`query ($id: ID!) { billMergeEvents(where: { id: { eq: $id } }) { main_bill { id } } }`,
 			{ id: mergeEvent.id },
 		);
-		expect(billMergeEvents).toEqual([{ main_bill_id: null }]);
+		expect(billMergeEvents).toEqual([{ main_bill: null }]);
 		expect(await countExisting(page, 'bills', [otherBillId])).toBe(1);
 
 		await gql(
