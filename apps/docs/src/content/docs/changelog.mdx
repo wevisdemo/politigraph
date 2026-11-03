@@ -9,14 +9,20 @@ description: รายการการเปลี่ยนแปลงที�
 
 ## 2026-11-03
 
+**Breaking**
+
+- ไม่สามารถกำหนด `BillMergeEvent.main_bill_id` ผ่าน `createBillMergeEvents` หรือ `updateBillMergeEvents` ได้อีกต่อไป ให้เชื่อมร่างหลักผ่าน `Bill.main_bill_merge_events` ใน `createBills` หรือ `updateBills` แทน
+
 **Added**
 
 - `Vote.voter_affiliations: [Organization!]!` และ `Organization.member_votes: [Vote!]!` เชื่อมการลงคะแนนเสียงกับพรรคหรือวุฒิสภาที่ผู้ลงคะแนนสังกัดในขณะนั้น
 - `Vote.voter_affiliation_raw` แทนที่ `Vote.voter_party`
+- `BillMergeEvent.main_bill: Bill` และ `Bill.main_bill_merge_events: [BillMergeEvent!]!` เชื่อมขั้นตอนการรวมร่างกับร่างหลัก แทนที่ `BillMergeEvent.main_bill_id`
 
 **Deprecated**
 
 - `Vote.voter_party` ให้ใช้ `Vote.voter_affiliation_raw` แทน
+- `BillMergeEvent.main_bill_id` ให้ใช้ `BillMergeEvent.main_bill { id }` แทน
 
 **Fixed**
 

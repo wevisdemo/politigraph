@@ -156,7 +156,7 @@ export function useEntityDeletion(entity: DeletableEntity) {
 			billMergeEventsConnection: {
 				__args: {
 					where: {
-						main_bill_id: { eq: id },
+						main_bill: { id: { eq: id } },
 						NOT: { bills: { all: { id: { eq: id } } } },
 					},
 				},
@@ -250,7 +250,7 @@ export function useEntityDeletion(entity: DeletableEntity) {
 			},
 		});
 
-	const deleteBill = async (id: string) => {
+	const deleteBill = (id: string) => {
 		const ownEvents = [
 			{
 				where: { node: { bills: { all: { id: { eq: id } } } } },
@@ -258,7 +258,7 @@ export function useEntityDeletion(entity: DeletableEntity) {
 			},
 		];
 
-		await graphqlClient.mutation({
+		return graphqlClient.mutation({
 			deleteBills: {
 				__args: {
 					where: { id: { eq: id } },
@@ -274,16 +274,6 @@ export function useEntityDeletion(entity: DeletableEntity) {
 					},
 				},
 				nodesDeleted: true,
-			},
-		});
-
-		await graphqlClient.mutation({
-			updateBillMergeEvents: {
-				__args: {
-					where: { main_bill_id: { eq: id } },
-					update: { main_bill_id: { set: null } },
-				},
-				billMergeEvents: { id: true },
 			},
 		});
 	};

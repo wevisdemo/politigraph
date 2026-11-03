@@ -9,14 +9,20 @@ When a client-visible field is renamed or removed, the old field is kept for a w
 
 ## 2026-11-03
 
+**Breaking**
+
+- `BillMergeEvent.main_bill_id` can no longer be set by `createBillMergeEvents` or `updateBillMergeEvents`. Link the main bill with `Bill.main_bill_merge_events` in `createBills` or `updateBills` instead
+
 **Added**
 
 - `Vote.voter_affiliations: [Organization!]!` and `Organization.member_votes: [Vote!]!`, linking a vote to the party or Senate term the voter belonged to at the time.
 - `Vote.voter_affiliation_raw`, replacing `Vote.voter_party`
+- `BillMergeEvent.main_bill: Bill` and `Bill.main_bill_merge_events: [BillMergeEvent!]!`, linking a merge event to its main bill, replacing `BillMergeEvent.main_bill_id`
 
 **Deprecated**
 
 - `Vote.voter_party`, use `Vote.voter_affiliation_raw` instead
+- `BillMergeEvent.main_bill_id`, use `BillMergeEvent.main_bill { id }` instead
 
 **Fixed**
 

@@ -54,7 +54,7 @@ const hasChanges = (event: BillEventForm): boolean => {
 
 const isEventComplete = (event: BillEventForm): boolean => {
 	if (event.__typename === 'BillMergeEvent') {
-		return event.main_bill_id !== null;
+		return event.main_bill !== null;
 	}
 	if (event.__typename === 'BillVoteEvent') {
 		return event.vote_events !== undefined && event.vote_events.length > 0;

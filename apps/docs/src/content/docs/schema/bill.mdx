@@ -104,13 +104,13 @@ import QueryTabs from '../../../components/query-tabs.astro';
 ในเชิงโครงสร้างข้อมูล ร่างพระราชบัญญัติ **`Bill`** ทุกฉบับที่อยู่ในกลุ่มการพิจารณาเดียวกัน
 จะเชื่อมโยงไปหา **`BillMergeEvent`** เดียวกัน เพื่อแสดงถึงจุดร่วมของการพิจารณา
 
-โดย **`BillMergeEvent`** จะเก็บ**ข้อมูลไอดี** (`id`) ของร่างกฎหมายฉบับที่สภาลงมติให้ใช้เป็นร่างหลักในการพิจารณาต่อไปไว้
-(Property `main_bill_id` ใน **`BillMergeEvent`**)
+โดย **`BillMergeEvent`** จะเชื่อมโยงไปยังร่างกฎหมายฉบับที่สภาลงมติให้ใช้เป็นร่างหลักในการพิจารณาต่อไป
+(Relationship `main_bill` ใน **`BillMergeEvent`** หรือ `main_bill_merge_events` ใน **`Bill`** ในทิศทางกลับกัน)
 
 ยกตัวอย่างการพิจารณาร่างพระราชบัญญัติ เป็นร่างหลัก ของสภาผู้แทนราษฎร
 
 <QueryTabs
-	query="query BillMergeEvents($where: BillMergeEventWhere) { billMergeEvents(where: $where) { id main_bill_id total_merged_bills bills { id title } }}"
+	query="query BillMergeEvents($where: BillMergeEventWhere) { billMergeEvents(where: $where) { id main_bill { id title } total_merged_bills bills { id title } }}"
 	variables='{ "where": { "id": { "eq": "f54b6def-9b4f-41d0-a6f3-72bdc7ae36af" } }}'
 />
 

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 interface BillMergeEventForm {
 	id: string;
-	main_bill_id?: string | null;
+	main_bill?: { id: string } | null;
 	bills?: {
 		id: string;
 		title?: string | null;
@@ -42,8 +42,8 @@ const emit = defineEmits<{
 				:key="bill.id"
 				:value="bill.id"
 				:name="`merge-bill-${event.id}`"
-				:model-value="event.main_bill_id ?? ''"
-				@update:model-value="(value) => emit('update', 'main_bill_id', value)"
+				:model-value="event.main_bill?.id ?? ''"
+				@update:model-value="(id) => emit('update', 'main_bill', { id })"
 			>
 				<span>
 					{{ bill.id === currentBillId ? '[ร่างนี้] ' : ''
