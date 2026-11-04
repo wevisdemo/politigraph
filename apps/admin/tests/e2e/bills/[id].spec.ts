@@ -67,3 +67,54 @@ test('switching the main bill of a merge event moves the link to the picked bill
 		{ billIds: [bill.id, otherBillId], eventId: event.id },
 	);
 });
+
+test('picking an event start date fills the end date, which can then be cleared as ongoing', async ({
+	page,
+}) => {
+	const { createBills } = await gql(
+		page,
+		`mutation {
+			createBills(input: [{
+				${billFields(`ล้างวันที่${Date.now()}`)}
+				events: { BillEnactEvent: { create: [{ node: { publish_status: UNPUBLISHED } }] } }
+			}]) {
+				bills { id events { ... on BillEnactEvent { id } } }
+			}
+		}`,
+	);
+	const [bill] = createBills.bills;
+	const [event] = bill.events as { id: string }[];
+
+	await page.goto(`/bills/${bill.id}`);
+	await page.locator('.bx--table-expand__button').first().click();
+	await page.getByLabel('Start Date').click();
+	await page
+		.locator(
+			'.flatpickr-calendar.open .flatpickr-day:not(.prevMonthDay):not(.nextMonthDay)',
+		)
+		.first()
+		.click();
+	const startDate = await page.getByLabel('Start Date').inputValue();
+	await expect(page.getByLabel('End Date')).toHaveValue(startDate);
+
+	await page.getByLabel('End Date').click();
+	await page.getByLabel('End Date').press('Delete');
+	await expect(page.getByLabel('End Date')).toHaveValue('');
+	await saveChanges(page);
+
+	const { billEnactEvents } = await gql(
+		page,
+		`query ($id: ID!) { billEnactEvents(where: { id: { eq: $id } }) { start_date end_date } }`,
+		{ id: event.id },
+	);
+	expect(billEnactEvents).toEqual([{ start_date: startDate, end_date: null }]);
+
+	await gql(
+		page,
+		`mutation ($billId: ID!, $eventId: ID!) {
+			deleteBills(where: { id: { eq: $billId } }) { nodesDeleted }
+			deleteBillEnactEvents(where: { id: { eq: $eventId } }) { nodesDeleted }
+		}`,
+		{ billId: bill.id, eventId: event.id },
+	);
+});

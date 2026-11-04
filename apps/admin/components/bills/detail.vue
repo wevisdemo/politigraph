@@ -113,13 +113,7 @@ const getOrganizationOptions = (classification: OrganizationType) => {
 
 			<div class="flex justify-between gap-5">
 				<div class="relative w-1/2">
-					<cv-date-picker
-						v-model="form.proposal_date"
-						date-label="Proposal Date*"
-						kind="single"
-						class="membership-datepicker"
-						:cal-options="{ dateFormat: 'Y-m-d' }"
-					/>
+					<FormDatePicker v-model="form.proposal_date" label="Proposal Date*" />
 				</div>
 				<div class="relative w-1/2">
 					<cv-select

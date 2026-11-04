@@ -1,5 +1,4 @@
 <script lang="ts" setup>
-import { Close16 } from '@carbon/icons-vue';
 import { enumOrganizationType } from '@politigraph/graphql/genql';
 import type { OrganizationWithPostsOption } from '~/composables/use-organizations-with-posts-options';
 import type { PeopleOption } from '~/composables/use-people-options';
@@ -267,22 +266,14 @@ const handleOrgMemberChange = (selectedValue: string) => {
 					/>
 
 					<div class="flex w-1/2 gap-5">
-						<div v-for="field in dateFields" :key="field.key" class="relative">
-							<cv-date-picker
-								v-model="modalDate[field.key]"
-								:date-label="field.label"
-								kind="single"
-								class="membership-datepicker"
-								:cal-options="{ dateFormat: 'Y-m-d' }"
-							/>
-							<button
-								v-if="modalDate[field.key]"
-								class="absolute bottom-4 right-0 m-auto size-fit cursor-pointer"
-								@click="modalDate[field.key] = null"
-							>
-								<Close16 />
-							</button>
-						</div>
+						<FormDatePicker
+							v-for="field in dateFields"
+							:key="field.key"
+							v-model="modalDate[field.key]"
+							:label="field.label"
+							class="membership-datepicker"
+							clearable
+						/>
 					</div>
 				</div>
 
@@ -340,26 +331,14 @@ const handleOrgMemberChange = (selectedValue: string) => {
 						</div>
 
 						<div class="flex w-1/2 gap-5">
-							<div
+							<FormDatePicker
 								v-for="field in dateFields"
 								:key="field.key"
-								class="relative"
-							>
-								<cv-date-picker
-									v-model="modalDate[field.key]"
-									:date-label="field.label"
-									kind="single"
-									class="membership-datepicker"
-									:cal-options="{ dateFormat: 'Y-m-d' }"
-								/>
-								<button
-									v-if="modalDate[field.key]"
-									class="absolute bottom-4 right-0 m-auto size-fit cursor-pointer"
-									@click="modalDate[field.key] = null"
-								>
-									<Close16 />
-								</button>
-							</div>
+								v-model="modalDate[field.key]"
+								:label="field.label"
+								class="membership-datepicker"
+								clearable
+							/>
 						</div>
 					</div>
 				</template>

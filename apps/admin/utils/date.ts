@@ -30,6 +30,26 @@ export const formatDate = (d: Date | string | null): string | null => {
 };
 
 /**
+ * Sets a new start date, and moves the end date with it while the end date is empty or still the same day as the old start
+ * @param dates - current start and end dates
+ * @param start_date - new start date, or null to clear it
+ * @returns the updated dates, keeping an end date the user set separately
+ */
+export const withStartDate = <
+	T extends { start_date?: string | null; end_date?: string | null },
+>(
+	dates: T,
+	start_date: string | null,
+): T => ({
+	...dates,
+	start_date,
+	end_date:
+		!dates.end_date || dates.end_date === dates.start_date
+			? start_date
+			: dates.end_date,
+});
+
+/**
  * Converts a Date object (or string) to a string in YYYY-MM-DD format for persistence
  * @param d - Date object, string, or null
  * @returns string in 'YYYY-MM-DD' format or null

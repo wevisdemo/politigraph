@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { gql } from '../shared/graphql-helpers';
 import { genId, saveChanges } from '../shared/ui-helpers';
 import { createVoteEventWithVotes, deleteVoteEvent } from './helpers';
 
@@ -27,10 +28,29 @@ test.describe('Vote Event Detail', () => {
 		await page.getByLabel('Nickname').fill('Test Nickname');
 		await page.getByLabel('Description').fill('Test description text');
 		await page.getByLabel('Classification').selectOption('MP_2');
+		await page.evaluate(() =>
+			[
+				...document.querySelectorAll<
+					HTMLInputElement & {
+						_flatpickr?: { setDate(date: string, trigger: boolean): void };
+					}
+				>('input'),
+			]
+				.find((input) => input._flatpickr)!
+				._flatpickr!.setDate('2024-02-02', true),
+		);
 
 		await saveChanges(page, { button: 'Save', toast: 'บันทึก' });
 
 		await page.reload();
 		await expect(page.getByLabel('Classification')).toHaveValue('MP_2');
+		const { voteEvents } = await gql(
+			page,
+			`query ($id: ID!) { voteEvents(where: { id: { eq: $id } }) { start_date end_date } }`,
+			{ id: voteEventId },
+		);
+		expect(voteEvents).toEqual([
+			{ start_date: '2024-02-02', end_date: '2024-02-02' },
+		]);
 	});
 });
