@@ -1,0 +1,24 @@
+
+name: Request re-OCR
+description: Request a new OCR process for a vote event.
+title: "[Re-OCR] "
+labels: ["re-OCR"]
+
+body:
+  - type: input
+    id: vote-event-url
+    attributes:
+      label: Vote event URL
+      description: URL of the vote event that needs new OCR.
+      placeholder: https://...
+    validations:
+      required: true
+
+  - type: textarea
+    id: reason
+    attributes:
+      label: Reason for re-OCR
+      description: Explain why this vote event needs new OCR, if applicable.
+      placeholder: "e.g. Incorrect text extraction, missing pages, or poor OCR accuracy."
+    validations:
+      required: false
