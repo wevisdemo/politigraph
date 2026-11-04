@@ -1,4 +1,9 @@
-import { formatDate, parseDate, serializeDate } from '~/utils/date';
+import {
+	formatDate,
+	parseDate,
+	serializeDate,
+	withStartDate,
+} from '~/utils/date';
 import { describe, expect, test } from 'vitest';
 
 describe('parseDate', () => {
@@ -44,6 +49,38 @@ describe('formatDate', () => {
 
 	test('handles invalid date string', () => {
 		expect(formatDate('invalid-date')).toBeNull();
+	});
+});
+
+describe('withStartDate', () => {
+	test.each([
+		['fills an empty end date', null, null, '2024-01-15', '2024-01-15'],
+		[
+			'moves an end date on the same day as the old start',
+			'2024-01-01',
+			'2024-01-01',
+			'2024-01-15',
+			'2024-01-15',
+		],
+		[
+			'keeps an end date set separately',
+			'2024-01-01',
+			'2024-01-03',
+			'2024-01-15',
+			'2024-01-03',
+		],
+		[
+			'clears an end date that followed the start',
+			'2024-01-01',
+			'2024-01-01',
+			null,
+			null,
+		],
+	])('%s', (_, start_date, end_date, newStart, expectedEnd) => {
+		expect(withStartDate({ start_date, end_date }, newStart)).toEqual({
+			start_date: newStart,
+			end_date: expectedEnd,
+		});
 	});
 });
 

@@ -52,10 +52,10 @@ const organizationColor = computed<string>({
 	},
 });
 
-const foundingDateLocal = ref<Date | null>(
+const foundingDateLocal = ref<Date | string | null>(
 	parseDate(modelValue.value?.founding_date ?? null),
 );
-const dissolutionDateLocal = ref<Date | null>(
+const dissolutionDateLocal = ref<Date | string | null>(
 	parseDate(modelValue.value?.dissolution_date ?? null),
 );
 
@@ -188,18 +188,16 @@ const organizationTypeOptions = Object.values(enumOrganizationType).map(
 			</cv-select>
 
 			<div class="flex flex-row">
-				<cv-date-picker
+				<FormDatePicker
 					v-model="foundingDateLocal"
-					date-label="Founding Date"
-					kind="single"
-					:cal-options="{ dateFormat: 'Y-m-d' }"
+					label="Founding Date"
+					clearable
 				/>
 
-				<cv-date-picker
+				<FormDatePicker
 					v-model="dissolutionDateLocal"
-					date-label="Dissolution Date"
-					kind="single"
-					:cal-options="{ dateFormat: 'Y-m-d' }"
+					label="Dissolution Date"
+					clearable
 				/>
 			</div>
 

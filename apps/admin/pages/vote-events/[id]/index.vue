@@ -2,6 +2,7 @@
 import type { Link } from '@politigraph/graphql/genql';
 import { useForm } from '@tanstack/vue-form';
 import { voteEventTypes } from '~/constants/vote-event';
+import { withStartDate } from '~/utils/date';
 import { validateVotes } from '~/utils/votes';
 import { diff } from 'radash';
 
@@ -30,6 +31,7 @@ const { data: voteEventData, refresh: refreshVoteEvent } =
 				title: true,
 				nickname: true,
 				start_date: true,
+				end_date: true,
 				result: true,
 				description: true,
 				publish_status: true,
@@ -81,6 +83,7 @@ const defaultValues = reactive({
 	nickname: computed(() => voteEventData?.value?.nickname),
 	classification: computed(() => voteEventData?.value?.classification),
 	start_date: computed(() => voteEventData?.value?.start_date),
+	end_date: computed(() => voteEventData?.value?.end_date),
 	result: computed(() => voteEventData?.value?.result),
 	description: computed(() => voteEventData?.value?.description),
 
@@ -142,6 +145,7 @@ const voteEventFormInput = useForm({
 						nickname: { set: value.nickname },
 						classification: { set: value.classification || null },
 						start_date: { set: value.start_date },
+						end_date: { set: value.end_date },
 						result: { set: value.result },
 						description: { set: value.description },
 						disagree_count: { set: Number(value.disagree_count) },
@@ -227,6 +231,18 @@ const voteEventFormInput = useForm({
 		refreshVoteEvent();
 	},
 });
+
+const handleStartDateChange = (value: string | null | undefined) => {
+	const { start_date, end_date } = withStartDate(
+		{
+			start_date: voteEventFormInput.getFieldValue('start_date'),
+			end_date: voteEventFormInput.getFieldValue('end_date'),
+		},
+		value ?? null,
+	);
+	voteEventFormInput.setFieldValue('start_date', start_date);
+	voteEventFormInput.setFieldValue('end_date', end_date);
+};
 
 const { data: OrganizationList } = await useAsyncData(
 	'vote-event-detail-organizations',
@@ -411,18 +427,26 @@ async function togglePublishStatus() {
 								</cv-select>
 							</template>
 						</voteEventFormInput.Field>
-						<voteEventFormInput.Field name="start_date">
-							<template #default="{ field }">
-								<cv-date-picker
-									kind="single"
-									date-label="Start Date"
-									:name="field.name"
-									:model-value="field.state.value"
-									:cal-options="{ dateFormat: 'Y-m-d' }"
-									@update:model-value="field.handleChange"
-								/>
-							</template>
-						</voteEventFormInput.Field>
+						<div class="flex flex-row gap-5">
+							<voteEventFormInput.Field name="start_date">
+								<template #default="{ field }">
+									<FormDatePicker
+										label="Start Date"
+										:model-value="field.state.value"
+										@update:model-value="handleStartDateChange"
+									/>
+								</template>
+							</voteEventFormInput.Field>
+							<voteEventFormInput.Field name="end_date">
+								<template #default="{ field }">
+									<FormDatePicker
+										label="End Date"
+										:model-value="field.state.value"
+										@update:model-value="field.handleChange"
+									/>
+								</template>
+							</voteEventFormInput.Field>
+						</div>
 						<voteEventFormInput.Field
 							v-if="OrganizationList"
 							name="organizations"

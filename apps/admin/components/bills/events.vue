@@ -10,7 +10,7 @@ import {
 import { eventTypeLabels } from '~/constants/bill-event';
 import { publishStatusOptions } from '~/constants/publish-status';
 import { voteEventTypes } from '~/constants/vote-event';
-import { formatDate } from '~/utils/date';
+import { formatDate, withStartDate } from '~/utils/date';
 
 type RelationalFields =
 	| 'organizations'
@@ -43,6 +43,12 @@ const events = defineModel<BillEventForm[]>({ required: true });
 const updateEvent = (index: number, key: string, value: unknown) => {
 	events.value = events.value.map((e, i) =>
 		i === index ? ({ ...e, [key]: value } as BillEventForm) : e,
+	);
+};
+
+const updateStartDate = (index: number, value: string | null) => {
+	events.value = events.value.map((e, i) =>
+		i === index ? withStartDate(e, value) : e,
 	);
 };
 
@@ -148,23 +154,19 @@ const isEventComplete = (event: BillEventForm): boolean => {
 								</cv-radio-group>
 
 								<div class="flex flex-row gap-5">
-									<cv-date-picker
-										date-label="Start Date"
-										kind="single"
-										:cal-options="{ dateFormat: 'Y-m-d' }"
-										:model-value="event.start_date ?? ''"
-										@update:model-value="
-											updateEvent(index, 'start_date', $event || null)
-										"
+									<FormDatePicker
+										label="Start Date"
+										:model-value="event.start_date"
+										clearable
+										@update:model-value="updateStartDate(index, $event ?? null)"
 									/>
 
-									<cv-date-picker
-										date-label="End Date"
-										kind="single"
-										:cal-options="{ dateFormat: 'Y-m-d' }"
-										:model-value="event.end_date ?? ''"
+									<FormDatePicker
+										label="End Date"
+										:model-value="event.end_date"
+										clearable
 										@update:model-value="
-											updateEvent(index, 'end_date', $event || null)
+											updateEvent(index, 'end_date', $event ?? null)
 										"
 									/>
 								</div>

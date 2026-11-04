@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { UserFilled32 } from '@carbon/icons-vue';
 import { enumGender, type Gender, type Link } from '@politigraph/graphql/genql';
-import { formatDate, parseDate } from '~/utils/date';
+import { parseDate, serializeDate } from '~/utils/date';
 
 const PORTRAIT_ZOOM = 0.7;
 
@@ -35,13 +35,13 @@ defineEmits<{
 	(e: 'delete'): void;
 }>();
 
-const birthDateLocal = ref<Date | null>(
+const birthDateLocal = ref<Date | string | null>(
 	parseDate(modelValue.value?.birth_date ?? null),
 );
 
 watch(birthDateLocal, (val) => {
 	if (!modelValue.value) return;
-	modelValue.value.birth_date = formatDate(val);
+	modelValue.value.birth_date = serializeDate(val);
 });
 
 watch(
@@ -151,11 +151,11 @@ const genderOptions = Object.values(enumGender);
 					{{ item }}
 				</cv-dropdown-item>
 			</cv-dropdown>
-			<cv-date-picker
+			<FormDatePicker
 				v-model="birthDateLocal"
-				date-label="ฺBirthdate (yyyy/mm/dd)"
+				label="ฺBirthdate (yyyy/mm/dd)"
 				placeholder=""
-				kind="single"
+				clearable
 			/>
 			<cv-text-area
 				v-model="modelValue.educations"

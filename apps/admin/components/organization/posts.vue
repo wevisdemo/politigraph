@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { Add16, Close16, Edit16, TrashCan16 } from '@carbon/icons-vue';
+import { Add16, Edit16, TrashCan16 } from '@carbon/icons-vue';
 import type { Post } from '@politigraph/graphql/genql';
 import type { PeopleOption } from '~/composables/use-people-options';
 import { useToastNotification } from '~/composables/use-toast-notification';
@@ -46,7 +46,10 @@ const pendingDeletePostId = ref<string | null>(null);
 const pendingDeletePostName = ref<string | null>(null);
 const pendingDeletePostMembershipCount = ref<number>(0);
 
-const modalDate = ref<{ start: Date | null; end: Date | null }>({
+const modalDate = ref<{
+	start: Date | string | null;
+	end: Date | string | null;
+}>({
 	start: null,
 	end: null,
 });
@@ -591,37 +594,8 @@ watch(
 					/>
 
 					<div class="flex flex-row gap-5">
-						<cv-date-picker
-							v-model="modalDate.start"
-							date-label="Start"
-							kind="single"
-							class="post-datepicker"
-							:cal-options="{ dateFormat: 'Y-m-d' }"
-						/>
-						<button
-							v-if="modalDate.start"
-							type="button"
-							class="absolute bottom-4 right-0 m-auto size-fit cursor-pointer"
-							@click="modalDate.start = null"
-						>
-							<Close16 />
-						</button>
-
-						<cv-date-picker
-							v-model="modalDate.end"
-							date-label="End"
-							kind="single"
-							class="post-datepicker"
-							:cal-options="{ dateFormat: 'Y-m-d' }"
-						/>
-						<button
-							v-if="modalDate.end"
-							type="button"
-							class="absolute bottom-4 right-0 m-auto size-fit cursor-pointer"
-							@click="modalDate.end = null"
-						>
-							<Close16 />
-						</button>
+						<FormDatePicker v-model="modalDate.start" label="Start" clearable />
+						<FormDatePicker v-model="modalDate.end" label="End" clearable />
 					</div>
 
 					<template v-if="mode === 'edit' && currentPost?.mode !== 'new'">
