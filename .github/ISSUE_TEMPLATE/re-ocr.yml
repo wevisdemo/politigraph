@@ -1,7 +1,7 @@
 
 name: Request re-OCR
 description: Request a new OCR process for a vote event.
-title: "[Re-OCR] "
+title: "[OCR ใหม่] "
 labels: ["re-OCR"]
 
 body:
