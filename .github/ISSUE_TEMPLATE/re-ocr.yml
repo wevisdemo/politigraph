@@ -1,5 +1,5 @@
 
-name: Request re-OCR
+name: แจ้ง OCR ใหม่
 description: Request a new OCR process for a vote event.
 title: "[OCR ใหม่] "
 labels: ["re-OCR"]
