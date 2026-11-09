@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Edit16 } from '@carbon/icons-vue';
-import type { Person, Vote } from '@politigraph/graphql/genql';
+import type { Organization, Person, Vote } from '@politigraph/graphql/genql';
 
 const props = defineProps<{
 	voteEventId?: string;
@@ -14,6 +14,7 @@ const props = defineProps<{
 		| 'badge_number'
 	> & {
 		voters: Pick<Person, 'id' | 'name'>[];
+		voter_affiliations: Pick<Organization, 'id' | 'name'>[];
 	})[];
 }>();
 
@@ -72,7 +73,7 @@ const router = useRouter();
 						{{ row.voters.at(0)?.name || row.voter_name_raw }}
 					</cv-data-table-cell>
 					<cv-data-table-cell>{{
-						row.voter_affiliation_raw
+						row.voter_affiliations.at(0)?.name || row.voter_affiliation_raw
 					}}</cv-data-table-cell>
 					<cv-data-table-cell>{{ row.option }}</cv-data-table-cell>
 				</cv-data-table-row>

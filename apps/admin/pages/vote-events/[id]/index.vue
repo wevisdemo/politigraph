@@ -65,6 +65,7 @@ const { data: voteEventData, refresh: refreshVoteEvent } =
 					},
 					voter_affiliations: {
 						id: true,
+						name: true,
 					},
 				},
 			},
