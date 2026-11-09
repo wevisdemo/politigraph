@@ -63,14 +63,18 @@ const { data } = await useLazyAsyncData(
 		const where: Record<string, unknown> = {};
 		const andClauses: Record<string, unknown>[] = [];
 
-		if (debouncedSearch.value) {
-			andClauses.push({
-				OR: [
-					{ firstname: { contains: debouncedSearch.value } },
-					{ lastname: { contains: debouncedSearch.value } },
-				],
-			});
-		}
+		andClauses.push(
+			...debouncedSearch.value
+				.split(/\s+/)
+				.filter(Boolean)
+				.map((term) => ({
+					OR: [
+						{ firstname: { contains: term } },
+						{ middlename: { contains: term } },
+						{ lastname: { contains: term } },
+					],
+				})),
+		);
 
 		if (filters.value.status !== 'ALL') {
 			andClauses.push({
