@@ -4,6 +4,7 @@ import {
 	createAuthClient,
 	type UserWithRole,
 } from '@politigraph/auth/betterauth';
+import { getSafeRedirectPath } from '~/utils/auth-redirect';
 
 export const isValidatingSession = ref(true);
 
@@ -43,10 +44,15 @@ export function useAuthClientWithRouteGuard(
 		const { data: session } = await client.getSession();
 
 		if (!session) {
-			router.replace('/login');
+			if (route.path !== '/login') {
+				router.replace({
+					path: '/login',
+					query: route.fullPath === '/' ? {} : { redirect: route.fullPath },
+				});
+			}
 		} else {
-			if (route.name === 'admin-login') {
-				router.replace('/');
+			if (route.path === '/login') {
+				router.replace(getSafeRedirectPath(route.query.redirect));
 			}
 
 			const user = {

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { isValidatingSession } from '~/composables/use-auth-client';
+import { getSafeRedirectPath } from '~/utils/auth-redirect';
 
 definePageMeta({
 	layout: 'admin-layout',
@@ -15,6 +16,8 @@ const isErrorEmail = ref('');
 const isErrorPassword = ref('');
 const logoutTime = ref('');
 const toast = useToastNotification();
+const route = useRoute();
+const { baseURL } = useRuntimeConfig().app;
 
 const { signIn } = useAuthClient();
 
@@ -35,7 +38,7 @@ const login = async () => {
 		{
 			email: email.value,
 			password: password.value,
-			callbackURL: '/admin',
+			callbackURL: `${baseURL.replace(/\/$/, '')}${getSafeRedirectPath(route.query.redirect)}`,
 			rememberMe: false,
 		},
 		{
