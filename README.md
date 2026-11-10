@@ -160,6 +160,25 @@ Operation notes:
 - `OPENOBSERVE_USER` and `OPENOBSERVE_PASSWORD` must be set on the app server, compose refuses to start without them
 - Field names are lowercased on ingestion, and array fields are stored as strings, so unnest them with `unnest(cast_to_arr(fields))` in SQL
 
+### 4.5 Debugging Neo4j heap
+
+The heap is a fixed block reserved at startup, so `free` and `docker stats` look the same whether it is empty or full. When Neo4j pins the CPU without a traffic spike, find the host PID of the `java` process and check its threads on the DB server:
+
+```shell
+docker top neo4j
+top -H -p <host_java_pid>
+```
+
+Busy `GC Thread` threads mean the heap is full. Find the Java PID inside the container (the last number of `NSpid`), then inspect the heap as the `neo4j` user (uid 7474):
+
+```shell
+grep NSpid /proc/<host_java_pid>/status
+docker exec -u 7474 neo4j jcmd <pid> GC.heap_info
+docker exec -u 7474 neo4j jcmd <pid> GC.class_histogram | head -30
+```
+
+Classes from `org.neo4j.cypher.internal` (`InputPosition`, `Prettifier`, AST nodes) at the top mean the query plan cache filled the heap. `CALL db.clearQueryCaches()` frees it without a restart, and `server.memory.query_cache.per_db_cache_num_entries` in `servers/db/compose.yml` caps it.
+
 ## 5. License
 
 Regarding the data, the team intends to open it as Open Data under the [Attribution-NonCommercial 4.0 International](https://creativecommons.org/licenses/by-nc/4.0/) terms. This means you can use, modify, and build upon the data, but it cannot be used for commercial purposes or to seek profit from the work, and credit must be given to WeVis.
