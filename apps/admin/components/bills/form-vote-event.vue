@@ -21,7 +21,7 @@ const graphqlClient = useGraphqlClient();
 const selectedVoteEventId = computed({
 	get: () => props.event.vote_events?.[0]?.id ?? '',
 	set: (value) => {
-		emit('update', 'vote_events', value ? [{ id: value }] : null);
+		emit('update', 'vote_events', value ? [{ id: value }] : []);
 	},
 });
 
@@ -146,6 +146,15 @@ watch(() => [props.event.start_date, props.event.classification], refresh);
 					</span>
 				</FormRadioInputWithDetails>
 			</cv-radio-group>
+			<cv-button
+				v-if="selectedVoteEventId"
+				kind="ghost"
+				size="small"
+				class="self-start"
+				@click="selectedVoteEventId = ''"
+			>
+				Clear selection
+			</cv-button>
 		</div>
 	</div>
 </template>

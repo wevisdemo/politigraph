@@ -68,6 +68,59 @@ test('switching the main bill of a merge event moves the link to the picked bill
 	);
 });
 
+test('clearing the matched vote event of a bill vote event unlinks it', async ({
+	page,
+}) => {
+	const title = `ล้างการลงมติ${Date.now()}`;
+	const { createBills } = await gql(
+		page,
+		`mutation {
+			createBills(input: [{
+				${billFields(title)}
+				events: { BillVoteEvent: { create: [{ node: {
+					start_date: "2024-01-01", publish_status: UNPUBLISHED
+					vote_events: { create: [{ node: {
+						title: "${title}", start_date: "2024-01-01", end_date: "2024-01-01", publish_status: UNPUBLISHED
+					} }] }
+				} }] } }
+			}]) {
+				bills { id events { ... on BillVoteEvent { id vote_events { id } } } }
+			}
+		}`,
+	);
+	const [bill] = createBills.bills;
+	const [event] = bill.events as {
+		id: string;
+		vote_events: { id: string }[];
+	}[];
+
+	await page.goto(`/bills/${bill.id}`);
+	await page.locator('.bx--table-expand__button').first().click();
+	await page.getByRole('button', { name: 'Clear selection' }).click();
+	await saveChanges(page);
+
+	const { billVoteEvents } = await gql(
+		page,
+		`query ($id: ID!) { billVoteEvents(where: { id: { eq: $id } }) { vote_events { id } } }`,
+		{ id: event.id },
+	);
+	expect(billVoteEvents).toEqual([{ vote_events: [] }]);
+
+	await gql(
+		page,
+		`mutation ($billId: ID!, $eventId: ID!, $voteEventId: ID!) {
+			deleteBills(where: { id: { eq: $billId } }) { nodesDeleted }
+			deleteBillVoteEvents(where: { id: { eq: $eventId } }) { nodesDeleted }
+			deleteVoteEvents(where: { id: { eq: $voteEventId } }) { nodesDeleted }
+		}`,
+		{
+			billId: bill.id,
+			eventId: event.id,
+			voteEventId: event.vote_events[0].id,
+		},
+	);
+});
+
 test('picking an event start date fills the end date, which can then be cleared as ongoing', async ({
 	page,
 }) => {
