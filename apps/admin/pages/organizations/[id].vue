@@ -529,7 +529,7 @@ const saveChanges = async () => {
 					deletePosts: {
 						__args: {
 							where: { id: { eq: post.id } },
-							delete: { memberships: [{}] },
+							delete: { memberships: [{ delete: { links: [{}] } }] },
 						},
 						nodesDeleted: true,
 						relationshipsDeleted: true,

@@ -180,7 +180,7 @@ describeMembership(
 			await expect(refreshedRows.first()).toContainText('2568');
 		});
 
-		test('delete membership then persist via Save Changes', async ({
+		test('delete membership with its links then persist via Save Changes', async ({
 			page,
 		}) => {
 			const { personId, postId } = ids();
@@ -191,6 +191,17 @@ describeMembership(
 				'Person',
 			);
 			seededMembershipIds.push(membership.id);
+			const linkUrl = `https://example.com/membership-${membership.id}`;
+			await gql(
+				page,
+				`mutation ($id: ID!, $url: String!) {
+					updateMemberships(
+						where: { id: { eq: $id } }
+						update: { links: [{ create: [{ node: { url: $url } }] }] }
+					) { memberships { id } }
+				}`,
+				{ id: membership.id, url: linkUrl },
+			);
 
 			await page.goto(`/people/${personId}`);
 			await waitForMembershipTable(page);
@@ -209,6 +220,13 @@ describeMembership(
 			await page.goto(`/people/${personId}`);
 			await waitForMembershipTable(page);
 			await expect(getMembershipRows(page)).toHaveCount(0);
+
+			const { links } = await gql(
+				page,
+				`query ($url: String!) { links(where: { url: { eq: $url } }) { id } }`,
+				{ url: linkUrl },
+			);
+			expect(links).toEqual([]);
 		});
 
 		test('cancel add and edit membership discards changes', async ({

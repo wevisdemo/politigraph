@@ -145,7 +145,10 @@ export function useMembershipMutations(args: {
 			...deleteMemberships.map((membership) =>
 				graphqlClient.mutation({
 					deleteMemberships: {
-						__args: { where: { id: { eq: membership.id } } },
+						__args: {
+							where: { id: { eq: membership.id } },
+							delete: { links: [{}] },
+						},
 						nodesDeleted: true,
 						relationshipsDeleted: true,
 					},
