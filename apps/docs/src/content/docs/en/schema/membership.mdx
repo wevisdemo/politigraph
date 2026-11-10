@@ -21,14 +21,14 @@ The relationship between a person and an organization is described by nodes in t
 For example, if we want to know what positions _Chuan Leekpai_ has held in which organizations.
 
 <QueryTabs
-	query="query People($where: PersonWhere) { people(where: $where) { id name_en memberships { id label start_date end_date posts { id label organization { id name_en name classification } } } } }"
+	query="query People($where: PersonWhere) { people(where: $where) { id name_en memberships { id label start_date end_date post { id label organization { id name_en name classification } } } } }"
 	variables='{ "where": { "firstname_en": { "eq": "Chuan" } }, "lastname_en": { "eq": "Leekpai" } }'
 />
 
 Because the graph database connects all nodes, we can start a query from any node. For example, if we want to know who has ever held the position of _leader_ of the _Pheu Thai Party_, we can start the query from **`Post`**.
 
 <QueryTabs
-	query="query Posts($where: PostWhere) { posts(where: $where) { id label role organization { id name_en name } memberships { id start_date end_date members { ... on Person { id name_en } } } } }
+	query="query Posts($where: PostWhere) { posts(where: $where) { id label role organization { id name_en name } memberships { id start_date end_date member { ... on Person { id name_en } } } } }
 "
 	variables='{ "where": { "role": { "eq": "หัวหน้าพรรคการเมือง" }, "organization": { "id": { "eq": "พรรคเพื่อไทย" } } } }'
 />
@@ -38,6 +38,6 @@ Because the graph database connects all nodes, we can start a query from any nod
 We model "Government parties (พรรคฝ่ายรัฐบาล)" and "Opposition parties (พรรคฝ่ายค้าน)" as a **`Post`** in the cabinet organization.
 
 <QueryTabs
-	query="query Organizations($where: OrganizationWhere, $postsWhere2: PostWhere) { organizations(where: $where) { id name_en posts(where: $postsWhere2) { id label role memberships { id start_date end_date members { ... on Organization { id name } } } } } }"
+	query="query Organizations($where: OrganizationWhere, $postsWhere2: PostWhere) { organizations(where: $where) { id name_en posts(where: $postsWhere2) { id label role memberships { id start_date end_date member { ... on Organization { id name } } } } } }"
 	variables='{ "where": { "id": { "eq": "คณะรัฐมนตรี-63" } }, "postsWhere2": { "role": { "startsWith": "พรรคฝ่าย" } } }'
 />

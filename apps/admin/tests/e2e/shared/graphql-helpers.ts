@@ -179,70 +179,35 @@ export async function createTestMembership(
 	const startDate = dates?.start_date ?? '2020-01-01';
 	const endDate = dates?.end_date;
 
-	const memberConnect =
-		memberType === 'Person'
-			? `Person: { connect: [{ where: { node: { id: { eq: $memberId } } } }] }`
-			: `Organization: { connect: [{ where: { node: { id: { eq: $memberId } } } }] }`;
-
-	const mutation = endDate
-		? `
-			mutation CreateTestMembership($memberId: ID!, $postId: ID!, $startDate: Date!, $endDate: Date!) {
-				createMemberships(
-					input: [{
-						start_date: $startDate
-						end_date: $endDate
-						members: { ${memberConnect} }
-						posts: {
-							connect: [{ where: { node: { id: { eq: $postId } } } }]
-						}
-					}]
-				) {
-					memberships { id }
-				}
+	const { createMemberships } = await gql(
+		page,
+		`mutation CreateTestMembership($startDate: Date!, $endDate: Date) {
+			createMemberships(input: [{ start_date: $startDate, end_date: $endDate }]) {
+				memberships { id }
 			}
-		`
-		: `
-			mutation CreateTestMembership($memberId: ID!, $postId: ID!, $startDate: Date!) {
-				createMemberships(
-					input: [{
-						start_date: $startDate
-						members: { ${memberConnect} }
-						posts: {
-							connect: [{ where: { node: { id: { eq: $postId } } } }]
-						}
-					}]
-				) {
-					memberships { id }
-				}
-			}
-		`;
+		}`,
+		{ startDate, endDate: endDate ?? null },
+	);
+	const membership = createMemberships.memberships[0] as { id: string };
 
-	const variables: Record<string, string> = {
-		memberId,
-		postId,
-		startDate,
-		...(endDate ? { endDate } : {}),
-	};
+	const updateMember =
+		memberType === 'Person' ? 'updatePeople' : 'updateOrganizations';
+	await gql(
+		page,
+		`mutation ConnectTestMembership($id: ID!, $memberId: ID!, $postId: ID!) {
+			${updateMember}(
+				where: { id: { eq: $memberId } }
+				update: { memberships: [{ connect: [{ where: { node: { id: { eq: $id } } } }] }] }
+			) { info { relationshipsCreated } }
+			updatePosts(
+				where: { id: { eq: $postId } }
+				update: { memberships: [{ connect: [{ where: { node: { id: { eq: $id } } } }] }] }
+			) { info { relationshipsCreated } }
+		}`,
+		{ id: membership.id, memberId, postId },
+	);
 
-	const response = await page.request.post('/graphql', {
-		headers: { 'Content-Type': 'application/json' },
-		data: { query: mutation, variables },
-	});
-
-	if (!response.ok()) {
-		const body = await response.text();
-		throw new Error(
-			`createTestMembership failed: ${response.status()} ${body}`,
-		);
-	}
-	const data = await response.json();
-	if (data.errors) {
-		throw new Error(
-			`createTestMembership GraphQL errors: ${JSON.stringify(data.errors)}`,
-		);
-	}
-
-	return data.data.createMemberships.memberships[0] as { id: string };
+	return membership;
 }
 
 export async function deleteTestMembership(page: Page, id: string) {

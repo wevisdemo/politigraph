@@ -5,7 +5,7 @@ import { formatDate } from '~/utils/date';
 
 type Membership = {
 	id: string;
-	posts: { id: string; label: string | null }[];
+	post: { id: string; label: string | null } | null;
 };
 
 type PeopleProps = Pick<Person, 'id' | 'name' | 'created_at' | 'updated_at'> & {
@@ -76,15 +76,17 @@ const emit = defineEmits<{
 							v-if="row.memberships.length > 0"
 							class="flex flex-wrap gap-1 py-2"
 						>
-							<div v-for="memberships in row.memberships" :key="memberships.id">
+							<template
+								v-for="membership in row.memberships"
+								:key="membership.id"
+							>
 								<div
-									v-for="post in memberships.posts"
-									:key="post.id"
+									v-if="membership.post"
 									class="rounded-3xl bg-[#D0E2FF] px-2 pb-0.5 text-[#0043CE]"
 								>
-									{{ post.label ?? '' }}
+									{{ membership.post.label ?? '' }}
 								</div>
-							</div>
+							</template>
 						</div>
 						<p v-else>-</p>
 					</cv-data-table-cell>

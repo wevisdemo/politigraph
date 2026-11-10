@@ -48,7 +48,7 @@ test.describe('Delete entity', () => {
 					memberships: { create: [{ node: {
 						start_date: "2020-01-01"
 						links: ${LINK}
-						posts: { create: [{ node: { role: "ทดสอบ" } }] }
+						post: { create: { node: { role: "ทดสอบ" } } }
 					} }] }
 					votes: { create: [{ node: {
 						option: "เห็นด้วย"
@@ -61,7 +61,7 @@ test.describe('Delete entity', () => {
 						id
 						links { id }
 						other_names { ... on AlternatePersonName { id } }
-						memberships { id links { id } posts { id } }
+						memberships { id links { id } post { id } }
 						votes { id vote_events { id } }
 					}
 				}
@@ -110,9 +110,7 @@ test.describe('Delete entity', () => {
 			]),
 		).toBe(0);
 		expect(await countExisting(page, 'votes', [vote.id])).toBe(1);
-		expect(await countExisting(page, 'posts', [membership.posts[0].id])).toBe(
-			1,
-		);
+		expect(await countExisting(page, 'posts', [membership.post.id])).toBe(1);
 
 		await gql(
 			page,
@@ -122,7 +120,7 @@ test.describe('Delete entity', () => {
 			}`,
 			{
 				voteEventId: vote.vote_events[0].id,
-				postId: membership.posts[0].id,
+				postId: membership.post.id,
 			},
 		);
 	});
@@ -143,14 +141,14 @@ test.describe('Delete entity', () => {
 						memberships: { create: [{ node: {
 							start_date: "2020-01-01"
 							links: ${LINK}
-							members: { Person: { create: [{ node: {
+							member: { Person: { create: { node: {
 								prefix: "นาย", firstname: "สมาชิก", lastname: "ทดสอบ", publish_status: UNPUBLISHED
-							} }] } }
+							} } } }
 						} }] }
 					} }] }
 					memberships: { create: [{ node: {
 						start_date: "2020-01-01"
-						posts: { create: [{ node: { role: "พรรคร่วม" } }] }
+						post: { create: { node: { role: "พรรคร่วม" } } }
 					} }] }
 				}]) {
 					organizations {
@@ -158,8 +156,8 @@ test.describe('Delete entity', () => {
 						links { id }
 						other_names { id }
 						children { id }
-						posts { id memberships { id links { id } members { ... on Person { id } } } }
-						memberships { id posts { id } }
+						posts { id memberships { id links { id } member { ... on Person { id } } } }
+						memberships { id post { id } }
 					}
 				}
 			}`,
@@ -204,7 +202,7 @@ test.describe('Delete entity', () => {
 			]),
 		).toBe(0);
 		expect(
-			await countExisting(page, 'people', [postMembership.members[0].id]),
+			await countExisting(page, 'people', [postMembership.member.id]),
 		).toBe(1);
 		expect(
 			await countExisting(page, 'organizations', [organization.children[0].id]),
@@ -218,9 +216,9 @@ test.describe('Delete entity', () => {
 				deletePosts(where: { id: { eq: $postId } }) { nodesDeleted }
 			}`,
 			{
-				personId: postMembership.members[0].id,
+				personId: postMembership.member.id,
 				childId: organization.children[0].id,
-				postId: ownMembership.posts[0].id,
+				postId: ownMembership.post.id,
 			},
 		);
 	});

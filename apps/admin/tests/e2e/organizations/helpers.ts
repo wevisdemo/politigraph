@@ -52,8 +52,8 @@ export async function fetchOrganizationDetail(page: Page, orgId: string) {
 				classification
 				parents { id name }
 				children { id name }
-				posts { id role memberships { id start_date end_date posts { id role } } }
-				memberships { id start_date end_date posts { id role organization { id name } } }
+				posts { id role memberships { id start_date end_date post { id role } member { ... on Person { id } ... on Organization { id } } } }
+				memberships { id start_date end_date post { id role organization { id name } } }
 				links { id note url }
 			}
 		}`,

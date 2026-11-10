@@ -4,7 +4,7 @@ import type { MembershipProp } from '~/types/membership';
 import type { Ref } from 'vue';
 
 type OriginalMembership = Partial<Membership> &
-	Pick<MembershipProp, 'members' | 'memberType' | 'mode'>;
+	Pick<MembershipProp, 'memberType' | 'mode'>;
 
 export function useMembershipMutations(args: {
 	memberType: 'Person' | 'Organization';
@@ -12,6 +12,33 @@ export function useMembershipMutations(args: {
 	originalMemberships: Ref<OriginalMembership[] | null>;
 }) {
 	const graphqlClient = useGraphqlClient();
+
+	const relinkMembership = async (
+		action: 'connect' | 'disconnect',
+		type: 'Person' | 'Organization' | 'Post',
+		id: string | undefined,
+		membershipId: string,
+	) => {
+		if (!id) return;
+		const where = { where: { node: { id: { eq: membershipId } } } };
+		const __args = {
+			where: { id: { eq: id } },
+			update: {
+				memberships: [
+					action === 'connect' ? { connect: [where] } : { disconnect: [where] },
+				],
+			},
+		};
+		const info = { relationshipsCreated: true };
+
+		if (type === 'Post') {
+			await graphqlClient.mutation({ updatePosts: { __args, info } });
+		} else if (type === 'Person') {
+			await graphqlClient.mutation({ updatePeople: { __args, info } });
+		} else {
+			await graphqlClient.mutation({ updateOrganizations: { __args, info } });
+		}
+	};
 
 	const buildMembershipMutations = (editableMemberships: MembershipProp[]) => {
 		const deletedMemberships = editableMemberships.filter(
@@ -29,11 +56,10 @@ export function useMembershipMutations(args: {
 				return (
 					m.start_date !== orig.start_date ||
 					m.end_date !== orig.end_date ||
-					m.posts?.[0]?.id !== orig.posts?.[0]?.id ||
-					m.posts?.[0]?.organization?.id !==
-						orig.posts?.[0]?.organization?.id ||
+					m.post?.id !== orig.post?.id ||
+					m.post?.organization?.id !== orig.post?.organization?.id ||
 					JSON.stringify(m.links) !== JSON.stringify(orig.links) ||
-					m.members?.[0]?.id !== orig.members?.[0]?.id ||
+					m.member?.id !== orig.member?.id ||
 					m.memberType !== orig.memberType
 				);
 			})
@@ -56,8 +82,8 @@ export function useMembershipMutations(args: {
 		];
 
 		return [
-			...newMemberships.map((membership) =>
-				graphqlClient.mutation({
+			...newMemberships.map(async (membership) => {
+				const { createMemberships } = await graphqlClient.mutation({
 					createMemberships: {
 						__args: {
 							input: [
@@ -78,49 +104,43 @@ export function useMembershipMutations(args: {
 											node: { note, url },
 										})),
 									},
-									members: {
-										...(membership.members?.[0]?.id
-											? {
-													[membership.memberType ?? 'Person']: {
-														connect: [
-															{
-																where: {
-																	node: {
-																		id: { eq: membership.members[0].id },
-																	},
-																},
-															},
-														],
-													},
-												}
-											: {
-													[args.memberType]: {
-														connect: [
-															{
-																where: {
-																	node: { id: { eq: args.memberId.value } },
-																},
-															},
-														],
-													},
-												}),
-									},
-									posts: {
-										connect: [
-											{
-												where: {
-													node: { id: { eq: membership.posts[0]?.id } },
-												},
-											},
-										],
-									},
 								},
 							],
 						},
 						memberships: { id: true },
 					},
-				}),
-			),
+				});
+				const membershipId = createMemberships.memberships[0]!.id;
+				const member = membership.member?.id
+					? {
+							type: membership.memberType || 'Person',
+							id: membership.member.id,
+						}
+					: { type: args.memberType, id: args.memberId.value };
+
+				try {
+					await Promise.all([
+						relinkMembership('connect', member.type, member.id, membershipId),
+						relinkMembership(
+							'connect',
+							'Post',
+							membership.post.id,
+							membershipId,
+						),
+					]);
+				} catch (error) {
+					await graphqlClient.mutation({
+						deleteMemberships: {
+							__args: {
+								where: { id: { eq: membershipId } },
+								delete: { links: [{}] },
+							},
+							nodesDeleted: true,
+						},
+					});
+					throw error;
+				}
+			}),
 
 			...deleteMemberships.map((membership) =>
 				graphqlClient.mutation({
@@ -132,7 +152,7 @@ export function useMembershipMutations(args: {
 				}),
 			),
 
-			...updatedMemberships.map((membership) => {
+			...updatedMemberships.flatMap((membership) => {
 				const originalMembership = args.originalMemberships.value?.find(
 					(s) => s.id === membership.id,
 				);
@@ -152,135 +172,112 @@ export function useMembershipMutations(args: {
 				const updatedLinks =
 					membership.links?.filter((l) => originalLinkIds.has(l.id)) ?? [];
 
-				const originalPostId = originalMembership?.posts?.[0]?.id;
-				const currentPostId = membership.posts?.[0]?.id;
+				const originalPostId = originalMembership?.post?.id;
+				const currentPostId = membership.post?.id;
 				const postChanged = currentPostId && currentPostId !== originalPostId;
 
-				const originalMemberId = originalMembership?.members?.[0]?.id;
-				const currentMemberId = membership.members?.[0]?.id;
-				const memberType = membership.memberType || args.memberType;
+				const originalMemberId = originalMembership?.member?.id;
+				const currentMemberId = membership.member?.id;
 				const memberChanged =
 					currentMemberId && currentMemberId !== originalMemberId;
 
-				return graphqlClient.mutation({
-					updateMemberships: {
-						__args: {
-							where: { id: { eq: membership.id } },
-							update: {
-								start_date: { set: membership.start_date },
-								end_date: { set: membership.end_date },
-								posts: postChanged
-									? [
-											{
-												disconnect: [
-													{
-														where: {
-															node: { id: { eq: originalPostId } },
-														},
-													},
-												],
-												connect: [
-													{
-														where: {
-															node: { id: { eq: currentPostId } },
-														},
-													},
-												],
-											},
-										]
-									: currentPostId
-										? [
+				return [
+					graphqlClient.mutation({
+						updateMemberships: {
+							__args: {
+								where: { id: { eq: membership.id } },
+								update: {
+									start_date: { set: membership.start_date },
+									end_date: { set: membership.end_date },
+									label: { set: membership.label },
+									province: {
+										set:
+											membership.label === RepresentativeLabel.District
+												? membership.province
+												: null,
+									},
+									district_number: {
+										set:
+											membership.label === RepresentativeLabel.District
+												? membership.district_number
+												: null,
+									},
+									list_number: {
+										set:
+											membership.label === RepresentativeLabel.Partylist
+												? membership.list_number
+												: null,
+									},
+									links: [
+										...newLinks.map((link) => ({
+											create: [
 												{
-													update: {
-														node: {
-															role: { set: membership.posts[0]?.role },
-														},
+													node: {
+														url: link.url,
+														note: link.note,
 													},
-												},
-											]
-										: [],
-								label: { set: membership.label },
-								province: {
-									set:
-										membership.label === RepresentativeLabel.District
-											? membership.province
-											: null,
-								},
-								district_number: {
-									set:
-										membership.label === RepresentativeLabel.District
-											? membership.district_number
-											: null,
-								},
-								list_number: {
-									set:
-										membership.label === RepresentativeLabel.Partylist
-											? membership.list_number
-											: null,
-								},
-								members: memberChanged
-									? {
-											[memberType]: [
-												{
-													disconnect: originalMemberId
-														? [
-																{
-																	where: {
-																		node: {
-																			id: { eq: originalMemberId },
-																		},
-																	},
-																},
-															]
-														: [],
-													connect: [
-														{
-															where: {
-																node: {
-																	id: { eq: currentMemberId },
-																},
-															},
-														},
-													],
 												},
 											],
-										}
-									: {},
-								links: [
-									...newLinks.map((link) => ({
-										create: [
-											{
-												node: {
-													url: link.url,
-													note: link.note,
-												},
-											},
-										],
-									})),
-									...deletedLinks.map((link) => ({
-										delete: [{ where: { node: { id: { eq: link.id } } } }],
-									})),
-									...updatedLinks.map((link) => ({
-										update: {
-											where: {
-												node: {
-													id: {
-														eq: link.id,
+										})),
+										...deletedLinks.map((link) => ({
+											delete: [{ where: { node: { id: { eq: link.id } } } }],
+										})),
+										...updatedLinks.map((link) => ({
+											update: {
+												where: {
+													node: {
+														id: {
+															eq: link.id,
+														},
 													},
 												},
+												node: {
+													url: { set: link.url },
+													note: { set: link.note },
+												},
 											},
-											node: {
-												url: { set: link.url },
-												note: { set: link.note },
-											},
-										},
-									})),
-								],
+										})),
+									],
+								},
 							},
+							memberships: { id: true },
 						},
-						memberships: { id: true },
-					},
-				});
+					}),
+					...(postChanged
+						? [
+								relinkMembership(
+									'connect',
+									'Post',
+									currentPostId,
+									membership.id,
+								).then(() =>
+									relinkMembership(
+										'disconnect',
+										'Post',
+										originalPostId,
+										membership.id,
+									),
+								),
+							]
+						: []),
+					...(memberChanged
+						? [
+								relinkMembership(
+									'connect',
+									membership.memberType || args.memberType,
+									currentMemberId,
+									membership.id,
+								).then(() =>
+									relinkMembership(
+										'disconnect',
+										originalMembership?.memberType || args.memberType,
+										originalMemberId,
+										membership.id,
+									),
+								),
+							]
+						: []),
+				];
 			}),
 		];
 	};

@@ -119,41 +119,39 @@ const handleSave = () => {
 const onClassificationChange = (newClassification: string) => {
 	if (!props.membership) return;
 
-	props.membership.posts[0].organization.classification = newClassification;
-	props.membership.posts[0].id = '';
-	props.membership.posts[0].role = '';
-	props.membership.posts[0].organization.id = '';
-	props.membership.posts[0].organization.name = '';
+	props.membership.post.organization.classification = newClassification;
+	props.membership.post.id = '';
+	props.membership.post.role = '';
+	props.membership.post.organization.id = '';
+	props.membership.post.organization.name = '';
 };
 
 const handleOrgNameChange = (selectedValue: string) => {
 	if (!props.membership) return;
 
 	const options = getOrganizationOptions(
-		props.membership.posts[0].organization.classification,
+		props.membership.post.organization.classification,
 	);
 	const selected = options.find((opt) => opt.value === selectedValue);
 
-	props.membership.posts[0].organization.id = selected?.value ?? '';
-	props.membership.posts[0].organization.name = selected?.label ?? '';
+	props.membership.post.organization.id = selected?.value ?? '';
+	props.membership.post.organization.name = selected?.label ?? '';
 };
 
 const handleRoleInput = (selectedValue: string) => {
 	if (!props.membership) return;
 
-	const options = getPostOptionsForOrg(
-		props.membership.posts[0].organization.id,
-	);
+	const options = getPostOptionsForOrg(props.membership.post.organization.id);
 	const selected = options.find((opt) => opt.value === selectedValue);
 
-	props.membership.posts[0].id = selected?.value ?? '';
-	props.membership.posts[0].role = selected?.label ?? '';
+	props.membership.post.id = selected?.value ?? '';
+	props.membership.post.role = selected?.label ?? '';
 };
 
 const resolvedClassification = computed(() =>
 	props.variant === 'post-fixed'
 		? props.fixedPost?.organization?.classification
-		: props.membership?.posts[0]?.organization?.classification,
+		: props.membership?.post.organization?.classification,
 );
 
 const memberTypeOptions = [
@@ -166,7 +164,7 @@ const handleMemberTypeChange = (newType: string) => {
 	const validType = memberTypeOptions.find((opt) => opt.value === newType);
 	if (!validType) return;
 	props.membership.memberType = validType.value as 'Person' | 'Organization';
-	props.membership.members = [];
+	props.membership.member = null;
 	emit('member-type-change', validType.value as 'Person' | 'Organization');
 };
 
@@ -186,7 +184,7 @@ const handlePersonChange = (selectedValue: string) => {
 		(opt) => opt.value === selectedValue,
 	);
 	if (selected) {
-		props.membership.members = [{ id: selected.value, name: selected.name }];
+		props.membership.member = { id: selected.value, name: selected.name };
 		props.membership.memberType = 'Person';
 	}
 };
@@ -197,7 +195,7 @@ const handleOrgMemberChange = (selectedValue: string) => {
 		(opt) => opt.value === selectedValue,
 	);
 	if (selected) {
-		props.membership.members = [{ id: selected.value, name: selected.label }];
+		props.membership.member = { id: selected.value, name: selected.label };
 		props.membership.memberType = 'Organization';
 	}
 };
@@ -243,7 +241,7 @@ const handleOrgMemberChange = (selectedValue: string) => {
 
 					<cv-combo-box
 						v-if="membership.memberType === 'Person'"
-						:model-value="membership.members?.[0]?.id ?? ''"
+						:model-value="membership.member?.id ?? ''"
 						title="Person*"
 						:options="peopleOptions ?? []"
 						item-value-key="value"
@@ -255,7 +253,7 @@ const handleOrgMemberChange = (selectedValue: string) => {
 
 					<cv-combo-box
 						v-else-if="membership.memberType === 'Organization'"
-						:model-value="membership.members?.[0]?.id ?? ''"
+						:model-value="membership.member?.id ?? ''"
 						title="Organization*"
 						:options="organizationOptions ?? []"
 						item-value-key="value"
@@ -281,7 +279,7 @@ const handleOrgMemberChange = (selectedValue: string) => {
 					<div class="flex justify-between gap-5">
 						<div class="relative w-1/2">
 							<cv-combo-box
-								v-model="membership.posts[0].organization.classification"
+								v-model="membership.post.organization.classification"
 								title="Organization Classification*"
 								:options="organizationClassification"
 								item-value-key="value"
@@ -294,15 +292,15 @@ const handleOrgMemberChange = (selectedValue: string) => {
 
 						<div class="relative w-1/2">
 							<cv-combo-box
-								:key="membership.posts[0].organization.classification"
-								v-model="membership.posts[0].organization.id"
+								:key="membership.post.organization.classification"
+								v-model="membership.post.organization.id"
 								title="Organization Name*"
 								:options="
 									getOrganizationOptions(
-										membership.posts[0].organization.classification,
+										membership.post.organization.classification,
 									)
 								"
-								:disabled="!membership.posts[0].organization.classification"
+								:disabled="!membership.post.organization.classification"
 								item-value-key="value"
 								item-text-key="label"
 								auto-filter
@@ -315,13 +313,11 @@ const handleOrgMemberChange = (selectedValue: string) => {
 					<div class="flex w-full gap-5">
 						<div class="w-1/2">
 							<cv-combo-box
-								:key="membership.posts[0].organization.id"
-								v-model="membership.posts[0].id"
-								:options="
-									getPostOptionsForOrg(membership.posts[0].organization.id)
-								"
+								:key="membership.post.organization.id"
+								v-model="membership.post.id"
+								:options="getPostOptionsForOrg(membership.post.organization.id)"
 								title="Post*"
-								:disabled="!membership.posts[0].organization.id"
+								:disabled="!membership.post.organization.id"
 								item-value-key="value"
 								item-text-key="label"
 								auto-filter

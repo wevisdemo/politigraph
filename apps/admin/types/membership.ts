@@ -18,7 +18,7 @@ export type MembershipProp = {
 		url: string;
 		note: string | null;
 	}>;
-	posts: Array<{
+	post: {
 		id: string;
 		role: string;
 		organization: {
@@ -26,8 +26,8 @@ export type MembershipProp = {
 			name: string;
 			classification: string;
 		};
-	}>;
-	members?: Array<{ id: string; name: string }>;
+	};
+	member?: { id: string; name: string } | null;
 	memberType?: 'Person' | 'Organization' | '';
 	mode?: MembershipMode;
 };

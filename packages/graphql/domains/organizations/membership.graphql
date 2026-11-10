@@ -13,9 +13,7 @@ type Membership
 				where: {
 					node: {
 						NOT: {
-							members: {
-								all: { Person: { publish_status: { eq: "UNPUBLISHED" } } }
-							}
+							member: { Person: { publish_status: { eq: "UNPUBLISHED" } } }
 						}
 					}
 				}
@@ -29,13 +27,12 @@ type Membership
 	"""
 	สมาชิก
 	"""
-	members: [Member!]!
+	member: Member
 		@relationship(type: "HELD", properties: "Relation", direction: IN)
 	"""
 	ตำแหน่ง
 	"""
-	posts: [Post!]!
-		@relationship(type: "AS", properties: "Relation", direction: OUT)
+	post: Post @relationship(type: "AS", properties: "Relation", direction: OUT)
 	"""
 	ประเภทที่ถูกแบ่ง เช่น วิธีการจัดตั้งหรือกลุ่มอาชีพของ สว.
 	"""

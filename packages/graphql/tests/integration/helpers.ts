@@ -226,11 +226,11 @@ export async function seedMembership(
 	session: Session,
 	{
 		id,
-		personId,
+		memberIds,
 		start_date = '2024-01-01',
 	}: {
 		id: string;
-		personId: string;
+		memberIds: string[];
 		start_date?: string;
 	},
 ) {
@@ -242,10 +242,10 @@ export async function seedMembership(
 			updated_at: datetime()
 		})
 		WITH m
-		MATCH (p:Person {id: $personId})
-		CREATE (p)-[:HELD]->(m)
-		RETURN m`,
-		{ id, personId, start_date },
+		UNWIND $memberIds AS memberId
+		MATCH (p {id: memberId})
+		CREATE (p)-[:HELD]->(m)`,
+		{ id, memberIds, start_date },
 	);
 }
 

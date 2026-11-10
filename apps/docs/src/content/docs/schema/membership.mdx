@@ -21,14 +21,14 @@ import QueryTabs from '../../../components/query-tabs.astro';
 ยกตัวอย่างเช่น ถ้าเราอยากทราบว่า _ชวน หลีกภัย_ เคยอยู่ในตำแหน่งใดขององค์กรใดบ้าง
 
 <QueryTabs
-	query="query People($where: PersonWhere) { people(where: $where) { id name memberships { id label start_date end_date posts { id label role organization { id name classification } } } } }"
+	query="query People($where: PersonWhere) { people(where: $where) { id name memberships { id label start_date end_date post { id label role organization { id name classification } } } } }"
 	variables='{ "where": { "firstname": { "eq": "ชวน" }, "lastname": { "eq": "หลีกภัย" } } }'
 />
 
 เนื่องจากฐานข้อมูลแบบ Graph ที่แต่ละ Node เชื่อมถึงกันทั้งหมด เราจะเริ่มต้น Query ที่ Node ใดก็ได้ เช่น ถ้าเราอยากทราบว่าเคยมีใครได้รับตำแหน่ง _หัวหน้าพรรคการเมือง_ ของ _พรรคเพื่อไทย_ บ้าง เราก็สามารถเริ่มต้น Query จาก **`Post`** ได้
 
 <QueryTabs
-	query="query Posts($where: PostWhere) { posts(where: $where) { id label role organization { id name } memberships { id start_date end_date members { ... on Person { id name } } } } }"
+	query="query Posts($where: PostWhere) { posts(where: $where) { id label role organization { id name } memberships { id start_date end_date member { ... on Person { id name } } } } }"
 	variables='{ "where": { "role": { "eq": "หัวหน้าพรรคการเมือง" }, "organization": { "id": { "eq": "พรรคเพื่อไทย" } } } }'
 />
 
@@ -37,6 +37,6 @@ import QueryTabs from '../../../components/query-tabs.astro';
 เรามองว่ามี "พรรคฝ่ายรัฐบาล" และ "พรรคฝ่ายค้าน" ก็คือตำแหน่ง **`Post`** ใน ครม. ที่มีพรรคการเมืองเป็นสมาชิก เนื่องฝ่ายของพรรคจะยึดโยงกับสมัยของ ครม. เสมอ
 
 <QueryTabs
-	query="query Organizations($where: OrganizationWhere, $postsWhere2: PostWhere) { organizations(where: $where) { id name posts(where: $postsWhere2) { id label role memberships { id start_date end_date members { ... on Organization { id name } } } } } }"
+	query="query Organizations($where: OrganizationWhere, $postsWhere2: PostWhere) { organizations(where: $where) { id name posts(where: $postsWhere2) { id label role memberships { id start_date end_date member { ... on Organization { id name } } } } } }"
 	variables='{ "where": { "id": { "eq": "คณะรัฐมนตรี-63" } }, "postsWhere2": { "role": { "startsWith": "พรรคฝ่าย" } } }'
 />

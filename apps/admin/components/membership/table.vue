@@ -40,9 +40,9 @@ const currentMembership = computed(() => {
 
 const isFormValid = (m: MembershipProp): boolean => {
 	return !!(
-		m.posts?.[0]?.organization?.classification &&
-		m.posts?.[0]?.organization?.id &&
-		m.posts?.[0]?.id
+		m.post.organization.classification &&
+		m.post.organization.id &&
+		m.post.id
 	);
 };
 
@@ -60,13 +60,11 @@ const handleAddMembership = () => {
 		district_number: null,
 		list_number: null,
 		province: null,
-		posts: [
-			{
-				id: '',
-				role: '',
-				organization: { id: '', name: '', classification: '' },
-			},
-		],
+		post: {
+			id: '',
+			role: '',
+			organization: { id: '', name: '', classification: '' },
+		},
 		links: [],
 	};
 	tempMembership.value = newItem;
@@ -198,16 +196,16 @@ const showModalDeleteMembership = (id: string, name: string | undefined) => {
 					>
 						<cv-data-table-cell>
 							<a
-								:href="`/admin/organizations/${m.posts?.[0]?.organization?.id}`"
+								:href="`/admin/organizations/${m.post?.organization?.id}`"
 								class="space-x-1 hover:underline"
 								:class="m.mode == 'deleted' ? 'line-through' : ''"
 							>
 								{{
-									m.posts?.[0]?.organization?.classification ==
+									m.post?.organization?.classification ==
 									enumOrganizationType.POLITICAL_PARTY
 										? 'พรรค'
 										: ''
-								}}{{ m.posts?.[0]?.organization?.name ?? '-' }}
+								}}{{ m.post?.organization?.name ?? '-' }}
 
 								<CheckmarkFilled16
 									v-if="m.end_date === null"
@@ -220,7 +218,7 @@ const showModalDeleteMembership = (id: string, name: string | undefined) => {
 								class="text-sm"
 								:class="m.mode == 'deleted' ? 'line-through' : ''"
 							>
-								{{ m.posts[0]?.role ?? '-' }}
+								{{ m.post?.role ?? '-' }}
 							</p>
 						</cv-data-table-cell>
 						<cv-data-table-cell>
@@ -253,10 +251,7 @@ const showModalDeleteMembership = (id: string, name: string | undefined) => {
 									:icon="TrashCan16"
 									class="p-0"
 									@click="
-										showModalDeleteMembership(
-											m.id,
-											m.posts?.[0]?.organization?.name,
-										)
+										showModalDeleteMembership(m.id, m.post?.organization?.name)
 									"
 								/>
 							</div>

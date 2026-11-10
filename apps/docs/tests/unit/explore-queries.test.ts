@@ -55,15 +55,13 @@ describe('pruneToMainLeaves', () => {
 				{
 					__typename: 'Membership',
 					id: 'membership-1',
-					posts: [
-						{
-							__typename: 'Post',
-							id: 'post-1',
-							organization: { __typename: 'Organization', id: 'org-1' },
-							// dead-end: Membership with no onward relations
-							memberships: [{ __typename: 'Membership', id: 'membership-2' }],
-						},
-					],
+					post: {
+						__typename: 'Post',
+						id: 'post-1',
+						organization: { __typename: 'Organization', id: 'org-1' },
+						// dead-end: Membership with no onward relations
+						memberships: [{ __typename: 'Membership', id: 'membership-2' }],
+					},
 				},
 				// dead-end: Membership whose only branch is a non-main leaf
 				{

@@ -55,7 +55,7 @@ const { data: peopleData, refresh: refreshPeopleDetail } =
 					id: true,
 					start_date: true,
 					end_date: true,
-					posts: {
+					post: {
 						id: true,
 						role: true,
 						organization: {

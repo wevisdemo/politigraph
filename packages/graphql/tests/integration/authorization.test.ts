@@ -247,7 +247,7 @@ describe('Authorization filters', () => {
 			});
 			await seedMembership(session, {
 				id: 'membership-unpublished',
-				personId: 'person-unpublished',
+				memberIds: ['person-unpublished'],
 			});
 			const billEventLabels = [
 				'BillVoteEvent',
@@ -313,7 +313,7 @@ describe('Authorization filters', () => {
 	});
 
 	describe('Membership', () => {
-		test('memberships whose members are all UNPUBLISHED are hidden from anonymous users', async () => {
+		test('anonymous users see every membership except those of an UNPUBLISHED person', async () => {
 			await seedPerson(session, {
 				id: 'person-unpublished',
 				firstname: 'สมหญิง',
@@ -326,20 +326,25 @@ describe('Authorization filters', () => {
 				lastname: 'ใจดี',
 				publish_status: 'PUBLISHED',
 			});
-			await seedMembership(session, {
-				id: 'membership-hidden',
-				personId: 'person-unpublished',
+			await seedOrganization(session, {
+				id: 'org-1',
+				name: 'Test Organization',
 			});
-			await seedMembership(session, {
-				id: 'membership-visible',
-				personId: 'person-published',
-			});
+			const members = {
+				'membership-hidden': ['person-unpublished'],
+				'membership-person': ['person-published'],
+				'membership-org': ['org-1'],
+				'membership-memberless': [],
+			};
+			for (const [id, memberIds] of Object.entries(members)) {
+				await seedMembership(session, { id, memberIds });
+			}
 
 			const result = await execute(
 				schema,
 				`
 				query {
-					memberships {
+					memberships(sort: { id: ASC }) {
 						id
 					}
 				}
@@ -348,8 +353,11 @@ describe('Authorization filters', () => {
 
 			expect(result.errors).toBeUndefined();
 			const data = result.data as { memberships: { id: string }[] };
-			expect(data.memberships).toHaveLength(1);
-			expect(data.memberships[0]!.id).toBe('membership-visible');
+			expect(data.memberships.map(({ id }) => id)).toEqual([
+				'membership-memberless',
+				'membership-org',
+				'membership-person',
+			]);
 		});
 	});
 });

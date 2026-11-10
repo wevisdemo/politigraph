@@ -379,7 +379,7 @@ test.describe('Organization Detail - Membership CRUD', () => {
 			(m: { id: string }) => m.id === membership.id,
 		);
 		expect(updatedMembership).toBeDefined();
-		expect(updatedMembership.posts[0].id).toBe(altPostId);
+		expect(updatedMembership.post.id).toBe(altPostId);
 	});
 });
 
@@ -451,9 +451,10 @@ test.describe('Organization Detail - Post Membership CRUD', () => {
 		const postMemberships = savedPost?.memberships ?? [];
 		expect(postMemberships.length).toBeGreaterThan(0);
 		seededMembershipIds.push(postMemberships[0].id);
+		expect(postMemberships[0].member.id).toBe(personId);
 	});
 
-	test('edit membership dates and persist', async ({ page }) => {
+	test('edit membership member and dates and persist', async ({ page }) => {
 		const membership = await createTestMembership(
 			page,
 			orgId,
@@ -478,17 +479,79 @@ test.describe('Organization Detail - Post Membership CRUD', () => {
 		await setMembershipDate(page, '2025-06-15', {
 			modal: '.post-membership-modal',
 		});
+		await selectPostMembershipType(page, 'Person');
+		await fillPostMembershipPerson(page, personName);
 
 		await savePostMembershipModal(page);
 		await savePostModal(page);
 		await saveChanges(page);
 
 		const detail = await fetchOrganizationDetail(page, orgId);
-		const updated = detail.memberships?.find(
+		expect(
+			detail.memberships?.find((m: { id: string }) => m.id === membership.id),
+		).toBeUndefined();
+		const updated = detail.posts[0].memberships.find(
 			(m: { id: string }) => m.id === membership.id,
 		);
-		expect(updated).toBeDefined();
 		expect(updated.start_date).toBe('2025-06-15');
+		expect(updated.member.id).toBe(personId);
+	});
+
+	test('add membership to one post keeps memberships of the other posts', async ({
+		page,
+	}) => {
+		const id = uid();
+		const otherPost = await createTestPost(page, `PostMemOtherRole${id}`);
+		await linkPostToOrganization(page, otherPost.id, orgId);
+		const existingParty = await createTestOrganization(
+			page,
+			`PostMemExistingParty${id}`,
+			'POLITICAL_PARTY',
+		);
+		const newParty = await createTestOrganization(
+			page,
+			`PostMemNewParty${id}`,
+			'POLITICAL_PARTY',
+		);
+		const existing = await createTestMembership(
+			page,
+			existingParty.id,
+			otherPost.id,
+			'Organization',
+		);
+		seededMembershipIds.push(existing.id);
+
+		await page.goto(`/organizations/${orgId}`);
+		await waitForOrganizationDetail(page);
+
+		await openPostEditModal(
+			page,
+			getPostRows(page).filter({ hasText: `PostMemRole` }),
+		);
+		await openAddPostMembershipModal(page);
+		await selectPostMembershipType(page, 'Organization');
+		await fillPostMembershipPerson(page, newParty.name);
+		await savePostMembershipModal(page);
+		await savePostModal(page);
+		await saveChanges(page);
+
+		const detail = await fetchOrganizationDetail(page, orgId);
+		const added = detail.posts.find((p: { id: string }) => p.id === postId)
+			?.memberships[0];
+		if (added) seededMembershipIds.push(added.id);
+		expect(added?.member.id).toBe(newParty.id);
+		expect(
+			detail.posts
+				.find((p: { id: string }) => p.id === otherPost.id)
+				?.memberships.map((m: { id: string }) => m.id),
+		).toEqual([existing.id]);
+
+		for (const membershipId of seededMembershipIds.splice(0)) {
+			await deleteTestMembership(page, membershipId);
+		}
+		await deleteTestPost(page, otherPost.id);
+		await deleteTestOrganization(page, existingParty.id);
+		await deleteTestOrganization(page, newParty.id);
 	});
 
 	test('delete membership from post and persist', async ({ page }) => {

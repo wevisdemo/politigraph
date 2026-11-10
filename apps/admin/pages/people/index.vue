@@ -48,10 +48,8 @@ const { debouncedSearch, handleSearchChange } = useDebouncedSearch({
 
 const partyMembershipCondition = {
 	end_date: { eq: null },
-	posts: {
-		some: {
-			organization: { classification: { eq: 'POLITICAL_PARTY' as const } },
-		},
+	post: {
+		organization: { classification: { eq: 'POLITICAL_PARTY' as const } },
 	},
 };
 
@@ -96,12 +94,10 @@ const { data } = await useLazyAsyncData(
 				memberships: {
 					some: {
 						end_date: { eq: null },
-						posts: {
-							some: {
-								organization: {
-									classification: {
-										eq: 'HOUSE_OF_REPRESENTATIVE' as const,
-									},
+						post: {
+							organization: {
+								classification: {
+									eq: 'HOUSE_OF_REPRESENTATIVE' as const,
 								},
 							},
 						},
@@ -134,7 +130,7 @@ const { data } = await useLazyAsyncData(
 						where: { end_date: { eq: null } },
 					},
 					id: true,
-					posts: {
+					post: {
 						id: true,
 						label: true,
 					},

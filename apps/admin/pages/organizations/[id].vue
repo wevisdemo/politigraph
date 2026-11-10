@@ -110,7 +110,7 @@ const { data: organizationData, refresh: refreshOrganizationDetail } =
 								url: true,
 								note: true,
 							},
-							members: {
+							member: {
 								on_Person: {
 									__typename: true,
 									id: true,
@@ -131,7 +131,7 @@ const { data: organizationData, refresh: refreshOrganizationDetail } =
 						id: true,
 						start_date: true,
 						end_date: true,
-						posts: {
+						post: {
 							id: true,
 							role: true,
 							organization: {
@@ -165,53 +165,50 @@ const { data: organizationData, refresh: refreshOrganizationDetail } =
 
 			originalParentIds.value = organization.parents.map((parent) => parent.id);
 			originalChildIds.value = organization.children.map((child) => child.id);
-			originalPosts.value = JSON.parse(JSON.stringify(organization.posts));
 			originalLinks.value = JSON.parse(JSON.stringify(organization.links));
 			originalMemberships.value = JSON.parse(
 				JSON.stringify(organization.memberships),
 			);
 
-			return {
-				...organization,
-				posts: organization.posts.map((post) => ({
-					...post,
-					membershipCount:
-						post.membershipsConnection?.aggregate?.count?.nodes ?? 0,
-					memberships: (post.memberships ?? []).map((m) => {
-						const member = m.members?.[0] as
-							{ __typename?: string; id: string; name: string } | undefined;
-						const resolvedMember = member
-							? { id: member.id, name: member.name }
-							: undefined;
-						const resolvedType: 'Person' | 'Organization' =
-							member?.__typename === 'Organization' ? 'Organization' : 'Person';
+			const posts = organization.posts.map((post) => ({
+				...post,
+				membershipCount:
+					post.membershipsConnection?.aggregate?.count?.nodes ?? 0,
+				memberships: (post.memberships ?? []).map((m) => {
+					const member = m.member as {
+						__typename?: string;
+						id: string;
+						name: string;
+					} | null;
+					const resolvedType: 'Person' | 'Organization' =
+						member?.__typename === 'Organization' ? 'Organization' : 'Person';
 
-						return {
-							id: m.id,
-							start_date: m.start_date,
-							end_date: m.end_date,
-							label: m.label,
-							province: m.province,
-							district_number: m.district_number,
-							list_number: m.list_number,
-							links: m.links ?? [],
-							posts: [
-								{
-									id: post.id,
-									role: post.role,
-									organization: {
-										id: organization.id,
-										name: organization.name,
-										classification: organization.classification,
-									},
-								},
-							],
-							members: resolvedMember ? [resolvedMember] : [],
-							memberType: resolvedType,
-						};
-					}),
-				})),
-			};
+					return {
+						id: m.id,
+						start_date: m.start_date,
+						end_date: m.end_date,
+						label: m.label,
+						province: m.province,
+						district_number: m.district_number,
+						list_number: m.list_number,
+						links: m.links ?? [],
+						post: {
+							id: post.id,
+							role: post.role,
+							organization: {
+								id: organization.id,
+								name: organization.name,
+								classification: organization.classification,
+							},
+						},
+						member: member ? { id: member.id, name: member.name } : null,
+						memberType: resolvedType,
+					};
+				}),
+			}));
+			originalPosts.value = JSON.parse(JSON.stringify(posts));
+
+			return { ...organization, posts };
 		},
 	);
 
@@ -480,13 +477,7 @@ const saveChanges = async () => {
 						memberType: 'Person',
 						memberId: ref(undefined),
 						originalMemberships: ref(
-							(original?.memberships ?? []).map((m) => ({
-								id: m.id,
-								start_date: m.start_date,
-								end_date: m.end_date,
-								links: m.links,
-								posts: m.posts,
-							})) as Partial<Membership>[],
+							(original?.memberships ?? []) as Partial<Membership>[],
 						),
 					});
 				return buildPostMembershipMutations(post.memberships ?? []);
@@ -538,21 +529,7 @@ const saveChanges = async () => {
 					deletePosts: {
 						__args: {
 							where: { id: { eq: post.id } },
-							delete: {
-								memberships: [
-									{
-										where: {
-											node: {
-												posts: {
-													single: {
-														id: { eq: post.id },
-													},
-												},
-											},
-										},
-									},
-								],
-							},
+							delete: { memberships: [{}] },
 						},
 						nodesDeleted: true,
 						relationshipsDeleted: true,

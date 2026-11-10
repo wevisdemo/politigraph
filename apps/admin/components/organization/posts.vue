@@ -117,7 +117,7 @@ const isPostAddDisabled = computed(() => {
 
 const isPostMembershipAddDisabled = computed(() => {
 	if (!currentPostMembership.value) return true;
-	return !currentPostMembership.value.members?.[0]?.id;
+	return !currentPostMembership.value.member?.id;
 });
 
 const handleAddPost = () => {
@@ -245,7 +245,7 @@ const loadRelatedMemberships = async (postId: string) => {
 						url: true,
 						note: true,
 					},
-					members: {
+					member: {
 						on_Person: {
 							__typename: true,
 							id: true,
@@ -276,16 +276,13 @@ const loadRelatedMemberships = async (postId: string) => {
 				district_number: number | null;
 				list_number: number | null;
 				links: Array<{ id: string; url: string; note: string | null }>;
-				members?: Array<{
+				member?: {
 					__typename?: string;
 					id: string;
 					name: string;
-				}>;
+				} | null;
 			}) => {
-				const member = m.members?.[0];
-				const resolvedMember = member
-					? { id: member.id, name: member.name }
-					: undefined;
+				const member = m.member;
 				const resolvedType: 'Person' | 'Organization' =
 					member?.__typename === 'Organization' ? 'Organization' : 'Person';
 
@@ -298,18 +295,16 @@ const loadRelatedMemberships = async (postId: string) => {
 					district_number: m.district_number,
 					list_number: m.list_number,
 					links: m.links ?? [],
-					posts: [
-						{
-							id: postId,
-							role: currentPost.value?.role ?? '',
-							organization: {
-								id: orgId,
-								name: orgName,
-								classification: orgClassification,
-							},
+					post: {
+						id: postId,
+						role: currentPost.value?.role ?? '',
+						organization: {
+							id: orgId,
+							name: orgName,
+							classification: orgClassification,
 						},
-					],
-					members: resolvedMember ? [resolvedMember] : [],
+					},
+					member: member ? { id: member.id, name: member.name } : null,
 					memberType: resolvedType,
 				};
 			},
@@ -337,18 +332,16 @@ const handleAddPostMembership = () => {
 		list_number: null,
 		province: null,
 		links: [],
-		posts: [
-			{
-				id: p.id,
-				role: p.role,
-				organization: {
-					id: props.organization?.id ?? '',
-					name: props.organization?.name ?? '',
-					classification: props.organization?.classification ?? '',
-				},
+		post: {
+			id: p.id,
+			role: p.role,
+			organization: {
+				id: props.organization?.id ?? '',
+				name: props.organization?.name ?? '',
+				classification: props.organization?.classification ?? '',
 			},
-		],
-		members: [],
+		},
+		member: null,
 		memberType: '',
 		mode: 'new',
 	};
@@ -646,7 +639,7 @@ watch(
 												class="text-sm"
 												:class="m.mode === 'deleted' ? 'line-through' : ''"
 											>
-												{{ m.members?.[0]?.name ?? '-' }}
+												{{ m.member?.name ?? '-' }}
 											</p>
 										</cv-data-table-cell>
 										<cv-data-table-cell class="w-1/6">
@@ -682,7 +675,7 @@ watch(
 													@click="
 														showModalDeletePostMembership(
 															m.id,
-															m.members?.[0]?.name ?? null,
+															m.member?.name ?? null,
 														)
 													"
 												/>
