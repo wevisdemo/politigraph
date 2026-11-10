@@ -30,6 +30,7 @@ import { QUERY_GRAPH_THEME_COLORS as THEME_COLORS } from '../utils/graph-theme';
 import { useTranslations, type Language } from '../utils/i18n';
 import {
 	getObjectLabel,
+	toRelatedNodes,
 	typenameSchemaMap,
 	type GraphqlDataResponse,
 	type GraphqlObject,
@@ -196,28 +197,28 @@ const graph = computed(() => {
 		layouts[node.id] = { x: r * Math.cos(theta), y: r * Math.sin(theta) };
 
 		Object.entries(node).forEach(([relationName, value]) => {
-			if (Array.isArray(value)) {
-				value
-					.sort((a, z) => a.id.localeCompare(z.id))
-					.forEach((child, i) => {
-						edges[`${node.id}->${child.id}`] = {
-							source: node.id,
-							target: child.id,
-							label: relationName,
-						};
+			const children = toRelatedNodes(value).sort((a, z) =>
+				a.id.localeCompare(z.id),
+			);
 
-						if (!nodes[child.id]) {
-							collectGraphItems(
-								child,
-								i,
-								value.length,
-								r + 50,
-								theta - coneSize / 2,
-								theta + coneSize / 2,
-							);
-						}
-					});
-			}
+			children.forEach((child, i) => {
+				edges[`${node.id}->${child.id}`] = {
+					source: node.id,
+					target: child.id,
+					label: relationName,
+				};
+
+				if (!nodes[child.id]) {
+					collectGraphItems(
+						child,
+						i,
+						children.length,
+						r + 50,
+						theta - coneSize / 2,
+						theta + coneSize / 2,
+					);
+				}
+			});
 		});
 	}
 
@@ -693,7 +694,10 @@ const selectedNode = computed(() => {
 								{{ value }}
 							</template>
 							<ul v-else class="mt-1 flex list-none flex-col p-0">
-								<li v-for="node in value" class="ml-6 mt-0 list-disc">
+								<li
+									v-for="node in toRelatedNodes(value)"
+									class="ml-6 mt-0 list-disc"
+								>
 									<span
 										class="cursor-pointer text-left text-blue-700 dark:text-blue-400"
 										@click="selectedNodes = [node.id]"

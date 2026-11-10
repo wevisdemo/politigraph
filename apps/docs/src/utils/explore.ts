@@ -2,6 +2,7 @@ import pluralize from 'pluralize';
 import {
 	interfaces,
 	objects,
+	toRelatedNodes,
 	unions,
 	type GraphqlDataResponse,
 	type GraphqlObject,
@@ -111,22 +112,35 @@ export function buildCenterNodeQuery(typename: string) {
 // meaningful main-type node. Mapping before filtering prunes bottom-up, so
 // dead-ends cascade away in a single pass.
 export function pruneToMainLeaves(node: GraphqlObject): GraphqlObject {
-	return Object.fromEntries(
-		Object.entries(node).map(([key, value]) =>
-			Array.isArray(value)
-				? [key, value.map(pruneToMainLeaves).filter(hasMainDescendant)]
-				: [key, value],
-		),
-	) as GraphqlObject;
+	return mapRelations(node, (nodes) =>
+		nodes.map(pruneToMainLeaves).filter(hasMainDescendant),
+	);
 }
 
 function hasMainDescendant(node: GraphqlObject): boolean {
 	return (
 		mainNodeTypes.has(node.__typename) ||
-		Object.values(node).some(
-			(value) => Array.isArray(value) && value.length > 0,
-		)
+		Object.values(node).some((value) => toRelatedNodes(value).length > 0)
 	);
+}
+
+// Applies fn to every relation of the node, keeping list relations as lists
+// and single relations as an object or null
+function mapRelations(
+	node: GraphqlObject,
+	fn: (nodes: GraphqlObject[]) => GraphqlObject[],
+	mapKey: (key: string) => string = (key) => key,
+): GraphqlObject {
+	return Object.fromEntries(
+		Object.entries(node).map(([key, value]) => [
+			mapKey(key),
+			Array.isArray(value)
+				? fn(value)
+				: value && typeof value === 'object'
+					? (fn([value])[0] ?? null)
+					: value,
+		]),
+	) as GraphqlObject;
 }
 
 export function normalizeAliasedFields(
@@ -141,12 +155,11 @@ export function normalizeAliasedFields(
 }
 
 function renameAliasedKeys(node: GraphqlObject): GraphqlObject {
-	return Object.fromEntries(
-		Object.entries(node).map(([key, value]) => [
-			key.split(CONFLICT_ALIAS_SEPARATOR)[0],
-			Array.isArray(value) ? value.map(renameAliasedKeys) : value,
-		]),
-	) as GraphqlObject;
+	return mapRelations(
+		node,
+		(nodes) => nodes.map(renameAliasedKeys),
+		(key) => key.split(CONFLICT_ALIAS_SEPARATOR)[0],
+	);
 }
 
 function isNodeType(name: string) {

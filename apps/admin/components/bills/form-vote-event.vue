@@ -44,7 +44,7 @@ const { data: matchingVoteEvents, refresh } = await useLazyAsyncData(
 				classification: true,
 				bill_vote_events: {
 					id: true,
-					bills: {
+					bill: {
 						id: true,
 					},
 				},
@@ -68,7 +68,7 @@ const voteEventOptions = computed(() =>
 		...ve,
 		otherLinkedBillIds: ve.bill_vote_events
 			.filter(({ id }) => id !== props.event.id)
-			.flatMap(({ bills }) => bills.map(({ id }) => id)),
+			.flatMap(({ bill }) => (bill ? [bill.id] : [])),
 	})),
 );
 </script>

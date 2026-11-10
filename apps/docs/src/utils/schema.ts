@@ -4,10 +4,15 @@ import type { Language } from './i18n';
 export interface GraphqlObject {
 	__typename: string;
 	id: string;
-	[key: string]: string | GraphqlObject[];
+	[key: string]: string | GraphqlObject | GraphqlObject[] | null;
 }
 
 export type GraphqlDataResponse = Record<string, GraphqlObject[]>;
+
+export function toRelatedNodes(value: GraphqlObject[string]): GraphqlObject[] {
+	if (Array.isArray(value)) return value;
+	return value && typeof value === 'object' ? [value] : [];
+}
 
 function hasDirective(
 	directives: { name: { value: string } }[] | undefined,

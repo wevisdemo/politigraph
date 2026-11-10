@@ -137,7 +137,6 @@ export function useEntityDeletion(entity: DeletableEntity) {
 	};
 
 	const fetchBillSummary = async (id: string): Promise<DeletionSummary> => {
-		const eventFields = { billsConnection: TOTAL_COUNT, ...LINK_COUNT };
 		const {
 			bills: [bill],
 			billMergeEventsConnection: mainBillMergeEvents,
@@ -146,11 +145,11 @@ export function useEntityDeletion(entity: DeletableEntity) {
 				__args: { where: { id: { eq: id } } },
 				linksConnection: TOTAL_COUNT,
 				events: {
-					on_BillEnactEvent: eventFields,
-					on_BillMergeEvent: eventFields,
-					on_BillRejectEvent: eventFields,
-					on_BillRoyalAssentEvent: eventFields,
-					on_BillVoteEvent: eventFields,
+					on_BillEnactEvent: LINK_COUNT,
+					on_BillMergeEvent: { billsConnection: TOTAL_COUNT, ...LINK_COUNT },
+					on_BillRejectEvent: LINK_COUNT,
+					on_BillRoyalAssentEvent: LINK_COUNT,
+					on_BillVoteEvent: LINK_COUNT,
 				},
 			},
 			billMergeEventsConnection: {
@@ -165,7 +164,7 @@ export function useEntityDeletion(entity: DeletableEntity) {
 		});
 
 		const ownEvents = bill.events.filter(
-			(e) => e.billsConnection.totalCount === 1,
+			(e) => !('billsConnection' in e) || e.billsConnection.totalCount === 1,
 		);
 
 		return {
@@ -251,12 +250,7 @@ export function useEntityDeletion(entity: DeletableEntity) {
 		});
 
 	const deleteBill = (id: string) => {
-		const ownEvents = [
-			{
-				where: { node: { bills: { all: { id: { eq: id } } } } },
-				delete: ALL_LINKS,
-			},
-		];
+		const ownEvents = [{ delete: ALL_LINKS }];
 
 		return graphqlClient.mutation({
 			deleteBills: {
@@ -266,7 +260,12 @@ export function useEntityDeletion(entity: DeletableEntity) {
 						links: [{}],
 						events: {
 							BillEnactEvent: ownEvents,
-							BillMergeEvent: ownEvents,
+							BillMergeEvent: [
+								{
+									where: { node: { bills: { all: { id: { eq: id } } } } },
+									delete: ALL_LINKS,
+								},
+							],
 							BillRejectEvent: ownEvents,
 							BillRoyalAssentEvent: ownEvents,
 							BillVoteEvent: ownEvents,

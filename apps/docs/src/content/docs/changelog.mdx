@@ -7,6 +7,14 @@ description: รายการการเปลี่ยนแปลงที�
 
 เมื่อมีการเปลี่ยนชื่อหรือลบ Field ที่ผู้ใช้เข้าถึงได้ เราจะพยายามคง Field เดิมไว้ระยะหนึ่งพร้อมกับ Directive `@deprecated` ของ GraphQL และจะแจ้งการลบ Field นั้นเป็นรายการถัดไปในหน้านี้ ยกเว้น Relationship Field ที่ไม่สามารถมีอยู่คู่กับ Field ใหม่ได้ การเปลี่ยนชื่อจึงถูกระบุไว้ในหัวข้อ `Breaking` ทันที
 
+## 2026-11-11
+
+**Breaking**
+
+- `bills: [Bill!]!` เปลี่ยนเป็น `bill: Bill` ใน `BillEnactEvent`, `BillRejectEvent`, `BillRoyalAssentEvent` และ `BillVoteEvent` เนื่องจากอีเวนต์เหล่านี้เป็นของร่างกฎหมายเพียงฉบับเดียว `bill` จะเป็น `null` เมื่ออีเวนต์ไม่มีร่างกฎหมาย และสร้างหรือลบได้ผ่านอีเวนต์เท่านั้น การเชื่อมหรือยกเลิกการเชื่อมกับร่างกฎหมายที่มีอยู่แล้วให้ทำผ่าน `Bill.events` แทน ส่วน `BillMergeEvent.bills` ยังคงเป็น List
+- `named_entity` ใน `AlternateName` และ `AlternatePersonName` เปลี่ยนจาก List เป็น `NamedEntity` และ `Person` เพียงค่าเดียว
+- ลบ `VoteEvent.bills` ที่เลิกใช้งานแล้วและไม่เคยมีข้อมูล ให้ใช้ `VoteEvent.bill_vote_events { bill }` แทน
+
 ## 2026-11-09
 
 **Breaking**

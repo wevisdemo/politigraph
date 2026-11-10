@@ -27,12 +27,6 @@ type VoteEvent implements Event
 	organizations: [Organization!]!
 		@relationship(type: "HELD_EVENT", properties: "Relation", direction: IN)
 	"""
-	กฏหมายที่เกี่ยวข้อง
-	"""
-	bills: [Bill!]!
-		@relationship(type: "IN", properties: "Relation", direction: OUT)
-		@deprecated(reason: "Use bill_vote_events { bills } instead")
-	"""
 	อีเวนต์การโหวตในร่างกฎหมาย
 	"""
 	bill_vote_events: [BillVoteEvent!]!

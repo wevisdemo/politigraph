@@ -15,6 +15,8 @@ import { formatDate, withStartDate } from '~/utils/date';
 type RelationalFields =
 	| 'organizations'
 	| 'organizationsConnection'
+	| 'bill'
+	| 'billConnection'
 	| 'bills'
 	| 'billsConnection'
 	| 'links'

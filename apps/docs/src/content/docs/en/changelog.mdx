@@ -7,6 +7,14 @@ This page lists every change that affects how a client uses the API: the GraphQL
 
 When a client-visible field is renamed or removed, the old field is kept for a while with the GraphQL `@deprecated` directive wherever possible, and its removal appears as a later entry on this page. Relationship fields are the exception: they cannot coexist with their replacement, so renaming one is listed under `Breaking` right away.
 
+## 2026-11-11
+
+**Breaking**
+
+- `bills: [Bill!]!` becomes `bill: Bill` on `BillEnactEvent`, `BillRejectEvent`, `BillRoyalAssentEvent` and `BillVoteEvent`, since each of these events belongs to one bill. `bill` is `null` when the event has no bill, and it can only be created or deleted through the event; link or unlink an existing bill with `Bill.events` instead. `BillMergeEvent.bills` stays a list
+- `named_entity` on `AlternateName` and `AlternatePersonName` becomes a single `NamedEntity` and `Person` instead of a list
+- `VoteEvent.bills` is removed. It was deprecated and never populated; use `VoteEvent.bill_vote_events { bill }` instead
+
 ## 2026-11-09
 
 **Breaking**

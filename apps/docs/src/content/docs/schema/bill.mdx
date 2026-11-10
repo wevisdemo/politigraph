@@ -92,7 +92,7 @@ import QueryTabs from '../../../components/query-tabs.astro';
 ยกตัวอย่างการพิจารณาของสภาผู้แทนราษฎร ร่างพระราชบัญญัติงบประมาณรายจ่ายประจำปีงบประมาณ พ.ศ. 2568 วาระที่ 3
 
 <QueryTabs
-	query="query BillVoteEvents($where: BillVoteEventWhere) { billVoteEvents(where: $where) { id title classification bills { id title classification } vote_events { id title classification result } }}"
+	query="query BillVoteEvents($where: BillVoteEventWhere) { billVoteEvents(where: $where) { id title classification bill { id title classification } vote_events { id title classification result } }}"
 	variables='{ "where": { "id": { "eq": "b5813539-007a-47de-b09b-22f127e15aa8" } }}'
 />
 
@@ -124,7 +124,7 @@ import QueryTabs from '../../../components/query-tabs.astro';
 ยกตัวอย่างขั้นตอนการนำขึ้นทูลเกล้าทูลกระหม่อมถวายของร่างพระราชบัญญัติควบคุมเครื่องดื่มแอลกอฮอล์
 
 <QueryTabs
-	query="query BillRoyalAssentEvents($where: BillRoyalAssentEventWhere) { billRoyalAssentEvents(where: $where) { id result bills { id title } }}"
+	query="query BillRoyalAssentEvents($where: BillRoyalAssentEventWhere) { billRoyalAssentEvents(where: $where) { id result bill { id title } }}"
 	variables='{ "where": { "id": { "eq": "0beac91b-e207-4476-acc7-09c91741caf9" } }}'
 />
 
@@ -136,7 +136,7 @@ import QueryTabs from '../../../components/query-tabs.astro';
 ยกตัวอย่างขั้นตอนการประกาศเป็นกฎหมายของร่างพระราชบัญญัติควบคุมเครื่องดื่มแอลกอฮอล์
 
 <QueryTabs
-	query="query BillEnactEvents($where: BillEnactEventWhere) { billEnactEvents(where: $where) { id start_date bills { id title } }}"
+	query="query BillEnactEvents($where: BillEnactEventWhere) { billEnactEvents(where: $where) { id start_date bill { id title } }}"
 	variables='{ "where": { "id": { "eq": "775ece1f-79ef-42eb-9412-51edc58fe235" } }}'
 />
 
@@ -151,7 +151,7 @@ import QueryTabs from '../../../components/query-tabs.astro';
 ยกตัวอย่างขั้นตอนการประกาศร่างตกไปของร่างพระราชบัญญัติกองทุนการประมงแห่งชาติ ซึ่ง ตกไปเนื่องจากยุบสภา
 
 <QueryTabs
-	query="query BillRejectEvents($where: BillRejectEventWhere) { billRejectEvents(where: $where) { id reject_reason bills { id title } }}"
+	query="query BillRejectEvents($where: BillRejectEventWhere) { billRejectEvents(where: $where) { id reject_reason bill { id title } }}"
 	variables='{ "where": { "id": { "eq": "55fa6fde-3ed3-4b4e-9665-bccadc5646f2" } }}'
 />
 

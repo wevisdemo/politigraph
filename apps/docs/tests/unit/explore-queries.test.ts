@@ -9,10 +9,11 @@ import { parse, validate } from 'graphql';
 import {
 	buildCenterNodeQuery,
 	buildSearchQuery,
+	normalizeAliasedFields,
 	pruneToMainLeaves,
 	searchableTypes,
 } from '../../src/utils/explore';
-import type { GraphqlObject } from '../../src/utils/schema';
+import { toRelatedNodes, type GraphqlObject } from '../../src/utils/schema';
 
 // Guard the docs explore page queries, which are generated from
 // dist/definitions.json, against drifting from the augmented schema
@@ -41,7 +42,7 @@ describe('docs explore queries', () => {
 });
 
 function leafTypenames(node: GraphqlObject): string[] {
-	const children = Object.values(node).filter(Array.isArray).flat();
+	const children = Object.values(node).flatMap(toRelatedNodes);
 	return children.length ? children.flatMap(leafTypenames) : [node.__typename];
 }
 
@@ -77,6 +78,44 @@ describe('pruneToMainLeaves', () => {
 
 		expect([...new Set(leafTypenames(pruned))]).toEqual(['Organization']);
 		expect(pruned.memberships).toHaveLength(1);
+	});
+
+	test('walks single relations, nulling dead-ends and renaming aliases', () => {
+		const backReference = { __typename: 'Bill', id: 'bill-1' };
+		const center: GraphqlObject = {
+			__typename: 'Bill',
+			id: 'bill-1',
+			events: [
+				{
+					__typename: 'BillVoteEvent',
+					id: 'bill-vote-event-1',
+					title___1: 'วาระ 1',
+					bill: backReference,
+					vote_events: [{ __typename: 'VoteEvent', id: 'vote-event-1' }],
+				},
+				{
+					__typename: 'BillEnactEvent',
+					id: 'enact-1',
+					bill: null,
+					// dead-end: single relation to a non-main leaf
+					post: { __typename: 'Post', id: 'post-1' },
+				},
+			],
+		};
+
+		const [pruned] = normalizeAliasedFields({ bills: [center] }).bills.map(
+			pruneToMainLeaves,
+		);
+
+		expect(pruned.events).toEqual([
+			{
+				__typename: 'BillVoteEvent',
+				id: 'bill-vote-event-1',
+				title: 'วาระ 1',
+				bill: backReference,
+				vote_events: [{ __typename: 'VoteEvent', id: 'vote-event-1' }],
+			},
+		]);
 	});
 
 	test('keeps a main center node with no relations', () => {
