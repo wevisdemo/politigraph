@@ -1,5 +1,5 @@
 ---
-title: Thai Political Open API for Everyone
+title: Thai Political Database for Everyone
 description: Politigraph is a civic-initiated open API for Thai political data, linking politicians, political parties, parliamentary positions, votes and bills as a graph.
 template: splash
 sidebar:
@@ -7,7 +7,7 @@ sidebar:
 next: false
 lastUpdated: false
 hero:
-  tagline: It's time to make sense out of it, together.
+  tagline: Working with data easier with an Open API
   image:
     dark: '../../../assets/banner-white.png'
     light: '../../../assets/banner-black.png'
@@ -29,19 +29,23 @@ import Sponsors from '../../../components/sponsors.astro';
 <DatasetJsonLd />
 
 <CardGrid>
-	<Card title="Interconnected Database" icon="seti:graphql">
-		From politicians, political parties, parliamentary positions, and voting
-		records to the legislative process, all interconnected in a graph format.
+	<Card title="Ready-to-Use and Interconnected" icon="seti:graphql">
+		We gather data from official government sources and convert it into a
+		digital format you can use in one place. The data is interconnected as a
+		graph, from politicians, political parties, and parliamentary positions, to
+		votes and the legislative process.
+	</Card>
+	<Card title="Continuous Review and Update" icon="magnifier">
+		We have a team that reviews the accuracy of the data. For data the
+		government does not publish through a regular channel or update pattern, we
+		collect and update it on an ad-hoc basis. Found an error or have more
+		information to share? Please contact team@wevis.info
 	</Card>
 	<Card title="Built on Standards" icon="approve-check-circle">
 		We use [Popolo](https://www.popoloproject.com) as an international standard
 		for storing open political data, [GraphQL](https://graphql.org/) for data
-		query layer, and llms.txt / MCP for [using with AI
-		agents](/en/getting-started/usage#using-with-ai-agents).
-	</Card>
-	<Card title="Regularly Verified and Updated" icon="magnifier">
-		We are doing our best to digitize and regularly verify data from official
-		government sources. Found something wrong? Let us know at team@wevis.info
+		query layer, and llms.txt / MCP for [using it with
+		AI](/en/getting-started/usage#3-using-it-with-ai).
 	</Card>
 	<Card title="Open Data under CC BY-NC 4.0" icon="open-book">
 		You are allowed to use, modify, and build upon the data, but it cannot be

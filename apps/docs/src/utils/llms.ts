@@ -208,6 +208,19 @@ async function toPlainMarkdown(body: string) {
 				return `${title ? `**${title}**\n\n` : ''}\`\`\`\n${code.trim()}\n\`\`\``;
 			},
 		)
+		.replace(
+			/<Accordion\b[^>]*title=(?:"([^"]*)"|'([^']*)')[^>]*>([\s\S]*?)<\/Accordion>/g,
+			(
+				_,
+				title: string | undefined,
+				titleAlt: string | undefined,
+				content: string,
+			) => `**${title ?? titleAlt}**\n\n${content.trim()}`,
+		)
+		.replace(
+			/!\[([^\]]*)\]\([^)]+\)/g,
+			(_, alt: string) => `_${alt || 'Image'} (not available in plain text)_`,
+		)
 		.replace(/<summary>([\s\S]*?)<\/summary>/g, '**$1**')
 		.replace(/<\/?details[^>]*>/g, '')
 		.replace(/<code>([\s\S]*?)<\/code>/g, '`$1`')

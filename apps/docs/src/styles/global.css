@@ -28,6 +28,10 @@
 }
 
 @layer carbonized {
+	:root {
+		--sl-content-width: 56rem;
+	}
+
 	.sl-link-button,
 	site-search > button > kbd,
 	site-search > dialog,

@@ -17,17 +17,30 @@ or create a new issue on the project's [GitHub](https://github.com/wevisdemo/pol
 
 ## System Structure
 
-We use an [Automation System](https://github.com/wevisdemo/politigraph-automation) to collect data from various official government sources, convert it into a machine-readable format, and have a team constantly reviewing its accuracy.
+For data that the government publishes through official online channels in a format that supports regular collection, we use an [Automation System](https://github.com/wevisdemo/politigraph-automation) to collect and convert the data into a machine-readable format, with a team reviewing its accuracy.
+
+For data that the government does not publish through a regular channel or update pattern, we collect and update it on an ad-hoc basis as the relevant situation arises.
+
+See the full list of regularly updated and ad-hoc data at [Data Sources and Limitations](/en/data-source)
 
 ```mermaid
 graph TD
-  A[Official Government Websites] -->|Pull and Convert Data| B[Automation System]
-  B -->|Update| C[Politigraph]
-  D[WeVis Data Team] -->|Add, Review, Correct| C
-  C -->|Query| E[Parliament Watch]
-  C -->|Query| F[Other Projects]
-  C -->|Query| G[Interested Users]
-  C -->|MCP| H[AI Agent]
+  A[Official Government Websites] -->|Pulled and converted by| B[Automation System]
+  D[Other Sources] -->|Pulled and converted by| E[Ad-hoc Research Team]
+
+  B -->|Input| F
+  E -->|Input| F
+
+  subgraph P[Politigraph]
+    F[Accuracy Review Team] --> G[Published]
+  end
+
+  G -->|Output| H[Parliament Watch]
+  G -->|Output| I[Other Projects]
+  G -->|Output| J[Interested Users]
+  G -->|Output| K[AI Agent]
+
+  style P fill:#1c7ed620,stroke:#1c7ed6,stroke-width:1px
 ```
 
 We intend to open Politigraph as a public database, allowing users, various projects and AI agents to utilize the data. We believe that effective open data fosters innovation, supports civic participation, and builds a strong democratic society. [Read how to use it](/en/getting-started/usage)

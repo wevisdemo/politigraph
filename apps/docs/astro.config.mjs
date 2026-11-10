@@ -10,6 +10,15 @@ import { useTranslations } from './src/utils/i18n';
 
 const site = 'https://politigraph.wevis.info';
 
+const groupSidebarItems = sidebarGroups.map(
+	({ directory, label, translations }) => ({
+		label,
+		translations,
+		items: [{ autogenerate: { directory } }],
+	}),
+);
+groupSidebarItems.splice(1, 0, { slug: 'data-source' });
+
 export default defineConfig({
 	site,
 	// @ts-expect-error starlight config type doesn't include vite
@@ -80,11 +89,7 @@ export default defineConfig({
 				},
 			],
 			sidebar: [
-				...sidebarGroups.map(({ directory, label, translations }) => ({
-					label,
-					translations,
-					items: [{ autogenerate: { directory } }],
-				})),
+				...groupSidebarItems,
 				{
 					label: 'อัปเดตและนโยบาย',
 					translations: { en: 'Updates & Policies' },
@@ -122,6 +127,7 @@ export default defineConfig({
 			customCss: [
 				'./src/styles/global.css',
 				'@fontsource/ibm-plex-sans-thai-looped',
+				'@fontsource/ibm-plex-sans-thai-looped/700.css',
 			],
 			components: {
 				Header: './src/components/header.astro',

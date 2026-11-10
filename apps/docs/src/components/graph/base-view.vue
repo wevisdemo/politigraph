@@ -16,7 +16,7 @@ const sizeClass = computed(() => {
 	if (isMaximized.value) return 'fixed inset-0 z-20';
 	if (props.immersive) return 'h-full w-full';
 	if (props.fillHeight) return 'md:h-[max(32rem,calc(100vh-22rem))]';
-	return 'md:h-128';
+	return 'md:h-152';
 });
 
 async function toggleMaximize() {
