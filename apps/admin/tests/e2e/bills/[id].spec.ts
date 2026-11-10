@@ -121,6 +121,79 @@ test('clearing the matched vote event of a bill vote event unlinks it', async ({
 	);
 });
 
+test('a vote event already linked to another bill can still be picked', async ({
+	page,
+}) => {
+	const title = `ลงมติหลายร่าง${Date.now()}`;
+	const { createBills } = await gql(
+		page,
+		`mutation {
+			createBills(input: [
+				{
+					${billFields(`${title}-ก`)}
+					events: { BillVoteEvent: { create: [{ node: {
+						start_date: "2024-01-01", publish_status: UNPUBLISHED
+						vote_events: { create: [{ node: {
+							title: "${title}", start_date: "2024-01-01", end_date: "2024-01-01", publish_status: UNPUBLISHED
+						} }] }
+					} }] } }
+				}
+				{
+					${billFields(`${title}-ข`)}
+					events: { BillVoteEvent: { create: [{ node: {
+						start_date: "2024-01-01", publish_status: UNPUBLISHED
+					} }] } }
+				}
+			]) {
+				bills { id events { ... on BillVoteEvent { id vote_events { id } } } }
+			}
+		}`,
+	);
+	const [linkedBill, otherBill] = createBills.bills;
+	const [linkedEvent] = linkedBill.events as {
+		id: string;
+		vote_events: { id: string }[];
+	}[];
+	const [otherEvent] = otherBill.events as { id: string }[];
+	const voteEventId = linkedEvent.vote_events[0].id;
+
+	await page.goto(`/bills/${otherBill.id}`);
+	await page.locator('.bx--table-expand__button').first().click();
+	const option = page.locator(
+		`label[for="vote-event-selection-${otherEvent.id}-${voteEventId}"]`,
+	);
+	await expect(
+		option.getByRole('link', {
+			name: 'ดูร่างกฏหมายที่เชื่อมกับการลงมตินี้ไปแล้ว',
+		}),
+	).toHaveAttribute('href', `/admin/bills/${linkedBill.id}`);
+	await option.getByText(title).click();
+	await saveChanges(page);
+
+	const { voteEvents } = await gql(
+		page,
+		`query ($id: ID!) { voteEvents(where: { id: { eq: $id } }) { bill_vote_events { id } } }`,
+		{ id: voteEventId },
+	);
+	expect(
+		voteEvents[0].bill_vote_events.map(({ id }: { id: string }) => id).sort(),
+	).toEqual([linkedEvent.id, otherEvent.id].sort());
+
+	await gql(
+		page,
+		`mutation ($billIds: [ID!]!, $eventIds: [ID!]!, $voteEventId: ID!) {
+			deleteBills(where: { id: { in: $billIds } }) { nodesDeleted }
+			deleteBillVoteEvents(where: { id: { in: $eventIds } }) { nodesDeleted }
+			deleteVoteEvents(where: { id: { eq: $voteEventId } }) { nodesDeleted }
+		}`,
+		{
+			billIds: [linkedBill.id, otherBill.id],
+			eventIds: [linkedEvent.id, otherEvent.id],
+			voteEventId,
+		},
+	);
+});
+
 test('picking an event start date fills the end date, which can then be cleared as ongoing', async ({
 	page,
 }) => {

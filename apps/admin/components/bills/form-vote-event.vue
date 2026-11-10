@@ -43,6 +43,7 @@ const { data: matchingVoteEvents, refresh } = await useLazyAsyncData(
 				title: true,
 				classification: true,
 				bill_vote_events: {
+					id: true,
 					bills: {
 						id: true,
 					},
@@ -61,6 +62,15 @@ const { data: matchingVoteEvents, refresh } = await useLazyAsyncData(
 );
 
 watch(() => [props.event.start_date, props.event.classification], refresh);
+
+const voteEventOptions = computed(() =>
+	(matchingVoteEvents.value ?? []).map((ve) => ({
+		...ve,
+		otherLinkedBillIds: ve.bill_vote_events
+			.filter(({ id }) => id !== props.event.id)
+			.flatMap(({ bills }) => bills.map(({ id }) => id)),
+	})),
+);
 </script>
 
 <template>
@@ -89,15 +99,11 @@ watch(() => [props.event.start_date, props.event.classification], refresh);
 				vertical
 			>
 				<FormRadioInputWithDetails
-					v-for="ve in matchingVoteEvents"
+					v-for="ve in voteEventOptions"
 					:key="ve.id"
 					v-model="selectedVoteEventId"
 					:value="ve.id"
 					:name="`vote-event-selection-${event.id}`"
-					:disabled="
-						(ve.bill_vote_events?.length ?? 0) > 0 &&
-						ve.id !== selectedVoteEventId
-					"
 				>
 					<span>{{ ve.title ?? ve.id }}</span>
 					<span v-if="ve.classification" class="text-sm text-neutral-500">
@@ -107,20 +113,27 @@ watch(() => [props.event.start_date, props.event.classification], refresh);
 						}}
 					</span>
 					<span class="flex flex-wrap gap-x-1 text-sm text-neutral-500">
-						<template
-							v-if="
-								(ve.bill_vote_events?.length ?? 0) > 0 &&
-								ve.id !== selectedVoteEventId
-							"
+						<a
+							v-if="ve.otherLinkedBillIds.length === 1"
+							:href="`/admin/bills/${ve.otherLinkedBillIds[0]}`"
+							target="_blank"
+							class="underline hover:text-neutral-700"
 						>
-							<a
-								:href="`/admin/bills/${ve.bill_vote_events[0].bills[0].id}`"
-								target="_blank"
-								class="underline hover:text-neutral-700"
+							ดูร่างกฏหมายที่เชื่อมกับการลงมตินี้ไปแล้ว
+						</a>
+						<span v-else-if="ve.otherLinkedBillIds.length > 1">
+							ดูร่างกฏหมายที่เชื่อมกับการลงมตินี้ไปแล้ว<template
+								v-for="(billId, billIndex) in ve.otherLinkedBillIds"
+								:key="billId"
+								><template v-if="billIndex > 0">,</template
+								><a
+									:href="`/admin/bills/${billId}`"
+									target="_blank"
+									class="underline hover:text-neutral-700"
+									>[{{ billIndex + 1 }}]</a
+								></template
 							>
-								ดูร่างกฏหมายที่เชื่อมกับการลงมตินี้ไปแล้ว
-							</a>
-						</template>
+						</span>
 						<template v-else>
 							<a
 								:href="`/admin/vote-events/${ve.id}`"
