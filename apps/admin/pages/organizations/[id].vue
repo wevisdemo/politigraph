@@ -354,6 +354,16 @@ const saveChanges = async () => {
 		const childDisconnectIds = diff(originalChildIds.value, nextChildIds);
 		const childConnectIds = diff(nextChildIds, originalChildIds.value);
 
+		const linksToCreate = organizationData.value.links.filter(
+			(link) => !link.id,
+		);
+		const linksToUpdate = organizationData.value.links.filter(
+			(link) => link.id,
+		);
+		const linksToDelete = originalLinks.value.filter(
+			(ol) => !organizationData.value?.links.some((el) => el.id === ol.id),
+		);
+
 		await graphqlClient.mutation({
 			updateOrganizations: {
 				__args: {
@@ -371,6 +381,13 @@ const saveChanges = async () => {
 						image: {
 							set: organizationData.value.image,
 						},
+						links: [
+							{
+								create: linksToCreate.map(({ note, url }) => ({
+									node: { note, url },
+								})),
+							},
+						],
 						parents: [
 							{
 								connect: parentConnectIds.length
@@ -452,16 +469,6 @@ const saveChanges = async () => {
 		});
 		const postsToDelete = originalPosts.value.filter(
 			(orig) => !activePosts.some((post) => post.id === orig.id),
-		);
-
-		const linksToCreate = organizationData.value.links.filter(
-			(link) => !link.id,
-		);
-		const linksToUpdate = organizationData.value.links.filter(
-			(link) => link.id,
-		);
-		const linksToDelete = originalLinks.value.filter(
-			(ol) => !organizationData.value?.links.some((el) => el.id === ol.id),
 		);
 
 		const postMembershipMutations = organizationData.value.posts
@@ -549,34 +556,6 @@ const saveChanges = async () => {
 						},
 						nodesDeleted: true,
 						relationshipsDeleted: true,
-					},
-				}),
-			),
-			...linksToCreate.map((link) =>
-				graphqlClient.mutation({
-					createLinks: {
-						__args: {
-							input: [
-								{
-									note: link.note,
-									url: link.url,
-									owners: {
-										Organization: {
-											connect: [
-												{
-													where: {
-														node: {
-															id: { eq: organizationData.value?.id },
-														},
-													},
-												},
-											],
-										},
-									},
-								},
-							],
-						},
-						links: { id: true },
 					},
 				}),
 			),

@@ -124,6 +124,8 @@ const saveChanges = async () => {
 			return;
 		}
 
+		const linksToCreate = peopleData.value.links.filter((l) => !l.id);
+
 		await graphqlClient.mutation({
 			updatePeople: {
 				__args: {
@@ -147,6 +149,13 @@ const saveChanges = async () => {
 						image: {
 							set: peopleData.value.image,
 						},
+						links: [
+							{
+								create: linksToCreate.map(({ note, url }) => ({
+									node: { note, url },
+								})),
+							},
+						],
 					},
 				},
 				people: {
@@ -155,39 +164,9 @@ const saveChanges = async () => {
 			},
 		});
 
-		const linksToCreate = peopleData.value.links.filter((l) => !l.id);
 		const linksToUpdate = peopleData.value.links.filter((l) => l.id);
 		const linksToDelete = originalLinks.value.filter(
 			(ol) => !peopleData.value?.links.some((el) => el.id === ol.id),
-		);
-
-		const createLinksPromises = linksToCreate.map((l) =>
-			graphqlClient.mutation({
-				createLinks: {
-					__args: {
-						input: [
-							{
-								note: l.note,
-								url: l.url,
-								owners: {
-									Person: {
-										connect: [
-											{
-												where: {
-													node: {
-														id: { eq: peopleData.value?.id },
-													},
-												},
-											},
-										],
-									},
-								},
-							},
-						],
-					},
-					links: { id: true },
-				},
-			}),
 		);
 
 		const updateLinkPromises = linksToUpdate.map((l) =>
@@ -213,7 +192,6 @@ const saveChanges = async () => {
 		);
 
 		await Promise.all([
-			...createLinksPromises,
 			...updateLinkPromises,
 			...deleteLinksPromises,
 			...buildMembershipMutations(editableMemberships.value),

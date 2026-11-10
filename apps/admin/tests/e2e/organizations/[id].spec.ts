@@ -12,6 +12,7 @@ import {
 	linkPostToOrganization,
 } from '../shared/graphql-helpers';
 import {
+	addLink,
 	confirmDeleteModal,
 	fillClassification,
 	fillOrganizationName,
@@ -26,7 +27,6 @@ import {
 	waitForMembershipTable,
 } from '../shared/ui-helpers';
 import {
-	addLink,
 	fetchOrganizationDetail,
 	fillPostMembershipPerson,
 	getPostMembershipRows,

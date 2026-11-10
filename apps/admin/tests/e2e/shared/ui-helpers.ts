@@ -21,6 +21,24 @@ const TABLE_ROWS =
 
 export const genId = (workerIndex: number) => `${workerIndex}-${Date.now()}`;
 
+export async function addLink(page: Page, note: string, url: string) {
+	await page.getByRole('button', { name: 'Add a link' }).last().click();
+
+	const lastNoteInput = page
+		.locator('label:has-text("Notes")')
+		.last()
+		.locator('..')
+		.locator('input');
+	await lastNoteInput.fill(note);
+
+	const lastUrlInput = page
+		.locator('label:has-text("URL")')
+		.last()
+		.locator('..')
+		.locator('input');
+	await lastUrlInput.fill(url);
+}
+
 export async function saveChanges(
 	page: Page,
 	{ button = 'Save Changes', toast = 'เรียบร้อย' } = {},

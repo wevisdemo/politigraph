@@ -223,7 +223,7 @@ describe('Authorization filters', () => {
 	});
 
 	describe('Link', () => {
-		test('links whose owners are all UNPUBLISHED are hidden from anonymous users', async () => {
+		test('anonymous users see every link except those owned by an UNPUBLISHED node', async () => {
 			await seedPerson(session, {
 				id: 'person-unpublished',
 				firstname: 'สมหญิง',
@@ -236,86 +236,64 @@ describe('Authorization filters', () => {
 				lastname: 'ใจดี',
 				publish_status: 'PUBLISHED',
 			});
-			await seedLink(session, {
-				id: 'link-hidden',
-				url: 'https://example.com/hidden',
-				ownerIds: ['person-unpublished'],
-			});
-			await seedLink(session, {
-				id: 'link-visible',
-				url: 'https://example.com/visible',
-				ownerIds: ['person-published'],
-			});
-
-			const result = await execute(
-				schema,
-				`
-				query {
-					links {
-						id
-					}
-				}
-			`,
-			);
-
-			expect(result.errors).toBeUndefined();
-			const data = result.data as { links: { id: string }[] };
-			expect(data.links).toHaveLength(1);
-			expect(data.links[0]!.id).toBe('link-visible');
-		});
-
-		test('link with one published and one unpublished owner is visible', async () => {
-			await seedPerson(session, {
-				id: 'person-published',
-				firstname: 'สมชาย',
-				lastname: 'ใจดี',
-				publish_status: 'PUBLISHED',
-			});
-			await seedPerson(session, {
-				id: 'person-unpublished',
-				firstname: 'สมหญิง',
-				lastname: 'รักสุข',
-				publish_status: 'UNPUBLISHED',
-			});
-			await seedLink(session, {
-				id: 'link-mixed',
-				url: 'https://example.com/mixed',
-				ownerIds: ['person-published', 'person-unpublished'],
-			});
-
-			const result = await execute(
-				schema,
-				`
-				query {
-					links {
-						id
-					}
-				}
-			`,
-			);
-
-			expect(result.errors).toBeUndefined();
-			const data = result.data as { links: { id: string }[] };
-			expect(data.links).toHaveLength(1);
-			expect(data.links[0]!.id).toBe('link-mixed');
-		});
-
-		test('link owned only by Organization is visible', async () => {
 			await seedOrganization(session, {
 				id: 'org-1',
 				name: 'Test Organization',
 			});
-			await seedLink(session, {
-				id: 'link-org',
-				url: 'https://example.com/org',
-				ownerIds: ['org-1'],
+			await seedVoteEvent(session, { id: 've-1' });
+			await seedVoteEvent(session, {
+				id: 've-unpublished',
+				publish_status: 'UNPUBLISHED',
 			});
+			await seedMembership(session, {
+				id: 'membership-unpublished',
+				personId: 'person-unpublished',
+			});
+			const billEventLabels = [
+				'BillVoteEvent',
+				'BillMergeEvent',
+				'BillEnactEvent',
+				'BillRejectEvent',
+				'BillRoyalAssentEvent',
+			];
+			for (const label of billEventLabels) {
+				await session.run(
+					`CREATE (:${label} {id: $id, publish_status: 'UNPUBLISHED'})`,
+					{ id: `${label}-unpublished` },
+				);
+			}
+			await session.run(
+				`CREATE (:BillVoteEvent {id: 'bve-published', publish_status: 'PUBLISHED'})`,
+			);
+			const owners = {
+				...Object.fromEntries(
+					billEventLabels.map((label) => [
+						`link-hidden-${label}`,
+						[`${label}-unpublished`],
+					]),
+				),
+				'link-hidden': ['person-unpublished'],
+				'link-hidden-membership': ['membership-unpublished'],
+				'link-hidden-vote-event': ['ve-unpublished'],
+				'link-bill-event': ['bve-published'],
+				'link-person': ['person-published'],
+				'link-org': ['org-1'],
+				'link-vote-event': ['ve-1'],
+				'link-ownerless': [],
+			};
+			for (const [id, ownerIds] of Object.entries(owners)) {
+				await seedLink(session, {
+					id,
+					url: `https://example.com/${id}`,
+					ownerIds,
+				});
+			}
 
 			const result = await execute(
 				schema,
 				`
 				query {
-					links {
+					links(sort: { id: ASC }) {
 						id
 					}
 				}
@@ -324,8 +302,13 @@ describe('Authorization filters', () => {
 
 			expect(result.errors).toBeUndefined();
 			const data = result.data as { links: { id: string }[] };
-			expect(data.links).toHaveLength(1);
-			expect(data.links[0]!.id).toBe('link-org');
+			expect(data.links.map(({ id }) => id)).toEqual([
+				'link-bill-event',
+				'link-org',
+				'link-ownerless',
+				'link-person',
+				'link-vote-event',
+			]);
 		});
 	});
 

@@ -106,6 +106,11 @@ const savePeople = async () => {
 							previous_occupations: peopleDetailData.value.previous_occupations,
 							image: null,
 							publish_status: enumPublishStatus.UNPUBLISHED,
+							links: {
+								create: (peopleDetailData.value.links || []).map(
+									({ note, url }) => ({ node: { note, url } }),
+								),
+							},
 						},
 					],
 				},
@@ -115,29 +120,6 @@ const savePeople = async () => {
 
 		const newPersonId = createPeopleResult.createPeople?.people?.[0]?.id;
 		if (!newPersonId) throw new Error('Failed to create person');
-
-		const createLinksPromises = (peopleDetailData.value.links || []).map((l) =>
-			graphqlClient.mutation({
-				createLinks: {
-					__args: {
-						input: [
-							{
-								note: l.note,
-								url: l.url,
-								owners: {
-									Person: {
-										connect: [{ where: { node: { id: { eq: newPersonId } } } }],
-									},
-								},
-							},
-						],
-					},
-					links: { id: true },
-				},
-			}),
-		);
-
-		await Promise.all(createLinksPromises);
 
 		toast.show({
 			kind: 'success',
