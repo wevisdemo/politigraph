@@ -202,6 +202,7 @@ const { data } = await useLazyAsyncData(
 				},
 			},
 			billsConnection: {
+				__args: { where },
 				aggregate: {
 					count: {
 						nodes: true,

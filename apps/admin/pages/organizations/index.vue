@@ -85,6 +85,7 @@ const { data } = await useLazyAsyncData(
 					dissolution_date: true,
 				},
 				organizationsConnection: {
+					__args: { where },
 					aggregate: {
 						count: {
 							nodes: true,
