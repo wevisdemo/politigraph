@@ -1,9 +1,16 @@
 <script setup lang="ts">
-import type { Vote } from '@politigraph/graphql/genql';
+import type {
+	OrganizationMember_votesUpdateFieldInput,
+	PersonVotesUpdateFieldInput,
+	Vote,
+} from '@politigraph/graphql/genql';
 import { AFFILIATION_CELL_KEY, VOTER_CELL_KEY } from '~/constants/votes';
 import {
 	getEffectiveAffiliationId,
 	getEffectiveVoterId,
+	groupVoteLinkChanges,
+	matchCreatedVotes,
+	runWithRetries,
 	validateVotes,
 } from '~/utils/votes';
 
@@ -12,6 +19,9 @@ definePageMeta({
 });
 
 type EditableVoteFields = 'vote_order' | 'badge_number' | 'option';
+
+// A nested create slows down with its size: 600 votes take ~45s in one operation, ~1.3s in chunks of 50
+const CREATE_VOTES_CHUNK_SIZE = 50;
 
 const route = useRoute();
 const graphqlClient = useGraphqlClient();
@@ -49,8 +59,8 @@ const votesWithSelectedVoters = computed(
 			);
 			return {
 				...vote,
-				voters: voterId ? [{ id: voterId }] : [],
-				voter_affiliations: affiliationId ? [{ id: affiliationId }] : [],
+				voter: voterId ? { id: voterId } : null,
+				voter_affiliation: affiliationId ? { id: affiliationId } : null,
 			};
 		}) ?? [],
 );
@@ -101,10 +111,10 @@ const { data: voteEvent, refresh } = useAsyncData(
 					voter_affiliation_raw: true,
 					option: true,
 					badge_number: true,
-					voters: {
+					voter: {
 						id: true,
 					},
-					voter_affiliations: {
+					voter_affiliation: {
 						id: true,
 					},
 				},
@@ -123,7 +133,7 @@ const { data: voteEvent, refresh } = useAsyncData(
 		voteEvent.votes.sort((a, b) => Number(a.vote_order) - Number(b.vote_order));
 
 		voteEvent.votes?.forEach((vote) => {
-			const { voters: _, voter_affiliations: __, ...rest } = vote;
+			const { voter: _, voter_affiliation: __, ...rest } = vote;
 			originalVotesMap.value[vote.id] = { ...rest };
 		});
 
@@ -143,10 +153,10 @@ const { data: peopleOptions } = await usePeopleOptions();
 const { data: affiliationOptions } = await useAffiliationOptions();
 
 const getLinkedVoterId = (voteId: string) =>
-	voteEvent.value?.votes.find((v) => v.id === voteId)?.voters[0]?.id ?? '';
+	voteEvent.value?.votes.find((v) => v.id === voteId)?.voter?.id ?? '';
 const getLinkedAffiliationId = (voteId: string) =>
-	voteEvent.value?.votes.find((v) => v.id === voteId)?.voter_affiliations[0]
-		?.id ?? '';
+	voteEvent.value?.votes.find((v) => v.id === voteId)?.voter_affiliation?.id ??
+	'';
 
 const setCellEdited = (rowId: string, cellKey: string, isEdited: boolean) => {
 	const cellId = `${rowId}-${cellKey}`;
@@ -188,6 +198,99 @@ const selectAffiliation = (rowId: string, affiliationId: string) => {
 		affiliationId !== getLinkedAffiliationId(rowId),
 	);
 };
+
+const updatePersonVotes =
+	(personId: string, votes: PersonVotesUpdateFieldInput) => () =>
+		graphqlClient.mutation({
+			updatePeople: {
+				__args: {
+					where: { id: { eq: personId } },
+					update: { votes: [votes] },
+				},
+				__typename: true,
+			},
+		});
+
+const updateOrganizationVotes =
+	(
+		organizationId: string,
+		member_votes: OrganizationMember_votesUpdateFieldInput,
+	) =>
+	() =>
+		graphqlClient.mutation({
+			updateOrganizations: {
+				__args: {
+					where: { id: { eq: organizationId } },
+					update: { member_votes: [member_votes] },
+				},
+				__typename: true,
+			},
+		});
+
+/**
+ * Links votes to their voter and affiliation from the person and organization side,
+ * since a vote's single relationships can't be connected from the vote.
+ * Connects skip votes already linked to that node, so a retry never duplicates a link,
+ * and disconnects run only after every connect succeeded.
+ */
+async function linkVotes(
+	changes: {
+		voteId: string;
+		voter: { from: string; to: string };
+		affiliation: { from: string; to: string };
+	}[],
+) {
+	const voterLinks = groupVoteLinkChanges(
+		changes.map(({ voteId, voter }) => ({ voteId, ...voter })),
+	);
+	const affiliationLinks = groupVoteLinkChanges(
+		changes.map(({ voteId, affiliation }) => ({ voteId, ...affiliation })),
+	);
+
+	await runWithRetries([
+		...[...voterLinks.connect].map(([personId, voteIds]) =>
+			updatePersonVotes(personId, {
+				connect: [
+					{
+						where: {
+							node: {
+								id: { in: voteIds },
+								NOT: { voter: { id: { eq: personId } } },
+							},
+						},
+					},
+				],
+			}),
+		),
+		...[...affiliationLinks.connect].map(([organizationId, voteIds]) =>
+			updateOrganizationVotes(organizationId, {
+				connect: [
+					{
+						where: {
+							node: {
+								id: { in: voteIds },
+								NOT: { voter_affiliation: { id: { eq: organizationId } } },
+							},
+						},
+					},
+				],
+			}),
+		),
+	]);
+
+	await runWithRetries([
+		...[...voterLinks.disconnect].map(([personId, voteIds]) =>
+			updatePersonVotes(personId, {
+				disconnect: [{ where: { node: { id: { in: voteIds } } } }],
+			}),
+		),
+		...[...affiliationLinks.disconnect].map(([organizationId, voteIds]) =>
+			updateOrganizationVotes(organizationId, {
+				disconnect: [{ where: { node: { id: { in: voteIds } } } }],
+			}),
+		),
+	]);
+}
 
 async function onSaveChanges() {
 	if (!voteEvent.value) return;
@@ -256,19 +359,11 @@ async function onSaveChanges() {
 		});
 	}
 
-	if (rowsToPatch.length) {
-		const mutationPromises = rowsToPatch.map((vote) => {
-			const voterId = getEffectiveVoterId(vote, selectedVoterIds.value);
-			const linkedVoterId = getLinkedVoterId(vote.id);
-			const affiliationId = getEffectiveAffiliationId(
-				vote,
-				selectedAffiliationIds.value,
-			);
-			const linkedAffiliationId = getLinkedAffiliationId(vote.id);
-
-			if (existingIds.has(vote.id)) {
-				// Update
-				return graphqlClient.mutation({
+	await Promise.all(
+		rowsToPatch
+			.filter((vote) => existingIds.has(vote.id))
+			.map((vote) =>
+				graphqlClient.mutation({
 					updateVotes: {
 						__args: {
 							where: {
@@ -279,164 +374,163 @@ async function onSaveChanges() {
 								badge_number: { set: vote.badge_number },
 								voter_name_raw: { set: vote.voter_name_raw },
 								option: { set: vote.option },
-								...(voterId !== linkedVoterId
-									? {
-											voters: [
-												{
-													...(linkedVoterId
-														? {
-																disconnect: [
-																	{
-																		where: {
-																			node: { id: { eq: linkedVoterId } },
-																		},
-																	},
-																],
-															}
-														: {}),
-													...(voterId
-														? {
-																connect: [
-																	{
-																		where: {
-																			node: { id: { eq: voterId } },
-																		},
-																	},
-																],
-															}
-														: {}),
-												},
-											],
-										}
-									: {}),
-								...(affiliationId !== linkedAffiliationId
-									? {
-											voter_affiliations: [
-												{
-													...(linkedAffiliationId
-														? {
-																disconnect: [
-																	{
-																		where: {
-																			node: { id: { eq: linkedAffiliationId } },
-																		},
-																	},
-																],
-															}
-														: {}),
-													...(affiliationId
-														? {
-																connect: [
-																	{
-																		where: {
-																			node: { id: { eq: affiliationId } },
-																		},
-																	},
-																],
-															}
-														: {}),
-												},
-											],
-										}
-									: {}),
 							},
 						},
 						votes: {
 							id: true,
 						},
 					},
-				});
-			} else {
-				// Create
-				return graphqlClient.mutation({
-					createVotes: {
-						__args: {
-							input: [
-								{
-									vote_order: vote.vote_order,
-									badge_number: vote.badge_number,
-									voter_name_raw:
-										vote.voter_name_raw ||
-										peopleOptions.value?.find((p) => p.value === voterId)
-											?.name ||
-										'',
-									voter_affiliation_raw:
-										vote.voter_affiliation_raw ||
-										affiliationOptions.value?.find(
-											(a) => a.value === affiliationId,
-										)?.label ||
-										'',
-									option: vote.option,
-									...(voterId
-										? {
-												voters: {
-													connect: [
-														{
-															where: {
-																node: { id: { eq: voterId } },
-															},
-														},
-													],
-												},
-											}
-										: {}),
-									...(affiliationId
-										? {
-												voter_affiliations: {
-													connect: [
-														{
-															where: {
-																node: { id: { eq: affiliationId } },
-															},
-														},
-													],
-												},
-											}
-										: {}),
-									vote_events: {
-										connect: [
+				}),
+			),
+	);
+
+	const newVotes = rowsToPatch
+		.filter((vote) => !existingIds.has(vote.id))
+		.map((vote) => ({
+			id: vote.id,
+			vote_order: vote.vote_order,
+			badge_number: vote.badge_number,
+			voter_name_raw:
+				vote.voter_name_raw ||
+				peopleOptions.value?.find(
+					(p) => p.value === getEffectiveVoterId(vote, selectedVoterIds.value),
+				)?.name ||
+				'',
+			voter_affiliation_raw:
+				vote.voter_affiliation_raw ||
+				affiliationOptions.value?.find(
+					(a) =>
+						a.value ===
+						getEffectiveAffiliationId(vote, selectedAffiliationIds.value),
+				)?.label ||
+				'',
+			option: vote.option,
+		}));
+
+	const voteEventId = voteEvent.value.id;
+
+	const createVotes = async () => {
+		if (!newVotes.length) return new Map<string, string>();
+
+		// Wait for every chunk before failing, so the reload after a failure includes all created votes
+		const failedChunk = (
+			await Promise.allSettled(
+				Array.from(
+					{ length: Math.ceil(newVotes.length / CREATE_VOTES_CHUNK_SIZE) },
+					(_, i) =>
+						graphqlClient.mutation({
+							updateVoteEvents: {
+								__args: {
+									where: { id: { eq: voteEventId } },
+									update: {
+										votes: [
 											{
-												where: {
-													node: {
-														id: { eq: voteEvent.value?.id },
-													},
-												},
+												create: newVotes
+													.slice(
+														i * CREATE_VOTES_CHUNK_SIZE,
+														(i + 1) * CREATE_VOTES_CHUNK_SIZE,
+													)
+													.map(({ id: _, ...node }) => ({ node })),
 											},
 										],
 									},
 								},
-							],
-						},
-						votes: {
-							id: true,
-						},
-					},
-				});
-			}
-		});
+								__typename: true,
+							},
+						}),
+				),
+			)
+		).find((result) => result.status === 'rejected');
 
-		await Promise.all(mutationPromises);
-	}
+		if (failedChunk) throw failedChunk.reason;
 
-	if (idsToDelete.length) {
-		await graphqlClient.mutation({
-			deleteVotes: {
-				__args: {
-					where: { id: { in: idsToDelete } },
+		const { voteEvents } = await graphqlClient.query({
+			voteEvents: {
+				__args: { where: { id: { eq: voteEventId } } },
+				votes: {
+					__args: { where: { NOT: { id: { in: [...existingIds] } } } },
+					id: true,
+					vote_order: true,
+					badge_number: true,
+					voter_name_raw: true,
+					voter_affiliation_raw: true,
+					option: true,
 				},
-				nodesDeleted: true,
 			},
 		});
+
+		return matchCreatedVotes(newVotes, voteEvents[0]!.votes);
+	};
+
+	const resetState = async () => {
+		editedRows.value.clear();
+		editedCells.value.clear();
+		toDeleteIds.value.clear();
+		activeEditingCell.value = { columnId: null, rowId: null };
+		await refresh();
+	};
+
+	// After votes were created, reload so they become existing rows and a re-save can't create them twice,
+	// then restore the unsaved selections and deletions so the re-save finishes their links
+	const reloadKeepingChanges = async (createdVoteIds: Map<string, string>) => {
+		const selections = [
+			[{ ...selectedVoterIds.value }, selectVoter],
+			[{ ...selectedAffiliationIds.value }, selectAffiliation],
+		] as const;
+		const pendingDeleteIds = [...toDeleteIds.value];
+
+		await resetState();
+
+		const savedIds = new Set(voteEvent.value?.votes.map(({ id }) => id));
+		selections.forEach(([selected, select]) =>
+			Object.entries(selected)
+				.map(([id, nodeId]) => [createdVoteIds.get(id) ?? id, nodeId] as const)
+				.filter(([id]) => savedIds.has(id))
+				.forEach(([id, nodeId]) => select(id, nodeId)),
+		);
+		pendingDeleteIds
+			.filter((id) => savedIds.has(id))
+			.forEach((id) => toDeleteIds.value.add(id));
+	};
+
+	const createdVoteIds = await createVotes().catch(async (error) => {
+		if (newVotes.length) await reloadKeepingChanges(new Map());
+		throw error;
+	});
+
+	try {
+		await linkVotes(
+			rowsToPatch.map((vote) => ({
+				voteId: createdVoteIds.get(vote.id) ?? vote.id,
+				voter: {
+					from: getLinkedVoterId(vote.id),
+					to: getEffectiveVoterId(vote, selectedVoterIds.value),
+				},
+				affiliation: {
+					from: getLinkedAffiliationId(vote.id),
+					to: getEffectiveAffiliationId(vote, selectedAffiliationIds.value),
+				},
+			})),
+		);
+
+		if (idsToDelete.length) {
+			await graphqlClient.mutation({
+				deleteVotes: {
+					__args: {
+						where: { id: { in: idsToDelete } },
+					},
+					nodesDeleted: true,
+				},
+			});
+		}
+	} catch (error) {
+		if (newVotes.length) await reloadKeepingChanges(createdVoteIds);
+		throw error;
 	}
 
 	const rowChange = rowsToPatch.length + toDeleteIds.value.size;
 
-	// reset state
-	editedRows.value.clear();
-	editedCells.value.clear();
-	toDeleteIds.value.clear();
-	activeEditingCell.value = { columnId: null, rowId: null };
-	await refresh();
+	await resetState();
 
 	successToast.show({
 		kind: 'success',
@@ -568,7 +662,7 @@ function scrollToRow(id: string) {
 	<VotesBatchNameCorrectionModal
 		v-if="voteEvent && peopleOptions"
 		:visible="isShowBatchNameCorrectionModal"
-		:votes="votesWithSelectedVoters.filter((v) => v.voters.length === 0)"
+		:votes="votesWithSelectedVoters.filter((v) => !v.voter)"
 		:people-options
 		@submit="
 			(values) => {

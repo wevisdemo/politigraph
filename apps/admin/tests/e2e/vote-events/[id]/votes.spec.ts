@@ -1,6 +1,8 @@
 import { expect, test } from '@playwright/test';
 import {
+	createTestOrganization,
 	createTestPerson,
+	deleteTestOrganization,
 	deleteTestPerson,
 } from '../../shared/graphql-helpers';
 import { genId, saveChanges } from '../../shared/ui-helpers';
@@ -12,7 +14,9 @@ import {
 	editTextInput,
 	fetchVote,
 	fetchVoteCount,
+	fetchVoteLinks,
 	getVoteRow,
+	selectInCell,
 	VOTE_OPTIONS,
 	waitForTable,
 } from '../helpers';
@@ -23,6 +27,7 @@ const saveVotes = (page: Parameters<typeof saveChanges>[0]) =>
 test.describe('Votes Management', () => {
 	const seededVoteEventIds: string[] = [];
 	const seededPersonIds: string[] = [];
+	const seededOrganizationIds: string[] = [];
 
 	test.afterEach(async ({ page }) => {
 		for (const id of seededVoteEventIds) {
@@ -31,8 +36,12 @@ test.describe('Votes Management', () => {
 		for (const id of seededPersonIds) {
 			await deleteTestPerson(page, id);
 		}
+		for (const id of seededOrganizationIds) {
+			await deleteTestOrganization(page, id);
+		}
 		seededVoteEventIds.length = 0;
 		seededPersonIds.length = 0;
+		seededOrganizationIds.length = 0;
 	});
 
 	test('update all vote fields and persist', async ({ page }) => {
@@ -74,11 +83,11 @@ test.describe('Votes Management', () => {
 		await page.goto(`/vote-events/${voteEventId}/votes`);
 		await waitForTable(page);
 
-		await page.getByLabel('Number of votes to add').fill('2');
-		await page.getByRole('button', { name: 'Add 2 Votes' }).click();
+		await page.getByLabel('Number of votes to add').fill('60');
+		await page.getByRole('button', { name: 'Add 60 Votes' }).click();
 
 		const rows = page.locator('tr[data-value]:has(input[type="text"])');
-		await expect(rows).toHaveCount(3);
+		await expect(rows).toHaveCount(61);
 
 		for (const [i, order] of ['2', '3'].entries()) {
 			const newRow = rows.nth(i + 1);
@@ -87,7 +96,7 @@ test.describe('Votes Management', () => {
 		}
 
 		await saveVotes(page);
-		expect(await fetchVoteCount(page, voteEventId)).toBe(3);
+		expect(await fetchVoteCount(page, voteEventId)).toBe(61);
 	});
 
 	test('delete vote row', async ({ page }) => {
@@ -189,11 +198,11 @@ test.describe('Votes Management', () => {
 			refreshedRow.locator('td').filter({ hasText: personFullName }),
 		).toBeVisible();
 
-		const voterNames = (vote: { voters: { name: string }[] }) =>
-			vote.voters.map((v) => v.name.replace(/\s+/g, ' '));
+		const voterName = (vote: { voter: { name: string } | null }) =>
+			vote.voter?.name.replace(/\s+/g, ' ');
 
 		const linkedVote = await fetchVote(page, votes[0].id);
-		expect(voterNames(linkedVote)).toEqual([personFullName]);
+		expect(voterName(linkedVote)).toBe(personFullName);
 		expect(linkedVote.voter_name_raw).toBe(invalidVoterName);
 
 		await editDropdown(refreshedRow, 4, VOTE_OPTIONS.DISAGREE);
@@ -201,8 +210,138 @@ test.describe('Votes Management', () => {
 
 		const voteAfterOptionEdit = await fetchVote(page, votes[0].id);
 		expect(voteAfterOptionEdit.option).toBe(VOTE_OPTIONS.DISAGREE);
-		expect(voterNames(voteAfterOptionEdit)).toEqual([personFullName]);
+		expect(voterName(voteAfterOptionEdit)).toBe(personFullName);
 		expect(voteAfterOptionEdit.voter_name_raw).toBe(invalidVoterName);
+	});
+
+	test('link new votes to their voters and affiliations after failed and dropped responses, then switch them', async ({
+		page,
+	}) => {
+		const uniqueId = genId(test.info().workerIndex);
+		const [personA, personB] = await Promise.all(
+			['ก', 'ข'].map((suffix) =>
+				createTestPerson(page, {
+					firstname: 'ทดสอบ',
+					lastname: `${suffix}${uniqueId}`,
+				}),
+			),
+		);
+		seededPersonIds.push(personA!.id, personB!.id);
+		const [partyA, partyB] = await Promise.all(
+			['ก', 'ข'].map((suffix) =>
+				createTestOrganization(
+					page,
+					`พรรค${suffix}${uniqueId}`,
+					'POLITICAL_PARTY',
+				),
+			),
+		);
+		seededOrganizationIds.push(partyA!.id, partyB!.id);
+
+		const { voteEventId, votes } = await createVoteEventWithVotes(
+			page,
+			`Test Link Votes ${uniqueId}`,
+		);
+		seededVoteEventIds.push(voteEventId);
+
+		await page.goto(`/vote-events/${voteEventId}/votes`);
+		await waitForTable(page);
+
+		const deletedRow = getVoteRow(page, votes[0]!.id);
+		await deletedRow.getByRole('button', { name: 'ลบ' }).click();
+		await page.getByLabel('Number of votes to add').fill('2');
+		await page.getByRole('button', { name: 'Add 2 Votes' }).click();
+		const rows = page.locator('tr[data-value]:has(input[type="text"])');
+		for (const [i, voterLastname] of [
+			`ก${uniqueId}`,
+			`ข${uniqueId}`,
+		].entries()) {
+			const row = rows.nth(i);
+			await editTextInput(page, row, 0, `${i + 2}`);
+			await editTextInput(page, row, 1, `00${i + 2}`);
+			await selectInCell(page, row, 2, voterLastname);
+			await selectInCell(page, row, 3, partyA!.name);
+		}
+
+		let voterLinking: 'fail' | 'dropOneResponse' | 'pass' = 'fail';
+		let failedRequestCount = 0;
+		await page.route('**/graphql', async (route) => {
+			if (
+				voterLinking === 'pass' ||
+				!route.request().postData()?.includes('updatePeople')
+			) {
+				return route.continue();
+			}
+			if (voterLinking === 'dropOneResponse') {
+				voterLinking = 'pass';
+				await route.fetch();
+			}
+			failedRequestCount++;
+			return route.abort();
+		});
+
+		await saveChanges(page, { toast: 'เกิดข้อผิดพลาดในการบันทึกข้อมูล' });
+		expect(failedRequestCount).toBeGreaterThanOrEqual(3);
+		await expect(rows).toHaveCount(2);
+		await expect(deletedRow).toBeHidden();
+		for (const [i, voterLastname] of [
+			`ก${uniqueId}`,
+			`ข${uniqueId}`,
+		].entries()) {
+			await expect(rows.nth(i).locator('td').nth(2)).toContainText(
+				voterLastname,
+			);
+		}
+
+		voterLinking = 'dropOneResponse';
+		await saveVotes(page);
+		expect(voterLinking).toBe('pass');
+
+		const linksOf = async () =>
+			Object.fromEntries(
+				(await fetchVoteLinks(page, voteEventId)).map((vote) => [
+					vote.vote_order,
+					vote,
+				]),
+			);
+		const created = await linksOf();
+		expect(Object.keys(created).sort()).toEqual(['2', '3']);
+		expect(created['2']).toMatchObject({
+			voter: { id: personA!.id, votesConnection: { totalCount: 1 } },
+			voter_affiliation: {
+				id: partyA!.id,
+				member_votesConnection: { totalCount: 2 },
+			},
+		});
+		expect(created['3']).toMatchObject({
+			voter: { id: personB!.id, votesConnection: { totalCount: 1 } },
+			voter_affiliation: { id: partyA!.id },
+		});
+
+		await page.unroute('**/graphql');
+		const secondRow = getVoteRow(page, created['2']!.id);
+		const thirdRow = getVoteRow(page, created['3']!.id);
+		await selectInCell(page, secondRow, 2, `ข${uniqueId}`);
+		await selectInCell(page, thirdRow, 2, `ก${uniqueId}`);
+		await selectInCell(page, secondRow, 3, partyB!.name);
+		await page.getByRole('button', { name: 'Save Changes' }).click();
+
+		await expect.poll(linksOf).toMatchObject({
+			'2': {
+				voter: { id: personB!.id, votesConnection: { totalCount: 1 } },
+				voter_affiliation: {
+					id: partyB!.id,
+					member_votesConnection: { totalCount: 1 },
+				},
+			},
+			'3': {
+				voter: { id: personA!.id, votesConnection: { totalCount: 1 } },
+				voter_affiliation: {
+					id: partyA!.id,
+					member_votesConnection: { totalCount: 1 },
+				},
+			},
+		});
 	});
 
 	test('show validation errors for invalid votes', async ({ page }) => {

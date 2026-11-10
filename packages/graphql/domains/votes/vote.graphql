@@ -10,11 +10,7 @@ type Vote
 			{ where: {} }
 			{
 				requireAuthentication: false
-				where: {
-					node: {
-						vote_events: { some: { publish_status: { eq: "PUBLISHED" } } }
-					}
-				}
+				where: { node: { vote_event: { publish_status: { eq: "PUBLISHED" } } } }
 			}
 		]
 	)
@@ -26,12 +22,12 @@ type Vote
 	"""
 	มติที่ลงคะแนนเสียง
 	"""
-	vote_events: [VoteEvent!]!
+	vote_event: VoteEvent
 		@relationship(type: "VOTED_IN", properties: "Relation", direction: OUT)
 	"""
 	บุคคลที๋โหวต
 	"""
-	voters: [Person!]!
+	voter: Person
 		@relationship(type: "VOTED_BY", properties: "Relation", direction: OUT)
 	"""
 	ลำดับที่ (จากตารางในรายงานการประชุมของ MSBIS)
@@ -58,7 +54,7 @@ type Vote
 	"""
 	องค์กรที่สังกัดในขณะลงคะแนนเสียง
 	"""
-	voter_affiliations: [Organization!]!
+	voter_affiliation: Organization
 		@relationship(
 			type: "AFFILIATED_WITH"
 			properties: "Relation"

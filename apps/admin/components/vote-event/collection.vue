@@ -13,8 +13,8 @@ const props = defineProps<{
 		| 'option'
 		| 'badge_number'
 	> & {
-		voters: Pick<Person, 'id' | 'name'>[];
-		voter_affiliations: Pick<Organization, 'id' | 'name'>[];
+		voter: Pick<Person, 'id' | 'name'> | null;
+		voter_affiliation: Pick<Organization, 'id' | 'name'> | null;
 	})[];
 }>();
 
@@ -70,10 +70,10 @@ const router = useRouter();
 						{{ firstRowIndexOfPage + i + 1 }}
 					</cv-data-table-cell>
 					<cv-data-table-cell>
-						{{ row.voters.at(0)?.name || row.voter_name_raw }}
+						{{ row.voter?.name || row.voter_name_raw }}
 					</cv-data-table-cell>
 					<cv-data-table-cell>{{
-						row.voter_affiliations.at(0)?.name || row.voter_affiliation_raw
+						row.voter_affiliation?.name || row.voter_affiliation_raw
 					}}</cv-data-table-cell>
 					<cv-data-table-cell>{{ row.option }}</cv-data-table-cell>
 				</cv-data-table-row>

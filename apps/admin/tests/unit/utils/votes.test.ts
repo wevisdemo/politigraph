@@ -1,6 +1,11 @@
 import type { Vote, VoteEvent } from '@politigraph/graphql/genql';
-import { validateVotes } from '~/utils/votes';
-import { describe, expect, test } from 'vitest';
+import {
+	groupVoteLinkChanges,
+	matchCreatedVotes,
+	runWithRetries,
+	validateVotes,
+} from '~/utils/votes';
+import { describe, expect, test, vi } from 'vitest';
 
 type VoteInput = Pick<
 	Vote,
@@ -11,8 +16,8 @@ type VoteInput = Pick<
 	| 'voter_name_raw'
 	| 'voter_affiliation_raw'
 > & {
-	voters: { id: string }[];
-	voter_affiliations: { id: string }[];
+	voter: { id: string } | null;
+	voter_affiliation: { id: string } | null;
 };
 
 type SummaryHeader = Pick<
@@ -28,8 +33,8 @@ function createVote(overrides: Partial<VoteInput> = {}): VoteInput {
 		option: 'เห็นด้วย',
 		voter_name_raw: 'สมชาย ใจดี',
 		voter_affiliation_raw: 'พรรค A',
-		voters: [{ id: 'person-1' }],
-		voter_affiliations: [{ id: 'org-1' }],
+		voter: { id: 'person-1' },
+		voter_affiliation: { id: 'org-1' },
 		...overrides,
 	};
 }
@@ -73,8 +78,8 @@ describe('validateVotes', () => {
 
 	test('detects duplicated votes', () => {
 		const votes = [
-			createVote({ id: 'v1', voters: [{ id: 'person-1' }] }),
-			createVote({ id: 'v2', voters: [{ id: 'person-1' }] }),
+			createVote({ id: 'v1', voter: { id: 'person-1' } }),
+			createVote({ id: 'v2', voter: { id: 'person-1' } }),
 		];
 		const summary = createSummaryHeader({ agree_count: 2 });
 
@@ -87,9 +92,9 @@ describe('validateVotes', () => {
 
 	test('detects duplicated votes by raw name when unlinked, without cross-flagging distinct voters', () => {
 		const votes = [
-			createVote({ id: 'v1', voters: [], voter_name_raw: 'สมชาย ใจดี' }),
-			createVote({ id: 'v2', voters: [], voter_name_raw: 'สมชาย ใจดี' }),
-			createVote({ id: 'v3', voters: [{ id: 'person-2' }] }),
+			createVote({ id: 'v1', voter: null, voter_name_raw: 'สมชาย ใจดี' }),
+			createVote({ id: 'v2', voter: null, voter_name_raw: 'สมชาย ใจดี' }),
+			createVote({ id: 'v3', voter: { id: 'person-2' } }),
 		];
 		const summary = createSummaryHeader({ agree_count: 3 });
 
@@ -132,7 +137,7 @@ describe('validateVotes', () => {
 	});
 
 	test('warns about unlinked voters and affiliations', () => {
-		const votes = [createVote({ voters: [], voter_affiliations: [] })];
+		const votes = [createVote({ voter: null, voter_affiliation: null })];
 		const summary = createSummaryHeader({ agree_count: 1 });
 
 		const result = validateVotes({ votes, ...summary });
@@ -148,7 +153,7 @@ describe('validateVotes', () => {
 			createVote({
 				id: 'v1',
 				option: 'เห็นด้วย',
-				voters: [{ id: 'person-1' }],
+				voter: { id: 'person-1' },
 			}),
 		];
 		const summary = createSummaryHeader({ agree_count: 1 });
@@ -157,5 +162,59 @@ describe('validateVotes', () => {
 
 		expect(result.errors).toHaveLength(0);
 		expect(result.warnings).toHaveLength(0);
+	});
+});
+
+describe('vote writes', () => {
+	test('matchCreatedVotes pairs each row with a created vote of the same fields, and throws when one is missing', () => {
+		const rows = [
+			createVote({ id: 'row-1', vote_order: '1', voter_name_raw: 'ก' }),
+			createVote({ id: 'row-2', vote_order: '2', voter_name_raw: 'ข' }),
+			createVote({ id: 'row-3', vote_order: '2', voter_name_raw: 'ข' }),
+		];
+		const createdVotes = [
+			createVote({ id: 'vote-b', vote_order: '2', voter_name_raw: 'ข' }),
+			createVote({ id: 'vote-a', vote_order: '1', voter_name_raw: 'ก' }),
+			createVote({ id: 'vote-c', vote_order: '2', voter_name_raw: 'ข' }),
+		];
+
+		expect(matchCreatedVotes(rows, createdVotes)).toEqual(
+			new Map([
+				['row-1', 'vote-a'],
+				['row-2', 'vote-b'],
+				['row-3', 'vote-c'],
+			]),
+		);
+		expect(() => matchCreatedVotes(rows, createdVotes.slice(1))).toThrow();
+	});
+
+	test('groupVoteLinkChanges groups changed links by node and skips unchanged or empty ones', () => {
+		expect(
+			groupVoteLinkChanges([
+				{ voteId: 'v1', from: '', to: 'p1' },
+				{ voteId: 'v2', from: 'p2', to: 'p1' },
+				{ voteId: 'v3', from: 'p2', to: '' },
+				{ voteId: 'v4', from: 'p3', to: 'p3' },
+			]),
+		).toEqual({
+			connect: new Map([['p1', ['v1', 'v2']]]),
+			disconnect: new Map([['p2', ['v2', 'v3']]]),
+		});
+	});
+
+	test('runWithRetries reruns only failed tasks and throws once attempts run out', async () => {
+		const succeeding = vi.fn().mockResolvedValue(undefined);
+		const flaky = vi
+			.fn()
+			.mockRejectedValueOnce(new Error('network'))
+			.mockResolvedValue(undefined);
+		const failing = vi.fn().mockRejectedValue(new Error('down'));
+
+		await runWithRetries([succeeding, flaky]);
+		expect(succeeding).toHaveBeenCalledTimes(1);
+		expect(flaky).toHaveBeenCalledTimes(2);
+
+		await expect(runWithRetries([failing], 3)).rejects.toThrow('down');
+		expect(failing).toHaveBeenCalledTimes(3);
 	});
 });

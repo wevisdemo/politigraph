@@ -59,11 +59,11 @@ const { data: voteEventData, refresh: refreshVoteEvent } =
 					voter_affiliation_raw: true,
 					option: true,
 					badge_number: true,
-					voters: {
+					voter: {
 						id: true,
 						name: true,
 					},
-					voter_affiliations: {
+					voter_affiliation: {
 						id: true,
 						name: true,
 					},

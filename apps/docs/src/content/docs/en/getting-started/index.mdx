@@ -68,7 +68,7 @@ Due to the large number of nodes and relationships in Politigraph, we need to ex
 For example, if we want to know _"Which vote event did Anutin Charnvirakul were agreeing with?"_ We can query a node representing him and the relationships that lead to the votes he were agreeing and the vote event.
 
 <QueryTabs
-	query="query People($where: PersonWhere, $votesWhere2: VoteWhere) { people(where: $where) { id name name_en image votes(where: $votesWhere2) { id option_en vote_events { id title nickname result start_date end_date } } } }"
+	query="query People($where: PersonWhere, $votesWhere2: VoteWhere) { people(where: $where) { id name name_en image votes(where: $votesWhere2) { id option_en vote_event { id title nickname result start_date end_date } } } }"
 	variables='{ "where": { "firstname_en": { "eq": "Anutin" }, "lastname_en": { "eq": "Charnvirakul" } }, "votesWhere2": { "option": { "eq": "เห็นด้วย" } } }'
 />
 

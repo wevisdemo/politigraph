@@ -165,6 +165,9 @@ describe('Authorization filters', () => {
 				option: 'ไม่เห็นด้วย',
 				voteEventId: 've-unpublished',
 			});
+			await session.run(
+				`CREATE (:Vote { id: 'vote-unlinked', option: 'เห็นด้วย', created_at: datetime() })`,
+			);
 
 			const result = await execute(
 				schema,
@@ -181,44 +184,6 @@ describe('Authorization filters', () => {
 			const data = result.data as { votes: { id: string }[] };
 			expect(data.votes).toHaveLength(1);
 			expect(data.votes[0]!.id).toBe('vote-published');
-		});
-
-		test('vote linked to both published and unpublished events is visible', async () => {
-			await seedVoteEvent(session, {
-				id: 've-published',
-				title: 'Published Event',
-				publish_status: 'PUBLISHED',
-			});
-			await seedVoteEvent(session, {
-				id: 've-unpublished',
-				title: 'Unpublished Event',
-				publish_status: 'UNPUBLISHED',
-			});
-			await seedVote(session, {
-				id: 'vote-mixed',
-				option: 'เห็นด้วย',
-				voteEventId: 've-published',
-			});
-			await session.run(
-				`MATCH (v:Vote {id: 'vote-mixed'}), (ve:VoteEvent {id: 've-unpublished'})
-				CREATE (v)-[:VOTED_IN]->(ve)`,
-			);
-
-			const result = await execute(
-				schema,
-				`
-				query {
-					votes {
-						id
-					}
-				}
-			`,
-			);
-
-			expect(result.errors).toBeUndefined();
-			const data = result.data as { votes: { id: string }[] };
-			expect(data.votes).toHaveLength(1);
-			expect(data.votes[0]!.id).toBe('vote-mixed');
 		});
 	});
 

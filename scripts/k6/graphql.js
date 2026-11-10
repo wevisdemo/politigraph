@@ -117,7 +117,7 @@ const payloads = new SharedArray('graphql_payloads', () => [
            id
            voter_name_raw
            option
-           vote_events {
+           vote_event {
              id
              title
            }
@@ -127,18 +127,16 @@ const payloads = new SharedArray('graphql_payloads', () => [
 		variables: {
 			limit: 1000,
 			where: {
-				voters: {
-					single: {
-						memberships: {
-							some: {
-								post: {
-									organization: {
-										classification: {
-											eq: 'POLITICAL_PARTY',
-										},
-										name: {
-											eq: 'เพื่อไทย',
-										},
+				voter: {
+					memberships: {
+						some: {
+							post: {
+								organization: {
+									classification: {
+										eq: 'POLITICAL_PARTY',
+									},
+									name: {
+										eq: 'เพื่อไทย',
 									},
 								},
 							},
@@ -160,11 +158,9 @@ const payloads = new SharedArray('graphql_payloads', () => [
     `,
 		variables: {
 			where: {
-				vote_events: {
-					single: {
-						id: {
-							eq: 'e38ffbce-8a25-482d-a110-49045ee454fd',
-						},
+				vote_event: {
+					id: {
+						eq: 'e38ffbce-8a25-482d-a110-49045ee454fd',
 					},
 				},
 				option: {

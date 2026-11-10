@@ -73,7 +73,7 @@ export async function fetchVote(page: Page, voteId: string) {
 			votes(where: { id: { eq: $id } }) {
 				voter_name_raw
 				option
-				voters { name }
+				voter { name }
 			}
 		}`,
 		{ id: voteId },
@@ -81,8 +81,34 @@ export async function fetchVote(page: Page, voteId: string) {
 	return votes[0] as {
 		voter_name_raw: string;
 		option: string;
-		voters: { name: string }[];
+		voter: { name: string } | null;
 	};
+}
+
+export async function fetchVoteLinks(page: Page, voteEventId: string) {
+	const { voteEvents } = await gql(
+		page,
+		`query VoteLinks($id: ID!) {
+			voteEvents(where: { id: { eq: $id } }) {
+				votes {
+					id
+					vote_order
+					voter { id votesConnection { totalCount } }
+					voter_affiliation { id member_votesConnection { totalCount } }
+				}
+			}
+		}`,
+		{ id: voteEventId },
+	);
+	return voteEvents[0].votes as {
+		id: string;
+		vote_order: string;
+		voter: { id: string; votesConnection: { totalCount: number } } | null;
+		voter_affiliation: {
+			id: string;
+			member_votesConnection: { totalCount: number };
+		} | null;
+	}[];
 }
 
 export async function deleteVoteEvent(page: Page, voteEventId: string) {
@@ -115,6 +141,20 @@ export async function editTextInput(
 	await input.click();
 	await input.fill(value);
 	await page.keyboard.press('Tab');
+}
+
+export async function selectInCell(
+	page: Page,
+	row: Locator,
+	cellIndex: number,
+	text: string,
+) {
+	const cell = row.locator('td').nth(cellIndex);
+	await cell.click();
+	await cell.locator('input[role="combobox"]').fill(text);
+	await page.locator(`.bx--list-box__menu-item:has-text("${text}")`).click();
+	await row.locator('td').first().click();
+	await expect(cell).toContainText(text);
 }
 
 export async function editDropdown(

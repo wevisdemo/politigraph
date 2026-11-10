@@ -69,7 +69,7 @@ graph TD
 ยกตัวอย่างเช่น ถ้าเราสงสัยว่า _"อนุทิน ชาญวีรกูล ได้เห็นด้วยกับการลงมติอะไรบ้าง?"_ เราก็สามารถดึง Node ของอนุทิน และ Relationships ที่เชื่อมไปถึงการโหวตเห็นด้วยจนถึงการลงมตินั้นๆ ได้
 
 <QueryTabs
-	query="query People($where: PersonWhere, $votesWhere2: VoteWhere) { people(where: $where) { id name image votes(where: $votesWhere2) { id option vote_events { id title nickname result start_date end_date } } } }"
+	query="query People($where: PersonWhere, $votesWhere2: VoteWhere) { people(where: $where) { id name image votes(where: $votesWhere2) { id option vote_event { id title nickname result start_date end_date } } } }"
 	variables='{ "where": { "firstname": { "eq": "อนุทิน" }, "lastname": { "eq": "ชาญวีรกูล" } }, "votesWhere2": { "option": { "eq": "เห็นด้วย" } } }'
 />
 

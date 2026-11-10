@@ -52,9 +52,9 @@ test.describe('Delete entity', () => {
 					} }] }
 					votes: { create: [{ node: {
 						option: "เห็นด้วย"
-						vote_events: { create: [{ node: {
+						vote_event: { create: { node: {
 							title: $name, start_date: "2024-01-01", end_date: "2024-01-01", publish_status: UNPUBLISHED
-						} }] }
+						} } }
 					} }] }
 				}]) {
 					people {
@@ -62,7 +62,7 @@ test.describe('Delete entity', () => {
 						links { id }
 						other_names { ... on AlternatePersonName { id } }
 						memberships { id links { id } post { id } }
-						votes { id vote_events { id } }
+						votes { id vote_event { id } }
 					}
 				}
 			}`,
@@ -119,7 +119,7 @@ test.describe('Delete entity', () => {
 				deletePosts(where: { id: { eq: $postId } }) { nodesDeleted }
 			}`,
 			{
-				voteEventId: vote.vote_events[0].id,
+				voteEventId: vote.vote_event.id,
 				postId: membership.post.id,
 			},
 		);

@@ -17,31 +17,124 @@ export interface VoteIssue {
 /**
  * Resolves the voter a row points at, preferring an unsaved selection over the persisted link.
  *
- * @param vote - Vote row with its persisted voters.
+ * @param vote - Vote row with its persisted voter.
  * @param selectedVoterIds - Unsaved voter selections keyed by vote id.
  * @returns The person id the row should be linked to, or an empty string when unlinked.
  */
 export function getEffectiveVoterId(
-	vote: Pick<Vote, 'id'> & { voters: { id: string }[] },
+	vote: Pick<Vote, 'id'> & { voter: { id: string } | null },
 	selectedVoterIds: Record<string, string>,
 ) {
-	return selectedVoterIds[vote.id] ?? vote.voters[0]?.id ?? '';
+	return selectedVoterIds[vote.id] ?? vote.voter?.id ?? '';
 }
 
 /**
  * Resolves the organization a row is affiliated with, preferring an unsaved selection over the persisted link.
  *
- * @param vote - Vote row with its persisted affiliations.
+ * @param vote - Vote row with its persisted affiliation.
  * @param selectedAffiliationIds - Unsaved affiliation selections keyed by vote id.
  * @returns The organization id the row should be linked to, or an empty string when unlinked.
  */
 export function getEffectiveAffiliationId(
-	vote: Pick<Vote, 'id'> & { voter_affiliations: { id: string }[] },
+	vote: Pick<Vote, 'id'> & { voter_affiliation: { id: string } | null },
 	selectedAffiliationIds: Record<string, string>,
 ) {
-	return (
-		selectedAffiliationIds[vote.id] ?? vote.voter_affiliations[0]?.id ?? ''
+	return selectedAffiliationIds[vote.id] ?? vote.voter_affiliation?.id ?? '';
+}
+
+type VoteFields = Pick<
+	Vote,
+	| 'id'
+	| 'vote_order'
+	| 'badge_number'
+	| 'voter_name_raw'
+	| 'voter_affiliation_raw'
+	| 'option'
+>;
+
+const toVoteKey = (vote: VoteFields) =>
+	JSON.stringify(
+		(
+			[
+				'vote_order',
+				'badge_number',
+				'voter_name_raw',
+				'voter_affiliation_raw',
+				'option',
+			] as const
+		).map((key) => vote[key] ?? null),
 	);
+
+/**
+ * Matches votes created without a known id back to the rows they were created from, by their saved fields.
+ * Rows with identical fields are interchangeable, so any pairing between them stores the same votes.
+ *
+ * @param rows - Rows as sent to the create mutation, keyed by their temporary id.
+ * @param createdVotes - Votes read back after the create, excluding votes that existed before.
+ * @returns The created vote id for each row id.
+ * @throws When a row has no matching created vote.
+ */
+export function matchCreatedVotes(
+	rows: VoteFields[],
+	createdVotes: VoteFields[],
+) {
+	const unmatchedByKey = Map.groupBy(createdVotes, toVoteKey);
+
+	return new Map(
+		rows.map((row) => {
+			const createdId = unmatchedByKey.get(toVoteKey(row))?.shift()?.id;
+			if (!createdId) {
+				throw new Error(`No created vote matches row ${row.vote_order}`);
+			}
+			return [row.id, createdId];
+		}),
+	);
+}
+
+/**
+ * Groups vote link changes by the node to connect or disconnect, so each node needs one mutation.
+ *
+ * @param changes - Per vote, the currently linked node id and the one it should link to ('' for none).
+ * @returns Vote ids to connect and to disconnect, keyed by node id.
+ */
+export function groupVoteLinkChanges(
+	changes: { voteId: string; from: string; to: string }[],
+) {
+	const changed = changes.filter(({ from, to }) => from !== to);
+	const groupVoteIds = (key: 'from' | 'to') =>
+		new Map(
+			[...Map.groupBy(changed, (change) => change[key])]
+				.filter(([nodeId]) => nodeId)
+				.map(([nodeId, group]) => [nodeId, group.map(({ voteId }) => voteId)]),
+		);
+
+	return { connect: groupVoteIds('to'), disconnect: groupVoteIds('from') };
+}
+
+/**
+ * Runs tasks in parallel and reruns the failed ones, so they must be safe to repeat.
+ *
+ * @param tasks - Idempotent tasks to run.
+ * @param attempts - Maximum number of runs per task.
+ * @throws The first error of the last attempt when some tasks still fail.
+ */
+export async function runWithRetries(
+	tasks: (() => Promise<unknown>)[],
+	attempts = 3,
+) {
+	const results = await Promise.allSettled(tasks.map((task) => task()));
+	const failed = tasks.filter((_, i) => results[i]!.status === 'rejected');
+
+	if (!failed.length) return;
+	if (attempts <= 1) {
+		throw (
+			results.find(
+				(result) => result.status === 'rejected',
+			) as PromiseRejectedResult
+		).reason;
+	}
+
+	await runWithRetries(failed, attempts - 1);
 }
 
 /**
@@ -66,18 +159,18 @@ export function validateVotes({
 		| 'voter_name_raw'
 		| 'voter_affiliation_raw'
 	> & {
-		voters: { id: string }[];
-		voter_affiliations: { id: string }[];
+		voter: { id: string } | null;
+		voter_affiliation: { id: string } | null;
 	})[];
 }) {
 	const errors: VoteIssue[] = [];
 	const warnings: VoteIssue[] = [];
 
 	const getVoterKey = (vote: (typeof votes)[number]) =>
-		vote.voters[0]?.id ?? vote.voter_name_raw;
+		vote.voter?.id ?? vote.voter_name_raw;
 
 	const countByOption = new Map<string, number>();
-	const countByVoterKey = new Map<string, number>();
+	const countByVoterKey = new Map<string | null, number>();
 
 	votes.forEach((vote) => {
 		countByOption.set(vote.option, (countByOption.get(vote.option) ?? 0) + 1);
@@ -103,11 +196,11 @@ export function validateVotes({
 			warnings.push({ type: 'MISSING_INFORMATION', id: vote.id });
 		}
 
-		if (vote.voters.length === 0) {
+		if (!vote.voter) {
 			warnings.push({ type: 'INVALID_VOTER_NAME', id: vote.id });
 		}
 
-		if (vote.voter_affiliations.length === 0) {
+		if (!vote.voter_affiliation) {
 			warnings.push({ type: 'UNLINKED_AFFILIATION', id: vote.id });
 		}
 

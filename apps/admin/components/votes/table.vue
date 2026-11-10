@@ -48,8 +48,8 @@ type VoteEventProp = Pick<VoteEvent, 'id' | 'title' | 'publish_status'> & {
 		| 'option'
 		| 'badge_number'
 	> & {
-		voters: Pick<Person, 'id'>[];
-		voter_affiliations: Pick<Organization, 'id'>[];
+		voter: Pick<Person, 'id'> | null;
+		voter_affiliation: Pick<Organization, 'id'> | null;
 	})[];
 };
 
@@ -274,8 +274,8 @@ const addNewRows = () => {
 			voter_name_raw: '',
 			voter_affiliation_raw: '',
 			option: '',
-			voters: [],
-			voter_affiliations: [],
+			voter: null,
+			voter_affiliation: null,
 		}),
 	);
 	if (props.voteEvent && props.voteEvent.votes) {
