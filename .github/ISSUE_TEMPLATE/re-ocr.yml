@@ -1,8 +1,7 @@
-
 name: แจ้ง OCR ใหม่
 description: Request a new OCR process for a vote event.
-title: "[OCR ใหม่] "
-labels: ["re-OCR"]
+title: '[OCR ใหม่] '
+labels: ['re-OCR']
 
 body:
   - type: input
@@ -19,6 +18,6 @@ body:
     attributes:
       label: Reason for re-OCR
       description: Explain why this vote event needs new OCR, if applicable.
-      placeholder: "e.g. Incorrect text extraction, missing pages, or poor OCR accuracy."
+      placeholder: 'e.g. Incorrect text extraction, missing pages, or poor OCR accuracy.'
     validations:
       required: false
