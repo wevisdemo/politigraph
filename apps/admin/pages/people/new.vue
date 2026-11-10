@@ -50,7 +50,7 @@ const personName = computed(
 
 const savePeople = async () => {
 	const mandatoryFields = [
-		{ value: peopleDetailData.value.prefix, name: 'Title' },
+		{ value: peopleDetailData.value.prefix, name: 'Prefix' },
 		{ value: peopleDetailData.value.firstname, name: 'Firstname' },
 		{ value: peopleDetailData.value.lastname, name: 'Lastname' },
 	];

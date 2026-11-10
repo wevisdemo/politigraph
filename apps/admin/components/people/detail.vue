@@ -94,7 +94,7 @@ const genderOptions = Object.values(enumGender);
 			/>
 			<cv-text-input
 				v-model="modelValue.prefix"
-				label="Title*"
+				label="Prefix*"
 				placeholder=""
 				required
 				class="w-72"
