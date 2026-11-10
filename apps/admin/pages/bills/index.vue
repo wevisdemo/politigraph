@@ -23,9 +23,7 @@ useHead({
 type BillEvent = {
 	__typename?: unknown;
 	main_bill?: unknown;
-	vote_eventsConnection?: {
-		totalCount?: unknown;
-	};
+	vote_event?: unknown;
 };
 
 const route = useRoute();
@@ -144,17 +142,7 @@ const { data } = await useLazyAsyncData(
 					{
 						events: {
 							some: {
-								BillVoteEvent: {
-									vote_eventsConnection: {
-										aggregate: {
-											count: {
-												nodes: {
-													eq: 0,
-												},
-											},
-										},
-									},
-								},
+								BillVoteEvent: { vote_event: null },
 							},
 						},
 					},
@@ -190,14 +178,7 @@ const { data } = await useLazyAsyncData(
 					},
 
 					on_BillVoteEvent: {
-						vote_events: {
-							votesConnection: {
-								totalCount: true,
-							},
-						},
-						vote_eventsConnection: {
-							totalCount: true,
-						},
+						vote_event: { id: true },
 					},
 				},
 			},
@@ -272,10 +253,7 @@ const getEventCompleteness = (data: unknown[]) => {
 			return count - 1;
 		}
 
-		if (
-			event.__typename === 'BillVoteEvent' &&
-			event.vote_eventsConnection?.totalCount === 0
-		) {
+		if (event.__typename === 'BillVoteEvent' && event.vote_event === null) {
 			return count - 1;
 		}
 

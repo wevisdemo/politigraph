@@ -18,7 +18,7 @@ type BillVoteEvent implements Event @node {
 	"""
 	อีเวนต์การโหวต
 	"""
-	vote_events: [VoteEvent!]!
+	vote_event: VoteEvent
 		@relationship(
 			type: "HAS_VOTE_EVENT"
 			properties: "Relation"
@@ -61,7 +61,7 @@ type BillVoteEvent implements Event @node {
 	"""
 	pass_condition: String
 		@deprecated(
-			reason: "Use vote_events { pass_condition } instead. Will be removed."
+			reason: "Use vote_event { pass_condition } instead. Will be removed."
 		)
 	"""
 	จำนวนผู้ที่เห็นด้วย (จากหัวเอกสารรายงานการประชุมของ MSBIS)

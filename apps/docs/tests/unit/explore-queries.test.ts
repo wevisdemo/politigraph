@@ -91,7 +91,7 @@ describe('pruneToMainLeaves', () => {
 					id: 'bill-vote-event-1',
 					title___1: 'วาระ 1',
 					bill: backReference,
-					vote_events: [{ __typename: 'VoteEvent', id: 'vote-event-1' }],
+					vote_event: { __typename: 'VoteEvent', id: 'vote-event-1' },
 				},
 				{
 					__typename: 'BillEnactEvent',
@@ -113,7 +113,7 @@ describe('pruneToMainLeaves', () => {
 				id: 'bill-vote-event-1',
 				title: 'วาระ 1',
 				bill: backReference,
-				vote_events: [{ __typename: 'VoteEvent', id: 'vote-event-1' }],
+				vote_event: { __typename: 'VoteEvent', id: 'vote-event-1' },
 			},
 		]);
 	});

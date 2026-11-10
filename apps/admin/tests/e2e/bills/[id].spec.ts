@@ -79,19 +79,19 @@ test('clearing the matched vote event of a bill vote event unlinks it', async ({
 				${billFields(title)}
 				events: { BillVoteEvent: { create: [{ node: {
 					start_date: "2024-01-01", publish_status: UNPUBLISHED
-					vote_events: { create: [{ node: {
+					vote_event: { create: { node: {
 						title: "${title}", start_date: "2024-01-01", end_date: "2024-01-01", publish_status: UNPUBLISHED
-					} }] }
+					} } }
 				} }] } }
 			}]) {
-				bills { id events { ... on BillVoteEvent { id vote_events { id } } } }
+				bills { id events { ... on BillVoteEvent { id vote_event { id } } } }
 			}
 		}`,
 	);
 	const [bill] = createBills.bills;
 	const [event] = bill.events as {
 		id: string;
-		vote_events: { id: string }[];
+		vote_event: { id: string };
 	}[];
 
 	await page.goto(`/bills/${bill.id}`);
@@ -101,10 +101,10 @@ test('clearing the matched vote event of a bill vote event unlinks it', async ({
 
 	const { billVoteEvents } = await gql(
 		page,
-		`query ($id: ID!) { billVoteEvents(where: { id: { eq: $id } }) { vote_events { id } } }`,
+		`query ($id: ID!) { billVoteEvents(where: { id: { eq: $id } }) { vote_event { id } } }`,
 		{ id: event.id },
 	);
-	expect(billVoteEvents).toEqual([{ vote_events: [] }]);
+	expect(billVoteEvents).toEqual([{ vote_event: null }]);
 
 	await gql(
 		page,
@@ -116,15 +116,19 @@ test('clearing the matched vote event of a bill vote event unlinks it', async ({
 		{
 			billId: bill.id,
 			eventId: event.id,
-			voteEventId: event.vote_events[0].id,
+			voteEventId: event.vote_event.id,
 		},
 	);
 });
 
-test('a vote event already linked to another bill can still be picked', async ({
+test('switching to a vote event already linked to another bill moves the link', async ({
 	page,
 }) => {
 	const title = `ลงมติหลายร่าง${Date.now()}`;
+	const voteEventFields = (voteEventTitle: string) =>
+		`vote_event: { create: { node: {
+			title: "${voteEventTitle}", start_date: "2024-01-01", end_date: "2024-01-01", publish_status: UNPUBLISHED
+		} } }`;
 	const { createBills } = await gql(
 		page,
 		`mutation {
@@ -133,29 +137,32 @@ test('a vote event already linked to another bill can still be picked', async ({
 					${billFields(`${title}-ก`)}
 					events: { BillVoteEvent: { create: [{ node: {
 						start_date: "2024-01-01", publish_status: UNPUBLISHED
-						vote_events: { create: [{ node: {
-							title: "${title}", start_date: "2024-01-01", end_date: "2024-01-01", publish_status: UNPUBLISHED
-						} }] }
+						${voteEventFields(title)}
 					} }] } }
 				}
 				{
 					${billFields(`${title}-ข`)}
 					events: { BillVoteEvent: { create: [{ node: {
 						start_date: "2024-01-01", publish_status: UNPUBLISHED
+						${voteEventFields(`${title}-เดิม`)}
 					} }] } }
 				}
 			]) {
-				bills { id events { ... on BillVoteEvent { id vote_events { id } } } }
+				bills { id events { ... on BillVoteEvent { id vote_event { id } } } }
 			}
 		}`,
 	);
 	const [linkedBill, otherBill] = createBills.bills;
 	const [linkedEvent] = linkedBill.events as {
 		id: string;
-		vote_events: { id: string }[];
+		vote_event: { id: string };
 	}[];
-	const [otherEvent] = otherBill.events as { id: string }[];
-	const voteEventId = linkedEvent.vote_events[0].id;
+	const [otherEvent] = otherBill.events as {
+		id: string;
+		vote_event: { id: string };
+	}[];
+	const voteEventId = linkedEvent.vote_event.id;
+	const previousVoteEventId = otherEvent.vote_event.id;
 
 	await page.goto(`/bills/${otherBill.id}`);
 	await page.locator('.bx--table-expand__button').first().click();
@@ -172,24 +179,30 @@ test('a vote event already linked to another bill can still be picked', async ({
 
 	const { voteEvents } = await gql(
 		page,
-		`query ($id: ID!) { voteEvents(where: { id: { eq: $id } }) { bill_vote_events { id } } }`,
-		{ id: voteEventId },
+		`query ($ids: [ID!]!) { voteEvents(where: { id: { in: $ids } }) { id bill_vote_events { id } } }`,
+		{ ids: [voteEventId, previousVoteEventId] },
 	);
-	expect(
-		voteEvents[0].bill_vote_events.map(({ id }: { id: string }) => id).sort(),
-	).toEqual([linkedEvent.id, otherEvent.id].sort());
+	const linkedEventIds = (id: string) =>
+		voteEvents
+			.find((ve: { id: string }) => ve.id === id)
+			.bill_vote_events.map((e: { id: string }) => e.id)
+			.sort();
+	expect(linkedEventIds(voteEventId)).toEqual(
+		[linkedEvent.id, otherEvent.id].sort(),
+	);
+	expect(linkedEventIds(previousVoteEventId)).toEqual([]);
 
 	await gql(
 		page,
-		`mutation ($billIds: [ID!]!, $eventIds: [ID!]!, $voteEventId: ID!) {
+		`mutation ($billIds: [ID!]!, $eventIds: [ID!]!, $voteEventIds: [ID!]!) {
 			deleteBills(where: { id: { in: $billIds } }) { nodesDeleted }
 			deleteBillVoteEvents(where: { id: { in: $eventIds } }) { nodesDeleted }
-			deleteVoteEvents(where: { id: { eq: $voteEventId } }) { nodesDeleted }
+			deleteVoteEvents(where: { id: { in: $voteEventIds } }) { nodesDeleted }
 		}`,
 		{
 			billIds: [linkedBill.id, otherBill.id],
 			eventIds: [linkedEvent.id, otherEvent.id],
-			voteEventId,
+			voteEventIds: [voteEventId, previousVoteEventId],
 		},
 	);
 });

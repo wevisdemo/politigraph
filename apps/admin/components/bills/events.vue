@@ -65,7 +65,7 @@ const isEventComplete = (event: BillEventForm): boolean => {
 		return event.main_bill !== null;
 	}
 	if (event.__typename === 'BillVoteEvent') {
-		return event.vote_events !== undefined && event.vote_events.length > 0;
+		return !!event.vote_event;
 	}
 	return true;
 };

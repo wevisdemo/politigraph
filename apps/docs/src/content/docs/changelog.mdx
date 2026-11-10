@@ -15,6 +15,7 @@ description: รายการการเปลี่ยนแปลงที�
 - `named_entity` ใน `AlternateName` และ `AlternatePersonName` เปลี่ยนจาก List เป็น `NamedEntity` และ `Person` เพียงค่าเดียว
 - ลบ `VoteEvent.bills` ที่เลิกใช้งานแล้วและไม่เคยมีข้อมูล ให้ใช้ `VoteEvent.bill_vote_events { bill }` แทน
 - `Post.organizations: [Organization!]!` เปลี่ยนเป็น `Post.organization: Organization` เนื่องจากตำแหน่งหนึ่งเป็นขององค์กรเพียงองค์กรเดียว และสร้างหรือลบได้ผ่านตำแหน่งเท่านั้น การเชื่อมหรือยกเลิกการเชื่อมกับองค์กรที่มีอยู่แล้วให้ทำผ่าน `Organization.posts` แทน
+- `BillVoteEvent.vote_events: [VoteEvent!]!` เปลี่ยนเป็น `BillVoteEvent.vote_event: VoteEvent` เนื่องจากการลงมติในร่างกฎหมายแต่ละครั้งตรงกับการลงมติเพียงครั้งเดียว `vote_event` จะเป็น `null` เมื่อยังไม่ได้จับคู่กับการลงมติ และสร้างหรือลบได้ผ่าน `BillVoteEvent` เท่านั้น การเชื่อมหรือยกเลิกการเชื่อมกับการลงมติที่มีอยู่แล้วให้ทำผ่าน `VoteEvent.bill_vote_events` แทน ซึ่งยังคงเป็น List
 
 ## 2026-11-09
 

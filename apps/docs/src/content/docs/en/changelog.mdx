@@ -15,6 +15,7 @@ When a client-visible field is renamed or removed, the old field is kept for a w
 - `named_entity` on `AlternateName` and `AlternatePersonName` becomes a single `NamedEntity` and `Person` instead of a list
 - `VoteEvent.bills` is removed. It was deprecated and never populated; use `VoteEvent.bill_vote_events { bill }` instead
 - `Post.organizations: [Organization!]!` becomes `Post.organization: Organization`, since each post belongs to one organization. It can only be created or deleted through the post; link or unlink an existing organization with `Organization.posts` instead
+- `BillVoteEvent.vote_events: [VoteEvent!]!` becomes `BillVoteEvent.vote_event: VoteEvent`, since each bill vote event matches one vote event. It is `null` when no vote event is matched, and it can only be created or deleted through the bill vote event; link or unlink an existing vote event with `VoteEvent.bill_vote_events` instead, which stays a list
 
 ## 2026-11-09
 
