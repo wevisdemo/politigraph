@@ -9,6 +9,8 @@ When a client-visible field is renamed or removed, the old field is kept for a w
 
 ## 2026-11-11
 
+Relationship fields that always point to one node change from lists to single, nullable fields, so the schema states the cardinality. In mutations, a single field can only create or delete the related node; to connect, disconnect or update an existing node, use the list field on the other side.
+
 **Breaking**
 
 - `bills: [Bill!]!` becomes `bill: Bill` on `BillEnactEvent`, `BillRejectEvent`, `BillRoyalAssentEvent` and `BillVoteEvent`, since each of these events belongs to one bill. `bill` is `null` when the event has no bill, and it can only be created or deleted through the event; link or unlink an existing bill with `Bill.events` instead. `BillMergeEvent.bills` stays a list
@@ -19,6 +21,7 @@ When a client-visible field is renamed or removed, the old field is kept for a w
 - `Link.owners: [LinkOwner!]!` becomes `Link.owner: LinkOwner`, since each link belongs to one node. It can only be created or deleted through the link; create a link for an existing node through that node's `links` field (for example `Person.links` in `updatePeople`) instead of `createLinks` with `owners`. Links owned by any unpublished node are now hidden, not only those of an unpublished person: this covers unpublished vote events, bill events and memberships of an unpublished person
 - `Membership.members: [Member!]!` becomes `Membership.member: Member` and `Membership.posts: [Post!]!` becomes `Membership.post: Post`, since each membership is held by one person or organization in one post. They can only be created or deleted through the membership; link or unlink an existing member or post with `Person.memberships`, `Organization.memberships` or `Post.memberships` instead. Visibility is unchanged: memberships of an unpublished person stay hidden
 - `Vote.vote_events: [VoteEvent!]!` becomes `Vote.vote_event: VoteEvent`, `Vote.voters: [Person!]!` becomes `Vote.voter: Person` and `Vote.voter_affiliations: [Organization!]!` becomes `Vote.voter_affiliation: Organization`, since each vote is cast by one voter, affiliated with one organization, in one vote event. `voter` and `voter_affiliation` are `null` when the vote is not matched yet. They can only be created or deleted through the vote; create a vote in an existing vote event with `VoteEvent.votes`, and link or unlink an existing voter or affiliation with `Person.votes` or `Organization.member_votes` instead. Visibility is unchanged: votes of an unpublished vote event stay hidden
+- On every relationship above that becomes single, filters take the related node directly instead of `some`, `all`, `none` or `single` (for example `where: { voter: { id: { eq: "..." } } }`), and `null` matches a missing relationship on fields of one type such as `voter: null`. The connection field follows the singular name (for example `voterConnection`) and has no `aggregate`
 
 ## 2026-11-09
 
