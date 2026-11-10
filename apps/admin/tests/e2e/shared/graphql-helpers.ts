@@ -135,14 +135,14 @@ export async function linkPostToOrganization(
 		data: {
 			query: `
 				mutation LinkPostToOrg($postId: ID!, $orgId: ID!) {
-					updatePosts(
-						where: { id: { eq: $postId } }
+					updateOrganizations(
+						where: { id: { eq: $orgId } }
 						update: {
-							organizations: {
-								connect: [{ where: { node: { id: { eq: $orgId } } } }]
+							posts: {
+								connect: [{ where: { node: { id: { eq: $postId } } } }]
 							}
 						}
-					) { posts { id } }
+					) { organizations { id } }
 				}
 			`,
 			variables: { postId, orgId },

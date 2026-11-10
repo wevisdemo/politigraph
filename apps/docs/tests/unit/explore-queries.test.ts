@@ -59,7 +59,7 @@ describe('pruneToMainLeaves', () => {
 						{
 							__typename: 'Post',
 							id: 'post-1',
-							organizations: [{ __typename: 'Organization', id: 'org-1' }],
+							organization: { __typename: 'Organization', id: 'org-1' },
 							// dead-end: Membership with no onward relations
 							memberships: [{ __typename: 'Membership', id: 'membership-2' }],
 						},

@@ -8,7 +8,7 @@ import { RepresentativeLabel } from '~/types/membership';
 type FixedPost = {
 	id: string;
 	role: string;
-	organizations: Array<{ id: string; name: string; classification: string }>;
+	organization: { id: string; name: string; classification: string };
 };
 
 const props = withDefaults(
@@ -119,30 +119,30 @@ const handleSave = () => {
 const onClassificationChange = (newClassification: string) => {
 	if (!props.membership) return;
 
-	props.membership.posts[0].organizations[0].classification = newClassification;
+	props.membership.posts[0].organization.classification = newClassification;
 	props.membership.posts[0].id = '';
 	props.membership.posts[0].role = '';
-	props.membership.posts[0].organizations[0].id = '';
-	props.membership.posts[0].organizations[0].name = '';
+	props.membership.posts[0].organization.id = '';
+	props.membership.posts[0].organization.name = '';
 };
 
 const handleOrgNameChange = (selectedValue: string) => {
 	if (!props.membership) return;
 
 	const options = getOrganizationOptions(
-		props.membership.posts[0].organizations[0].classification,
+		props.membership.posts[0].organization.classification,
 	);
 	const selected = options.find((opt) => opt.value === selectedValue);
 
-	props.membership.posts[0].organizations[0].id = selected?.value ?? '';
-	props.membership.posts[0].organizations[0].name = selected?.label ?? '';
+	props.membership.posts[0].organization.id = selected?.value ?? '';
+	props.membership.posts[0].organization.name = selected?.label ?? '';
 };
 
 const handleRoleInput = (selectedValue: string) => {
 	if (!props.membership) return;
 
 	const options = getPostOptionsForOrg(
-		props.membership.posts[0].organizations[0].id,
+		props.membership.posts[0].organization.id,
 	);
 	const selected = options.find((opt) => opt.value === selectedValue);
 
@@ -152,8 +152,8 @@ const handleRoleInput = (selectedValue: string) => {
 
 const resolvedClassification = computed(() =>
 	props.variant === 'post-fixed'
-		? props.fixedPost?.organizations[0]?.classification
-		: props.membership?.posts[0]?.organizations[0]?.classification,
+		? props.fixedPost?.organization?.classification
+		: props.membership?.posts[0]?.organization?.classification,
 );
 
 const memberTypeOptions = [
@@ -224,7 +224,7 @@ const handleOrgMemberChange = (selectedValue: string) => {
 					<p class="text-sm text-[#525252]">
 						Post:
 						<strong>{{ fixedPost?.role }}</strong>
-						— {{ fixedPost?.organizations[0]?.name }}
+						— {{ fixedPost?.organization?.name }}
 					</p>
 
 					<cv-dropdown
@@ -281,7 +281,7 @@ const handleOrgMemberChange = (selectedValue: string) => {
 					<div class="flex justify-between gap-5">
 						<div class="relative w-1/2">
 							<cv-combo-box
-								v-model="membership.posts[0].organizations[0].classification"
+								v-model="membership.posts[0].organization.classification"
 								title="Organization Classification*"
 								:options="organizationClassification"
 								item-value-key="value"
@@ -294,15 +294,15 @@ const handleOrgMemberChange = (selectedValue: string) => {
 
 						<div class="relative w-1/2">
 							<cv-combo-box
-								:key="membership.posts[0].organizations[0].classification"
-								v-model="membership.posts[0].organizations[0].id"
+								:key="membership.posts[0].organization.classification"
+								v-model="membership.posts[0].organization.id"
 								title="Organization Name*"
 								:options="
 									getOrganizationOptions(
-										membership.posts[0].organizations[0].classification,
+										membership.posts[0].organization.classification,
 									)
 								"
-								:disabled="!membership.posts[0].organizations[0].classification"
+								:disabled="!membership.posts[0].organization.classification"
 								item-value-key="value"
 								item-text-key="label"
 								auto-filter
@@ -315,13 +315,13 @@ const handleOrgMemberChange = (selectedValue: string) => {
 					<div class="flex w-full gap-5">
 						<div class="w-1/2">
 							<cv-combo-box
-								:key="membership.posts[0].organizations[0].id"
+								:key="membership.posts[0].organization.id"
 								v-model="membership.posts[0].id"
 								:options="
-									getPostOptionsForOrg(membership.posts[0].organizations[0].id)
+									getPostOptionsForOrg(membership.posts[0].organization.id)
 								"
 								title="Post*"
-								:disabled="!membership.posts[0].organizations[0].id"
+								:disabled="!membership.posts[0].organization.id"
 								item-value-key="value"
 								item-text-key="label"
 								auto-filter

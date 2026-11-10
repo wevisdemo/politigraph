@@ -302,13 +302,11 @@ const loadRelatedMemberships = async (postId: string) => {
 						{
 							id: postId,
 							role: currentPost.value?.role ?? '',
-							organizations: [
-								{
-									id: orgId,
-									name: orgName,
-									classification: orgClassification,
-								},
-							],
+							organization: {
+								id: orgId,
+								name: orgName,
+								classification: orgClassification,
+							},
 						},
 					],
 					members: resolvedMember ? [resolvedMember] : [],
@@ -343,13 +341,11 @@ const handleAddPostMembership = () => {
 			{
 				id: p.id,
 				role: p.role,
-				organizations: [
-					{
-						id: props.organization?.id ?? '',
-						name: props.organization?.name ?? '',
-						classification: props.organization?.classification ?? '',
-					},
-				],
+				organization: {
+					id: props.organization?.id ?? '',
+					name: props.organization?.name ?? '',
+					classification: props.organization?.classification ?? '',
+				},
 			},
 		],
 		members: [],
@@ -730,13 +726,11 @@ watch(
 					? {
 							id: currentPost.id,
 							role: currentPost.role,
-							organizations: [
-								{
-									id: props.organization.id,
-									name: props.organization.name,
-									classification: props.organization.classification,
-								},
-							],
+							organization: {
+								id: props.organization.id,
+								name: props.organization.name,
+								classification: props.organization.classification,
+							},
 						}
 					: null
 			"

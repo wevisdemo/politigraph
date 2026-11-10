@@ -22,24 +22,24 @@ export const organizationResolvers = {
 };
 
 export const postResolvers = {
-	label: ({ role, organizations: [org] }: Post) => {
-		if (!org) return role;
+	label: ({ role, organization }: Post) => {
+		if (!organization) return role;
 
-		if (org.classification === 'POLITICAL_PARTY') {
-			return `${role.replace('พรรคการเมือง', 'พรรค')}${org.name}`;
+		if (organization.classification === 'POLITICAL_PARTY') {
+			return `${role.replace('พรรคการเมือง', 'พรรค')}${organization.name}`;
 		}
 
-		const abbreviation = organizationResolvers.abbreviation(org);
-		const fullname = org.name.split(' ')[0] ?? '';
+		const abbreviation = organizationResolvers.abbreviation(organization);
+		const fullname = organization.name.split(' ')[0] ?? '';
 
 		return abbreviation
 			? [
 					role.replace('สมาชิก', '').replace(fullname, ''),
 					abbreviation,
-					...org.name.split(' ').slice(1),
+					...organization.name.split(' ').slice(1),
 				]
 					.join(' ')
 					.trim()
-			: `${role} ${org.name}`;
+			: `${role} ${organization.name}`;
 	},
 };

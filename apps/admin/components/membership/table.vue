@@ -40,8 +40,8 @@ const currentMembership = computed(() => {
 
 const isFormValid = (m: MembershipProp): boolean => {
 	return !!(
-		m.posts?.[0]?.organizations?.[0]?.classification &&
-		m.posts?.[0]?.organizations?.[0]?.id &&
+		m.posts?.[0]?.organization?.classification &&
+		m.posts?.[0]?.organization?.id &&
 		m.posts?.[0]?.id
 	);
 };
@@ -64,7 +64,7 @@ const handleAddMembership = () => {
 			{
 				id: '',
 				role: '',
-				organizations: [{ id: '', name: '', classification: '' }],
+				organization: { id: '', name: '', classification: '' },
 			},
 		],
 		links: [],
@@ -198,16 +198,16 @@ const showModalDeleteMembership = (id: string, name: string | undefined) => {
 					>
 						<cv-data-table-cell>
 							<a
-								:href="`/admin/organizations/${m.posts?.[0]?.organizations?.[0]?.id}`"
+								:href="`/admin/organizations/${m.posts?.[0]?.organization?.id}`"
 								class="space-x-1 hover:underline"
 								:class="m.mode == 'deleted' ? 'line-through' : ''"
 							>
 								{{
-									m.posts?.[0]?.organizations?.[0]?.classification ==
+									m.posts?.[0]?.organization?.classification ==
 									enumOrganizationType.POLITICAL_PARTY
 										? 'พรรค'
 										: ''
-								}}{{ m.posts?.[0]?.organizations?.[0]?.name ?? '-' }}
+								}}{{ m.posts?.[0]?.organization?.name ?? '-' }}
 
 								<CheckmarkFilled16
 									v-if="m.end_date === null"
@@ -255,7 +255,7 @@ const showModalDeleteMembership = (id: string, name: string | undefined) => {
 									@click="
 										showModalDeleteMembership(
 											m.id,
-											m.posts?.[0]?.organizations?.[0]?.name,
+											m.posts?.[0]?.organization?.name,
 										)
 									"
 								/>

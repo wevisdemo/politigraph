@@ -133,14 +133,12 @@ const payloads = new SharedArray('graphql_payloads', () => [
 							some: {
 								posts: {
 									single: {
-										organizations: {
-											single: {
-												classification: {
-													eq: 'POLITICAL_PARTY',
-												},
-												name: {
-													eq: 'เพื่อไทย',
-												},
+										organization: {
+											classification: {
+												eq: 'POLITICAL_PARTY',
+											},
+											name: {
+												eq: 'เพื่อไทย',
 											},
 										},
 									},
@@ -195,14 +193,12 @@ const payloads = new SharedArray('graphql_payloads', () => [
 					some: {
 						posts: {
 							some: {
-								organizations: {
-									some: {
-										classification: {
-											eq: 'POLITICAL_PARTY',
-										},
-										name: {
-											eq: 'เพื่อไทย',
-										},
+								organization: {
+									classification: {
+										eq: 'POLITICAL_PARTY',
+									},
+									name: {
+										eq: 'เพื่อไทย',
 									},
 								},
 							},

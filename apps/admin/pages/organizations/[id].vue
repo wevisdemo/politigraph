@@ -134,7 +134,7 @@ const { data: organizationData, refresh: refreshOrganizationDetail } =
 						posts: {
 							id: true,
 							role: true,
-							organizations: {
+							organization: {
 								id: true,
 								name: true,
 								classification: true,
@@ -199,13 +199,11 @@ const { data: organizationData, refresh: refreshOrganizationDetail } =
 								{
 									id: post.id,
 									role: post.role,
-									organizations: [
-										{
-											id: organization.id,
-											name: organization.name,
-											classification: organization.classification,
-										},
-									],
+									organization: {
+										id: organization.id,
+										name: organization.name,
+										classification: organization.classification,
+									},
 								},
 							],
 							members: resolvedMember ? [resolvedMember] : [],
@@ -490,28 +488,26 @@ const saveChanges = async () => {
 		await Promise.all([
 			...postsToCreate.map((post) =>
 				graphqlClient.mutation({
-					createPosts: {
+					updateOrganizations: {
 						__args: {
-							input: [
-								{
-									role: post.role,
-									start_date: post.start_date,
-									end_date: post.end_date,
-									organizations: {
-										connect: [
+							where: { id: { eq: organizationData.value?.id } },
+							update: {
+								posts: [
+									{
+										create: [
 											{
-												where: {
-													node: {
-														id: { eq: organizationData.value?.id },
-													},
+												node: {
+													role: post.role,
+													start_date: post.start_date,
+													end_date: post.end_date,
 												},
 											},
 										],
 									},
-								},
-							],
+								],
+							},
 						},
-						posts: { id: true },
+						organizations: { id: true },
 					},
 				}),
 			),

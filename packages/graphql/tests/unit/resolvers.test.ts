@@ -125,12 +125,10 @@ describe('Post.label', () => {
 	test('produces expected label for a house organization', () => {
 		const result = resolvers.Post.label({
 			role: 'สมาชิกสภาผู้แทนราษฎร',
-			organizations: [
-				{
-					classification: 'HOUSE_OF_REPRESENTATIVE',
-					name: 'สภาผู้แทนราษฎร ชุดที่ 26',
-				} as Organization,
-			],
+			organization: {
+				classification: 'HOUSE_OF_REPRESENTATIVE',
+				name: 'สภาผู้แทนราษฎร ชุดที่ 26',
+			} as Organization,
 		} as Post);
 		expect(result).toBe('สส. ชุดที่ 26');
 	});
@@ -138,12 +136,10 @@ describe('Post.label', () => {
 	test('produces expected label for a political party organization', () => {
 		const result = resolvers.Post.label({
 			role: 'หัวหน้าพรรคการเมือง',
-			organizations: [
-				{
-					classification: 'POLITICAL_PARTY',
-					name: 'พรรคก้าวไกล',
-				} as Organization,
-			],
+			organization: {
+				classification: 'POLITICAL_PARTY',
+				name: 'พรรคก้าวไกล',
+			} as Organization,
 		} as Post);
 		expect(result).toBe('หัวหน้าพรรคพรรคก้าวไกล');
 	});
@@ -151,7 +147,7 @@ describe('Post.label', () => {
 	test('returns role when no organization', () => {
 		const result = resolvers.Post.label({
 			role: 'ประธานสภา',
-			organizations: [] as Organization[],
+			organization: null,
 		} as Post);
 		expect(result).toBe('ประธานสภา');
 	});

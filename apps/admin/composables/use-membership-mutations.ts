@@ -30,8 +30,8 @@ export function useMembershipMutations(args: {
 					m.start_date !== orig.start_date ||
 					m.end_date !== orig.end_date ||
 					m.posts?.[0]?.id !== orig.posts?.[0]?.id ||
-					m.posts?.[0]?.organizations?.[0]?.id !==
-						orig.posts?.[0]?.organizations?.[0]?.id ||
+					m.posts?.[0]?.organization?.id !==
+						orig.posts?.[0]?.organization?.id ||
 					JSON.stringify(m.links) !== JSON.stringify(orig.links) ||
 					m.members?.[0]?.id !== orig.members?.[0]?.id ||
 					m.memberType !== orig.memberType

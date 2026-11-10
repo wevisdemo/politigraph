@@ -12,7 +12,7 @@ type Post @node {
 	ชื่อตำแหน่งแบบเต็ม (มีชื่อองกรณ์)
 	"""
 	label: String!
-		@customResolver(requires: "role organizations { name classification }")
+		@customResolver(requires: "role organization { name classification }")
 	"""
 	ชื่อตำแหน่งแบบสั้น
 	"""
@@ -28,7 +28,7 @@ type Post @node {
 	"""
 	องค์กรที่มีตำแหน่งนี้
 	"""
-	organizations: [Organization!]!
+	organization: Organization
 		@relationship(type: "IN", properties: "Relation", direction: OUT)
 	"""
 	การเป็นสมาชิกในตำแหน่งนี้

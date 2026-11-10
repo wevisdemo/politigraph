@@ -58,7 +58,7 @@ const { data: peopleData, refresh: refreshPeopleDetail } =
 					posts: {
 						id: true,
 						role: true,
-						organizations: {
+						organization: {
 							id: true,
 							name: true,
 							classification: true,

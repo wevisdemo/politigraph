@@ -50,9 +50,7 @@ const partyMembershipCondition = {
 	end_date: { eq: null },
 	posts: {
 		some: {
-			organizations: {
-				some: { classification: { eq: 'POLITICAL_PARTY' as const } },
-			},
+			organization: { classification: { eq: 'POLITICAL_PARTY' as const } },
 		},
 	},
 };
@@ -100,11 +98,9 @@ const { data } = await useLazyAsyncData(
 						end_date: { eq: null },
 						posts: {
 							some: {
-								organizations: {
-									some: {
-										classification: {
-											eq: 'HOUSE_OF_REPRESENTATIVE' as const,
-										},
+								organization: {
+									classification: {
+										eq: 'HOUSE_OF_REPRESENTATIVE' as const,
 									},
 								},
 							},

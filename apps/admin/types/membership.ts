@@ -21,11 +21,11 @@ export type MembershipProp = {
 	posts: Array<{
 		id: string;
 		role: string;
-		organizations: Array<{
+		organization: {
 			id: string;
 			name: string;
 			classification: string;
-		}>;
+		};
 	}>;
 	members?: Array<{ id: string; name: string }>;
 	memberType?: 'Person' | 'Organization' | '';

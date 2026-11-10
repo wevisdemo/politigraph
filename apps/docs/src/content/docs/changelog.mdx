@@ -14,6 +14,7 @@ description: รายการการเปลี่ยนแปลงที�
 - `bills: [Bill!]!` เปลี่ยนเป็น `bill: Bill` ใน `BillEnactEvent`, `BillRejectEvent`, `BillRoyalAssentEvent` และ `BillVoteEvent` เนื่องจากอีเวนต์เหล่านี้เป็นของร่างกฎหมายเพียงฉบับเดียว `bill` จะเป็น `null` เมื่ออีเวนต์ไม่มีร่างกฎหมาย และสร้างหรือลบได้ผ่านอีเวนต์เท่านั้น การเชื่อมหรือยกเลิกการเชื่อมกับร่างกฎหมายที่มีอยู่แล้วให้ทำผ่าน `Bill.events` แทน ส่วน `BillMergeEvent.bills` ยังคงเป็น List
 - `named_entity` ใน `AlternateName` และ `AlternatePersonName` เปลี่ยนจาก List เป็น `NamedEntity` และ `Person` เพียงค่าเดียว
 - ลบ `VoteEvent.bills` ที่เลิกใช้งานแล้วและไม่เคยมีข้อมูล ให้ใช้ `VoteEvent.bill_vote_events { bill }` แทน
+- `Post.organizations: [Organization!]!` เปลี่ยนเป็น `Post.organization: Organization` เนื่องจากตำแหน่งหนึ่งเป็นขององค์กรเพียงองค์กรเดียว และสร้างหรือลบได้ผ่านตำแหน่งเท่านั้น การเชื่อมหรือยกเลิกการเชื่อมกับองค์กรที่มีอยู่แล้วให้ทำผ่าน `Organization.posts` แทน
 
 ## 2026-11-09
 
