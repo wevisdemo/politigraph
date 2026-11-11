@@ -382,8 +382,7 @@ async function togglePublishStatus() {
 				<div class="flex flex-col gap-6">
 					<div class="flex flex-col gap-1">
 						<h4>Vote Events Details</h4>
-
-						<p class="text-xs opacity-70">ID: {{ voteEventData?.id }}</p>
+						<UiEntityId :id="voteEventData?.id" />
 					</div>
 					<template v-if="!voteEventData">
 						<cv-number-input-skeleton v-for="i in 9" :key="i" />

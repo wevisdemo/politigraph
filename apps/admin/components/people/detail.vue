@@ -56,7 +56,10 @@ const genderOptions = Object.values(enumGender);
 
 <template>
 	<div class="h-fit space-y-4 bg-white p-4">
-		<h4 class="pt-2">Person Details</h4>
+		<div class="flex flex-col gap-1 pt-2">
+			<h4>Person Details</h4>
+			<UiEntityId :id="modelValue?.id" />
+		</div>
 		<template v-if="!modelValue">
 			<cv-number-input-skeleton v-for="i in 9" :key="i" />
 		</template>

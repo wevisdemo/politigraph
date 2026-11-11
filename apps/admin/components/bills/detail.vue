@@ -77,6 +77,7 @@ const getOrganizationOptions = (classification: OrganizationType) => {
 	<div class="flex flex-col gap-6">
 		<div class="flex flex-col gap-1">
 			<h4>Bill Details</h4>
+			<UiEntityId :id="billData?.id" />
 		</div>
 		<template v-if="!billData || !peopleList || !organizationList">
 			<cv-number-input-skeleton v-for="i in 9" :key="i" />

@@ -95,7 +95,7 @@ const organizationTypeOptions = Object.values(enumOrganizationType).map(
 	<div class="flex flex-col gap-6">
 		<div class="flex flex-col gap-1">
 			<h4>Organization Details</h4>
-			<p class="text-xs opacity-70">ID: {{ modelValue?.id }}</p>
+			<UiEntityId :id="modelValue?.id" />
 		</div>
 
 		<template v-if="!modelValue || !props.organizationOptions">
