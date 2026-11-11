@@ -1,7 +1,7 @@
 name: Lost Vote Event
 description: ดึงข้อมูลตกหล่นจากเว็บ msbis
-title: "[Vote Event] ดึงข้อมูลตกหล่นจากเว็บ msbis"
-labels: ["Vote Event"]
+title: '[Vote Event] ดึงข้อมูลตกหล่นจากเว็บ msbis'
+labels: ['Vote Event']
 
 body:
   - type: input
