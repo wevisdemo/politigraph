@@ -1,5 +1,15 @@
+import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { defineConfig, devices } from '@playwright/test';
+
+// Same files as @politigraph/config; loadEnvFile never overrides, so the more specific file goes first
+for (const file of [
+	`../../.env.${process.env.NODE_ENV ?? 'development'}`,
+	'../../.env',
+]) {
+	const path = fileURLToPath(new URL(file, import.meta.url));
+	if (existsSync(path)) process.loadEnvFile(path);
+}
 
 export const STORAGE_STATE = fileURLToPath(
 	new URL('./tests/e2e/.auth/user.json', import.meta.url),
