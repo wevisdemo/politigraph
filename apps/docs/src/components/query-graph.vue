@@ -631,6 +631,12 @@ function fitGraph() {
 	sigma.getCamera().animatedReset();
 }
 
+const isUrl = (value: unknown): value is string =>
+	typeof value === 'string' && /^https?:\/\/\S+$/.test(value);
+
+const isImageUrl = (value: unknown): value is string =>
+	isUrl(value) && /\.(webp|png|jpe?g|gif|svg|avif)$/i.test(value);
+
 const selectedNode = computed(() => {
 	if (!selectedNodes.value.length) return null;
 
@@ -685,6 +691,26 @@ const selectedNode = computed(() => {
 							{{ ' ' }}
 							<span v-if="value === null" class="italic text-gray-400"
 								>null</span
+							>
+							<a
+								v-else-if="isImageUrl(value)"
+								:href="value"
+								target="_blank"
+								class="mt-1 block"
+							>
+								<img
+									:src="value"
+									:alt="key"
+									loading="lazy"
+									class="max-h-32 max-w-full rounded"
+								/>
+							</a>
+							<a
+								v-else-if="isUrl(value)"
+								:href="value"
+								target="_blank"
+								class="text-blue-700 dark:text-blue-400"
+								>{{ value }}</a
 							>
 							<template
 								v-else-if="

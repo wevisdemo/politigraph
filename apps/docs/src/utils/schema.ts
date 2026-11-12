@@ -90,7 +90,8 @@ export function getObjectLabel(
 		option ||
 		(obj.start_date
 			? `${getShortDateString(obj.start_date)} - ${getShortDateString(obj.end_date)}`
-			: '')) as string;
+			: '') ||
+		obj.__typename) as string;
 }
 
 function getShortDateString(date: unknown) {
