@@ -4,7 +4,8 @@ on:
   push:
     branches: ['main']
     paths-ignore:
-      - 'README.md'
+      - '**/README.md'
+      - 'AGENTS.md'
       - 'LICENSE'
       - 'servers/db/*'
       - '.github/workflows/db.yml'
