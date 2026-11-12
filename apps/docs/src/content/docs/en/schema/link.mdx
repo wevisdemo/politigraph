@@ -1,0 +1,29 @@
+---
+title: Links
+description: The Link data structure in Politigraph, used to trace people, memberships, bills and votes back to their original sources, with GraphQL query examples.
+sidebar:
+  order: 8
+---
+
+import QueryTabs from '../../../../components/query-tabs.astro';
+
+A **`Link`** records an external source related to a node, so the data can be traced back to where it came from. It has a `url` property and a `note` describing which source the link is from.
+
+Nodes that can have links have a `links` property. In the other direction, each **`Link`** has an `owner` property pointing back to the node it belongs to, which can be one of several types (the **`LinkOwner`** union). Examples of common links:
+
+| Node                                       | Example `note`                                                                                  |
+| ------------------------------------------ | ----------------------------------------------------------------------------------------------- |
+| [**`Person`**](/en/schema/)                | Facebook, X (Twitter)                                                                           |
+| [**`Membership`**](/en/schema/membership/) | ราชกิจจานุเบกษา (Royal Gazette), ข่าวอ้างอิง (news), แหล่งอ้างอิง (other)                       |
+| [**`Bill`**](/en/schema/bill/)             | ระบบสารสนเทศด้านนิติบัญญัติ (Legislative Information System)                                    |
+| [**`BillEnactEvent`**](/en/schema/bill/)   | ราชกิจจานุเบกษา (Royal Gazette)                                                                 |
+| [**`VoteEvent`**](/en/schema/vote-event/)  | ระบบฐานข้อมูลรายงานและบันทึกการประชุม (meeting records), ใบประมวลผลการลงมติ (vote result sheet) |
+
+**`Organization`**, **`BillVoteEvent`**, **`BillMergeEvent`**, **`BillRejectEvent`** and **`BillRoyalAssentEvent`** can also have links.
+
+For example, the links of the draft Budget Act 2021 (Section 3) vote point to its meeting record page and its vote result sheet file.
+
+<QueryTabs
+	query="query VoteEvents($where: VoteEventWhere) { voteEvents(where: $where) { id title links { id url note } } }"
+	variables='{ "where": { "id": { "eq": "fd854f98-a9c0-4ef2-b007-58821da695dc" } }}'
+/>

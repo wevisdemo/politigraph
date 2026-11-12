@@ -1,0 +1,29 @@
+---
+title: ลิงก์อ้างอิง
+description: โครงสร้างข้อมูลลิงก์อ้างอิง (Link) ใน Politigraph ที่ใช้ตรวจสอบย้อนกลับไปยังแหล่งข้อมูลต้นทางของบุคคล การดำรงตำแหน่ง ร่างกฎหมาย และการลงมติ พร้อมตัวอย่าง GraphQL Query
+sidebar:
+  order: 8
+---
+
+import QueryTabs from '../../../components/query-tabs.astro';
+
+**`Link`** บันทึกแหล่งข้อมูลภายนอกที่เกี่ยวข้องกับ Node ต่างๆ เพื่อให้ตรวจสอบย้อนกลับไปยังแหล่งข้อมูลต้นทางได้ โดยมี Property `url` และ `note` ที่อธิบายว่าลิงก์นั้นมาจากแหล่งใด
+
+Node ที่มีลิงก์ได้จะมี Property `links` และในทางกลับกัน **`Link`** แต่ละอันจะมี Property `owner` ที่ชี้กลับไปยัง Node เจ้าของ ซึ่งอาจเป็นได้หลายประเภท (Union **`LinkOwner`**) ตัวอย่างลิงก์ที่พบบ่อย
+
+| Node                                    | ตัวอย่าง `note`                                           |
+| --------------------------------------- | --------------------------------------------------------- |
+| [**`Person`**](/schema/)                | Facebook, X (Twitter)                                     |
+| [**`Membership`**](/schema/membership/) | ราชกิจจานุเบกษา, ข่าวอ้างอิง, แหล่งอ้างอิง                |
+| [**`Bill`**](/schema/bill/)             | ระบบสารสนเทศด้านนิติบัญญัติ                               |
+| [**`BillEnactEvent`**](/schema/bill/)   | ราชกิจจานุเบกษา                                           |
+| [**`VoteEvent`**](/schema/vote-event/)  | ระบบฐานข้อมูลรายงานและบันทึกการประชุม, ใบประมวลผลการลงมติ |
+
+นอกจากนี้ **`Organization`**, **`BillVoteEvent`**, **`BillMergeEvent`**, **`BillRejectEvent`** และ **`BillRoyalAssentEvent`** ก็สามารถมีลิงก์ได้เช่นกัน
+
+ยกตัวอย่างเช่น ลิงก์ของการลงมติร่าง พ.ร.บ. งบประมาณ 2564 (วาระ 3) ซึ่งชี้ไปยังหน้าบันทึกการประชุมและไฟล์ใบประมวลผลการลงมติ
+
+<QueryTabs
+	query="query VoteEvents($where: VoteEventWhere) { voteEvents(where: $where) { id title links { id url note } } }"
+	variables='{ "where": { "id": { "eq": "fd854f98-a9c0-4ef2-b007-58821da695dc" } }}'
+/>
