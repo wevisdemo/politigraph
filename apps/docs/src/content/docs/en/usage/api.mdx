@@ -1,0 +1,54 @@
+---
+title: GraphQL API
+description: How to query Thai political data from Politigraph through the GraphQL API with a GraphQL client or an HTTP POST request.
+sidebar:
+  order: 2
+---
+
+import { Code, TabItem, Tabs } from '@astrojs/starlight/components';
+import { SITE_URL } from '../../../../constants/site';
+
+export const curlCode = `curl ${SITE_URL}/graphql \\
+  -H 'Content-Type: application/json' \\
+  -H 'apollographql-client-name: my-app' \\
+  -d '{"query": "query { people(where: { firstname_en: { eq: \\"Anutin\\" } }) { id name_en } }"}'`;
+
+export const apolloCode = [
+	"import { ApolloClient, HttpLink, InMemoryCache, gql } from '@apollo/client';",
+	'',
+	'const client = new ApolloClient({',
+	'  link: new HttpLink({',
+	`    uri: '${SITE_URL}/graphql',`,
+	"    headers: { 'apollographql-client-name': 'my-app' },",
+	'  }),',
+	'  cache: new InMemoryCache(),',
+	'});',
+	'',
+	'const { data } = await client.query({',
+	'  query: gql`',
+	'    query {',
+	'      people(where: { firstname_en: { eq: "Anutin" } }) {',
+	'        id',
+	'        name_en',
+	'      }',
+	'    }',
+	'  `,',
+	'});',
+].join('\n');
+
+Best for integrating Politigraph data into a website, application, or other workflows by writing a GraphQL query and sending it to the API to fetch the data you need.
+
+Our API adheres to the [GraphQL](https://graphql.org) standard, which you can query at <code>{SITE_URL}/graphql</code> through a [GraphQL Client or HTTP POST Request](https://www.graphql-js.org/docs/graphql-clients/). For example:
+
+<Tabs>
+	<TabItem label="Apollo Client">
+		<Code code={apolloCode} lang="ts" frame="none" wrap />
+	</TabItem>
+	<TabItem label="cURL">
+		<Code code={curlCode} lang="bash" frame="none" wrap />
+	</TabItem>
+</Tabs>
+
+## Identifying Your Application
+
+If you call the API from a server, script, or SSR, please send the `apollographql-client-name` header and, optionally, `apollographql-client-version` so we can see usage statistics. Requests from a browser are already identified by their origin automatically.

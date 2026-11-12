@@ -1,12 +1,13 @@
 ---
 interface Props {
 	title: string;
+	open?: boolean;
 }
 
-const { title } = Astro.props;
+const { title, open } = Astro.props;
 ---
 
-<details>
+<details open={open}>
 	<summary>{title}</summary>
 	<div>
 		<slot />

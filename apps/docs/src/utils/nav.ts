@@ -11,7 +11,7 @@ export function getNavLinks(locale?: string): NavLink[] {
 	const localePrefix = locale ? `/${locale}` : '';
 
 	return [
-		{ label: t.navDocumentation, href: `${localePrefix}/getting-started` },
+		{ label: t.navDocumentation, href: `${localePrefix}/introduction` },
 		{ label: t.navExplore, href: `${localePrefix}/explore` },
 		{ label: t.navPlayground, href: '/graphql', external: true },
 	];

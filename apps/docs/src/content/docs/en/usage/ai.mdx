@@ -1,0 +1,99 @@
+---
+title: Use with AI
+description: How to use Thai political data from Politigraph with AI through llms.txt and the MCP server, plus a comparison of ChatGPT, Claude, Gemini and other AI agents.
+sidebar:
+  order: 4
+---
+
+import { Code, Steps } from '@astrojs/starlight/components';
+import Accordion from '../../../../components/accordion.astro';
+import { SITE_URL } from '../../../../constants/site';
+
+Best for pulling data out of Politigraph to answer a question or help analyze it, without writing a GraphQL query yourself. AI can help in 2 ways, through llms.txt and MCP.
+
+## Have AI Write the GraphQL Query with llms.txt
+
+<Steps>
+
+1.  Send the **llms.txt** URL <code>{SITE_URL}/llms-full.txt</code> for AI to read, so it understands the data structure and can help write the query you need.
+
+    <Accordion title="Example prompt" open>
+    	Understand Politigraph from {SITE_URL}/llms-full.txt, then write a query
+    	to find which representative was absent from the most vote events in the
+    	current term.
+    </Accordion>
+
+    <Accordion title="Example answer from ChatGPT">
+    	![Example answer from ChatGPT referencing data from
+    	Politigraph](../../../../assets/usage/chatgpt-answer.png)
+    </Accordion>
+
+2.  Use the query in the [GraphQL Playground](/en/usage/graphql-playground).
+
+</Steps>
+
+[llms.txt](https://llmstxt.org/) is a standard guide file for AI. Politigraph provides the following related files:
+
+- [`/llms.txt`](/llms.txt): an index of every documentation page, with links
+- [`/llms-full.txt`](/llms-full.txt): the entire documentation plus the full GraphQL schema in a single file
+- [`/schema.graphql`](/schema.graphql): the complete GraphQL schema (SDL)
+
+You can send the URL <code>{SITE_URL}/llms-full.txt</code> to give AI everything at once, or <code>{SITE_URL}/llms.txt</code> to let it pick only the documents relevant to the question, which may reduce token usage but risks AI missing important information or requirements from the documents it didn't read.
+
+## Let AI Fetch the Data Directly Through MCP
+
+<Steps>
+
+1.  If your AI agent supports the [Model Context Protocol (MCP)](https://modelcontextprotocol.io), you can connect it to our MCP endpoint at <code>{SITE_URL}/mcp</code>. No authentication or API key is required.
+
+    <Code
+    	code={`{ "type": "http", "url": "${SITE_URL}/mcp" }`}
+    	lang="json"
+    	title="Example MCP client configuration"
+    	wrap
+    />
+
+2.  Once connected, you can prompt AI to answer questions or help analyze issues from the data.
+
+    <Accordion title="Example prompt" open>
+    	Understand Politigraph from {SITE_URL}/llms-full.txt, then find which
+    	party has had the most unified voting pattern from 2020 to the present.
+    </Accordion>
+
+    <Accordion title="Example answer from Claude">
+    	![Example answer from Claude referencing data from
+    	Politigraph](../../../../assets/usage/claude-answer.png)
+    </Accordion>
+
+</Steps>
+
+:::caution[AI responses can be inaccurate or misleading]
+An AI agent may build a query that does not answer your question, misinterpret the schema, or state figures that never came from Politigraph at all.
+Before relying on or publishing an answer, you should verify the result yourself, for example by re-running it in the [GraphQL Playground](/graphql).
+:::
+
+## Comparing Usage Across AI Providers
+
+An AI agent on your machine can read our documentation and send the query itself, so it can answer with real data. A web AI chat can only read the documentation and help you write a query, but you have to run it yourself in the [GraphQL Playground](/graphql). Connect the AI chat to our MCP server if you want it to return real data.
+
+### Web AI Chat
+
+| Provider                                                                                                         | llms.txt                                                                                                                                                                | MCP server                                                                  |
+| ---------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| [ChatGPT](https://platform.openai.com/docs/guides/developer-mode)                                                | Reads it, drafts queries                                                                                                                                                | Custom connector in developer mode, on paid plans                           |
+| [Claude](https://support.claude.com/en/articles/11175166-get-started-with-custom-connectors-using-remote-mcp)    | Reads it, drafts queries                                                                                                                                                | Custom connector on every plan, web and desktop, one connector when on free |
+| [Gemini](https://support.google.com/g/answer/17106276)                                                           | Cannot read the llms.txt URL's content directly, you must copy the content from <code>{SITE_URL}/llms-full.txt</code> into the prompt before asking it to write a query | Custom app in Spark on AI Pro and Ultra, or through an admin on Business    |
+| [Perplexity](https://www.perplexity.ai/help-center/en/articles/13915507-adding-custom-remote-connectors)         | Reads it, drafts queries                                                                                                                                                | Custom remote connector, on paid plans                                      |
+| [Microsoft Copilot](https://learn.microsoft.com/en-us/microsoft-copilot-studio/mcp-add-existing-server-to-agent) | Reads it, drafts queries                                                                                                                                                | Only through an agent you build in Copilot Studio                           |
+
+### Local AI Agents
+
+| Client                                                                                     | llms.txt                      | MCP server                        |
+| ------------------------------------------------------------------------------------------ | ----------------------------- | --------------------------------- |
+| [Claude Code](https://docs.claude.com/en/docs/claude-code/mcp)                             | Reads it and runs queries     | Yes                               |
+| [Codex CLI](https://developers.openai.com/codex/agent-approvals-security)                  | Needs `network_access = true` | Yes                               |
+| [Gemini CLI](https://google-gemini.github.io/gemini-cli/docs/tools/mcp-server.html)        | Reads it and runs queries     | Yes, configured through `httpUrl` |
+| [Cursor](https://cursor.com/docs/context/mcp)                                              | Reads it and runs queries     | Yes                               |
+| [VS Code with GitHub Copilot](https://code.visualstudio.com/docs/copilot/chat/mcp-servers) | Reads it and runs queries     | Yes                               |
+
+_Last checked on 7 September 2026_

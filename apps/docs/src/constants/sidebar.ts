@@ -1,8 +1,8 @@
 export const sidebarGroups = [
 	{
-		directory: 'getting-started',
-		label: 'เริ่มต้น',
-		translations: { en: 'Getting Started' },
+		directory: 'usage',
+		label: 'การใช้งาน',
+		translations: { en: 'Usage' },
 	},
 	{
 		directory: 'schema',

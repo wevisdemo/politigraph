@@ -1,0 +1,54 @@
+---
+title: GraphQL API
+description: วิธี Query ข้อมูลการเมืองไทยจาก Politigraph ผ่าน GraphQL API ด้วย GraphQL Client หรือ HTTP POST Request
+sidebar:
+  order: 2
+---
+
+import { Code, TabItem, Tabs } from '@astrojs/starlight/components';
+import { SITE_URL } from '../../../constants/site';
+
+export const curlCode = `curl ${SITE_URL}/graphql \\
+  -H 'Content-Type: application/json' \\
+  -H 'apollographql-client-name: my-app' \\
+  -d '{"query": "query { people(where: { firstname: { eq: \\"อนุทิน\\" } }) { id name } }"}'`;
+
+export const apolloCode = [
+	"import { ApolloClient, HttpLink, InMemoryCache, gql } from '@apollo/client';",
+	'',
+	'const client = new ApolloClient({',
+	'  link: new HttpLink({',
+	`    uri: '${SITE_URL}/graphql',`,
+	"    headers: { 'apollographql-client-name': 'my-app' },",
+	'  }),',
+	'  cache: new InMemoryCache(),',
+	'});',
+	'',
+	'const { data } = await client.query({',
+	'  query: gql`',
+	'    query {',
+	'      people(where: { firstname: { eq: "อนุทิน" } }) {',
+	'        id',
+	'        name',
+	'      }',
+	'    }',
+	'  `,',
+	'});',
+].join('\n');
+
+เหมาะสำหรับผู้ที่ต้องการนำข้อมูล Politigraph ไปใช้ในเว็บไซต์ แอปพลิเคชัน หรือกระบวนการทำงานอื่นๆ โดยเขียน GraphQL Query และส่งคำขอไปยังระบบเพื่อดึงข้อมูลที่ต้องการ
+
+API ของเราอยู่ในมาตรฐาน [GraphQL](https://graphql.org) ซึ่งผู้ใช้สามารถขอข้อมูล (Query) ด้วย [GraphQL Client หรือ HTTP POST Request](https://www.graphql-js.org/docs/graphql-clients/) ได้ที่ <code>{SITE_URL}/graphql</code> ยกตัวอย่างเช่น
+
+<Tabs>
+	<TabItem label="Apollo Client">
+		<Code code={apolloCode} lang="ts" frame="none" wrap />
+	</TabItem>
+	<TabItem label="cURL">
+		<Code code={curlCode} lang="bash" frame="none" wrap />
+	</TabItem>
+</Tabs>
+
+## การระบุชื่อแอปพลิเคชัน
+
+หากเรียกใช้ API จาก server, script หรือ SSR กรุณาส่ง Header `apollographql-client-name` และ `apollographql-client-version` (ไม่บังคับ) เพื่อให้เราทราบสถิติการใช้งาน ส่วน Request ที่มาจากเบราว์เซอร์นั้นระบุที่มาจาก Origin โดยอัตโนมัติ

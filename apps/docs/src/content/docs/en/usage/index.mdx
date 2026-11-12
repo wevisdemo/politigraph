@@ -1,0 +1,52 @@
+---
+title: Usage Overview
+description: 3 ways to access Thai political data from Politigraph, the GraphQL API, the GraphQL Playground, and AI agents through llms.txt and the MCP server.
+sidebar:
+  order: 1
+---
+
+You can use 🗄️ Politigraph to access the data you need in 3 ways
+
+## 1. GraphQL API
+
+```text wrap
+💻 — Query → 🗄️ — Data → 💻
+```
+
+Best for integrating Politigraph data into a website, application, or other workflow by writing a GraphQL query and sending it to the API to fetch the data you need.
+
+[See how](/en/usage/api)
+
+## 2. 🛝 GraphQL Playground
+
+```text wrap
+👦 — Build Query → 🛝 — Query → 🗄️ — Data → 🛝 — Result → 👦
+```
+
+Best for pulling data out of Politigraph with a UI that helps you write GraphQL queries, view results, and download the data right away without writing any code.
+
+[See how](/en/usage/graphql-playground)
+
+## 3. Use It with AI 🤖
+
+Best for pulling data out of Politigraph to answer a question or help analyze it, without writing a GraphQL query yourself. AI can help in 2 ways, through llms.txt and MCP.
+
+### 3.1 Have AI Write the GraphQL Query with llms.txt
+
+```text wrap
+👦 — Ask (Prompt) → 🤖 — Drafts the query → 👦 — Build Query → 🛝 — Query → 🗄️ — Data → 🛝 — Result → 👦
+```
+
+Best for users of web AI chat, which may be limited in calling external data. You need to run the query AI drafts in the GraphQL Playground, as in option 2.
+
+[See how](/en/usage/ai#have-ai-write-the-graphql-query-with-llmstxt)
+
+### 3.2 Let AI Fetch the Data Directly Through MCP
+
+```text wrap
+👦 — Ask (Prompt) → 🤖 — Query → 🗄️ — Analyzes data → 🤖 — Answer → 👦
+```
+
+Best for an on-device AI agent that supports connecting to external systems through the Model Context Protocol (MCP). The agent can answer with the results right away.
+
+[See how](/en/usage/ai#let-ai-fetch-the-data-directly-through-mcp)

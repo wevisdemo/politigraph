@@ -1,0 +1,36 @@
+---
+title: GraphQL Playground
+description: วิธีเขียน Query ดูผลลัพธ์ และดาวน์โหลดข้อมูลการเมืองไทยจาก Politigraph ผ่าน GraphQL Playground โดยไม่ต้องเขียนโค้ด
+sidebar:
+  order: 3
+---
+
+import { Steps } from '@astrojs/starlight/components';
+
+เหมาะสำหรับผู้ที่ต้องการดึงข้อมูลจาก Politigraph ออกมาใช้ โดยมี User Interface ช่วยในการเขียน GraphQL Query ดูผลลัพธ์ และดาวน์โหลดข้อมูลไปใช้ได้ทันทีโดยไม่ต้องเขียนโค้ดเพิ่มเติม
+
+<Steps>
+
+1.  เปิด [GraphQL Playground](/graphql)
+
+2.  เขียน Query ในช่องที่ถูกล้อมกรอบดังภาพ
+
+    ![เขียน Query ในช่อง Operation ของ GraphQL Playground](../../../assets/usage/write-query.png)
+
+3.  กดปุ่ม ▶️ เพื่อเรียกข้อมูล
+
+    ![กดปุ่มเรียกใช้ Query ใน GraphQL Playground](../../../assets/usage/run-query.png)
+
+4.  ข้อมูลจะปรากฏที่ช่อง Response
+
+    ![ผลลัพธ์แสดงที่ช่อง Response ของ GraphQL Playground](../../../assets/usage/response.png)
+
+5.  กดปุ่ม download ข้อมูลออกมาในรูปแบบ JSON
+
+    ![กดปุ่มดาวน์โหลดผลลัพธ์จากช่อง Response](../../../assets/usage/download.png)
+
+    :::note
+    Safari และ Firefox มีข้อจำกัดในการดาวน์โหลดข้อมูลจาก GraphQL Playground แต่ผู้ใช้ยังสามารถ Copy ผลลัพธ์ไปใช้ต่อได้
+    :::
+
+</Steps>
