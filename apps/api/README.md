@@ -2,6 +2,18 @@
 
 Backend API for GraphQL and authentication
 
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
+## Contents
+
+- [Tech Stack](#tech-stack)
+- [Endpoints](#endpoints)
+- [Scripts](#scripts)
+- [Environment Variables](#environment-variables)
+
+<!-- END doctoc -->
+
 ## Tech Stack
 
 - Elysia

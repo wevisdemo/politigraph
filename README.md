@@ -1,13 +1,43 @@
 # Politigraph
 
-A (WIP) civic-initiated open API for Thai political data
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="apps/docs/src/assets/banner-white.png">
+  <img alt="Politigraph" src="apps/docs/src/assets/banner-black.png">
+</picture>
 
-To learn more about the data and API, visit the [documentations](https://politigraph.wevis.info/docs)
+A civic-initiated open API for Thai political data
+
+To learn more about the data and API, visit the [documentations](https://politigraph.wevis.info/introduction)
 
 > [!WARNING]
 > We are not responsible for any misinformation or consequence of any usage on our data. These open data are collected, transformed, validated, and published by us, a civil society, to push the open API standard in Thailand. We are not the official government institution who originally own and responsible in publishing these data. Please send us any feedback or suggestion via team@wevis.info or create an issue on GitHub.
 
-## 1. The Monorepo
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
+## Contents
+
+- [The Monorepo](#the-monorepo)
+- [Routes and Deployment](#routes-and-deployment)
+- [Set Up Local Development](#set-up-local-development)
+  - [Environment Variables](#environment-variables)
+  - [Start Neo4j and Postgres Containers](#start-neo4j-and-postgres-containers)
+  - [Start apps' development server](#start-apps-development-server)
+  - [Create user account (for admin access)](#create-user-account-for-admin-access)
+- [Testing](#testing)
+  - [Running tests](#running-tests)
+  - [Test infrastructure](#test-infrastructure)
+- [References](#references)
+  - [GraphQL API authentication](#graphql-api-authentication)
+  - [Dump production database to local](#dump-production-database-to-local)
+  - [Maintenance mode for database migration](#maintenance-mode-for-database-migration)
+  - [Usage analytics and logs](#usage-analytics-and-logs)
+  - [Debugging Neo4j heap](#debugging-neo4j-heap)
+- [License](#license)
+
+<!-- END doctoc -->
+
+## The Monorepo
 
 Managed with [Turborepo](https://turborepo.com/)
 
@@ -20,7 +50,7 @@ Managed with [Turborepo](https://turborepo.com/)
   - **/config** : Centralized environment variable validation
   - **/graphql** : Schemas and custom resolvers implementation
 
-## 2. Routes and Deployment
+## Routes and Deployment
 
 Main routes of the final application:
 
@@ -32,11 +62,11 @@ Main routes of the final application:
 
 https://politigraph.wevis.info will be deployed through GitHub Actions every time the repository code has updated.
 
-## 3. Set Up Local Development
+## Set Up Local Development
 
 Following these steps will help you set up Politigraph on your local development environment.
 
-### 3.1 Environment Variables
+### Environment Variables
 
 Add required environment variables to the root `.env`. See `.env.example` at the project root for the full list. Make sure `POSTGRES_PASSWORD` matches the password embedded in `DATABASE_URL`.
 
@@ -47,7 +77,7 @@ Add required environment variables to the root `.env`. See `.env.example` at the
 
 All files are optional. `NODE_ENV` defaults to `development`.
 
-### 3.2 Start Neo4j and Postgres Containers
+### Start Neo4j and Postgres Containers
 
 Using Docker Compose
 
@@ -59,7 +89,7 @@ Neo4j API will be running at `http://localhost:7687` with web UI at `http://loca
 
 Postgres will be running at `http://localhost:5342` and the data will ve stored in docker volume.
 
-### 3.3 Start apps' development server
+### Start apps' development server
 
 Requires [Bun](https://bun.com/)
 
@@ -70,7 +100,7 @@ bun run dev
 
 Dependency packages will be built and every apps will run in dev mode in parallel. Following the console to see which app running on which port.
 
-### 3.4 Create user account (for admin access)
+### Create user account (for admin access)
 
 You need to create an account first to login to the admin panel, by making a POST request to `/auth/sign-up/email` of API URL with header `Origin: http://localhost:3000` and the following body:
 
@@ -82,7 +112,7 @@ You need to create an account first to login to the admin panel, by making a POS
 }
 ```
 
-## 4. Testing
+## Testing
 
 The project has three test levels:
 
@@ -90,7 +120,7 @@ The project has three test levels:
 - **Integration tests** — test API routes and GraphQL resolvers with real databases
 - **E2E tests** — test full user flows in the admin panel using Playwright
 
-### 4.1 Running tests
+### Running tests
 
 All tests require test databases. Start them with:
 
@@ -106,20 +136,20 @@ bun run test:integration # Integration tests (requires test databases)
 bun run test:e2e         # E2E tests (requires test databases + seed)
 ```
 
-### 4.2 Test infrastructure
+### Test infrastructure
 
 `compose.test.yml` provides isolated test databases:
 
 - **Neo4j** on port `7688` (avoids conflict with dev Neo4j on 7687)
 - **Postgres** on port `5433` (avoids conflict with dev Postgres on 5432)
 
-## 5. References
+## References
 
-### 4.1 GraphQL API authentication
+### GraphQL API authentication
 
 GraphQL required user account for **write** permission. To make an update to GraphQL outside the Politigraph website, you need to create an API key by logging in into the Admin Panel (/admin) > Profile Menu > API Keys. Then add `x-api-key: KEY_VALUE` to the header when making a request.
 
-### 4.2 Dump production database to local
+### Dump production database to local
 
 To make local neo4j have up-to-dated data, we have a script to use rsync to download production database while local neo4j docker service in not running:
 
@@ -127,7 +157,7 @@ To make local neo4j have up-to-dated data, we have a script to use rsync to down
 bun run db:pull
 ```
 
-### 4.3 Maintenance mode for database migration
+### Maintenance mode for database migration
 
 To stop the API and MCP from querying or mutating data during a migration, stop the API container on the app server:
 
@@ -139,7 +169,7 @@ docker compose up -d elysia
 
 While the container is down, nginx answers every API route (`/graphql`, `/mcp`, `/auth`, etc.) with `503` and a GraphQL-style error body. The docs and admin static pages are still served. Don't push to `main` during the migration, as the deployment will start the container again.
 
-### 4.4 Usage analytics and logs
+### Usage analytics and logs
 
 The app server ships container logs to a self-hosted [OpenObserve](https://openobserve.ai) at `/observe`:
 
@@ -160,7 +190,7 @@ Operation notes:
 - `OPENOBSERVE_USER` and `OPENOBSERVE_PASSWORD` must be set on the app server, compose refuses to start without them
 - Field names are lowercased on ingestion, and array fields are stored as strings, so unnest them with `unnest(cast_to_arr(fields))` in SQL
 
-### 4.5 Debugging Neo4j heap
+### Debugging Neo4j heap
 
 The heap is a fixed block reserved at startup, so `free` and `docker stats` look the same whether it is empty or full. When Neo4j pins the CPU without a traffic spike, find the host PID of the `java` process and check its threads on the DB server:
 
@@ -179,7 +209,7 @@ docker exec -u 7474 neo4j jcmd <pid> GC.class_histogram | head -30
 
 Classes from `org.neo4j.cypher.internal` (`InputPosition`, `Prettifier`, AST nodes) at the top mean the query plan cache filled the heap. `CALL db.clearQueryCaches()` frees it without a restart, and `server.memory.query_cache.per_db_cache_num_entries` in `servers/db/compose.yml` caps it.
 
-## 5. License
+## License
 
 Regarding the data, the team intends to open it as Open Data under the [Attribution-NonCommercial 4.0 International](https://creativecommons.org/licenses/by-nc/4.0/) terms. This means you can use, modify, and build upon the data, but it cannot be used for commercial purposes or to seek profit from the work, and credit must be given to WeVis.
 

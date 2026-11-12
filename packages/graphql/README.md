@@ -2,6 +2,19 @@
 
 Schemas and custom resolvers implementation
 
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
+## Contents
+
+- [Tech Stack](#tech-stack)
+- [Code layout](#code-layout)
+- [Deprecating a client-visible field](#deprecating-a-client-visible-field)
+- [Neo4j migrations](#neo4j-migrations)
+- [Scripts](#scripts)
+
+<!-- END doctoc -->
+
 ## Tech Stack
 
 - Neo4j GraphQL library
