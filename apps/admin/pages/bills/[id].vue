@@ -128,7 +128,7 @@ const {
 					nickname: true,
 					result: true,
 					publish_status: true,
-					vote_event: {
+					vote_events: {
 						id: true,
 					},
 				},
@@ -490,45 +490,54 @@ async function handleSave() {
 			);
 			const originalVoteEventId =
 				originalEvent?.__typename === 'BillVoteEvent'
-					? originalEvent.vote_event?.id
+					? originalEvent.vote_events?.[0]?.id
 					: undefined;
-			const newVoteEventId = event.vote_event?.id;
-			const eventWhere = { where: { node: { id: { eq: event.id } } } };
+			const newVoteEventId = event.vote_events?.[0]?.id;
 
 			await graphqlClient.mutation({
 				updateBillVoteEvents: {
-					__args: { where, update: baseUpdate },
+					__args: {
+						where,
+						update: {
+							...baseUpdate,
+							vote_events: [
+								{
+									connect:
+										newVoteEventId && newVoteEventId !== originalVoteEventId
+											? [
+													{
+														where: {
+															node: {
+																id: {
+																	eq: newVoteEventId,
+																},
+															},
+														},
+													},
+												]
+											: [],
+									disconnect:
+										originalVoteEventId &&
+										originalVoteEventId !== newVoteEventId
+											? [
+													{
+														where: {
+															node: {
+																id: {
+																	eq: originalVoteEventId,
+																},
+															},
+														},
+													},
+												]
+											: [],
+								},
+							],
+						},
+					},
 					billVoteEvents: { id: true },
 				},
 			});
-
-			if (newVoteEventId !== originalVoteEventId) {
-				await graphqlClient.mutation({
-					updateVoteEvents: {
-						__args: {
-							where: { bill_vote_events: { some: where } },
-							update: {
-								bill_vote_events: [{ disconnect: [eventWhere] }],
-							},
-						},
-						voteEvents: { id: true },
-					},
-				});
-
-				if (newVoteEventId) {
-					await graphqlClient.mutation({
-						updateVoteEvents: {
-							__args: {
-								where: { id: { eq: newVoteEventId } },
-								update: {
-									bill_vote_events: [{ connect: [eventWhere] }],
-								},
-							},
-							voteEvents: { id: true },
-						},
-					});
-				}
-			}
 		}
 	}
 

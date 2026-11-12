@@ -4,7 +4,7 @@ import { voteEventTypes } from '~/constants/vote-event';
 
 type BillVoteEventForm = Pick<
 	BillVoteEvent,
-	'id' | 'classification' | 'title' | 'result' | 'start_date' | 'vote_event'
+	'id' | 'classification' | 'title' | 'result' | 'start_date' | 'vote_events'
 >;
 
 const props = defineProps<{
@@ -19,9 +19,9 @@ const emit = defineEmits<{
 const graphqlClient = useGraphqlClient();
 
 const selectedVoteEventId = computed({
-	get: () => props.event.vote_event?.id ?? '',
+	get: () => props.event.vote_events?.[0]?.id ?? '',
 	set: (value) => {
-		emit('update', 'vote_event', value ? { id: value } : null);
+		emit('update', 'vote_events', value ? [{ id: value }] : []);
 	},
 });
 

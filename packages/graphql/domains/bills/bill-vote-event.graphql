@@ -1,5 +1,5 @@
 """
-รายละเอียดการลงมติที่มาจากเว็บ lis
+รายละเอียดการลงมติแต่ละวาระ ที่มาจากเว็บ lis
 """
 type BillVoteEvent implements Event @node {
 	"""
@@ -16,9 +16,9 @@ type BillVoteEvent implements Event @node {
 	"""
 	bill: Bill @relationship(type: "IN", properties: "Relation", direction: OUT)
 	"""
-	อีเวนต์การโหวต
+	อีเวนต์การลงมติ (หนึ่งวาระสามารถมีได้มากกว่าหนึ่งมติเช่นวาระที่ 2 ของสภาที่ลงมติรายมาตรา)
 	"""
-	vote_event: VoteEvent
+	vote_events: [VoteEvent!]!
 		@relationship(
 			type: "HAS_VOTE_EVENT"
 			properties: "Relation"
@@ -61,7 +61,7 @@ type BillVoteEvent implements Event @node {
 	"""
 	pass_condition: String
 		@deprecated(
-			reason: "Use vote_event { pass_condition } instead. Will be removed."
+			reason: "Use vote_events { pass_condition } instead. Will be removed."
 		)
 	"""
 	จำนวนผู้ที่เห็นด้วย (จากหัวเอกสารรายงานการประชุมของ MSBIS)

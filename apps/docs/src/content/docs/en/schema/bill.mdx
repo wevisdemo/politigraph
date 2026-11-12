@@ -81,12 +81,12 @@ The consideration stages of each chamber are divided into three main readings (p
 5. `SENATE_2`: Senate - Second Reading
 6. `SENATE_3`: Senate - Third Reading
 
-During each reading, there may be votes on various specific details. This data links to **`VoteEvent`**, which stores the scoring details and individual votes (property `vote_event` in **`BillVoteEvent`**).
+During the consideration, there may be votes on various specific details. This data links to **`VoteEvent`**, which stores the scoring details and individual votes related to the bill (property `vote_events` in **`BillVoteEvent`**).
 
 Example: The House of Representatives consideration of the Annual Appropriation Bill for Fiscal Year 2025 (Third Reading).
 
 <QueryTabs
-	query="query BillVoteEvents($where: BillVoteEventWhere) { billVoteEvents(where: $where) { id title classification bill { id title classification } vote_event { id title classification result } }}"
+	query="query BillVoteEvents($where: BillVoteEventWhere) { billVoteEvents(where: $where) { id title classification bill { id title classification } vote_events { id title classification result } }}"
 	variables='{ "where": { "id": { "eq": "b5813539-007a-47de-b09b-22f127e15aa8" } }}'
 />
 
