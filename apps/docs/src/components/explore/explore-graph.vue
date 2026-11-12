@@ -6,6 +6,7 @@ import {
 	normalizeAliasedFields,
 	pruneToMainLeaves,
 } from '../../utils/explore';
+import { getGraphNodeColor } from '../../utils/graph-node-colors';
 import { EXPLORE_GRAPH_THEME_COLORS as THEME_COLORS } from '../../utils/graph-theme';
 import { fetchGraphql } from '../../utils/graphql';
 import { useTranslations, type Language } from '../../utils/i18n';
@@ -141,9 +142,12 @@ onUnmounted(() => window.removeEventListener('popstate', syncFromUrl));
 				(node) =>
 					node.id === centerNode?.id
 						? colors.centerNode
-						: mainNodeTypes.has(node.__typename)
-							? colors.mainNode
-							: colors.subNode
+						: getGraphNodeColor(
+								node,
+								mainNodeTypes.has(node.__typename)
+									? colors.mainNode
+									: colors.subNode,
+							)
 			"
 			:edgeColor="colors.edge"
 			@node-activate="(node) => exploreNode(node, { fromGraph: true })"

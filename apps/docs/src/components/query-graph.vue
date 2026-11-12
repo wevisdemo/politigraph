@@ -26,6 +26,10 @@ import {
 	watch,
 } from 'vue';
 import { nodeIconMap } from '../constants/schema';
+import {
+	getGraphNodeColor,
+	getNodePictogramColor,
+} from '../utils/graph-node-colors';
 import { QUERY_GRAPH_THEME_COLORS as THEME_COLORS } from '../utils/graph-theme';
 import { useTranslations, type Language } from '../utils/i18n';
 import {
@@ -361,6 +365,12 @@ function truncateLabel(label: string) {
 		: label;
 }
 
+function getNodeColor(node: GraphqlObject) {
+	return (
+		props.getNodeColor?.(node) ?? getGraphNodeColor(node, colors.value.node)
+	);
+}
+
 function rebuildGraph() {
 	simulation?.stop();
 	graphology.clear();
@@ -369,13 +379,14 @@ function rebuildGraph() {
 
 	Object.values(nodes).forEach((node) => {
 		const { x = 0, y = 0 } = layouts[node.id] ?? {};
+		const color = getNodeColor(node);
 
 		graphology.addNode(node.id, {
 			x,
 			y,
 			size: NODE_RADIUS * (props.getNodeSizeScale?.(node) ?? 1),
-			color: props.getNodeColor?.(node) ?? colors.value.node,
-			pictogramColor: colors.value.pictogram,
+			color,
+			pictogramColor: getNodePictogramColor(color, colors.value.pictogram),
 			image: getIconDataUri(node.__typename),
 			label: truncateLabel(getObjectLabel(node, props.labelLang)),
 		});
@@ -588,12 +599,13 @@ onBeforeUnmount(() => {
 });
 
 watch(colors, (value) => {
-	graphology.forEachNode((id) =>
+	graphology.forEachNode((id) => {
+		const color = getNodeColor(graph.value.nodes[id]);
 		graphology.mergeNodeAttributes(id, {
-			color: props.getNodeColor?.(graph.value.nodes[id]) ?? value.node,
-			pictogramColor: value.pictogram,
-		}),
-	);
+			color,
+			pictogramColor: getNodePictogramColor(color, value.pictogram),
+		});
+	});
 	graphology.forEachEdge((id) =>
 		graphology.setEdgeAttribute(id, 'color', props.edgeColor ?? value.edge),
 	);
