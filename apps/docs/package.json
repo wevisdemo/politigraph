@@ -32,7 +32,6 @@
 		"prettier": "^3.9.9",
 		"satteri": "^0.10.5",
 		"sigma": "^3.0.3",
-		"starlight-announcement": "^2.0.0",
 		"tailwindcss": "^4.3.3",
 		"typescript": "^6.0.3",
 		"v-network-graph": "^0.9.23",

@@ -112,7 +112,6 @@
         "prettier": "^3.9.9",
         "satteri": "^0.10.5",
         "sigma": "^3.0.3",
-        "starlight-announcement": "^2.0.0",
         "tailwindcss": "^4.3.3",
         "typescript": "^6.0.3",
         "v-network-graph": "^0.9.23",
@@ -2866,8 +2865,6 @@
     "stackback": ["stackback@0.0.2", "", {}, "sha512-1XMJE5fQo1jGH6Y/7ebnwPOBEkIEnT4QF32d5R1+VXdXveM0IBMJt8zfaxX1P3QhVwrYe+576+jkANtSS2mBbw=="],
 
     "standard-as-callback": ["standard-as-callback@2.1.0", "", {}, "sha512-qoRRSyROncaz1z0mvYqIE4lCd9p2R90i6GxW3uZv5ucSu8tU7B5HXUP1gG8pVZsYNVaXjk8ClXHPttLyxAL48A=="],
-
-    "starlight-announcement": ["starlight-announcement@2.0.0", "", { "dependencies": { "picomatch": "^4.0.2" }, "peerDependencies": { "@astrojs/starlight": ">=0.41.0" } }, "sha512-GhyCrXGn83vpnXZsFjQiBfo32iID8AjGq/1M7lSo+ilz78eYxrK/JZNvGCTPT534iXGUvZ1TNmXiAL8L9QWepA=="],
 
     "statuses": ["statuses@2.0.2", "", {}, "sha512-DvEy55V3DB7uknRo+4iOGT5fP1slR8wQohVdknigZPMpMstaKJQWhwiYBACJE3Ul2pTnATihhBYnRhZQHGBiRw=="],
 

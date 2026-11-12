@@ -4,9 +4,7 @@ import vue from '@astrojs/vue';
 import tailwindcss from '@tailwindcss/vite';
 import mermaid from 'astro-mermaid';
 import { defineConfig, passthroughImageService } from 'astro/config';
-import starlightAnnouncement from 'starlight-announcement';
 import { sidebarGroups } from './src/constants/sidebar';
-import { useTranslations } from './src/utils/i18n';
 
 const site = 'https://politigraph.wevis.info';
 
@@ -107,21 +105,6 @@ export default defineConfig({
 					link: `${site}/graphql`,
 					attrs: { target: '_blank' },
 				},
-			],
-			plugins: [
-				starlightAnnouncement({
-					announcements: [
-						{
-							id: 'early-development-notice',
-							variant: 'note',
-							dismissible: false,
-							content: {
-								th: useTranslations('th').developmentBanner,
-								en: useTranslations('en').developmentBanner,
-							},
-						},
-					],
-				}),
 			],
 			lastUpdated: true,
 			customCss: [
