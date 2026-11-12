@@ -21,6 +21,7 @@
 		"db:pull": "rsync -azvP --delete politigraphdb:/var/server/neo4j/data .neo4j"
 	},
 	"lint-staged": {
+		"README.md": "doctoc --update-only --minlevel 2 --title '## Contents'",
 		"*": "prettier --write --ignore-unknown"
 	},
 	"packageManager": "bun@1.4.2",
@@ -39,6 +40,7 @@
 		"@ianvs/prettier-plugin-sort-imports": "^4.7.1",
 		"@vue/test-utils": "^2.5.1",
 		"astro-eslint-parser": "^2.1.0",
+		"doctoc": "^2.5.0",
 		"eslint": "^9.39.5",
 		"eslint-config-prettier": "^10.1.8",
 		"eslint-plugin-astro": "^2.1.1",
