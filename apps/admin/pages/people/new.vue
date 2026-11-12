@@ -35,7 +35,7 @@ const graphqlClient = useGraphqlClient();
 const toast = useToastNotification();
 const { isSaving, guardSave } = useSaveGuard(toast);
 
-const { setImageBlob, uploadImage } = useImageUpload();
+const { previewImage, setImageBlob, uploadImage } = useImageUpload();
 
 const personName = computed(
 	() =>
@@ -104,7 +104,7 @@ const savePeople = async () => {
 							birth_date: peopleDetailData.value.birth_date,
 							educations: peopleDetailData.value.educations,
 							previous_occupations: peopleDetailData.value.previous_occupations,
-							image: null,
+							image: peopleDetailData.value.image || null,
 							publish_status: enumPublishStatus.UNPUBLISHED,
 							links: {
 								create: (peopleDetailData.value.links || []).map(
@@ -154,7 +154,11 @@ const savePeople = async () => {
 	/>
 	<div class="flex flex-col items-start gap-4 md:flex-row">
 		<div class="flex-1">
-			<PeopleDetail v-model="peopleDetailData" @crop="setImageBlob" />
+			<PeopleDetail
+				v-model="peopleDetailData"
+				:preview-image="previewImage"
+				@crop="setImageBlob"
+			/>
 		</div>
 		<div class="flex flex-1 flex-col space-y-4 bg-white p-4">
 			<h4 class="mb-1 pt-2">Membership</h4>
