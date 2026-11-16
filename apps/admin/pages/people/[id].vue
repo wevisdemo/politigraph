@@ -81,7 +81,10 @@ const { data: peopleData, refresh: refreshPeopleDetail } =
 		);
 
 		originalLinks.value = JSON.parse(JSON.stringify(people[0].links));
-		return people[0];
+		return {
+			...people[0],
+			memberships: people[0].memberships.map(withEditablePost),
+		};
 	});
 
 useHead({

@@ -208,7 +208,11 @@ const { data: organizationData, refresh: refreshOrganizationDetail } =
 			}));
 			originalPosts.value = JSON.parse(JSON.stringify(posts));
 
-			return { ...organization, posts };
+			return {
+				...organization,
+				posts,
+				memberships: organization.memberships.map(withEditablePost),
+			};
 		},
 	);
 

@@ -60,11 +60,7 @@ const handleAddMembership = () => {
 		district_number: null,
 		list_number: null,
 		province: null,
-		post: {
-			id: '',
-			role: '',
-			organization: { id: '', name: '', classification: '' },
-		},
+		post: createEmptyMembershipPost(),
 		links: [],
 	};
 	tempMembership.value = newItem;
