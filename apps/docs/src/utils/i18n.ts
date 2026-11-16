@@ -19,6 +19,12 @@ const th = {
 	openInPlayground: 'ลอง Query ใน GraphQL Playground',
 	exploreInteractHint:
 		'แสดงความสัมพันธ์ของ Node ที่อยู่ใกล้เท่านั้น เลือก Node ใดๆ เพื่อดู Properties และเลือกซ้ำอีกครั้งเพื่อสำรวจความสัมพันธ์ของ Node ถัดๆ ไป',
+	datasetCountsOthers: 'และอื่นๆ อีกมากมาย',
+	datasetLastUpdated: (date: string) => `อัปเดตล่าสุด ${date}`,
+	datasetBills: 'ร่างกฎหมาย',
+	datasetVoteEvents: 'การลงมติ',
+	datasetOrganizations: 'องค์กร',
+	datasetPeople: 'บุคคล',
 };
 
 const en: typeof th = {
@@ -40,6 +46,12 @@ const en: typeof th = {
 	openInPlayground: 'Try this query in GraphQL Playground',
 	exploreInteractHint:
 		'Only showing relationships of nearby nodes. Select any node to see its properties, select it again to explore the further nodes',
+	datasetCountsOthers: 'And much more',
+	datasetLastUpdated: (date: string) => `Last updated ${date}`,
+	datasetBills: 'Bills',
+	datasetVoteEvents: 'Vote events',
+	datasetOrganizations: 'Organizations',
+	datasetPeople: 'People',
 };
 
 const dictionaries: Record<Language, typeof th> = { th, en };

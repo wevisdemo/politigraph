@@ -8,6 +8,31 @@ definePageMeta({
 useHead({
 	title: 'Politigraph Admin',
 });
+
+const graphqlClient = useGraphqlClient();
+
+const countField = { aggregate: { count: { nodes: true } } } as const;
+
+const { data: counts } = await useLazyAsyncData('dataset-counts', async () => {
+	const {
+		billsConnection,
+		organizationsConnection,
+		peopleConnection,
+		voteEventsConnection,
+	} = await graphqlClient.query({
+		billsConnection: countField,
+		organizationsConnection: countField,
+		peopleConnection: countField,
+		voteEventsConnection: countField,
+	});
+
+	return {
+		bills: billsConnection.aggregate.count.nodes,
+		organizations: organizationsConnection.aggregate.count.nodes,
+		people: peopleConnection.aggregate.count.nodes,
+		'vote-events': voteEventsConnection.aggregate.count.nodes,
+	} as Record<string, number>;
+});
 </script>
 
 <template>
@@ -19,6 +44,9 @@ useHead({
 					<a :href="`/admin/${path}`">
 						<component :is="icon" />
 						<p class="mt-2">{{ label }}</p>
+						<p class="text-sm text-neutral-500">
+							{{ counts?.[path]?.toLocaleString('en-US') ?? '-' }}
+						</p>
 					</a>
 				</cv-tile>
 			</div>

@@ -23,10 +23,13 @@ hero:
 ---
 
 import { Card, CardGrid } from '@astrojs/starlight/components';
+import DatasetCounts from '../../../components/dataset-counts.astro';
 import DatasetJsonLd from '../../../components/dataset-json-ld.astro';
 import Sponsors from '../../../components/sponsors.astro';
 
 <DatasetJsonLd />
+
+<DatasetCounts />
 
 <CardGrid>
 	<Card title="Ready-to-Use and Interconnected" icon="seti:graphql">

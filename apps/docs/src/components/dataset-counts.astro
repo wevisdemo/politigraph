@@ -1,0 +1,120 @@
+---
+import { nodeIconMap } from '../constants/schema';
+import { fetchGraphql } from '../utils/graphql';
+import { getLanguage, useTranslations } from '../utils/i18n';
+
+const lang = getLanguage(Astro.locals.starlightRoute.locale);
+const t = useTranslations(lang);
+
+const datasets = [
+	{ connection: 'billsConnection', typename: 'Bill', label: t.datasetBills },
+	{
+		connection: 'voteEventsConnection',
+		typename: 'VoteEvent',
+		label: t.datasetVoteEvents,
+	},
+	{
+		connection: 'organizationsConnection',
+		typename: 'Organization',
+		label: t.datasetOrganizations,
+	},
+	{
+		connection: 'peopleConnection',
+		typename: 'Person',
+		label: t.datasetPeople,
+	},
+];
+
+const { data } = await fetchGraphql(
+	`query { ${datasets
+		.map(({ connection }) => `${connection} { aggregate { count { nodes } } }`)
+		.join(' ')} timestamps { lastNodeUpdatedAt } }`,
+);
+
+const { timestamps, ...connections } = data as unknown as Record<
+	string,
+	{ aggregate: { count: { nodes: number } } }
+> & { timestamps: { lastNodeUpdatedAt: string | null } };
+
+const locale = lang === 'th' ? 'th-TH' : 'en-US';
+const numberFormatter = new Intl.NumberFormat(locale);
+
+const counts = datasets.map(({ connection, typename, label }) => {
+	const count = connections[connection].aggregate.count.nodes;
+
+	return {
+		Icon: nodeIconMap.get(typename),
+		label,
+		count,
+		formattedCount: numberFormatter.format(count),
+	};
+});
+
+const lastUpdated =
+	timestamps.lastNodeUpdatedAt &&
+	new Date(timestamps.lastNodeUpdatedAt).toLocaleDateString(locale, {
+		dateStyle: 'medium',
+		timeZone: 'Asia/Bangkok',
+	});
+---
+
+<div class="mb-12 flex flex-col gap-4 md:mb-24">
+	<div class="not-content grid grid-cols-2 gap-y-4 md:grid-cols-4">
+		{
+			counts.map(({ Icon, label, count, formattedCount }) => (
+				<div class="flex flex-col items-center gap-1 border-(--sl-color-gray-5) text-center md:border-l md:first:border-l-0">
+					<span
+						class="text-3xl font-bold tabular-nums text-(--sl-color-white)"
+						data-count={count}
+					>
+						{formattedCount}
+					</span>
+					<span class="flex items-center gap-1 text-(--sl-color-gray-2)">
+						<Icon aria-hidden="true" />
+						{label}
+					</span>
+				</div>
+			))
+		}
+	</div>
+	<p class="text-center italic text-(--sl-color-gray-3)">
+		{t.datasetCountsOthers}
+		{lastUpdated && <> · {t.datasetLastUpdated(lastUpdated)}</>}
+	</p>
+</div>
+
+<script>
+	const DURATION = 1500;
+	const formatter = new Intl.NumberFormat(document.documentElement.lang);
+	const elements = document.querySelectorAll<HTMLElement>('[data-count]');
+
+	function countUp(element: HTMLElement) {
+		const target = Number(element.dataset.count);
+		const start = performance.now();
+
+		const step = (now: number) => {
+			const progress = Math.min((now - start) / DURATION, 1);
+			const eased = 1 - (1 - progress) ** 3;
+			element.textContent = formatter.format(Math.round(target * eased));
+			if (progress < 1) requestAnimationFrame(step);
+		};
+
+		requestAnimationFrame(step);
+	}
+
+	if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+		const observer = new IntersectionObserver((entries) =>
+			entries
+				.filter(({ isIntersecting }) => isIntersecting)
+				.forEach(({ target }) => {
+					observer.unobserve(target);
+					countUp(target as HTMLElement);
+				}),
+		);
+
+		elements.forEach((element) => {
+			element.textContent = formatter.format(0);
+			observer.observe(element);
+		});
+	}
+</script>
