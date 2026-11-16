@@ -9,6 +9,7 @@
 		"./populated-by": "./populated-by.ts",
 		"./neo4j-graphql": "./neo4j/init.ts",
 		"./migrate": "./neo4j/migrate.ts",
+		"./hide-unpublished-filters": "./support/hide-unpublished-filters.ts",
 		"./playground-url": "./support/playground-url.ts",
 		"./summary": "./support/summary.ts",
 		"./schema-sdl": "./support/schema-sdl.ts",

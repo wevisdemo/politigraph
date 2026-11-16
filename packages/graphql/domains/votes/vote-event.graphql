@@ -1,17 +1,7 @@
 """
 การลงมติ
 """
-type VoteEvent implements Event
-	@node
-	@authorization(
-		filter: [
-			{ where: {} }
-			{
-				requireAuthentication: false
-				where: { node: { publish_status: { eq: "PUBLISHED" } } }
-			}
-		]
-	) {
+type VoteEvent implements Event @node {
 	"""
 	ID แบบสุ่ม
 	"""

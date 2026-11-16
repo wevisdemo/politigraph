@@ -1,66 +1,7 @@
 """
 ลิงก์ไปยังเว็บไซต์ภายนอกที่เกี่ยวข้อง
 """
-type Link
-	@node
-	@authorization(
-		filter: [
-			{ where: {} }
-			{
-				requireAuthentication: false
-				where: {
-					node: {
-						NOT: {
-							OR: [
-								{ owner: { Person: { publish_status: { eq: "UNPUBLISHED" } } } }
-								{
-									owner: {
-										Membership: {
-											member: {
-												Person: { publish_status: { eq: "UNPUBLISHED" } }
-											}
-										}
-									}
-								}
-								{
-									owner: {
-										VoteEvent: { publish_status: { eq: "UNPUBLISHED" } }
-									}
-								}
-								{
-									owner: {
-										BillVoteEvent: { publish_status: { eq: "UNPUBLISHED" } }
-									}
-								}
-								{
-									owner: {
-										BillMergeEvent: { publish_status: { eq: "UNPUBLISHED" } }
-									}
-								}
-								{
-									owner: {
-										BillEnactEvent: { publish_status: { eq: "UNPUBLISHED" } }
-									}
-								}
-								{
-									owner: {
-										BillRejectEvent: { publish_status: { eq: "UNPUBLISHED" } }
-									}
-								}
-								{
-									owner: {
-										BillRoyalAssentEvent: {
-											publish_status: { eq: "UNPUBLISHED" }
-										}
-									}
-								}
-							]
-						}
-					}
-				}
-			}
-		]
-	) {
+type Link @node {
 	"""
 	ID แบบสุ่ม
 	"""

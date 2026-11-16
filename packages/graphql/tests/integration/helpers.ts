@@ -1,11 +1,17 @@
 import { Neo4jGraphQL } from '@neo4j/graphql';
-import { graphql } from 'graphql';
+import {
+	GraphQLError,
+	execute as graphqlExecute,
+	parse,
+	validate,
+} from 'graphql';
 import { type Session } from 'neo4j-driver';
 import { excludeDeprecatedFields } from '../../deprecated-fields';
 import { resolvers } from '../../domains/resolvers';
 import { getGraphqlTypeDefs } from '../../domains/type-defs';
 import { driver } from '../../neo4j/driver';
 import { populatedBy } from '../../populated-by';
+import { hideUnpublishedInFilters } from '../../support/hide-unpublished-filters';
 
 export { driver };
 
@@ -51,21 +57,33 @@ export async function execute(
 		variables?: Record<string, unknown>;
 		jwtPayload?: Record<string, unknown>;
 	} = {},
-) {
+): Promise<{ data?: Record<string, unknown>; errors?: readonly unknown[] }> {
 	const contextValue: Record<string, unknown> = {};
 
 	if (jwtPayload) {
 		contextValue.jwt = jwtPayload;
 	}
 
-	const result = await graphql({
-		schema: await schema.getSchema(),
-		source,
-		variableValues: variables,
-		contextValue,
-	});
+	const builtSchema = await schema.getSchema();
+	const document = parse(source);
+	const validationErrors = validate(builtSchema, document);
 
-	return result as { data?: Record<string, unknown>; errors?: unknown[] };
+	if (validationErrors.length) return { errors: validationErrors };
+
+	try {
+		return (await graphqlExecute({
+			schema: builtSchema,
+			document: jwtPayload
+				? document
+				: hideUnpublishedInFilters(builtSchema, document, variables),
+			variableValues: variables,
+			contextValue,
+		})) as { data?: Record<string, unknown>; errors?: unknown[] };
+	} catch (error) {
+		if (error instanceof GraphQLError) return { errors: [error] };
+
+		throw error;
+	}
 }
 
 export async function seedPerson(

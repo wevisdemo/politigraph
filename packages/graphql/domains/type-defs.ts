@@ -4,12 +4,15 @@ import {
 	parse,
 	print,
 	visit,
+	type ConstValueNode,
 	type FieldDefinitionNode,
 	type InterfaceTypeDefinitionNode,
 	type ObjectTypeDefinitionNode,
 } from 'graphql';
+import { anonymousFilters } from '../support/anonymous-filters';
 import { PARLIAMENT_WATCH_ID_NOTES } from '../support/parliament-watch';
 import { TIMESTAMP_FIELD_NOTE, TIMESTAMP_FIELDS } from '../support/summary';
+import { toValueNode } from '../support/to-value-node';
 
 export async function getGraphqlTypeDefs(schemaDir = __dirname) {
 	const schemaFiles = (
@@ -28,7 +31,7 @@ export async function getGraphqlTypeDefs(schemaDir = __dirname) {
 type TypeDefinition = ObjectTypeDefinitionNode | InterfaceTypeDefinitionNode;
 
 function noteFields(typeDefs: string) {
-	const noteType = (type: TypeDefinition) => ({
+	const noteType = <T extends TypeDefinition>(type: T): T => ({
 		...type,
 		fields: type.fields?.map((field) => {
 			const note = getFieldNote(type.name.value, field);
@@ -39,10 +42,37 @@ function noteFields(typeDefs: string) {
 
 	return print(
 		visit(parse(typeDefs), {
-			ObjectTypeDefinition: noteType,
+			ObjectTypeDefinition: (type) => withAnonymousFilter(noteType(type)),
 			InterfaceTypeDefinition: noteType,
 		}),
 	);
+}
+
+function withAnonymousFilter(type: ObjectTypeDefinitionNode) {
+	const filter = anonymousFilters[type.name.value];
+
+	if (!filter) return type;
+
+	return {
+		...type,
+		directives: [
+			...(type.directives ?? []),
+			{
+				kind: Kind.DIRECTIVE,
+				name: { kind: Kind.NAME, value: 'authorization' },
+				arguments: [
+					{
+						kind: Kind.ARGUMENT,
+						name: { kind: Kind.NAME, value: 'filter' },
+						value: toValueNode([
+							{ where: {} },
+							{ requireAuthentication: false, where: { node: filter } },
+						]) as ConstValueNode,
+					},
+				],
+			},
+		],
+	} satisfies ObjectTypeDefinitionNode;
 }
 
 function getFieldNote(typeName: string, field: FieldDefinitionNode) {

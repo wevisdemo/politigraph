@@ -3,18 +3,7 @@
 
 อ้างอิงจาก https://www.popoloproject.com/specs/person.html
 """
-type Person
-	@node
-	@authorization(
-		filter: [
-			{ where: {} }
-			{
-				requireAuthentication: false
-				where: { node: { publish_status: { eq: "PUBLISHED" } } }
-			}
-		]
-	)
-	@limit(max: 1000) {
+type Person @node @limit(max: 1000) {
 	"""
 	ID ในรูปแบบชื่อเต็มที่เปลี่ยนช่องว่างเป็น "-"
 	"""

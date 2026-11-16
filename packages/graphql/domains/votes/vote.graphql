@@ -3,18 +3,7 @@
 
 อ้างอิงจาก https://www.popoloproject.com/specs/vote.html
 """
-type Vote
-	@node
-	@authorization(
-		filter: [
-			{ where: {} }
-			{
-				requireAuthentication: false
-				where: { node: { vote_event: { publish_status: { eq: "PUBLISHED" } } } }
-			}
-		]
-	)
-	@limit(max: 1000) {
+type Vote @node @limit(max: 1000) {
 	"""
 	ID แบบสุ่ม
 	"""

@@ -10,6 +10,7 @@ import { mcp } from './routes/mcp';
 import { playground } from './routes/playground';
 import { upload } from './routes/upload-image';
 import { getJwtToken } from './utils/auth';
+import { hideUnpublishedPlugin } from './utils/hide-unpublished';
 import { trackEvent } from './utils/plausible';
 import { usagePlugin } from './utils/usage';
 
@@ -48,7 +49,7 @@ const app = new Elysia()
 		apollo({
 			schema,
 			...armorProtection,
-			plugins: [...armorPlugins, usagePlugin],
+			plugins: [...armorPlugins, hideUnpublishedPlugin, usagePlugin],
 			allowBatchedHttpRequests: true,
 			maxBatching: 5,
 			introspection: true,
