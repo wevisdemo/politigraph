@@ -24,6 +24,10 @@ export default defineNuxtConfig({
 		port: 8000,
 	},
 	devtools: { enabled: true },
+	experimental: {
+		// Detail pages v-model async data into forms that mutate nested fields
+		defaults: { useAsyncData: { deep: true } },
+	},
 	hooks: {
 		// SPA - https://nuxt.com/docs/4.x/guide/concepts/rendering#deploying-a-static-client-rendered-app
 		'prerender:routes'({ routes }) {

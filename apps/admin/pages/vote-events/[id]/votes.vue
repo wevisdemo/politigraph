@@ -641,10 +641,10 @@ function scrollToRow(id: string) {
 				v-model:active-editing-cell="activeEditingCell"
 				v-model:to-delete-ids="toDeleteIds"
 				class="flex-1"
-				:vote-event
+				:vote-event="voteEvent ?? null"
 				:original-votes-map
-				:people-options
-				:affiliation-options
+				:people-options="peopleOptions ?? null"
+				:affiliation-options="affiliationOptions ?? null"
 				:errors="voteValidationResult?.errors ?? []"
 				:edited-cells
 				:edited-rows
@@ -655,7 +655,10 @@ function scrollToRow(id: string) {
 				@affiliation-selected="(arg) => selectAffiliation(...arg)"
 				@deleted="showRowDeleteNotification"
 			/>
-			<VotesSummary class="sticky top-16 max-w-xs" :vote-event />
+			<VotesSummary
+				class="sticky top-16 max-w-xs"
+				:vote-event="voteEvent ?? null"
+			/>
 		</div>
 	</div>
 

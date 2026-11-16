@@ -61,7 +61,10 @@ const { data: matchingVoteEvents, refresh } = await useLazyAsyncData(
 	},
 );
 
-watch(() => [props.event.start_date, props.event.classification], refresh);
+watch(
+	() => [props.event.start_date, props.event.classification],
+	() => refresh(),
+);
 
 const voteEventOptions = computed(() =>
 	(matchingVoteEvents.value ?? []).map((ve) => ({

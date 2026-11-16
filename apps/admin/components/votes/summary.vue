@@ -63,7 +63,7 @@ const options = computed(() => [
 						:model-value="voteEvent[headingCountKey] ?? 0"
 						@update:model-value="
 							(value: number) => {
-								voteEvent[headingCountKey] = value;
+								if (voteEvent) voteEvent[headingCountKey] = value;
 							}
 						"
 					/>

@@ -596,9 +596,9 @@ const { data: organizationList } = await useAsyncData(
 			<div class="flex-1 bg-white p-4">
 				<BillsDetail
 					:form="form"
-					:bill-data="billData"
-					:people-list="peopleList"
-					:organization-list="organizationList"
+					:bill-data="billData ?? null"
+					:people-list="peopleList ?? null"
+					:organization-list="organizationList ?? null"
 				/>
 			</div>
 			<div class="flex-1 bg-white">

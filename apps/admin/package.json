@@ -15,11 +15,11 @@
 		"test:e2e": "playwright test"
 	},
 	"dependencies": {
-		"@carbon/icons-vue": "^10.130.0",
+		"@carbon/icons-vue": "^10.141.0",
 		"@carbon/vue": "^3.0.32",
 		"@politigraph/auth": "workspace:*",
 		"@politigraph/graphql": "workspace:*",
-		"@tailwindcss/vite": "^4.3.3",
+		"@tailwindcss/vite": "^4.3.5",
 		"@tanstack/vue-form": "^1.33.5",
 		"@vueuse/core": "^13.9.0",
 		"@vueuse/nuxt": "^13.9.0",
@@ -27,26 +27,26 @@
 		"d3-dsv": "^3.0.1",
 		"dayjs": "^1.11.23",
 		"fastest-levenshtein": "^1.0.16",
-		"nuxt": "^3.21.11",
+		"nuxt": "^4.6.2",
 		"prettier": "^3.9.9",
 		"radash": "^12.1.1",
-		"tailwindcss": "^4.3.3",
-		"vue": "^3.5.43",
+		"tailwindcss": "^4.3.5",
+		"vue": "^3.5.45",
 		"vue-advanced-cropper": "^2.8.9",
 		"vue-pick-colors": "^1.8.0",
-		"vue-router": "^5.3.1"
+		"vue-router": "^5.5.1"
 	},
 	"devDependencies": {
 		"@playwright/test": "1.64.1",
 		"@types/bun": "^1.4.2",
 		"@types/d3-dsv": "^3.0.7",
-		"@vitejs/plugin-vue": "^6.0.9",
+		"@vitejs/plugin-vue": "^6.0.11",
 		"@vue/test-utils": "^2.5.1",
 		"eslint-plugin-vue": "^10.11.1",
 		"happy-dom": "^21.0.4",
 		"typescript": "^5.9.3",
-		"vite": "^7.3.6",
+		"vite": "^8.3.8",
 		"vitest": "^4.1.12",
-		"vue-tsc": "^3.3.11"
+		"vue-tsc": "^3.3.14"
 	}
 }

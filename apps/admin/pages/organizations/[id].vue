@@ -612,7 +612,7 @@ const saveChanges = async () => {
 					v-model="organizationData"
 					v-model:selected-parent-ids="selectedParentIds"
 					v-model:selected-child-ids="selectedChildIds"
-					:organization-options="organizationOptions"
+					:organization-options="organizationOptions ?? null"
 					:preview-image="previewImage"
 					@crop="setImageBlob"
 					@delete="

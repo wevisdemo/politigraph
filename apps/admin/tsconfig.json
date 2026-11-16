@@ -3,6 +3,7 @@
 	"extends": "./.nuxt/tsconfig.json",
 	"compilerOptions": {
 		"lib": ["ESNext", "DOM", "DOM.Iterable"],
+		"noUncheckedIndexedAccess": false,
 		"target": "ESNext",
 		"types": ["bun"]
 	}

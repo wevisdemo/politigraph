@@ -13,7 +13,7 @@
 		"test:unit": "bun test tests/unit"
 	},
 	"dependencies": {
-		"@astrojs/check": "^0.9.10",
+		"@astrojs/check": "^0.9.12",
 		"@astrojs/starlight": "^0.42.4",
 		"@astrojs/starlight-tailwind": "^5.0.0",
 		"@astrojs/vue": "^7.0.3",
