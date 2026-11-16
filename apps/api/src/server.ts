@@ -5,14 +5,14 @@ import { assertNoPendingMigrations } from '@politigraph/graphql/migrate';
 import { initNeo4jGraphql } from '@politigraph/graphql/neo4j-graphql';
 import { Elysia, type Context } from 'elysia';
 import { MAX_QUERY_TOKENS } from './constants/graphql';
+import { hideUnpublishedPlugin } from './plugins/hide-unpublished';
+import { usagePlugin } from './plugins/usage';
 import { apollo } from './routes/graphql';
 import { mcp } from './routes/mcp';
 import { playground } from './routes/playground';
 import { upload } from './routes/upload-image';
 import { getJwtToken } from './utils/auth';
-import { hideUnpublishedPlugin } from './utils/hide-unpublished';
 import { trackEvent } from './utils/plausible';
-import { usagePlugin } from './utils/usage';
 
 const port = serverConfig.port;
 const origin = `http://127.0.0.1:${port}`;

@@ -16,7 +16,7 @@ import { OperationTypeNode, parse } from 'graphql';
 import { z } from 'zod';
 import { version } from '../../package.json';
 import { MAX_QUERY_TOKENS } from '../constants/graphql';
-import { SOURCE_HEADER, trackMcpRequest } from '../utils/usage';
+import { SOURCE_HEADER, trackMcpRequest } from '../plugins/usage';
 
 const GRAPHQL_TIMEOUT_MS = 30 * 1000;
 const MCP_CLIENT_HEADER = 'x-politigraph-mcp-client';

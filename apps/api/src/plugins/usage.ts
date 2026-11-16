@@ -11,7 +11,7 @@ import {
 	type OperationDefinitionNode,
 } from 'graphql';
 import { z } from 'zod';
-import { trackEvent } from './plausible';
+import { trackEvent } from '../utils/plausible';
 
 export const SOURCE_HEADER = 'x-politigraph-source';
 

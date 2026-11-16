@@ -9,7 +9,7 @@ import {
 	getFieldUsage,
 	getMcpUsage,
 	getUserAgentName,
-} from '../../src/utils/usage';
+} from '../../src/plugins/usage';
 
 const schema = buildSchema(`
   type Query {

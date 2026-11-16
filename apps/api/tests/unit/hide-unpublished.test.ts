@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 import { buildSchema, parse, print } from 'graphql';
-import { hideUnpublishedPlugin } from '../../src/utils/hide-unpublished';
-import { getFieldUsage } from '../../src/utils/usage';
+import { hideUnpublishedPlugin } from '../../src/plugins/hide-unpublished';
+import { getFieldUsage } from '../../src/plugins/usage';
 
 const schema = buildSchema(`
   enum PublishStatus { PUBLISHED UNPUBLISHED }
