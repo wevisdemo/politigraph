@@ -40,6 +40,7 @@ export const auth = betterAuth({
 	],
 	emailAndPassword: {
 		enabled: true,
+		disableSignUp: serverConfig.isProduction,
 	},
 	trustedOrigins,
 	logger: {
