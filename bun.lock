@@ -108,6 +108,7 @@
         "d3-force": "^3.0.0",
         "dagre": "^0.8.5",
         "graphology": "^0.26.0",
+        "graphql": "^16.15.0",
         "mermaid": "^11.17.2",
         "pluralize": "^8.0.0",
         "prettier": "^3.9.9",
@@ -126,7 +127,6 @@
         "@types/dagre": "^0.7.54",
         "@types/pluralize": "^0.0.33",
         "eslint-plugin-astro": "^1.7.0",
-        "graphql": "^16.15.0",
       },
     },
     "packages/auth": {
