@@ -73,10 +73,10 @@ const inputClass =
 		<div
 			v-for="({ filter, op }, index) in rows"
 			:key="index"
-			class="flex flex-row items-center gap-1"
+			class="grid grid-cols-[1fr_1fr_auto] items-center gap-1 rounded border border-gray-400/40 p-1.5 dark:border-gray-500/40"
 		>
 			<select
-				:class="inputClass"
+				:class="[inputClass, 'min-w-0']"
 				:value="filter.field"
 				@change="
 					changeFilterField(index, ($event.target as HTMLSelectElement).value)
@@ -86,7 +86,7 @@ const inputClass =
 					{{ name }}
 				</option>
 			</select>
-			<select v-model="filter.op" :class="inputClass">
+			<select v-model="filter.op" :class="[inputClass, 'min-w-0']">
 				<option
 					v-for="{ name } in getOps(filter.field)"
 					:key="name"
@@ -95,10 +95,17 @@ const inputClass =
 					{{ name }}
 				</option>
 			</select>
+			<button
+				class="col-start-3 row-span-2 row-start-1 cursor-pointer bg-transparent p-0 text-gray-500 hover:text-black dark:hover:text-white"
+				:aria-label="t.builderRemoveFilter"
+				@click="selection.filters.splice(index, 1)"
+			>
+				<Close16 />
+			</button>
 			<select
 				v-if="op && schema.enums[op.type] && !op.isList"
 				v-model="filter.value"
-				:class="[inputClass, 'flex-1']"
+				:class="[inputClass, 'col-span-2 min-w-0']"
 			>
 				<option
 					v-for="value in schema.enums[op.type]"
@@ -111,7 +118,7 @@ const inputClass =
 			<select
 				v-else-if="op?.type === 'Boolean'"
 				v-model="filter.value"
-				:class="[inputClass, 'flex-1']"
+				:class="[inputClass, 'col-span-2 min-w-0']"
 			>
 				<option value="true">true</option>
 				<option value="false">false</option>
@@ -119,20 +126,13 @@ const inputClass =
 			<input
 				v-else
 				v-model="filter.value"
-				:class="[inputClass, 'flex-1']"
+				:class="[inputClass, 'col-span-2 min-w-0']"
 				:placeholder="op?.isList ? t.builderListPlaceholder : op?.type"
 			/>
-			<button
-				class="cursor-pointer bg-transparent text-gray-500 hover:text-black dark:hover:text-white"
-				:aria-label="t.builderRemoveFilter"
-				@click="selection.filters.splice(index, 1)"
-			>
-				<Close16 />
-			</button>
 		</div>
 		<button
 			v-if="filters.length"
-			class="flex cursor-pointer flex-row items-center gap-0.5 self-start bg-transparent text-blue-700 dark:text-blue-400"
+			class="flex cursor-pointer flex-row items-center gap-0.5 self-start bg-transparent p-0 text-blue-700 dark:text-blue-400"
 			@click="addFilter"
 		>
 			<Add16 />{{ t.builderAddFilter }}

@@ -327,6 +327,7 @@ const buttonClass =
 							:data="structureData"
 							:getNodeLabel="({ __typename }) => __typename"
 							:getNodeFields="getStructureFields"
+							plainNodeColor
 							:labelLang="lang"
 							immersive
 							hideSidebarOnMobile

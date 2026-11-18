@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import {
-	forceCenter,
 	forceCollide,
 	forceLink,
 	forceManyBody,
 	forceSimulation,
+	forceX,
+	forceY,
 	type Simulation,
 	type SimulationLinkDatum,
 	type SimulationNodeDatum,
@@ -158,6 +159,7 @@ const props = defineProps<{
 	getNodeLabel?: (node: GraphqlObject) => string;
 	getNodeFields?: (node: GraphqlObject) => [string, GraphqlObject[string]][];
 	edgeColor?: string;
+	plainNodeColor?: boolean;
 	immersive?: boolean;
 	hideSidebarOnMobile?: boolean;
 }>();
@@ -201,7 +203,11 @@ const graph = computed(() => {
 		const theta = minTheta + coneSize * siblingIndex;
 
 		nodes[node.id] = node;
-		layouts[node.id] = { x: r * Math.cos(theta), y: r * Math.sin(theta) };
+		const spiralTheta = theta + (r / 50) * 0.5;
+		layouts[node.id] = {
+			x: r * Math.cos(spiralTheta),
+			y: r * Math.sin(spiralTheta),
+		};
 
 		Object.entries(node).forEach(([relationName, value]) => {
 			const children = toRelatedNodes(value).sort((a, z) =>
@@ -371,7 +377,10 @@ function truncateLabel(label: string) {
 
 function getNodeColor(node: GraphqlObject) {
 	return (
-		props.getNodeColor?.(node) ?? getGraphNodeColor(node, colors.value.node)
+		props.getNodeColor?.(node) ??
+		(props.plainNodeColor
+			? colors.value.node
+			: getGraphNodeColor(node, colors.value.node))
 	);
 }
 
@@ -419,11 +428,12 @@ function rebuildGraph() {
 				Object.values(edges).map((edge) => ({ ...edge })),
 			)
 				.id((d) => d.id)
-				.distance(50),
+				.distance(80),
 		)
-		.force('charge', forceManyBody())
-		.force('collide', forceCollide(10).strength(0.2))
-		.force('center', forceCenter().strength(0.5))
+		.force('charge', forceManyBody().strength(-150))
+		.force('collide', forceCollide(25).strength(0.8))
+		.force('x', forceX().strength(0.04))
+		.force('y', forceY().strength(0.04))
 		.velocityDecay(0.6)
 		.alphaDecay(0.015)
 		.on('tick', () => {
