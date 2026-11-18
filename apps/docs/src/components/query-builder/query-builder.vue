@@ -298,12 +298,14 @@ const buttonClass =
 							:getNodeFields="getStructureFields"
 							:labelLang="lang"
 							immersive
+							hideSidebarOnMobile
 						/>
 						<QueryGraph
 							v-else-if="response?.data[root.name]?.length"
 							:data="{ [root.name]: response.data[root.name] }"
 							:labelLang="lang"
 							immersive
+							hideSidebarOnMobile
 						/>
 						<p v-else class="m-0 p-4 text-center text-sm italic text-gray-400">
 							{{ t.builderNoResult }}

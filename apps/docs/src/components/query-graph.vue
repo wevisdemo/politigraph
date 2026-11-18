@@ -159,6 +159,7 @@ const props = defineProps<{
 	getNodeFields?: (node: GraphqlObject) => [string, GraphqlObject[string]][];
 	edgeColor?: string;
 	immersive?: boolean;
+	hideSidebarOnMobile?: boolean;
 }>();
 
 const t = useTranslations(props.labelLang ?? 'en');
@@ -327,6 +328,7 @@ function syncEdgeLayerOrder() {
 }
 
 const container = ref<HTMLDivElement>();
+const isSidebarOpen = ref(true);
 const selectedNodes = ref<string[]>([]);
 
 const selectedPath = computed(() => {
@@ -538,6 +540,7 @@ onMounted(async () => {
 			didDrag = false;
 			return;
 		}
+		isSidebarOpen.value = true;
 		if (selectedNodes.value[0] === node) {
 			emit('nodeActivate', graph.value.nodes[node]);
 		} else {
@@ -671,9 +674,11 @@ const selectedNode = computed(() => {
 <template>
 	<div class="relative" :class="{ 'h-full': props.immersive }">
 		<BaseView
+			v-model:sidebarOpen="isSidebarOpen"
 			:fit="fitGraph"
 			:fillHeight="props.fillHeight"
 			:immersive="props.immersive"
+			:hideSidebarOnMobile="props.hideSidebarOnMobile"
 		>
 			<div ref="container" class="not-content min-h-0 w-full flex-1"></div>
 			<template v-slot:overlay>
