@@ -103,9 +103,11 @@ export default defineConfig({
 					link: '/explore',
 				},
 				{
-					label: 'GraphQL Playground',
-					link: `${site}/graphql`,
-					attrs: { target: '_blank' },
+					label: 'สร้าง Query',
+					translations: {
+						en: 'Query Builder',
+					},
+					link: '/query-builder',
 				},
 			],
 			lastUpdated: true,

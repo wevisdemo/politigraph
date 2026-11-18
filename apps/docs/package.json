@@ -31,6 +31,7 @@
 		"pluralize": "^8.0.0",
 		"prettier": "^3.9.9",
 		"satteri": "^0.10.5",
+		"shiki": "^4.6.0",
 		"sigma": "^3.0.3",
 		"tailwindcss": "^4.3.3",
 		"typescript": "^6.0.3",

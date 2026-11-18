@@ -13,7 +13,7 @@ export function getNavLinks(locale?: string): NavLink[] {
 	return [
 		{ label: t.navDocumentation, href: `${localePrefix}/introduction` },
 		{ label: t.navExplore, href: `${localePrefix}/explore` },
-		{ label: t.navPlayground, href: '/graphql', external: true },
+		{ label: t.builderTitle, href: `${localePrefix}/query-builder` },
 	];
 }
 

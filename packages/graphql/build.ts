@@ -51,13 +51,13 @@ async function build() {
 	await Bun.write(`${OUTDIR}/typedefs.graphql`, typeDefs);
 	await Bun.write(`${OUTDIR}/definitions.json`, JSON.stringify(definitions));
 
-	const schema = await new Neo4jGraphQL({
-		typeDefs,
-		features: { excludeDeprecatedFields, populatedBy },
-	}).getSchema();
+	const schema = printSchemaWithDirectives(
+		await new Neo4jGraphQL({
+			typeDefs,
+			features: { excludeDeprecatedFields, populatedBy },
+		}).getSchema(),
+	);
 
-	await generate({
-		schema: printSchemaWithDirectives(schema),
-		output: 'genql',
-	});
+	await Bun.write(`${OUTDIR}/schema.graphql`, schema);
+	await generate({ schema, output: 'genql' });
 }

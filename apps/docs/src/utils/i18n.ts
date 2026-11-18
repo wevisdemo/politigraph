@@ -3,7 +3,6 @@ export type Language = 'th' | 'en';
 const th = {
 	navDocumentation: 'คู่มือการใช้',
 	navExplore: 'สำรวจข้อมูล',
-	navPlayground: 'GraphQL Playground',
 	exploreTitle: 'สำรวจข้อมูล',
 	exploreDescription:
 		'สำรวจความสัมพันธ์ของนักการเมือง พรรคการเมือง การลงมติ และร่างกฎหมายไทยจาก Politigraph ผ่าน Interactive Graph',
@@ -25,12 +24,30 @@ const th = {
 	datasetVoteEvents: 'การลงมติ',
 	datasetOrganizations: 'องค์กร',
 	datasetPeople: 'บุคคล',
+	builderTitle: 'สร้าง Query',
+	builderDescription:
+		'สร้าง GraphQL Query ของ Politigraph ด้วยการเลือก Fields จาก Schema และดูโครงสร้างและผลลัพธ์ในรูปแบบ Graph',
+	builderRoot: 'Nodes เริ่มต้น',
+	builderAddFilter: 'ตัวกรอง',
+	builderRemoveFilter: 'ลบตัวกรอง',
+	builderListPlaceholder: 'คั่นด้วยจุลภาค',
+	builderSort: 'เรียง',
+	builderLimit: 'จำนวน',
+	builderRun: 'ขอข้อมูล',
+	builderRunHint: 'กด "ขอข้อมูล" เพื่อดูผลลัพธ์',
+	builderNoResult: 'ไม่พบข้อมูล',
+	builderGraph: 'Visualization',
+	builderQuery: 'Query',
+	builderResponse: 'Response',
+	builderCopy: 'คัดลอก',
+	builderDownload: 'ดาวน์โหลด',
+	builderLimitation:
+		'*หน้านี้รองรับเฉพาะการสร้าง Query พื้นฐานเพื่อให้ใช้งานได้ง่าย หากต้องการใช้งานครบทุกความสามารถ ของ GraphQL เช่น Aggregation, Pagination แบบ Cursor หรือ Variables ใช้',
 };
 
 const en: typeof th = {
 	navDocumentation: 'Documentation',
 	navExplore: 'Explore',
-	navPlayground: 'GraphQL Playground',
 	exploreTitle: 'Explore',
 	exploreDescription:
 		'Explore the relationships between Thai politicians, political parties, votes and bills from Politigraph in an interactive graph',
@@ -52,6 +69,25 @@ const en: typeof th = {
 	datasetVoteEvents: 'Vote events',
 	datasetOrganizations: 'Organizations',
 	datasetPeople: 'People',
+	builderTitle: 'Query Builder',
+	builderDescription:
+		'Build a Politigraph GraphQL query by picking fields from the schema, and see its structure and result as a graph',
+	builderRoot: 'Starting nodes',
+	builderAddFilter: 'Filter',
+	builderRemoveFilter: 'Remove filter',
+	builderListPlaceholder: 'Comma separated',
+	builderSort: 'Sort',
+	builderLimit: 'Limit',
+	builderRun: 'Request data',
+	builderRunHint: 'Click "Request data" to see the result',
+	builderNoResult: 'No data found',
+	builderGraph: 'Visualization',
+	builderQuery: 'Query',
+	builderResponse: 'Response',
+	builderCopy: 'Copy',
+	builderDownload: 'Download',
+	builderLimitation:
+		'*This page only covers building basic queries for simple usage. For the full GraphQL feature set, such as aggregations, cursor pagination and variables, use',
 };
 
 const dictionaries: Record<Language, typeof th> = { th, en };

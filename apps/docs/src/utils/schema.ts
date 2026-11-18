@@ -10,8 +10,11 @@ export interface GraphqlObject {
 export type GraphqlDataResponse = Record<string, GraphqlObject[]>;
 
 export function toRelatedNodes(value: GraphqlObject[string]): GraphqlObject[] {
-	if (Array.isArray(value)) return value;
-	return value && typeof value === 'object' ? [value] : [];
+	return [value]
+		.flat()
+		.filter(
+			(item): item is GraphqlObject => !!item && typeof item === 'object',
+		);
 }
 
 function hasDirective(

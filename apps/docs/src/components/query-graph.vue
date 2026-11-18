@@ -155,6 +155,8 @@ const props = defineProps<{
 	labelLang?: Language;
 	getNodeSizeScale?: (node: GraphqlObject) => number;
 	getNodeColor?: (node: GraphqlObject) => string;
+	getNodeLabel?: (node: GraphqlObject) => string;
+	getNodeFields?: (node: GraphqlObject) => [string, GraphqlObject[string]][];
 	edgeColor?: string;
 	immersive?: boolean;
 }>();
@@ -388,7 +390,9 @@ function rebuildGraph() {
 			color,
 			pictogramColor: getNodePictogramColor(color, colors.value.pictogram),
 			image: getIconDataUri(node.__typename),
-			label: truncateLabel(getObjectLabel(node, props.labelLang)),
+			label: truncateLabel(
+				props.getNodeLabel?.(node) ?? getObjectLabel(node, props.labelLang),
+			),
 		});
 	});
 
@@ -655,8 +659,11 @@ const selectedNode = computed(() => {
 	const node = graph.value.nodes[selectedNodes.value[0]];
 
 	return {
-		schema: typenameSchemaMap.get(node.__typename)!,
-		fields: Object.entries(node).filter(([key]) => key !== '__typename'),
+		typename: node.__typename,
+		description: typenameSchemaMap.get(node.__typename)?.description,
+		fields:
+			props.getNodeFields?.(node) ??
+			Object.entries(node).filter(([key]) => key !== '__typename'),
 	};
 });
 </script>
@@ -686,10 +693,10 @@ const selectedNode = computed(() => {
 				<template v-if="selectedNode">
 					<span
 						class="m-0 place-self-start rounded-full bg-blue-700 px-2 text-sm font-bold text-white"
-						>{{ selectedNode.schema.name }}</span
+						>{{ selectedNode.typename }}</span
 					>
 					<p class="text-xs text-gray-400">
-						{{ selectedNode.schema.description }}
+						{{ selectedNode.description }}
 					</p>
 					<ul class="mt-0 flex list-none flex-col p-0 text-sm">
 						<li
@@ -724,11 +731,7 @@ const selectedNode = computed(() => {
 								class="text-blue-700 dark:text-blue-400"
 								>{{ value }}</a
 							>
-							<template
-								v-else-if="
-									typeof value === 'string' || typeof value === 'number'
-								"
-							>
+							<template v-else-if="!toRelatedNodes(value).length">
 								{{ value }}
 							</template>
 							<ul v-else class="mt-1 flex list-none flex-col p-0">
@@ -740,7 +743,9 @@ const selectedNode = computed(() => {
 										class="cursor-pointer text-left text-blue-700 dark:text-blue-400"
 										@click="selectedNodes = [node.id]"
 									>
-										{{ getObjectLabel(node, labelLang) }}
+										{{
+											getNodeLabel?.(node) ?? getObjectLabel(node, labelLang)
+										}}
 									</span>
 								</li>
 							</ul>

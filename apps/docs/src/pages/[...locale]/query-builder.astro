@@ -1,0 +1,29 @@
+---
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+import sdl from '@politigraph/graphql/dist/schema.graphql?raw';
+import QueryBuilder from '../../components/query-builder/query-builder.vue';
+import { getLanguage, useTranslations } from '../../utils/i18n';
+import { toBuilderSchema } from '../../utils/query-builder/schema';
+import '../../styles/full-page.css';
+
+export function getStaticPaths() {
+	return [{ params: { locale: undefined } }, { params: { locale: 'en' } }];
+}
+
+const lang = getLanguage(Astro.params.locale);
+const t = useTranslations(lang);
+---
+
+<StarlightPage
+	frontmatter={{
+		title: t.builderTitle,
+		description: t.builderDescription,
+		template: 'splash',
+		tableOfContents: false,
+		pagefind: false,
+		prev: false,
+		next: false,
+	}}
+>
+	<QueryBuilder client:only="vue" schema={toBuilderSchema(sdl)} lang={lang} />
+</StarlightPage>

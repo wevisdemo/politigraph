@@ -1,0 +1,31 @@
+:root:not([data-has-sidebar]) {
+	--sl-content-width: 100%;
+}
+
+.main-frame {
+	padding-top: var(--sl-nav-height);
+	padding-inline-start: 0;
+}
+
+main {
+	padding: 0;
+}
+
+.content-panel {
+	padding: 0;
+	border: none;
+}
+
+.content-panel:has(#_top),
+main footer {
+	display: none;
+}
+
+.content-panel .sl-container {
+	max-width: none;
+	margin: 0;
+}
+
+.content-panel:last-of-type .sl-container > div:last-child {
+	margin: 1rem var(--sl-content-pad-x);
+}
