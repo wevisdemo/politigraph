@@ -28,7 +28,12 @@ const th = {
 	builderTitle: 'สร้าง Query',
 	builderDescription:
 		'สร้าง GraphQL Query ของ Politigraph ด้วยการเลือก Fields จาก Schema และดูโครงสร้างและผลลัพธ์ในรูปแบบ Graph',
-	builderRoot: 'Nodes เริ่มต้น',
+	builderRoot: 'เลือก Nodes เริ่มต้น',
+	builderRootHint: 'คุณสนใจข้อมูลอะไร?',
+	builderPickHint: 'เลือก Nodes เริ่มต้นเพื่อสร้าง Query',
+	builderBack: 'เลือก Nodes ใหม่',
+	builderProperties: 'คุณสมบัติ',
+	builderRelationships: 'ความสัมพันธ์',
 	builderAddFilter: 'ตัวกรอง',
 	builderRemoveFilter: 'ลบตัวกรอง',
 	builderListPlaceholder: 'คั่นด้วยจุลภาค',
@@ -46,7 +51,7 @@ const th = {
 	builderInvalidQuery: 'ไม่สามารถโหลด Query จากลิงก์ได้',
 	builderDownload: 'ดาวน์โหลด',
 	builderLimitation:
-		'*หน้านี้รองรับเฉพาะการสร้าง Query พื้นฐานเพื่อให้ใช้งานได้ง่าย หากต้องการใช้งานครบทุกความสามารถ ของ GraphQL เช่น Aggregation, Pagination แบบ Cursor หรือ Variables ใช้',
+		'*หน้านี้รองรับเฉพาะการสร้าง Query พื้นฐานเพื่อให้ใช้งานได้ง่าย หากต้องการใช้งานครบทุกความสามารถ ของ GraphQL ใช้',
 };
 
 const en: typeof th = {
@@ -77,7 +82,12 @@ const en: typeof th = {
 	builderTitle: 'Query Builder',
 	builderDescription:
 		'Build a Politigraph GraphQL query by picking fields from the schema, and see its structure and result as a graph',
-	builderRoot: 'Starting nodes',
+	builderRoot: 'Select starting nodes',
+	builderRootHint: 'What data are you interested in?',
+	builderPickHint: 'Select starting nodes to build a query',
+	builderBack: 'Choose different nodes',
+	builderProperties: 'Properties',
+	builderRelationships: 'Relationships',
 	builderAddFilter: 'Filter',
 	builderRemoveFilter: 'Remove filter',
 	builderListPlaceholder: 'Comma separated',
@@ -95,7 +105,7 @@ const en: typeof th = {
 	builderInvalidQuery: 'Cannot load the query from the link',
 	builderDownload: 'Download',
 	builderLimitation:
-		'*This page only covers building basic queries for simple usage. For the full GraphQL feature set, such as aggregations, cursor pagination and variables, use',
+		'*This page only covers building basic queries for simple usage. For the full GraphQL feature set, use',
 };
 
 const dictionaries: Record<Language, typeof th> = { th, en };

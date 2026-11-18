@@ -2,6 +2,7 @@ import { describe, expect, test } from 'bun:test';
 import { buildSchema, parse, validate } from 'graphql';
 import {
 	buildQuery,
+	createNodeSelection,
 	createSelection,
 	toStructureNode,
 	type Selection,
@@ -103,5 +104,17 @@ describe('toStructureNode', () => {
 				post: { __typename: 'Post', label: 'String' },
 			},
 		});
+	});
+});
+
+describe('createNodeSelection', () => {
+	const pick = (root: string, lang: 'en' | 'th') =>
+		Object.keys(createNodeSelection(schema, getRoot(root), lang).fields);
+
+	test('preselects the field drawn as the node label, by language', () => {
+		expect(pick('organizations', 'en')).toEqual(['name_en']);
+		expect(pick('organizations', 'th')).toEqual(['name']);
+		expect(pick('bills', 'en')).toEqual(['nickname', 'status']);
+		expect(pick('votes', 'th')).toEqual(['option']);
 	});
 });

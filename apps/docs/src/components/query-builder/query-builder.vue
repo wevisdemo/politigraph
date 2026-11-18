@@ -1,14 +1,7 @@
 <script setup lang="ts">
 // @ts-expect-error carbon icons vue has incomplete type exports
-import { Download16, Play16 } from '@carbon/icons-vue';
-import {
-	computed,
-	onBeforeUnmount,
-	reactive,
-	ref,
-	shallowRef,
-	watch,
-} from 'vue';
+import { ArrowLeft16, Download16, Play16 } from '@carbon/icons-vue';
+import { computed, onBeforeUnmount, reactive, ref, shallowRef } from 'vue';
 import { nodeIconMap } from '../../constants/schema';
 import { GRAPHQL_ENDPOINT } from '../../constants/site';
 import { fetchGraphql } from '../../utils/graphql';
@@ -16,12 +9,15 @@ import { useTranslations, type Language } from '../../utils/i18n';
 import { parseQuery } from '../../utils/query-builder/parse';
 import {
 	buildQuery,
-	createSelection,
+	createNodeSelection,
 	hasIdField,
 	toStructureNode,
 	type Selection,
 } from '../../utils/query-builder/query';
-import type { BuilderSchema } from '../../utils/query-builder/schema';
+import type {
+	BuilderField,
+	BuilderSchema,
+} from '../../utils/query-builder/schema';
 import { QUERY_PARAM, toQueryParam } from '../../utils/query-builder/url';
 import type { GraphqlDataResponse, GraphqlObject } from '../../utils/schema';
 import QueryGraph from '../query-graph.vue';
@@ -50,29 +46,36 @@ function readQueryParam() {
 
 const initial = readQueryParam();
 
-const rootName = ref(initial.root?.name ?? 'people');
-const root = computed(() =>
-	props.schema.roots.find(({ name }) => name === rootName.value)!,
+const startingTypes = ['Bill', 'VoteEvent', 'Organization', 'Person'];
+const startingRoots = startingTypes.flatMap((startingType) =>
+	props.schema.roots.filter(({ type }) => type === startingType),
 );
 
-const createRootSelection = (): Selection =>
-	reactive(createSelection(root.value));
+const rootName = ref(initial.root?.name);
+const root = computed(() =>
+	props.schema.roots.find(({ name }) => name === rootName.value),
+);
 
-const selection = shallowRef(
-	initial.selection ? reactive(initial.selection) : createRootSelection(),
+const selection = shallowRef<Selection | undefined>(
+	initial.selection ? reactive(initial.selection) : undefined,
 );
 const response = shallowRef<{ data: GraphqlDataResponse }>();
 const error = ref<string | undefined>(initial.error);
 const isLoading = ref(false);
 
-watch(rootName, () => {
-	selection.value = createRootSelection();
+function pickRoot(field?: BuilderField) {
+	rootName.value = field?.name;
+	selection.value = field
+		? reactive(createNodeSelection(props.schema, field, props.lang))
+		: undefined;
 	response.value = undefined;
 	error.value = undefined;
-});
+}
 
 const query = computed(() =>
-	buildQuery(props.schema, root.value, selection.value),
+	root.value && selection.value
+		? buildQuery(props.schema, root.value, selection.value)
+		: '',
 );
 
 const tabs = ['query', 'response'] as const;
@@ -90,7 +93,10 @@ const viewLabels = {
 };
 
 const structureData = computed<GraphqlDataResponse>(() => ({
-	structure: [toStructureNode(props.schema, root.value.type, selection.value)],
+	structure:
+		root.value && selection.value
+			? [toStructureNode(props.schema, root.value.type, selection.value)]
+			: [],
 }));
 
 const getStructureFields = ({ __typename, id, ...fields }: GraphqlObject) =>
@@ -130,6 +136,8 @@ onBeforeUnmount(() => wideMedia.removeEventListener('change', updateIsWide));
 
 const buttonClass =
 	'flex cursor-pointer flex-row items-center gap-1 rounded px-2 py-1 text-sm';
+const grayButtonClass =
+	'bg-gray-200 hover:bg-gray-300 dark:bg-gray-800 dark:hover:bg-gray-700';
 </script>
 
 <template>
@@ -139,56 +147,61 @@ const buttonClass =
 		<aside
 			class="flex max-h-[50vh] flex-col gap-3 overflow-y-auto border-gray-300 p-4 md:max-h-none md:w-80 md:border-r dark:border-gray-700"
 		>
-			<label class="flex flex-col gap-1 text-sm font-bold">
-				{{ t.builderRoot }}
-				<div class="relative flex flex-col">
-					<select
-						v-model="rootName"
-						class="rounded border border-gray-300 bg-white p-1 font-normal [appearance:base-select] dark:border-gray-600 dark:bg-gray-900 [&::picker(select)]:border-gray-300 [&::picker(select)]:bg-white [&::picker(select)]:[appearance:base-select] dark:[&::picker(select)]:border-gray-600 dark:[&::picker(select)]:bg-gray-900 [&::picker-icon]:hidden"
+			<template v-if="!root || !selection">
+				<h2 class="m-0 text-sm font-bold">{{ t.builderRoot }}</h2>
+				<p class="m-0 text-xs text-gray-400">{{ t.builderRootHint }}</p>
+				<button
+					v-for="field in startingRoots"
+					:key="field.name"
+					class="flex cursor-pointer flex-row items-center gap-3 rounded border border-gray-300 bg-transparent p-3 text-left hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-800"
+					@click="pickRoot(field)"
+				>
+					<component
+						:is="nodeIconMap.get(field.type)"
+						v-if="nodeIconMap.has(field.type)"
+						class="size-8 shrink-0"
+					/>
+					<span class="flex min-w-0 flex-col gap-1">
+						<span class="text-base font-bold">{{ field.name }}</span>
+						<span class="text-xs text-gray-500 dark:text-gray-400">
+							{{ schema.types[field.type].description?.split('\n')[0] }}
+						</span>
+					</span>
+				</button>
+			</template>
+			<template v-else>
+				<div class="flex flex-row items-center gap-2">
+					<button
+						:aria-label="t.builderBack"
+						:title="t.builderBack"
+						:class="[buttonClass, grayButtonClass]"
+						@click="pickRoot()"
 					>
-						<option
-							v-for="{ name, type } in schema.roots"
-							:key="name"
-							:value="name"
-							class="flex flex-row items-center gap-2"
-						>
-							<component
-								:is="nodeIconMap.get(type)"
-								v-if="nodeIconMap.has(type)"
-								class="shrink-0"
-							/>
-							{{ type }}
-						</option>
-					</select>
-					<svg
-						viewBox="0 0 16 16"
-						aria-hidden="true"
-						class="pointer-events-none absolute right-1.5 top-1/2 hidden size-3 -translate-y-1/2 supports-[appearance:base-select]:block"
-					>
-						<path
-							d="M1 4.5l7 7 7-7"
-							fill="none"
-							stroke="currentColor"
-							stroke-width="3"
-						/>
-					</svg>
+						<ArrowLeft16 />
+					</button>
+					<component
+						:is="nodeIconMap.get(root.type)"
+						v-if="nodeIconMap.has(root.type)"
+						class="shrink-0"
+					/>
+					<h2 class="m-0 text-base font-bold">{{ root.name }}</h2>
 				</div>
-			</label>
-			<p class="m-0 text-xs text-gray-400">
-				{{ schema.types[root.type].description?.split('\n')[0] }}
-			</p>
-			<SelectionOptions
-				:schema="schema"
-				:field="root"
-				:selection="selection"
-				:lang="lang"
-			/>
-			<SelectionTree
-				:schema="schema"
-				:typename="root.type"
-				:selection="selection"
-				:lang="lang"
-			/>
+				<p class="m-0 text-xs text-gray-400">
+					{{ schema.types[root.type].description?.split('\n')[0] }}
+				</p>
+				<SelectionOptions
+					:schema="schema"
+					:field="root"
+					:selection="selection"
+					:lang="lang"
+				/>
+				<SelectionTree
+					:schema="schema"
+					:typename="root.type"
+					:selection="selection"
+					:lang="lang"
+				/>
+			</template>
 			<p class="m-0 mt-auto pt-4 text-xs italic leading-tight text-gray-400">
 				{{ t.builderLimitation }}
 				<a
@@ -200,7 +213,13 @@ const buttonClass =
 			</p>
 		</aside>
 
-		<section class="flex min-h-0 min-w-0 flex-1 flex-col">
+		<p
+			v-if="!root || !selection"
+			class="m-0 flex flex-1 items-center justify-center p-4 text-center text-sm italic text-gray-400"
+		>
+			{{ t.builderPickHint }}
+		</p>
+		<section v-else class="flex min-h-0 min-w-0 flex-1 flex-col">
 			<div
 				role="tablist"
 				class="border-(--sl-color-gray-5) flex flex-row items-end border-b-2 px-2"
@@ -266,7 +285,7 @@ const buttonClass =
 								'rounded-none',
 								view[tab] === name
 									? 'bg-gray-200 font-bold dark:bg-gray-800'
-									: 'bg-transparent text-gray-500 dark:text-gray-400',
+									: 'bg-transparent text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800',
 							]"
 							@click="view[tab] = name"
 						>
@@ -287,13 +306,13 @@ const buttonClass =
 							<div class="flex flex-row items-center justify-end gap-2 p-2">
 								<span class="text-sm">{{ t.builderCopy }}</span>
 								<button
-									:class="[buttonClass, 'bg-gray-200 dark:bg-gray-800']"
+									:class="[buttonClass, grayButtonClass]"
 									@click="copyLink"
 								>
 									{{ t.builderLink }}
 								</button>
 								<button
-									:class="[buttonClass, 'bg-gray-200 dark:bg-gray-800']"
+									:class="[buttonClass, grayButtonClass]"
 									@click="copyQuery"
 								>
 									{{ t.builderCode }}
@@ -308,7 +327,8 @@ const buttonClass =
 									:download="`${root.name}.json`"
 									:class="[
 										buttonClass,
-										'bg-gray-200 text-inherit no-underline dark:bg-gray-800',
+										grayButtonClass,
+										'text-inherit no-underline',
 									]"
 								>
 									<Download16 />{{ t.builderDownload }}

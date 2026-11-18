@@ -18,6 +18,11 @@ const billColors = new Map([
 	['REJECTED', '#FCA08C'],
 ]);
 
+export const NODE_COLOR_FIELDS = new Map([
+	['Vote', 'option'],
+	['Bill', 'status'],
+]);
+
 export function getGraphNodeColor(node: GraphqlObject, fallback: string) {
 	if (node.__typename === 'Vote') {
 		const option = node.option || node.option_en;
