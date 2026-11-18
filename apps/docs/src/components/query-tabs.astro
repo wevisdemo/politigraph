@@ -6,6 +6,9 @@ import { format } from 'prettier/standalone';
 import { GRAPHQL_ENDPOINT } from '../constants/site';
 import { fetchGraphql } from '../utils/graphql';
 import { getLanguage, useTranslations } from '../utils/i18n';
+import { builderSchema } from '../utils/query-builder/builder-schema';
+import { canParseQuery } from '../utils/query-builder/parse';
+import { toQueryParam } from '../utils/query-builder/url';
 import QueryGraph from './query-graph.vue';
 
 interface Props {
@@ -30,8 +33,23 @@ const formattedQuery = await format(query, {
 	plugins: [graphql],
 });
 
-const t = useTranslations(getLanguage(Astro.locals.starlightRoute.locale));
-const playgroundUrl = toPlaygroundUrl(GRAPHQL_ENDPOINT, formattedQuery.trim());
+const { locale } = Astro.locals.starlightRoute;
+const t = useTranslations(getLanguage(locale));
+
+const localePrefix = locale ? '/' + locale : '';
+
+const openLink = canParseQuery(builderSchema, query)
+	? {
+			href:
+				localePrefix + '/query-builder' + toQueryParam(formattedQuery.trim()),
+			label: t.openInQueryBuilder,
+			icon: 'right-arrow' as const,
+		}
+	: {
+			href: toPlaygroundUrl(GRAPHQL_ENDPOINT, formattedQuery.trim()),
+			label: t.openInPlayground,
+			icon: 'external' as const,
+		};
 
 function formatJson(obj: object) {
 	return JSON.stringify(obj, null, 2);
@@ -60,10 +78,10 @@ function formatJson(obj: object) {
 	</Tabs>
 
 	<a
-		href={playgroundUrl}
+		href={openLink.href}
 		class="flex flex-row items-center justify-end gap-1 text-xs text-(--sl-color-text-accent) hover:text-(--sl-color-white)"
 	>
-		<Icon name="external" />
-		{t.openInPlayground}
+		<Icon name={openLink.icon} />
+		{openLink.label}
 	</a>
 </div>

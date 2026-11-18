@@ -16,6 +16,7 @@ const th = {
 	graphSelectNodeHint: 'เลือก Node เพื่อดูคำอธิบายและ Properties',
 	viewAsMarkdown: 'ดูหน้านี้ในรูปแบบ Markdown',
 	openInPlayground: 'ลอง Query ใน GraphQL Playground',
+	openInQueryBuilder: 'ลอง Query ใน Query Builder',
 	exploreInteractHint:
 		'แสดงความสัมพันธ์ของ Node ที่อยู่ใกล้เท่านั้น เลือก Node ใดๆ เพื่อดู Properties และเลือกซ้ำอีกครั้งเพื่อสำรวจความสัมพันธ์ของ Node ถัดๆ ไป',
 	datasetCountsOthers: 'และอื่นๆ อีกมากมาย',
@@ -40,6 +41,9 @@ const th = {
 	builderQuery: 'Query',
 	builderResponse: 'Response',
 	builderCopy: 'คัดลอก',
+	builderLink: 'ลิงก์',
+	builderCode: 'โค้ด',
+	builderInvalidQuery: 'ไม่สามารถโหลด Query จากลิงก์ได้',
 	builderDownload: 'ดาวน์โหลด',
 	builderLimitation:
 		'*หน้านี้รองรับเฉพาะการสร้าง Query พื้นฐานเพื่อให้ใช้งานได้ง่าย หากต้องการใช้งานครบทุกความสามารถ ของ GraphQL เช่น Aggregation, Pagination แบบ Cursor หรือ Variables ใช้',
@@ -61,6 +65,7 @@ const en: typeof th = {
 	graphSelectNodeHint: 'Select any node to see the description and properties',
 	viewAsMarkdown: 'View this page as Markdown',
 	openInPlayground: 'Try this query in GraphQL Playground',
+	openInQueryBuilder: 'Try this query in the Query Builder',
 	exploreInteractHint:
 		'Only showing relationships of nearby nodes. Select any node to see its properties, select it again to explore the further nodes',
 	datasetCountsOthers: 'And much more',
@@ -85,6 +90,9 @@ const en: typeof th = {
 	builderQuery: 'Query',
 	builderResponse: 'Response',
 	builderCopy: 'Copy',
+	builderLink: 'Link',
+	builderCode: 'Code',
+	builderInvalidQuery: 'Cannot load the query from the link',
 	builderDownload: 'Download',
 	builderLimitation:
 		'*This page only covers building basic queries for simple usage. For the full GraphQL feature set, such as aggregations, cursor pagination and variables, use',

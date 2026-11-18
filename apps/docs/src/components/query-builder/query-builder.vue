@@ -1,6 +1,6 @@
 <script setup lang="ts">
 // @ts-expect-error carbon icons vue has incomplete type exports
-import { Copy16, Download16, Play16 } from '@carbon/icons-vue';
+import { Download16, Play16 } from '@carbon/icons-vue';
 import {
 	computed,
 	onBeforeUnmount,
@@ -13,6 +13,7 @@ import { nodeIconMap } from '../../constants/schema';
 import { GRAPHQL_ENDPOINT } from '../../constants/site';
 import { fetchGraphql } from '../../utils/graphql';
 import { useTranslations, type Language } from '../../utils/i18n';
+import { parseQuery } from '../../utils/query-builder/parse';
 import {
 	buildQuery,
 	createSelection,
@@ -21,6 +22,7 @@ import {
 	type Selection,
 } from '../../utils/query-builder/query';
 import type { BuilderSchema } from '../../utils/query-builder/schema';
+import { QUERY_PARAM, toQueryParam } from '../../utils/query-builder/url';
 import type { GraphqlDataResponse, GraphqlObject } from '../../utils/schema';
 import QueryGraph from '../query-graph.vue';
 import Spinner from '../spinner.vue';
@@ -32,7 +34,23 @@ const props = defineProps<{ schema: BuilderSchema; lang: Language }>();
 
 const t = useTranslations(props.lang);
 
-const rootName = ref('people');
+function readQueryParam() {
+	const source = new URLSearchParams(location.search).get(QUERY_PARAM);
+
+	if (!source) return {};
+
+	try {
+		return parseQuery(props.schema, source);
+	} catch (e) {
+		return {
+			error: `${t.builderInvalidQuery}: ${e instanceof Error ? e.message : e}`,
+		};
+	}
+}
+
+const initial = readQueryParam();
+
+const rootName = ref(initial.root?.name ?? 'people');
 const root = computed(() =>
 	props.schema.roots.find(({ name }) => name === rootName.value)!,
 );
@@ -40,9 +58,11 @@ const root = computed(() =>
 const createRootSelection = (): Selection =>
 	reactive(createSelection(root.value));
 
-const selection = shallowRef(createRootSelection());
+const selection = shallowRef(
+	initial.selection ? reactive(initial.selection) : createRootSelection(),
+);
 const response = shallowRef<{ data: GraphqlDataResponse }>();
-const error = ref<string>();
+const error = ref<string | undefined>(initial.error);
 const isLoading = ref(false);
 
 watch(rootName, () => {
@@ -94,6 +114,10 @@ async function run() {
 }
 
 const copyQuery = () => navigator.clipboard.writeText(query.value);
+const copyLink = () =>
+	navigator.clipboard.writeText(
+		`${location.origin}${location.pathname}${toQueryParam(query.value)}`,
+	);
 const responseJson = computed(() => JSON.stringify(response.value, null, 2));
 
 const wideMedia = matchMedia('(min-width: 96rem)');
@@ -260,12 +284,19 @@ const buttonClass =
 						"
 					>
 						<template v-if="tab === 'query'">
-							<div class="flex flex-row justify-end gap-2 p-2">
+							<div class="flex flex-row items-center justify-end gap-2 p-2">
+								<span class="text-sm">{{ t.builderCopy }}</span>
+								<button
+									:class="[buttonClass, 'bg-gray-200 dark:bg-gray-800']"
+									@click="copyLink"
+								>
+									{{ t.builderLink }}
+								</button>
 								<button
 									:class="[buttonClass, 'bg-gray-200 dark:bg-gray-800']"
 									@click="copyQuery"
 								>
-									<Copy16 />{{ t.builderCopy }}
+									{{ t.builderCode }}
 								</button>
 							</div>
 							<CodeBlock :code="query" lang="graphql" />
