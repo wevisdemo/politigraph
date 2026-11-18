@@ -29,16 +29,10 @@ Breaking changes and deprecations are listed on the [Changelog](/en/changelog/) 
 
 For example, we have these people with first-name starting with _"Nat"_ represented with nodes type of **`Person`**. These nodes will only have property and relationship that satisfy **`Person`** **schema** (they don't need to have optional properties, so querying those will have value of _null_)
 
-<QueryTabs
-	query="query People($where: PersonWhere) { people(where: $where) { id prefix name_en image birth_date educations previous_occupations }}"
-	variables='{ "where": { "firstname_en": { "startsWith": "Nat" } } }'
-/>
+<QueryTabs query='query People { people(where: { firstname_en: { startsWith: "Nat" } }) { id prefix name_en image birth_date educations previous_occupations }}' />
 
 ## Relationship
 
 Relationship in **schema** will have a name with arrow direction for human interpretation such as `Post--IN--> Organization` meaning **`Post`** is "in" an **`Organization`** But in the query process, either nodes at the both end can be queried from each other. For example, **`Post`** has property `organization` and **`Organization`** has property `posts` that refer to each other node of this relationship.
 
-<QueryTabs
-	query="query Organizations($where: OrganizationWhere, $postsWhere2: PostWhere) { organizations(where: $where) { id name_en posts(where: $postsWhere2) { id label role organization { id name } } } }"
-	variables='{ "where": { "id": { "eq": "คณะรัฐมนตรี-64" } }, "postsWhere2": { "role": { "eq": "นายกรัฐมนตรี" } } }'
-/>
+<QueryTabs query='query Organizations { organizations(where: { id: { eq: "คณะรัฐมนตรี-64" } }) { id name_en posts(where: { role: { eq: "นายกรัฐมนตรี" } }) { id label role organization { id name } } } }' />

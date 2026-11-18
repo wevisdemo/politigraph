@@ -17,10 +17,7 @@ Each bill is classified into 3 types (property `classification` in **`Bill`**) a
 
 Examples of the three bill types:
 
-<QueryTabs
-	query="query Bills($limit_a: Int, $where_a: BillWhere, $limit_b: Int, $where_b: BillWhere, $limit_c: Int, $where_c: BillWhere) { normal_bills: bills(limit: $limit_a, where: $where_a) { id title classification } budget_bills: bills(limit: $limit_b, where: $where_b) { id title classification } emergency_decree: bills(limit: $limit_c, where: $where_c) { id title classification }}"
-	variables='{ "limit_a": 1, "where_a": { "classification": { "eq": "NORMAL_BILL" } }, "limit_b": 1, "where_b": { "classification": { "eq": "BUDGET_BILL" } }, "limit_c": 1, "where_c": { "classification": { "eq": "EMERGENCY_DECREE" } }}'
-/>
+<QueryTabs query="query Bills { normal_bills: bills(limit: 1, where: { classification: { eq: NORMAL_BILL } }) { id title classification } budget_bills: bills(limit: 1, where: { classification: { eq: BUDGET_BILL } }) { id title classification } emergency_decree: bills(limit: 1, where: { classification: { eq: EMERGENCY_DECREE } }) { id title classification }}" />
 
 ### Bill Proposers and Co-proposers
 
@@ -39,10 +36,7 @@ Each bill links to detailed information about its proposers (property `creators`
 
 Example of a bill proposed by _Members of the House of Representatives (MPs)_
 
-<QueryTabs
-	query="query Bills($limit: Int, $where: BillWhere) { bills(limit: $limit, where: $where) { id title classification creator_type creators { ... on Person { id name_en } } co_creators { id name_en } }}"
-	variables='{ "limit": 1, "where": { "creator_type": { "eq": "POLITICIAN" } }}'
-/>
+<QueryTabs query="query Bills { bills(limit: 1, where: { creator_type: { eq: POLITICIAN } }) { id title classification creator_type creators { ... on Person { id name_en } } co_creators { id name_en } }}" />
 
 ### Legislative Process
 
@@ -85,10 +79,7 @@ During the consideration, there may be votes on various specific details. This d
 
 Example: The House of Representatives consideration of the Annual Appropriation Bill for Fiscal Year 2025 (Third Reading).
 
-<QueryTabs
-	query="query BillVoteEvents($where: BillVoteEventWhere) { billVoteEvents(where: $where) { id title classification bill { id title classification } vote_events { id title classification result } }}"
-	variables='{ "where": { "id": { "eq": "b5813539-007a-47de-b09b-22f127e15aa8" } }}'
-/>
+<QueryTabs query='query BillVoteEvents { billVoteEvents(where: { id: { eq: "b5813539-007a-47de-b09b-22f127e15aa8" } }) { id title classification bill { id title classification } vote_events { id title classification result } }}' />
 
 ##### Bill Merging Stage (`BillMergeEvent`)
 
@@ -100,10 +91,7 @@ The **`BillMergeEvent`** also links to the bill that the chamber resolved to use
 
 Example of a bill being designated as the Primary Bill by the House of Representatives:
 
-<QueryTabs
-	query="query BillMergeEvents($where: BillMergeEventWhere) { billMergeEvents(where: $where) { id main_bill { id title } total_merged_bills bills { id title } }}"
-	variables='{ "where": { "id": { "eq": "f54b6def-9b4f-41d0-a6f3-72bdc7ae36af" } }}'
-/>
+<QueryTabs query='query BillMergeEvents { billMergeEvents(where: { id: { eq: "f54b6def-9b4f-41d0-a6f3-72bdc7ae36af" } }) { id main_bill { id title } total_merged_bills bills { id title } }}' />
 
 ##### Royal Assent Submission Stage (`BillRoyalAssentEvent`)
 
@@ -113,10 +101,7 @@ The **`BillRoyalAssentEvent`** stores the record of the Royal Decision or the ac
 
 Example of the Royal Assent submission stage for the Alcoholic Beverage Control Bill:
 
-<QueryTabs
-	query="query BillRoyalAssentEvents($where: BillRoyalAssentEventWhere) { billRoyalAssentEvents(where: $where) { id result bill { id title } }}"
-	variables='{ "where": { "id": { "eq": "0beac91b-e207-4476-acc7-09c91741caf9" } }}'
-/>
+<QueryTabs query='query BillRoyalAssentEvents { billRoyalAssentEvents(where: { id: { eq: "0beac91b-e207-4476-acc7-09c91741caf9" } }) { id result bill { id title } }}' />
 
 ##### Bill Rejection Stage (`BillRejectEvent`)
 
@@ -126,10 +111,7 @@ The Bill Rejection Stage is an event that records the termination of a bill's le
 
 Example of the rejection stage for the National Fisheries Fund Bill, which was dropped due to the dissolution of Parliament.
 
-<QueryTabs
-	query="query BillRejectEvents($where: BillRejectEventWhere) { billRejectEvents(where: $where) { id reject_reason bill { id title } }}"
-	variables='{ "where": { "id": { "eq": "55fa6fde-3ed3-4b4e-9665-bccadc5646f2" } }}'
-/>
+<QueryTabs query='query BillRejectEvents { billRejectEvents(where: { id: { eq: "55fa6fde-3ed3-4b4e-9665-bccadc5646f2" } }) { id reject_reason bill { id title } }}' />
 
 ### Current Status of a Bill
 

@@ -241,7 +241,6 @@ function toBlockquote(type: string, title = '', content: string) {
 
 async function toQueryExample(attributes: string) {
 	const query = getAttribute(attributes, 'query');
-	const variables = getAttribute(attributes, 'variables');
 
 	if (!query) {
 		return '';
@@ -253,19 +252,11 @@ async function toQueryExample(attributes: string) {
 	});
 
 	const trimmedQuery = formattedQuery.trim();
-	const blocks = [`\`\`\`graphql\n${trimmedQuery}\n\`\`\``];
 
-	if (variables) {
-		blocks.push(
-			`Variables:\n\n\`\`\`json\n${JSON.stringify(JSON.parse(variables), null, 2)}\n\`\`\``,
-		);
-	}
-
-	blocks.push(
-		`[Run this query in the playground](${toPlaygroundUrl(GRAPHQL_ENDPOINT, trimmedQuery, variables)})`,
-	);
-
-	return blocks.join('\n\n');
+	return [
+		`\`\`\`graphql\n${trimmedQuery}\n\`\`\``,
+		`[Run this query in the playground](${toPlaygroundUrl(GRAPHQL_ENDPOINT, trimmedQuery)})`,
+	].join('\n\n');
 }
 
 function getAttribute(attributes: string, name: string) {

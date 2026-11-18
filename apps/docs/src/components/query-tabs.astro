@@ -10,13 +10,11 @@ import QueryGraph from './query-graph.vue';
 
 interface Props {
 	query: string;
-	variables?: string;
 }
 
-const { query, variables } = Astro.props;
+const { query } = Astro.props;
 
-const parsedVariables = variables ? JSON.parse(variables) : undefined;
-const jsonResponse = await fetchGraphql(query, parsedVariables);
+const jsonResponse = await fetchGraphql(query);
 
 const flattenedData = Object.values(jsonResponse.data).flatMap((value) => {
 	if (Array.isArray(value)) {
@@ -33,11 +31,7 @@ const formattedQuery = await format(query, {
 });
 
 const t = useTranslations(getLanguage(Astro.locals.starlightRoute.locale));
-const playgroundUrl = toPlaygroundUrl(
-	GRAPHQL_ENDPOINT,
-	formattedQuery.trim(),
-	variables,
-);
+const playgroundUrl = toPlaygroundUrl(GRAPHQL_ENDPOINT, formattedQuery.trim());
 
 function formatJson(obj: object) {
 	return JSON.stringify(obj, null, 2);
@@ -56,17 +50,6 @@ function formatJson(obj: object) {
 				class="md:h-128 overflow-y-auto"
 			/>
 		</TabItem>
-		{
-			variables && (
-				<TabItem label="Variables">
-					<Code
-						code={formatJson(JSON.parse(variables))}
-						lang="json"
-						class="md:h-128 overflow-y-auto"
-					/>
-				</TabItem>
-			)
-		}
 		<TabItem label="Response">
 			<Code
 				code={formatJson(jsonResponse)}

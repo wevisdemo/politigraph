@@ -17,10 +17,7 @@ import QueryTabs from '../../../components/query-tabs.astro';
 
 ยกตัวอย่างร่างกฎหมายทั้ง 3 ประเภท
 
-<QueryTabs
-	query="query Bills($limit_a: Int, $where_a: BillWhere, $limit_b: Int, $where_b: BillWhere, $limit_c: Int, $where_c: BillWhere) { normal_bills: bills(limit: $limit_a, where: $where_a) { id title classification } budget_bills: bills(limit: $limit_b, where: $where_b) { id title classification } emergency_decree: bills(limit: $limit_c, where: $where_c) { id title classification }}"
-	variables='{ "limit_a": 1, "where_a": { "classification": { "eq": "NORMAL_BILL" } }, "limit_b": 1, "where_b": { "classification": { "eq": "BUDGET_BILL" } }, "limit_c": 1, "where_c": { "classification": { "eq": "EMERGENCY_DECREE" } }}'
-/>
+<QueryTabs query="query Bills { normal_bills: bills(limit: 1, where: { classification: { eq: NORMAL_BILL } }) { id title classification } budget_bills: bills(limit: 1, where: { classification: { eq: BUDGET_BILL } }) { id title classification } emergency_decree: bills(limit: 1, where: { classification: { eq: EMERGENCY_DECREE } }) { id title classification }}" />
 
 ### ผู้เสนอและผู้ร่วมเสนอร่างกฎหมาย
 
@@ -40,10 +37,7 @@ import QueryTabs from '../../../components/query-tabs.astro';
 
 ยกตัวอย่างร่างกฎหมายที่ถูกเสนอโดย _สมาชิกสภาผู้แทนราษฎร_
 
-<QueryTabs
-	query="query Bills($limit: Int, $where: BillWhere) { bills(limit: $limit, where: $where) { id title classification creator_type creators { ... on Person { id name } } co_creators { id name } }}"
-	variables='{ "limit": 1, "where": { "creator_type": { "eq": "POLITICIAN" } }}'
-/>
+<QueryTabs query="query Bills { bills(limit: 1, where: { creator_type: { eq: POLITICIAN } }) { id title classification creator_type creators { ... on Person { id name } } co_creators { id name } }}" />
 
 ### กระบวนการพิจารณาร่างกฎหมาย
 
@@ -91,10 +85,7 @@ import QueryTabs from '../../../components/query-tabs.astro';
 
 ยกตัวอย่างการพิจารณาของสภาผู้แทนราษฎร ร่างพระราชบัญญัติงบประมาณรายจ่ายประจำปีงบประมาณ พ.ศ. 2568 วาระที่ 3
 
-<QueryTabs
-	query="query BillVoteEvents($where: BillVoteEventWhere) { billVoteEvents(where: $where) { id title classification bill { id title classification } vote_events { id title classification result } }}"
-	variables='{ "where": { "id": { "eq": "b5813539-007a-47de-b09b-22f127e15aa8" } }}'
-/>
+<QueryTabs query='query BillVoteEvents { billVoteEvents(where: { id: { eq: "b5813539-007a-47de-b09b-22f127e15aa8" } }) { id title classification bill { id title classification } vote_events { id title classification result } }}' />
 
 ##### ขั้นตอนการรวมร่าง (`BillMergeEvent`)
 
@@ -109,10 +100,7 @@ import QueryTabs from '../../../components/query-tabs.astro';
 
 ยกตัวอย่างการพิจารณาร่างพระราชบัญญัติ เป็นร่างหลัก ของสภาผู้แทนราษฎร
 
-<QueryTabs
-	query="query BillMergeEvents($where: BillMergeEventWhere) { billMergeEvents(where: $where) { id main_bill { id title } total_merged_bills bills { id title } }}"
-	variables='{ "where": { "id": { "eq": "f54b6def-9b4f-41d0-a6f3-72bdc7ae36af" } }}'
-/>
+<QueryTabs query='query BillMergeEvents { billMergeEvents(where: { id: { eq: "f54b6def-9b4f-41d0-a6f3-72bdc7ae36af" } }) { id main_bill { id title } total_merged_bills bills { id title } }}' />
 
 ##### ขั้นตอนการนำขึ้นทูลเกล้าทูลกระหม่อมถวาย (`BillRoyalAssentEvent`)
 
@@ -123,10 +111,7 @@ import QueryTabs from '../../../components/query-tabs.astro';
 
 ยกตัวอย่างขั้นตอนการนำขึ้นทูลเกล้าทูลกระหม่อมถวายของร่างพระราชบัญญัติควบคุมเครื่องดื่มแอลกอฮอล์
 
-<QueryTabs
-	query="query BillRoyalAssentEvents($where: BillRoyalAssentEventWhere) { billRoyalAssentEvents(where: $where) { id result bill { id title } }}"
-	variables='{ "where": { "id": { "eq": "0beac91b-e207-4476-acc7-09c91741caf9" } }}'
-/>
+<QueryTabs query='query BillRoyalAssentEvents { billRoyalAssentEvents(where: { id: { eq: "0beac91b-e207-4476-acc7-09c91741caf9" } }) { id result bill { id title } }}' />
 
 ##### ขั้นตอนการประกาศเป็นกฎหมาย (`BillEnactEvent`)
 
@@ -135,10 +120,7 @@ import QueryTabs from '../../../components/query-tabs.astro';
 
 ยกตัวอย่างขั้นตอนการประกาศเป็นกฎหมายของร่างพระราชบัญญัติควบคุมเครื่องดื่มแอลกอฮอล์
 
-<QueryTabs
-	query="query BillEnactEvents($where: BillEnactEventWhere) { billEnactEvents(where: $where) { id start_date bill { id title } }}"
-	variables='{ "where": { "id": { "eq": "775ece1f-79ef-42eb-9412-51edc58fe235" } }}'
-/>
+<QueryTabs query='query BillEnactEvents { billEnactEvents(where: { id: { eq: "775ece1f-79ef-42eb-9412-51edc58fe235" } }) { id start_date bill { id title } }}' />
 
 ##### ขั้นตอนการประกาศร่างตกไป (`BillRejectEvent`)
 
@@ -150,10 +132,7 @@ import QueryTabs from '../../../components/query-tabs.astro';
 
 ยกตัวอย่างขั้นตอนการประกาศร่างตกไปของร่างพระราชบัญญัติกองทุนการประมงแห่งชาติ ซึ่ง ตกไปเนื่องจากยุบสภา
 
-<QueryTabs
-	query="query BillRejectEvents($where: BillRejectEventWhere) { billRejectEvents(where: $where) { id reject_reason bill { id title } }}"
-	variables='{ "where": { "id": { "eq": "55fa6fde-3ed3-4b4e-9665-bccadc5646f2" } }}'
-/>
+<QueryTabs query='query BillRejectEvents { billRejectEvents(where: { id: { eq: "55fa6fde-3ed3-4b4e-9665-bccadc5646f2" } }) { id reject_reason bill { id title } }}' />
 
 ### สถานะปัจจุบันของร่างกฎหมาย
 

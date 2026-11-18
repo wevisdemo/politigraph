@@ -68,9 +68,6 @@ graph TD
 
 ยกตัวอย่างเช่น ถ้าเราสงสัยว่า _"อนุทิน ชาญวีรกูล ได้เห็นด้วยกับการลงมติอะไรบ้าง?"_ เราก็สามารถดึง Node ของอนุทิน และ Relationships ที่เชื่อมไปถึงการโหวตเห็นด้วยจนถึงการลงมตินั้นๆ ได้
 
-<QueryTabs
-	query="query People($where: PersonWhere, $votesWhere2: VoteWhere) { people(where: $where) { id name image votes(where: $votesWhere2) { id option vote_event { id title nickname result start_date end_date } } } }"
-	variables='{ "where": { "firstname": { "eq": "อนุทิน" }, "lastname": { "eq": "ชาญวีรกูล" } }, "votesWhere2": { "option": { "eq": "เห็นด้วย" } } }'
-/>
+<QueryTabs query='query People { people(where: { firstname: { eq: "อนุทิน" }, lastname: { eq: "ชาญวีรกูล" } }) { id name image votes(where: { option: { eq: "เห็นด้วย" } }) { id option vote_event { id title nickname result start_date end_date } } } }' />
 
 สามารถไปที่ [สำรวจข้อมูล](/explore) เพื่อดูข้อมูลใน Politigraph โดยที่ไม่ต้องเขียนโค้ด

@@ -23,7 +23,4 @@ Node ที่มีลิงก์ได้จะมี Property `links` แล
 
 ยกตัวอย่างเช่น ลิงก์ของการลงมติร่าง พ.ร.บ. งบประมาณ 2564 (วาระ 3) ซึ่งชี้ไปยังหน้าบันทึกการประชุมและไฟล์ใบประมวลผลการลงมติ
 
-<QueryTabs
-	query="query VoteEvents($where: VoteEventWhere) { voteEvents(where: $where) { id title links { id url note } } }"
-	variables='{ "where": { "id": { "eq": "fd854f98-a9c0-4ef2-b007-58821da695dc" } }}'
-/>
+<QueryTabs query='query VoteEvents { voteEvents(where: { id: { eq: "fd854f98-a9c0-4ef2-b007-58821da695dc" } }) { id title links { id url note } } }' />

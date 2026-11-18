@@ -17,16 +17,10 @@ import QueryTabs from '../../../components/query-tabs.astro';
 - **วุฒิสภา (สว.)**: _HOUSE_OF_SENATE_
 - **คณะรัฐมนตรี (ครม.)**: _CABINET_
 
-<QueryTabs
-	query="query Query($where: OrganizationWhere) { organizations(where: $where) { id name classification founding_date dissolution_date children { id name classification description founding_date dissolution_date } } }"
-	variables='{ "where": { "classification": { "eq": "PARLIAMENT" } } }'
-/>
+<QueryTabs query="query Query { organizations(where: { classification: { eq: PARLIAMENT } }) { id name classification founding_date dissolution_date children { id name classification description founding_date dissolution_date } } }" />
 
 ## พรรคการเมือง
 
 พรรคการเมืองก็ถูกจัดเป็น **`Organization`** ที่มี `classification` เป็น _POLITICAL_PARTY_ นี่คือพรรคการเมืองทั้งหมดที่เรามีในฐานข้อมูล
 
-<QueryTabs
-	query="query Organizations($where: OrganizationWhere) { organizations(where: $where) { id name color } }"
-	variables='{ "where": { "classification": { "eq": "POLITICAL_PARTY" } } }'
-/>
+<QueryTabs query="query Organizations { organizations(where: { classification: { eq: POLITICAL_PARTY } }) { id name color } }" />
