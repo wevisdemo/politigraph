@@ -108,13 +108,12 @@ describe('toStructureNode', () => {
 });
 
 describe('createNodeSelection', () => {
-	const pick = (root: string, lang: 'en' | 'th') =>
-		Object.keys(createNodeSelection(schema, getRoot(root), lang).fields);
+	const pick = (root: string) =>
+		Object.keys(createNodeSelection(schema, getRoot(root)).fields);
 
-	test('preselects the field drawn as the node label, by language', () => {
-		expect(pick('organizations', 'en')).toEqual(['name_en']);
-		expect(pick('organizations', 'th')).toEqual(['name']);
-		expect(pick('bills', 'en')).toEqual(['nickname', 'status']);
-		expect(pick('votes', 'th')).toEqual(['option']);
+	test('preselects the label fields with their fallbacks, and the color field', () => {
+		expect(pick('organizations')).toEqual(['name', 'name_en']);
+		expect(pick('bills')).toEqual(['nickname', 'title', 'status']);
+		expect(pick('votes')).toEqual(['option']);
 	});
 });

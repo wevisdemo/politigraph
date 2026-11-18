@@ -2,6 +2,7 @@
 import { nodeIconMap } from '../constants/schema';
 import { fetchGraphql } from '../utils/graphql';
 import { getLanguage, useTranslations } from '../utils/i18n';
+import { toNodeParam } from '../utils/query-builder/url';
 
 const lang = getLanguage(Astro.locals.starlightRoute.locale);
 const t = useTranslations(lang);
@@ -39,10 +40,14 @@ const { timestamps, ...connections } = data as unknown as Record<
 const locale = lang === 'th' ? 'th-TH' : 'en-US';
 const numberFormatter = new Intl.NumberFormat(locale);
 
+const { locale: routeLocale } = Astro.locals.starlightRoute;
+const localePrefix = routeLocale ? `/${routeLocale}` : '';
+
 const counts = datasets.map(({ connection, typename, label }) => {
 	const count = connections[connection].aggregate.count.nodes;
 
 	return {
+		href: `${localePrefix}/query-builder${toNodeParam(typename)}`,
 		Icon: nodeIconMap.get(typename),
 		label,
 		count,
@@ -61,8 +66,11 @@ const lastUpdated =
 <div class="mb-12 flex flex-col gap-4 md:mb-24">
 	<div class="not-content grid grid-cols-2 gap-y-4 md:grid-cols-4">
 		{
-			counts.map(({ Icon, label, count, formattedCount }) => (
-				<div class="flex flex-col items-center gap-1 border-(--sl-color-gray-5) text-center md:border-l md:first:border-l-0">
+			counts.map(({ href, Icon, label, count, formattedCount }) => (
+				<a
+					href={href}
+					class="flex flex-col items-center gap-1 border-(--sl-color-gray-5) py-2 text-center no-underline hover:bg-(--sl-color-gray-6) md:border-l md:first:border-l-0"
+				>
 					<span
 						class="text-3xl font-bold tabular-nums text-(--sl-color-white)"
 						data-count={count}
@@ -73,7 +81,7 @@ const lastUpdated =
 						<Icon aria-hidden="true" />
 						{label}
 					</span>
-				</div>
+				</a>
 			))
 		}
 	</div>

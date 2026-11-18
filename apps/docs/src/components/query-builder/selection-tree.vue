@@ -58,11 +58,7 @@ function toggle(key: string, field: BuilderField) {
 	if (props.selection.fields[key]) {
 		delete props.selection.fields[key];
 	} else {
-		props.selection.fields[key] = createNodeSelection(
-			props.schema,
-			field,
-			props.lang,
-		);
+		props.selection.fields[key] = createNodeSelection(props.schema, field);
 	}
 }
 </script>

@@ -1,5 +1,4 @@
 import { NODE_COLOR_FIELDS } from '../graph-node-colors';
-import type { Language } from '../i18n';
 import type { GraphqlObject } from '../schema';
 import type {
 	BuilderField,
@@ -32,25 +31,21 @@ export function createSelection(field?: BuilderField): Selection {
 	};
 }
 
-const LABEL_FIELDS = ['name', 'label', 'nickname', 'title', 'note'];
+const LABEL_FIELDS = ['name', 'name_en', 'label', 'nickname', 'title', 'note'];
 
 /**
- * Preselects the first field that `getObjectLabel` would draw as the node
- * label, preferring `name_en` over `name` for English, and the field that
- * decides its color in the graph.
+ * Preselects every field `getObjectLabel` may draw as the node label, and the
+ * field that decides its color in the graph.
  */
 export function createNodeSelection(
 	schema: BuilderSchema,
 	field: BuilderField,
-	lang: Language,
 ): Selection {
 	if (!field.isNode) return createSelection(field);
 
 	const names = new Set(schema.types[field.type].fields.map((f) => f.name));
-	const candidates =
-		lang === 'en' ? ['name_en', ...LABEL_FIELDS] : LABEL_FIELDS;
 	const preselected = [
-		candidates.find((name) => names.has(name)),
+		...LABEL_FIELDS,
 		NODE_COLOR_FIELDS.get(field.type),
 	].filter((name) => name && names.has(name));
 

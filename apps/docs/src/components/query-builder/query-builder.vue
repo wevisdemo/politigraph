@@ -18,7 +18,11 @@ import type {
 	BuilderField,
 	BuilderSchema,
 } from '../../utils/query-builder/schema';
-import { QUERY_PARAM, toQueryParam } from '../../utils/query-builder/url';
+import {
+	NODE_PARAM,
+	QUERY_PARAM,
+	toQueryParam,
+} from '../../utils/query-builder/url';
 import type { GraphqlDataResponse, GraphqlObject } from '../../utils/schema';
 import QueryGraph from '../query-graph.vue';
 import Spinner from '../spinner.vue';
@@ -66,11 +70,15 @@ const isLoading = ref(false);
 function pickRoot(field?: BuilderField) {
 	rootName.value = field?.name;
 	selection.value = field
-		? reactive(createNodeSelection(props.schema, field, props.lang))
+		? reactive(createNodeSelection(props.schema, field))
 		: undefined;
 	response.value = undefined;
 	error.value = undefined;
 }
+
+const nodeParam = new URLSearchParams(location.search).get(NODE_PARAM);
+const nodeRoot = startingRoots.find(({ type }) => type === nodeParam);
+if (nodeRoot && !initial.selection && !initial.error) pickRoot(nodeRoot);
 
 const query = computed(() =>
 	root.value && selection.value
