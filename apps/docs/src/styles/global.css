@@ -44,6 +44,10 @@
 		@apply rounded-none border-x-0 border-t-0;
 	}
 
+	.hero .sl-link-button {
+		@apply flex-row-reverse;
+	}
+
 	.sidebar-content {
 		@apply p-0;
 	}
