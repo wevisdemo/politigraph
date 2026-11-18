@@ -96,18 +96,24 @@ export default defineConfig({
 					items: [{ slug: 'changelog' }, { slug: 'privacy-policy' }],
 				},
 				{
-					label: 'สำรวจข้อมูล',
-					translations: {
-						en: 'Explore',
-					},
-					link: '/explore',
-				},
-				{
-					label: 'สร้าง Query',
-					translations: {
-						en: 'Query Builder',
-					},
-					link: '/query-builder',
+					label: 'เครื่องมือ',
+					translations: { en: 'Tools' },
+					items: [
+						{
+							label: 'สำรวจข้อมูล',
+							translations: { en: 'Explore' },
+							link: '/explore',
+						},
+						{
+							label: 'สร้าง Query',
+							translations: { en: 'Query Builder' },
+							link: '/query-builder',
+						},
+						{
+							label: 'GraphQL Playground',
+							link: '/graphql',
+						},
+					],
 				},
 			],
 			lastUpdated: true,
