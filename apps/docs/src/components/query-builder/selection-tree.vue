@@ -51,8 +51,26 @@ const sections = computed(() =>
 			label: t.builderRelationships,
 			items: items.value.filter(({ field }) => field.isNode),
 		},
-	].filter(({ items }) => items.length),
+	]
+		.filter(({ items }) => items.length)
+		.map((section) => {
+			const toggleable = section.items.filter(({ key }) => key !== 'id');
+
+			return {
+				...section,
+				toggleable,
+				allSelected: toggleable.every(({ key }) => props.selection.fields[key]),
+			};
+		}),
 );
+
+function toggleAll(toggleable: typeof items.value, allSelected: boolean) {
+	toggleable.forEach(({ key, field }) => {
+		if (allSelected) delete props.selection.fields[key];
+		else
+			props.selection.fields[key] ??= createNodeSelection(props.schema, field);
+	});
+}
 
 function toggle(key: string, field: BuilderField) {
 	if (props.selection.fields[key]) {
@@ -65,11 +83,20 @@ function toggle(key: string, field: BuilderField) {
 
 <template>
 	<section
-		v-for="{ label, items: sectionItems } in sections"
+		v-for="{ label, items: sectionItems, toggleable, allSelected } in sections"
 		:key="label"
 		class="flex flex-col gap-1 border-t border-gray-300 pt-2 first:border-t-0 first:pt-0 dark:border-gray-700"
 	>
-		<h3 class="m-0 text-xs font-bold uppercase text-gray-500">{{ label }}</h3>
+		<div class="flex flex-row items-center justify-between">
+			<h3 class="m-0 text-xs font-bold uppercase text-gray-500">{{ label }}</h3>
+			<button
+				v-if="toggleable.length"
+				class="cursor-pointer border-0 bg-transparent p-0 text-xs text-blue-700 hover:underline dark:text-blue-400"
+				@click="toggleAll(toggleable, allSelected)"
+			>
+				{{ allSelected ? t.builderClearAll : t.builderSelectAll }}
+			</button>
+		</div>
 		<ul class="m-0 flex list-none flex-col gap-0.5 p-0">
 			<li v-for="{ key, field } in sectionItems" :key="key" class="m-0">
 				<label

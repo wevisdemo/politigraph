@@ -1,6 +1,6 @@
 <script setup lang="ts">
 // @ts-expect-error carbon icons vue has incomplete type exports
-import { ArrowLeft16, Book16, Play16 } from '@carbon/icons-vue';
+import { ArrowLeft16, Book16, Play16, Reset16 } from '@carbon/icons-vue';
 import { strToU8, zipSync } from 'fflate';
 import { computed, onBeforeUnmount, reactive, ref, shallowRef } from 'vue';
 import { nodeIconMap } from '../../constants/schema';
@@ -56,6 +56,13 @@ const startingTypes = ['Bill', 'VoteEvent', 'Organization', 'Person'];
 const startingRoots = startingTypes.flatMap((startingType) =>
 	props.schema.roots.filter(({ type }) => type === startingType),
 );
+const otherRoots = props.schema.roots
+	.filter(
+		({ type }) =>
+			!startingTypes.includes(type) &&
+			!props.schema.types[type].possibleTypes.length,
+	)
+	.toSorted((a, b) => a.name.localeCompare(b.name));
 
 const schemaDocPages: Record<string, string> = {
 	Bill: 'bill',
@@ -212,6 +219,25 @@ const grayButtonClass =
 						</span>
 					</span>
 				</button>
+				<h3 class="m-0 mt-2 text-xs font-bold uppercase text-gray-500">
+					{{ t.builderOtherRoots }}
+				</h3>
+				<div class="flex flex-row flex-wrap gap-1.5">
+					<button
+						v-for="field in otherRoots"
+						:key="field.name"
+						:title="schema.types[field.type].description?.split('\n')[0]"
+						class="flex cursor-pointer flex-row items-center gap-1 rounded border border-gray-300 bg-transparent px-2 py-1 text-xs hover:bg-gray-100 dark:border-gray-700 dark:hover:bg-gray-800"
+						@click="pickRoot(field)"
+					>
+						<component
+							:is="nodeIconMap.get(field.type)"
+							v-if="nodeIconMap.has(field.type)"
+							class="shrink-0"
+						/>
+						{{ field.name }}
+					</button>
+				</div>
 			</template>
 			<template v-else>
 				<div class="flex flex-row items-center gap-2">
@@ -239,6 +265,14 @@ const grayButtonClass =
 					>
 						<Book16 />
 					</a>
+					<button
+						:aria-label="t.builderReset"
+						:title="t.builderReset"
+						:class="[buttonClass, grayButtonClass]"
+						@click="pickRoot(root)"
+					>
+						<Reset16 />
+					</button>
 				</div>
 				<p class="m-0 text-xs text-gray-400">
 					{{ schema.types[root.type].description?.split('\n')[0] }}
