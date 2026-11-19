@@ -1,11 +1,13 @@
 <script setup lang="ts">
 // @ts-expect-error carbon icons vue has incomplete type exports
-import { ArrowLeft16, Book16, Download16, Play16 } from '@carbon/icons-vue';
+import { ArrowLeft16, Book16, Play16 } from '@carbon/icons-vue';
+import { strToU8, zipSync } from 'fflate';
 import { computed, onBeforeUnmount, reactive, ref, shallowRef } from 'vue';
 import { nodeIconMap } from '../../constants/schema';
 import { GRAPHQL_ENDPOINT } from '../../constants/site';
 import { fetchGraphql } from '../../utils/graphql';
 import { useTranslations, type Language } from '../../utils/i18n';
+import { toCsvFiles } from '../../utils/query-builder/csv';
 import { parseQuery } from '../../utils/query-builder/parse';
 import {
 	buildQuery,
@@ -143,6 +145,30 @@ const copyLink = () =>
 		`${location.origin}${location.pathname}${toQueryParam(query.value)}`,
 	);
 const responseJson = computed(() => JSON.stringify(response.value, null, 2));
+
+function downloadCsv() {
+	if (!root.value || !response.value) return;
+
+	const { name } = root.value;
+	const files = Object.entries(toCsvFiles(response.value.data[name]));
+	const file =
+		files.length === 1
+			? new File([files[0][1]], `${name}.csv`)
+			: new File(
+					[
+						zipSync(
+							Object.fromEntries(files.map(([n, csv]) => [n, strToU8(csv)])),
+						),
+					],
+					`${name}.zip`,
+				);
+
+	const link = document.createElement('a');
+	link.href = URL.createObjectURL(file);
+	link.download = file.name;
+	link.click();
+	URL.revokeObjectURL(link.href);
+}
 
 const wideMedia = matchMedia('(min-width: 96rem)');
 const isWide = ref(wideMedia.matches);
@@ -349,7 +375,8 @@ const grayButtonClass =
 							<CodeBlock :code="query" lang="graphql" />
 						</template>
 						<template v-else>
-							<div class="flex flex-row justify-end gap-2 p-2">
+							<div class="flex flex-row items-center justify-end gap-2 p-2">
+								<span class="text-sm">{{ t.builderDownload }}</span>
 								<a
 									:href="`data:application/json;charset=utf-8,${encodeURIComponent(responseJson)}`"
 									:download="`${root.name}.json`"
@@ -359,8 +386,14 @@ const grayButtonClass =
 										'text-inherit no-underline',
 									]"
 								>
-									<Download16 />{{ t.builderDownload }}
+									JSON
 								</a>
+								<button
+									:class="[buttonClass, grayButtonClass]"
+									@click="downloadCsv"
+								>
+									CSV
+								</button>
 							</div>
 							<CodeBlock :code="responseJson" lang="json" />
 						</template>
