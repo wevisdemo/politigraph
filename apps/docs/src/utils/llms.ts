@@ -109,6 +109,7 @@ const LLMS_LANGUAGES = {
 		indexUrl: `${SITE_URL}/llms.txt`,
 		fullUrl: `${SITE_URL}/llms-full.txt`,
 		exploreUrl: `${SITE_URL}/en/explore`,
+		queryBuilderUrl: `${SITE_URL}/en/query-builder`,
 		otherNote: `These files are generated from the English documentation. The Thai originals are the source of truth and use the exact Thai terms of the data: if the user writes in Thai or asks about a Thai term, read ${SITE_URL}/llms-th.txt instead.`,
 	},
 	th: {
@@ -116,13 +117,15 @@ const LLMS_LANGUAGES = {
 		indexUrl: `${SITE_URL}/llms-th.txt`,
 		fullUrl: `${SITE_URL}/llms-full-th.txt`,
 		exploreUrl: `${SITE_URL}/explore`,
+		queryBuilderUrl: `${SITE_URL}/query-builder`,
 		otherNote: `These files are the original Thai documentation, the source of truth for the Thai terms used in the data. The English translation is at ${SITE_URL}/llms.txt.`,
 	},
 } satisfies Record<Language, Record<string, string>>;
 
 export async function toLlmsIndex(lang: Language) {
 	const docs = await getLlmsDocsByLanguage(lang);
-	const { fullUrl, exploreUrl, otherNote } = LLMS_LANGUAGES[lang];
+	const { fullUrl, exploreUrl, queryBuilderUrl, otherNote } =
+		LLMS_LANGUAGES[lang];
 
 	return `# Politigraph
 
@@ -147,6 +150,7 @@ ${toDocsLinkList(docs)}
 
 - [All documentation in one file](${fullUrl}): every page above plus the schema, for one-shot context
 - [Explore](${exploreUrl}): interactive graph browser for humans
+- [Query Builder](${queryBuilderUrl}): point-and-click query builder for humans, with graph view and JSON/CSV download
 - [Source code](https://github.com/wevisdemo/politigraph): report data errors or issues here
 `;
 }
