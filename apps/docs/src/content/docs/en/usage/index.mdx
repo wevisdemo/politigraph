@@ -1,6 +1,6 @@
 ---
 title: Usage Overview
-description: 3 ways to access Thai political data from Politigraph, the GraphQL API, the GraphQL Playground, and AI agents through llms.txt and the MCP server.
+description: 3 ways to access Thai political data from Politigraph, the GraphQL API, web tools (Query Builder and GraphQL Playground), and AI agents through llms.txt and the MCP server.
 sidebar:
   order: 1
 ---
@@ -17,15 +17,29 @@ Best for integrating Politigraph data into a website, application, or other work
 
 [See how](/en/usage/api)
 
-## 2. 🛝 GraphQL Playground
+## 2. Web Tools
+
+Best for pulling data out of Politigraph with a UI that helps you build queries, view results, and download the data right away without writing any code. There are 2 tools to choose from.
+
+### 2.1 Query Builder 🏗️
 
 ```text wrap
-👦 — Build Query → 🛝 — Query → 🗄️ — Data → 🛝 — Result → 👦
+👦 — Pick the data → 🏗️ — Query → 🗄️ — Data → 🏗️ — Result → 👦
 ```
 
-Best for pulling data out of Politigraph with a UI that helps you write GraphQL queries, view results, and download the data right away without writing any code.
+Best for people just getting started with Politigraph. Simply click to pick the data you want to build a GraphQL query and view the result with a Visualization.
 
-[See how](/en/usage/graphql-playground)
+[See how](/en/usage/web-tools#query-builder)
+
+### 2.2 GraphQL Playground 🛝
+
+```text wrap
+👦 — Write Query → 🛝 — Query → 🗄️ — Data → 🛝 — Result → 👦
+```
+
+For more advanced users. Write more complex queries and use the full power of GraphQL.
+
+[See how](/en/usage/web-tools#graphql-playground)
 
 ## 3. Use It with AI 🤖
 
@@ -37,7 +51,7 @@ Best for pulling data out of Politigraph to answer a question or help analyze it
 👦 — Ask (Prompt) → 🤖 — Drafts the query → 👦 — Build Query → 🛝 — Query → 🗄️ — Data → 🛝 — Result → 👦
 ```
 
-Best for users of web AI chat, which may be limited in calling external data. You need to run the query AI drafts in the GraphQL Playground, as in option 2.
+Best for users of web AI chat, which may be limited in calling external data. You need to run the query AI drafts in the GraphQL Playground, as in option 2.2.
 
 [See how](/en/usage/ai#have-ai-write-the-graphql-query-with-llmstxt)
 

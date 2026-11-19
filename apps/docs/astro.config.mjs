@@ -105,8 +105,7 @@ export default defineConfig({
 							link: '/explore',
 						},
 						{
-							label: 'สร้าง Query',
-							translations: { en: 'Query Builder' },
+							label: 'Query Builder',
 							link: '/query-builder',
 						},
 						{

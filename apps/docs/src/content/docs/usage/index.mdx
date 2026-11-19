@@ -1,6 +1,6 @@
 ---
 title: ภาพรวมการใช้งาน
-description: 3 วิธีเข้าถึงข้อมูลการเมืองไทยจาก Politigraph ได้แก่ GraphQL API, GraphQL Playground และการใช้งานร่วมกับ AI Agent ด้วย llms.txt และ MCP Server
+description: 3 วิธีเข้าถึงข้อมูลการเมืองไทยจาก Politigraph ได้แก่ GraphQL API, เครื่องมือบนเว็บ (Query Builder และ GraphQL Playground) และการใช้งานร่วมกับ AI Agent ด้วย llms.txt และ MCP Server
 sidebar:
   order: 1
 ---
@@ -17,15 +17,29 @@ sidebar:
 
 [ดูวิธีใช้งาน](/usage/api)
 
-## 2. 🛝 GraphQL Playground
+## 2. เครื่องมือบนเว็บ
+
+เหมาะสำหรับผู้ที่ต้องการดึงข้อมูลจาก Politigraph ออกมาใช้ โดยมี User Interface ช่วยสร้าง Query ดูผลลัพธ์ และดาวน์โหลดข้อมูลไปใช้ได้ทันทีโดยไม่ต้องเขียนโค้ดเพิ่มเติม เรามี 2 เครื่องมือให้เลือกใช้
+
+### 2.1 Query Builder 🏗️
 
 ```text wrap
-👦 — สร้าง Query → 🛝 — Query → 🗄️ — ข้อมูล → 🛝 — แสดงผล → 👦
+👦 — เลือกข้อมูลที่ต้องการ → 🏗️ — Query → 🗄️ — ข้อมูล → 🏗️ — แสดงผล → 👦
 ```
 
-เหมาะสำหรับผู้ที่ต้องการดึงข้อมูลจาก Politigraph ออกมาใช้ โดยมี User Interface ช่วยในการเขียน GraphQL Query ดูผลลัพธ์ และดาวน์โหลดข้อมูลไปใช้ได้ทันทีโดยไม่ต้องเขียนโค้ดเพิ่มเติม
+เหมาะสำหรับผู้ที่เริ่มต้นใช้ Politigraph สามารถกดเลือกข้อมูลที่ต้องการแบบง่ายๆ เพื่อสร้าง GraphQL Query และแสดงผลพร้อม Visualization
 
-[ดูวิธีใช้งาน](/usage/graphql-playground)
+[ดูวิธีใช้งาน](/usage/web-tools#query-builder)
+
+### 2.2 GraphQL Playground 🛝
+
+```text wrap
+👦 — เขียน Query → 🛝 — Query → 🗄️ — ข้อมูล → 🛝 — แสดงผล → 👦
+```
+
+สำหรับผู้ใช้ที่มีความเชี่ยวชาญมากขึ้น สามารถเขียน Query ที่ซับซ้อนมากขึ้น ใช้ GraphQL ได้เต็มความสามารถ
+
+[ดูวิธีใช้งาน](/usage/web-tools#graphql-playground)
 
 ## 3. ใช้งานร่วมกับ AI 🤖
 
@@ -37,7 +51,7 @@ sidebar:
 👦 — ถาม (Prompt) → 🤖 — ช่วยเขียน Query ให้ → 👦 — สร้าง Query → 🛝 — Query → 🗄️ — ข้อมูล → 🛝 — แสดงผล → 👦
 ```
 
-เหมาะสำหรับผู้ใช้งาน AI Chat บนเว็บซึ่งอาจมีข้อจำกัดในการเรียกใช้ข้อมูล ผู้ใช้ต้องนำ Query ที่ AI ช่วยเขียนไปใช้ต่อใน GraphQL Playground เหมือนข้อที่ 2
+เหมาะสำหรับผู้ใช้งาน AI Chat บนเว็บซึ่งอาจมีข้อจำกัดในการเรียกใช้ข้อมูล ผู้ใช้ต้องนำ Query ที่ AI ช่วยเขียนไปใช้ต่อใน GraphQL Playground เหมือนข้อที่ 2.2
 
 [ดูวิธีใช้งาน](/usage/ai#ให้-ai-ช่วยเขียน-graphql-query-ด้วย-llmstxt)
 
