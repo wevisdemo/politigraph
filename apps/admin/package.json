@@ -4,7 +4,7 @@
 	"private": true,
 	"type": "module",
 	"scripts": {
-		"dev": "bunx --bun nuxt dev",
+		"dev": "bunx --bun nuxt dev --no-tui",
 		"build": "bunx --bun nuxt build",
 		"preview": "bunx --bun nuxt preview",
 		"postinstall": "bunx --bun nuxt prepare",
