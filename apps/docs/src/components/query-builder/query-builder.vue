@@ -1,6 +1,6 @@
 <script setup lang="ts">
 // @ts-expect-error carbon icons vue has incomplete type exports
-import { ArrowLeft16, Download16, Play16 } from '@carbon/icons-vue';
+import { ArrowLeft16, Book16, Download16, Play16 } from '@carbon/icons-vue';
 import { computed, onBeforeUnmount, reactive, ref, shallowRef } from 'vue';
 import { nodeIconMap } from '../../constants/schema';
 import { GRAPHQL_ENDPOINT } from '../../constants/site';
@@ -55,6 +55,14 @@ const startingRoots = startingTypes.flatMap((startingType) =>
 	props.schema.roots.filter(({ type }) => type === startingType),
 );
 
+const schemaDocPages: Record<string, string> = {
+	Bill: 'bill',
+	VoteEvent: 'vote-event',
+	Organization: 'organization',
+	Person: 'membership',
+};
+const schemaDocBase = `${props.lang === 'en' ? '/en' : ''}/schema`;
+
 const rootName = ref(initial.root?.name);
 const root = computed(() =>
 	props.schema.roots.find(({ name }) => name === rootName.value),
@@ -67,6 +75,9 @@ const response = shallowRef<{ data: GraphqlDataResponse }>();
 const error = ref<string | undefined>(initial.error);
 const isLoading = ref(false);
 
+const tabs = ['query', 'response'] as const;
+const tab = ref<(typeof tabs)[number]>('query');
+
 function pickRoot(field?: BuilderField) {
 	rootName.value = field?.name;
 	selection.value = field
@@ -74,6 +85,7 @@ function pickRoot(field?: BuilderField) {
 		: undefined;
 	response.value = undefined;
 	error.value = undefined;
+	tab.value = 'query';
 }
 
 const nodeParam = new URLSearchParams(location.search).get(NODE_PARAM);
@@ -86,8 +98,6 @@ const query = computed(() =>
 		: '',
 );
 
-const tabs = ['query', 'response'] as const;
-const tab = ref<(typeof tabs)[number]>('query');
 const tabLabels = { query: t.builderQuery, response: t.builderResponse };
 
 const views = ['code', 'graph'] as const;
@@ -193,6 +203,16 @@ const grayButtonClass =
 						class="shrink-0"
 					/>
 					<h2 class="m-0 text-base font-bold">{{ root.name }}</h2>
+					<a
+						v-if="schemaDocPages[root.type]"
+						:href="`${schemaDocBase}/${schemaDocPages[root.type]}`"
+						target="_blank"
+						:aria-label="t.builderSchemaDocs"
+						:title="t.builderSchemaDocs"
+						:class="[buttonClass, grayButtonClass, 'ml-auto text-inherit']"
+					>
+						<Book16 />
+					</a>
 				</div>
 				<p class="m-0 text-xs text-gray-400">
 					{{ schema.types[root.type].description?.split('\n')[0] }}
@@ -276,7 +296,7 @@ const grayButtonClass =
 
 				<p
 					v-if="tab === 'response' && !response"
-					class="m-0 flex-1 p-4 text-center text-sm italic text-gray-400"
+					class="m-0 flex flex-1 items-center justify-center p-4 text-center text-sm italic text-gray-400"
 				>
 					{{ t.builderRunHint }}
 				</p>
