@@ -1,6 +1,7 @@
 import typedefs from '@politigraph/graphql/dist/typedefs.graphql?raw';
 import { toPlaygroundUrl } from '@politigraph/graphql/playground-url';
 import {
+	QUERY_STYLE_NOTE,
 	REFERENCES_NOTE,
 	SCHEMA_FIRST_NOTE,
 	SUMMARY,
@@ -20,6 +21,8 @@ import {
 import type { Language } from './i18n';
 
 export const schemaSdl = typedefs;
+
+const PLAYGROUND_LINK_NOTE = `If you cannot run the query yourself, hand the user a link to ${PLAYGROUND_ENDPOINT}?query=URL_ENCODED_GRAPHQL instead. It opens the playground with that query filled in, ready to run. Add \`&variables=URL_ENCODED_JSON\` only if the query really needs variables.`;
 
 export interface LlmsDoc {
 	id: string;
@@ -133,9 +136,10 @@ export async function toLlmsIndex(lang: Language) {
 
 - Query the API by sending a POST request to ${GRAPHQL_ENDPOINT}, or explore it interactively in the playground at the same URL.
 - MCP-capable agents can connect to ${MCP_ENDPOINT} instead, an anonymous read-only Streamable HTTP endpoint with tools to read the schema and run queries.
-- If you cannot run the query yourself, hand the user a link to ${PLAYGROUND_ENDPOINT}?query=URL_ENCODED_GRAPHQL&variables=URL_ENCODED_JSON instead. It opens the playground with that operation and its variables filled in, ready to run.
+- ${PLAYGROUND_LINK_NOTE}
 - Every page below is also available as plain markdown by appending \`.md\` to its URL.
 - ${SCHEMA_FIRST_NOTE} The complete schema is linked under Reference below. If you cannot open the links on this page, ask the user to copy the contents of ${fullUrl} into the chat, and do not write a query until you have the schema.
+- ${QUERY_STYLE_NOTE}
 - ${REFERENCES_NOTE}
 - ${TIMESTAMP_NOTE}
 - ${otherNote}
@@ -162,7 +166,7 @@ export async function toLlmsFull(lang: Language) {
 
 > ${SUMMARY} Query it by sending a POST request to ${GRAPHQL_ENDPOINT}.
 
-If you cannot run the query yourself, hand the user a link to ${PLAYGROUND_ENDPOINT}?query=URL_ENCODED_GRAPHQL&variables=URL_ENCODED_JSON instead. It opens the playground with that operation and its variables filled in, ready to run.
+${PLAYGROUND_LINK_NOTE} ${QUERY_STYLE_NOTE}
 
 This file contains the complete ${LLMS_LANGUAGES[lang].name} documentation followed by the full GraphQL schema.
 
