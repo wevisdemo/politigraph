@@ -107,6 +107,30 @@ describe('toStructureNode', () => {
 	});
 });
 
+describe('toStructureNode with abstract types', () => {
+	const linkOwner = (fields: Selection['fields']) =>
+		toStructureNode(schema, 'Link', {
+			...createSelection(),
+			fields: { owner: { ...createSelection(), fields } },
+		}).owner;
+
+	test('replaces a union by its selected fragments', () => {
+		expect(
+			linkOwner({
+				'... on Bill': {
+					...createSelection(),
+					fields: { title: createSelection() },
+				},
+				'... on Person': createSelection(),
+			}),
+		).toMatchObject([
+			{ __typename: 'Person', id: 'Link.owner.Person' },
+			{ __typename: 'Bill', id: 'Link.owner.Bill', title: 'String' },
+		]);
+		expect(linkOwner({})).toEqual([]);
+	});
+});
+
 describe('createNodeSelection', () => {
 	const pick = (root: string) =>
 		Object.keys(createNodeSelection(schema, getRoot(root)).fields);

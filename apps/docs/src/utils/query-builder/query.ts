@@ -184,6 +184,38 @@ function toLiteral(
 	return JSON.stringify(trimmed);
 }
 
+function toRelatedStructure(
+	schema: BuilderSchema,
+	typename: string,
+	selection: Selection,
+	path: string,
+) {
+	const { possibleTypes, fields } = schema.types[typename];
+
+	if (!possibleTypes.length) {
+		return toStructureNode(schema, typename, selection, path);
+	}
+
+	const nodes = possibleTypes.flatMap((possibleType) => {
+		const child = selection.fields[`${FRAGMENT_PREFIX}${possibleType}`];
+
+		return child
+			? [
+					toStructureNode(
+						schema,
+						possibleType,
+						{ ...child, fields: { ...selection.fields, ...child.fields } },
+						`${path}.${possibleType}`,
+					),
+				]
+			: [];
+	});
+
+	return nodes.length || !fields.length
+		? nodes
+		: toStructureNode(schema, typename, selection, path);
+}
+
 /**
  * Turn the selection into graph nodes, one per selected type, with the
  * selected properties showing their type in the same order as the query.
@@ -205,7 +237,12 @@ export function toStructureNode(
 			[
 				field.name,
 				field.isNode
-					? toStructureNode(schema, field.type, child, `${path}.${field.name}`)
+					? toRelatedStructure(
+							schema,
+							field.type,
+							child,
+							`${path}.${field.name}`,
+						)
 					: `${field.type}${field.isList ? '[]' : ''}`,
 			],
 		];
