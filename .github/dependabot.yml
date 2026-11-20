@@ -1,0 +1,14 @@
+version: 2
+updates:
+  - package-ecosystem: docker-compose
+    directories: ['/', '/servers/app', '/servers/db']
+    schedule:
+      interval: weekly
+    groups:
+      images:
+        patterns: ['*']
+        group-by: dependency-name
+    ignore:
+      # Major versions change the data directory format and need pg_upgrade
+      - dependency-name: postgres
+        update-types: ['version-update:semver-major']

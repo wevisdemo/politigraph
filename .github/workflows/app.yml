@@ -134,6 +134,7 @@ jobs:
             cd ${{ secrets.SSH_BACKEND_DIR }}
             docker image tag wevisdemo/politigraph:latest wevisdemo/politigraph:previous
             docker load --input politigraph-image.tar.gz
+            docker compose pull --quiet
             docker compose run --rm --no-deps --entrypoint nginx nginx -t
             docker compose run --rm --no-deps vector validate --no-environment
             docker compose up -d --remove-orphans

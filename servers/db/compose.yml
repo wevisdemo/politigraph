@@ -53,7 +53,7 @@ services:
       KEY: $BESZEL_AGENT_KEY
 
   backup:
-    image: offen/docker-volume-backup:v2
+    image: offen/docker-volume-backup:v2.50.1
     container_name: backup
     restart: always
     privileged: true
