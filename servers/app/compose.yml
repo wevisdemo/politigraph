@@ -67,7 +67,7 @@ services:
       ZO_TELEMETRY: false
 
   vector:
-    image: timberio/vector:0.58.0-alpine
+    image: timberio/vector:0.62.0-alpine
     container_name: vector
     restart: always
     network_mode: host
