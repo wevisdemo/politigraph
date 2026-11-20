@@ -43,7 +43,7 @@ services:
         max-file: '5'
 
   openobserve:
-    image: public.ecr.aws/zinclabs/openobserve:v1.0.3
+    image: public.ecr.aws/zinclabs/openobserve:v1.1.2
     container_name: openobserve
     restart: always
     network_mode: host
