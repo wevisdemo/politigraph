@@ -1,8 +1,12 @@
 <script setup lang="ts">
-import type { Link } from '@politigraph/graphql/genql';
+import type {
+	PublishStatus,
+	VoteEventUpdateInput,
+} from '@politigraph/graphql/genql';
 import { useForm } from '@tanstack/vue-form';
 import { voteEventTypes } from '~/constants/vote-event';
 import { withStartDate } from '~/utils/date';
+import type { UpdateFields } from '~/utils/update-input';
 import { validateVotes } from '~/utils/votes';
 import { diff } from 'radash';
 
@@ -100,6 +104,21 @@ const defaultValues = reactive({
 	publish_status: computed(() => voteEventData?.value?.publish_status),
 });
 
+const voteEventFields = [
+	'title',
+	'nickname',
+	'classification',
+	'start_date',
+	'end_date',
+	'result',
+	'description',
+	'disagree_count',
+	'agree_count',
+	'abstain_count',
+	'novote_count',
+	'publish_status',
+] as const satisfies UpdateFields<VoteEventUpdateInput>;
+
 const voteEventFormInput = useForm({
 	defaultValues,
 	onSubmit: async ({ value }) => {
@@ -116,110 +135,50 @@ const voteEventFormInput = useForm({
 			);
 		}
 
-		const deletedLinkIds: string[] = defaultValues.links
-			.filter(
-				(oldLink) => !value.links.some((newLink) => oldLink.id === newLink.id),
-			)
-			.map((link) => link.id);
-		const createdLinks: { node: Pick<Link, 'note' | 'url'> }[] = value.links
-			.filter(
-				(newLink) =>
-					!defaultValues.links.some((oldLink) => oldLink.id === newLink.id),
-			)
-			.map(({ note, url }) => ({ node: { note, url } }));
-		const updatedLinks = value.links.filter((newLink) =>
-			defaultValues.links.some(
-				(oldLink) =>
-					oldLink.id === newLink.id &&
-					(oldLink.note !== newLink.note || oldLink.url !== newLink.url),
+		const links = diffLinks(defaultValues.links, value.links);
+		const voteEventUpdate = {
+			...changedSets(
+				defaultValues,
+				{
+					...value,
+					classification: value.classification || null,
+					disagree_count: Number(value.disagree_count),
+					agree_count: Number(value.agree_count),
+					abstain_count: Number(value.abstain_count),
+					novote_count: Number(value.novote_count),
+					publish_status: (voteValidationResult.value?.errors.length
+						? 'ERROR'
+						: value.publish_status === 'PUBLISHED'
+							? 'PUBLISHED'
+							: 'UNPUBLISHED') as PublishStatus,
+				},
+				voteEventFields,
 			),
-		);
+			organizations: relationUpdate(
+				organizationsConnect,
+				organizationDisconnect,
+			),
+			links: linksUpdate(links),
+		};
 
-		await graphqlClient.mutation({
-			updateVoteEvents: {
-				__args: {
-					where: {
-						id: { eq: route.params.id as string },
+		if (hasChanges(voteEventUpdate)) {
+			await graphqlClient.mutation({
+				updateVoteEvents: {
+					__args: {
+						where: { id: { eq: route.params.id as string } },
+						update: voteEventUpdate,
 					},
-					update: {
-						title: { set: value.title },
-						nickname: { set: value.nickname },
-						classification: { set: value.classification || null },
-						start_date: { set: value.start_date },
-						end_date: { set: value.end_date },
-						result: { set: value.result },
-						description: { set: value.description },
-						disagree_count: { set: Number(value.disagree_count) },
-						agree_count: { set: Number(value.agree_count) },
-						abstain_count: { set: Number(value.abstain_count) },
-						novote_count: { set: Number(value.novote_count) },
-						publish_status: {
-							set: voteValidationResult.value?.errors.length
-								? 'ERROR'
-								: value.publish_status === 'PUBLISHED'
-									? 'PUBLISHED'
-									: 'UNPUBLISHED',
-						},
-						organizations: [
-							{
-								connect: [
-									{
-										where: {
-											node: {
-												id: { in: organizationsConnect },
-											},
-										},
-									},
-								],
-								disconnect: [
-									{
-										where: {
-											node: {
-												id: { in: organizationDisconnect },
-											},
-										},
-									},
-								],
-							},
-						],
-						links: [
-							{
-								delete: [
-									{
-										where: {
-											node: {
-												id: { in: deletedLinkIds },
-											},
-										},
-									},
-								],
-								create: createdLinks,
-							},
-						],
-					},
+					voteEvents: { id: true },
 				},
-				voteEvents: {
-					id: true,
-				},
-			},
-		});
+			});
+		}
 
 		await Promise.all(
-			updatedLinks.map(({ id, ...data }) =>
+			links.updates.map(({ id, update }) =>
 				graphqlClient.mutation({
 					updateLinks: {
-						__args: {
-							where: {
-								id: { eq: id },
-							},
-							update: {
-								note: { set: data.note },
-								url: { set: data.url },
-							},
-						},
-						links: {
-							id: true,
-						},
+						__args: { where: { id: { eq: id } }, update },
+						links: { id: true },
 					},
 				}),
 			),

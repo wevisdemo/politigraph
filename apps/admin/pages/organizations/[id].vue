@@ -3,10 +3,13 @@ import {
 	type Link,
 	type Membership,
 	type Organization,
+	type OrganizationUpdateInput,
 	type Post,
+	type PostUpdateInput,
 } from '@politigraph/graphql/genql';
 import type { OrganizationDetailProps } from '~/components/organization/detail.vue';
 import type { MembershipProp } from '~/types/membership';
+import type { UpdateFields } from '~/utils/update-input';
 import { diff } from 'radash';
 
 definePageMeta({
@@ -48,6 +51,7 @@ const originalPosts = ref<
 		memberships?: MembershipProp[];
 	})[]
 >([]);
+const originalOrganization = ref<Partial<Organization>>();
 const originalLinks = ref<Pick<Link, 'id' | 'note' | 'url'>[]>([]);
 const originalMemberships = ref<Partial<Membership>[] | null>(null);
 
@@ -165,6 +169,7 @@ const { data: organizationData, refresh: refreshOrganizationDetail } =
 
 			originalParentIds.value = organization.parents.map((parent) => parent.id);
 			originalChildIds.value = organization.children.map((child) => child.id);
+			originalOrganization.value = JSON.parse(JSON.stringify(organization));
 			originalLinks.value = JSON.parse(JSON.stringify(organization.links));
 			originalMemberships.value = JSON.parse(
 				JSON.stringify(organization.memberships),
@@ -322,6 +327,22 @@ function getOrganizationTypePlural(type: string): string {
 	return lower.endsWith('y') ? lower.slice(0, -1) + 'ies' : lower + 's';
 }
 
+const organizationFields = [
+	'name',
+	'name_en',
+	'description',
+	'classification',
+	'founding_date',
+	'dissolution_date',
+	'color',
+	'image',
+] as const satisfies UpdateFields<OrganizationUpdateInput>;
+const postFields = [
+	'role',
+	'start_date',
+	'end_date',
+] as const satisfies UpdateFields<PostUpdateInput>;
+
 const saveChanges = async () => {
 	if (!organizationData.value) return;
 
@@ -355,99 +376,29 @@ const saveChanges = async () => {
 		const childDisconnectIds = diff(originalChildIds.value, nextChildIds);
 		const childConnectIds = diff(nextChildIds, originalChildIds.value);
 
-		const linksToCreate = organizationData.value.links.filter(
-			(link) => !link.id,
-		);
-		const linksToUpdate = organizationData.value.links.filter(
-			(link) => link.id,
-		);
-		const linksToDelete = originalLinks.value.filter(
-			(ol) => !organizationData.value?.links.some((el) => el.id === ol.id),
-		);
+		const links = diffLinks(originalLinks.value, organizationData.value.links);
+		const organizationUpdate = {
+			...changedSets(
+				originalOrganization.value,
+				organizationData.value,
+				organizationFields,
+			),
+			links: linksUpdate(links),
+			parents: relationUpdate(parentConnectIds, parentDisconnectIds),
+			children: relationUpdate(childConnectIds, childDisconnectIds),
+		};
 
-		await graphqlClient.mutation({
-			updateOrganizations: {
-				__args: {
-					where: {
-						id: { eq: organizationData.value.id },
+		if (hasChanges(organizationUpdate)) {
+			await graphqlClient.mutation({
+				updateOrganizations: {
+					__args: {
+						where: { id: { eq: organizationData.value.id } },
+						update: organizationUpdate,
 					},
-					update: {
-						name: { set: organizationData.value.name },
-						name_en: { set: organizationData.value.name_en },
-						description: { set: organizationData.value.description },
-						classification: { set: organizationData.value.classification },
-						founding_date: { set: organizationData.value.founding_date },
-						dissolution_date: { set: organizationData.value.dissolution_date },
-						color: { set: organizationData.value.color },
-						image: {
-							set: organizationData.value.image,
-						},
-						links: [
-							{
-								create: linksToCreate.map(({ note, url }) => ({
-									node: { note, url },
-								})),
-							},
-						],
-						parents: [
-							{
-								connect: parentConnectIds.length
-									? [
-											{
-												where: {
-													node: {
-														id: { in: parentConnectIds },
-													},
-												},
-											},
-										]
-									: [],
-								disconnect: parentDisconnectIds.length
-									? [
-											{
-												where: {
-													node: {
-														id: { in: parentDisconnectIds },
-													},
-												},
-											},
-										]
-									: [],
-							},
-						],
-						children: [
-							{
-								connect: childConnectIds.length
-									? [
-											{
-												where: {
-													node: {
-														id: { in: childConnectIds },
-													},
-												},
-											},
-										]
-									: [],
-								disconnect: childDisconnectIds.length
-									? [
-											{
-												where: {
-													node: {
-														id: { in: childDisconnectIds },
-													},
-												},
-											},
-										]
-									: [],
-							},
-						],
-					},
+					organizations: { id: true },
 				},
-				organizations: {
-					id: true,
-				},
-			},
-		});
+			});
+		}
 
 		const activePosts = organizationData.value.posts.filter(
 			(post) => post.mode !== 'deleted',
@@ -457,16 +408,10 @@ const saveChanges = async () => {
 				post.mode === 'new' ||
 				!originalPosts.value.some((orig) => orig.id === post.id),
 		);
-		const postsToUpdate = activePosts.filter((post) => {
+		const postsToUpdate = activePosts.flatMap((post) => {
 			const original = originalPosts.value.find((orig) => orig.id === post.id);
-			if (!original) return false;
-
-			return (
-				post.mode === 'edited' ||
-				post.role !== original.role ||
-				post.start_date !== original.start_date ||
-				post.end_date !== original.end_date
-			);
+			const update = changedSets(original, post, postFields);
+			return original && hasChanges(update) ? [{ id: post.id, update }] : [];
 		});
 		const postsToDelete = originalPosts.value.filter(
 			(orig) => !activePosts.some((post) => post.id === orig.id),
@@ -513,17 +458,10 @@ const saveChanges = async () => {
 					},
 				}),
 			),
-			...postsToUpdate.map((post) =>
+			...postsToUpdate.map(({ id, update }) =>
 				graphqlClient.mutation({
 					updatePosts: {
-						__args: {
-							where: { id: { eq: post.id } },
-							update: {
-								role: { set: post.role },
-								start_date: { set: post.start_date },
-								end_date: { set: post.end_date },
-							},
-						},
+						__args: { where: { id: { eq: id } }, update },
 						posts: { id: true },
 					},
 				}),
@@ -540,23 +478,11 @@ const saveChanges = async () => {
 					},
 				}),
 			),
-			...linksToUpdate.map((link) =>
+			...links.updates.map(({ id, update }) =>
 				graphqlClient.mutation({
 					updateLinks: {
-						__args: {
-							where: { id: { eq: link.id } },
-							update: { note: { set: link.note }, url: { set: link.url } },
-						},
+						__args: { where: { id: { eq: id } }, update },
 						links: { id: true },
-					},
-				}),
-			),
-			...linksToDelete.map((link) =>
-				graphqlClient.mutation({
-					deleteLinks: {
-						__args: { where: { id: { eq: link.id } } },
-						nodesDeleted: true,
-						relationshipsDeleted: true,
 					},
 				}),
 			),

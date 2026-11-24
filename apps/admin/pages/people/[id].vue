@@ -3,9 +3,12 @@ import {
 	enumPublishStatus,
 	type Link,
 	type Membership,
+	type Person,
+	type PersonUpdateInput,
 } from '@politigraph/graphql/genql';
 import { PeopleDetail } from '#components';
 import type { MembershipProp } from '~/types/membership';
+import type { UpdateFields } from '~/utils/update-input';
 
 definePageMeta({
 	layout: 'admin-layout',
@@ -17,6 +20,7 @@ const graphqlClient = useGraphqlClient();
 const { previewImage, setImageBlob, uploadImage, clearImage } =
 	useImageUpload();
 
+const originalPerson = ref<Partial<Person>>();
 const originalMemberships = ref<Partial<Membership>[] | null>(null);
 const originalLinks = ref<Pick<Link, 'id' | 'note' | 'url'>[]>([]);
 
@@ -76,6 +80,7 @@ const { data: peopleData, refresh: refreshPeopleDetail } =
 				},
 			},
 		});
+		originalPerson.value = JSON.parse(JSON.stringify(people[0]));
 		originalMemberships.value = JSON.parse(
 			JSON.stringify(people[0].memberships),
 		);
@@ -102,6 +107,21 @@ const { buildMembershipMutations } = useMembershipMutations({
 	originalMemberships,
 });
 
+const personFields = [
+	'prefix',
+	'firstname',
+	'middlename',
+	'lastname',
+	'firstname_en',
+	'middlename_en',
+	'lastname_en',
+	'gender',
+	'birth_date',
+	'educations',
+	'previous_occupations',
+	'image',
+] as const satisfies UpdateFields<PersonUpdateInput>;
+
 const saveChanges = async () => {
 	if (!peopleData.value) return;
 
@@ -127,76 +147,37 @@ const saveChanges = async () => {
 			return;
 		}
 
-		const linksToCreate = peopleData.value.links.filter((l) => !l.id);
+		const links = diffLinks(originalLinks.value, peopleData.value.links);
+		const personUpdate = {
+			...changedSets(originalPerson.value, peopleData.value, personFields),
+			links: linksUpdate(links),
+		};
 
-		await graphqlClient.mutation({
-			updatePeople: {
-				__args: {
-					where: {
-						id: { eq: peopleData.value?.id as string },
+		if (hasChanges(personUpdate)) {
+			await graphqlClient.mutation({
+				updatePeople: {
+					__args: {
+						where: { id: { eq: peopleData.value.id } },
+						update: personUpdate,
 					},
-					update: {
-						prefix: { set: peopleData.value?.prefix },
-						firstname: { set: peopleData.value?.firstname },
-						middlename: { set: peopleData.value?.middlename },
-						lastname: { set: peopleData.value?.lastname },
-						firstname_en: { set: peopleData.value?.firstname_en },
-						middlename_en: { set: peopleData.value?.middlename_en },
-						lastname_en: { set: peopleData.value?.lastname_en },
-						gender: { set: peopleData.value?.gender },
-						birth_date: { set: peopleData.value?.birth_date },
-						educations: { set: peopleData.value?.educations },
-						previous_occupations: {
-							set: peopleData.value?.previous_occupations,
-						},
-						image: {
-							set: peopleData.value.image,
-						},
-						links: [
-							{
-								create: linksToCreate.map(({ note, url }) => ({
-									node: { note, url },
-								})),
-							},
-						],
+					people: {
+						id: true,
 					},
 				},
-				people: {
-					id: true,
-				},
-			},
-		});
+			});
+		}
 
-		const linksToUpdate = peopleData.value.links.filter((l) => l.id);
-		const linksToDelete = originalLinks.value.filter(
-			(ol) => !peopleData.value?.links.some((el) => el.id === ol.id),
-		);
-
-		const updateLinkPromises = linksToUpdate.map((l) =>
+		const updateLinkPromises = links.updates.map(({ id, update }) =>
 			graphqlClient.mutation({
 				updateLinks: {
-					__args: {
-						where: { id: { eq: l.id } },
-						update: { note: { set: l.note }, url: { set: l.url } },
-					},
+					__args: { where: { id: { eq: id } }, update },
 					links: { id: true },
-				},
-			}),
-		);
-
-		const deleteLinksPromises = linksToDelete.map((l) =>
-			graphqlClient.mutation({
-				deleteLinks: {
-					__args: { where: { id: { eq: l.id } } },
-					nodesDeleted: true,
-					relationshipsDeleted: true,
 				},
 			}),
 		);
 
 		await Promise.all([
 			...updateLinkPromises,
-			...deleteLinksPromises,
 			...buildMembershipMutations(editableMemberships.value),
 		]);
 		await refreshPeopleDetail();

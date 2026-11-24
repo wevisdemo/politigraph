@@ -3,8 +3,11 @@ import type {
 	OrganizationMember_votesUpdateFieldInput,
 	PersonVotesUpdateFieldInput,
 	Vote,
+	VoteEventUpdateInput,
+	VoteUpdateInput,
 } from '@politigraph/graphql/genql';
 import { AFFILIATION_CELL_KEY, VOTER_CELL_KEY } from '~/constants/votes';
+import type { UpdateFields } from '~/utils/update-input';
 import {
 	getEffectiveAffiliationId,
 	getEffectiveVoterId,
@@ -19,6 +22,13 @@ definePageMeta({
 });
 
 type EditableVoteFields = 'vote_order' | 'badge_number' | 'option';
+
+const voteFields = [
+	'vote_order',
+	'badge_number',
+	'voter_name_raw',
+	'option',
+] as const satisfies UpdateFields<VoteUpdateInput>;
 
 // A nested create slows down with its size: 600 votes take ~45s in one operation, ~1.3s in chunks of 50
 const CREATE_VOTES_CHUNK_SIZE = 50;
@@ -332,6 +342,12 @@ async function onSaveChanges() {
 		(voteEvent.value.publish_status === 'UNPUBLISHED' &&
 			voteValidationResult.value?.errors.length)
 	) {
+		const nextPublishStatus = voteValidationResult.value?.errors.length
+			? 'ERROR'
+			: voteEvent.value.publish_status === 'PUBLISHED'
+				? 'PUBLISHED'
+				: 'UNPUBLISHED';
+
 		await graphqlClient.mutation({
 			updateVoteEvents: {
 				__args: {
@@ -339,13 +355,11 @@ async function onSaveChanges() {
 						id: { eq: voteEvent.value.id },
 					},
 					update: {
-						publish_status: {
-							set: voteValidationResult.value?.errors.length
-								? 'ERROR'
-								: voteEvent.value.publish_status === 'PUBLISHED'
-									? 'PUBLISHED'
-									: 'UNPUBLISHED',
-						},
+						...changedSets(
+							voteEvent.value,
+							{ publish_status: nextPublishStatus },
+							['publish_status'] satisfies UpdateFields<VoteEventUpdateInput>,
+						),
 						...Object.fromEntries(
 							summaryCountKeyChanges.map((key) => [
 								key,
@@ -362,26 +376,23 @@ async function onSaveChanges() {
 	await Promise.all(
 		rowsToPatch
 			.filter((vote) => existingIds.has(vote.id))
-			.map((vote) =>
-				graphqlClient.mutation({
-					updateVotes: {
-						__args: {
-							where: {
-								id: { eq: vote.id },
-							},
-							update: {
-								vote_order: { set: vote.vote_order },
-								badge_number: { set: vote.badge_number },
-								voter_name_raw: { set: vote.voter_name_raw },
-								option: { set: vote.option },
-							},
-						},
-						votes: {
-							id: true,
-						},
-					},
-				}),
-			),
+			.flatMap((vote) => {
+				const update = changedSets(
+					originalVotesMap.value[vote.id],
+					vote,
+					voteFields,
+				);
+				return hasChanges(update)
+					? [
+							graphqlClient.mutation({
+								updateVotes: {
+									__args: { where: { id: { eq: vote.id } }, update },
+									votes: { id: true },
+								},
+							}),
+						]
+					: [];
+			}),
 	);
 
 	const newVotes = rowsToPatch

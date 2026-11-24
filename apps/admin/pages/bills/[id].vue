@@ -1,7 +1,15 @@
 <script setup lang="ts">
-import type { Link } from '@politigraph/graphql/genql';
+import type {
+	BillEnactEventUpdateInput,
+	BillMergeEventUpdateInput,
+	BillRejectEventUpdateInput,
+	BillRoyalAssentEventUpdateInput,
+	BillUpdateInput,
+	BillVoteEventUpdateInput,
+} from '@politigraph/graphql/genql';
 import type { BillForm } from '~/components/bills/detail.vue';
 import type { BillEventForm } from '~/components/bills/events.vue';
+import type { UpdateFields } from '~/utils/update-input';
 import { diff } from 'radash';
 
 definePageMeta({
@@ -197,6 +205,16 @@ watch(
 	{ immediate: true },
 );
 
+const billFields = [
+	'title',
+	'nickname',
+	'classification',
+	'status',
+	'proposal_date',
+	'creator_type',
+	'people_signature_count',
+] as const satisfies UpdateFields<BillUpdateInput>;
+
 async function handleSave() {
 	const prevOrgs = billData.value?.organizations.map((d) => d.id) ?? [];
 	const nextOrgs = form.organizations ?? [];
@@ -237,199 +255,93 @@ async function handleSave() {
 	const coCreatorsDisconnect = diff(prevCoCreators, nextCoCreators);
 	const coCreatorsConnect = diff(nextCoCreators, prevCoCreators);
 
-	const currentLinks = billData.value?.links ?? [];
-	const deletedLinkIds: string[] = currentLinks
-		.filter(
-			(oldLink) => !form.links.some((newLink) => oldLink.id === newLink.id),
-		)
-		.map((link) => link.id);
-	const createdLinks: { node: Pick<Link, 'note' | 'url'> }[] = form.links
-		.filter(
-			(newLink) => !currentLinks.some((oldLink) => oldLink.id === newLink.id),
-		)
-		.map(({ note, url }) => ({ node: { note, url } }));
+	const links = diffLinks(billData.value?.links ?? [], form.links);
+	const creators = {
+		Person: relationUpdate(creatorPersonConnect, creatorPersonDisconnect),
+		Organization: relationUpdate(
+			creatorOrganizationConnect,
+			creatorOrganizationDisconnect,
+		),
+	};
+	const billUpdate = {
+		...changedSets(billData.value, form, billFields),
+		links: linksUpdate(links),
+		organizations: relationUpdate(organizationsConnect, organizationDisconnect),
+		creators: hasChanges(creators) ? creators : undefined,
+		co_creators: relationUpdate(coCreatorsConnect, coCreatorsDisconnect),
+	};
 
-	const originalLinkIds = new Set(billData.value?.links.map((l) => l.id) ?? []);
-
-	const updatedLinks =
-		form.links?.filter((l) => originalLinkIds.has(l.id)) ?? [];
-
-	await graphqlClient.mutation({
-		updateBills: {
-			__args: {
-				where: { id: { eq: route.params.id as string } },
-				update: {
-					title: { set: form.title },
-					nickname: { set: form.nickname },
-					classification: { set: form.classification },
-					status: { set: form.status },
-					proposal_date: { set: form.proposal_date },
-					creator_type: { set: form.creator_type },
-					people_signature_count: { set: form.people_signature_count },
-					links: [
-						{
-							delete: [
-								{
-									where: {
-										node: {
-											id: { in: deletedLinkIds },
-										},
-									},
-								},
-							],
-							create: createdLinks,
-						},
-					],
-					organizations: [
-						{
-							connect: [
-								{
-									where: {
-										node: {
-											id: { in: organizationsConnect },
-										},
-									},
-								},
-							],
-							disconnect: [
-								{
-									where: {
-										node: {
-											id: { in: organizationDisconnect },
-										},
-									},
-								},
-							],
-						},
-					],
-					creators: {
-						Person: [
-							{
-								connect: creatorPersonConnect.map((id) => ({
-									where: {
-										node: {
-											id: { eq: id },
-										},
-									},
-								})),
-								disconnect: creatorPersonDisconnect.map((id) => ({
-									where: {
-										node: {
-											id: { eq: id },
-										},
-									},
-								})),
-							},
-						],
-						Organization: [
-							{
-								connect: creatorOrganizationConnect.map((id) => ({
-									where: {
-										node: {
-											id: { eq: id },
-										},
-									},
-								})),
-								disconnect: creatorOrganizationDisconnect.map((id) => ({
-									where: {
-										node: {
-											id: { eq: id },
-										},
-									},
-								})),
-							},
-						],
-					},
-					co_creators: [
-						{
-							connect: [
-								{
-									where: {
-										node: {
-											id: { in: coCreatorsConnect },
-										},
-									},
-								},
-							],
-							disconnect: [
-								{
-									where: {
-										node: {
-											id: { in: coCreatorsDisconnect },
-										},
-									},
-								},
-							],
-						},
-					],
+	if (hasChanges(billUpdate)) {
+		await graphqlClient.mutation({
+			updateBills: {
+				__args: {
+					where: { id: { eq: route.params.id as string } },
+					update: billUpdate,
 				},
+				bills: { id: true },
 			},
-			bills: {
-				id: true,
-			},
-		},
-	});
+		});
+	}
 
 	await Promise.all(
-		updatedLinks.map(({ id, ...data }) =>
+		links.updates.map(({ id, update }) =>
 			graphqlClient.mutation({
 				updateLinks: {
-					__args: {
-						where: {
-							id: { eq: id },
-						},
-						update: {
-							note: { set: data.note },
-							url: { set: data.url },
-						},
-					},
-					links: {
-						id: true,
-					},
+					__args: { where: { id: { eq: id } }, update },
+					links: { id: true },
 				},
 			}),
 		),
 	);
 
 	for (const event of events.value) {
-		const baseUpdate = {
-			description: { set: event.description },
-			start_date: { set: event.start_date },
-			end_date: { set: event.end_date },
-			publish_status: { set: event.publish_status },
-		};
+		const originalEvent = billData.value?.events?.find(
+			(e) => e.id === event.id,
+		);
 		const where = { id: { eq: event.id } };
+		const baseKeys = [
+			'description',
+			'start_date',
+			'end_date',
+			'publish_status',
+		] as const satisfies UpdateFields<
+			| BillEnactEventUpdateInput
+			| BillMergeEventUpdateInput
+			| BillRejectEventUpdateInput
+			| BillRoyalAssentEventUpdateInput
+			| BillVoteEventUpdateInput
+		>;
 
 		if (event.__typename === 'BillEnactEvent') {
-			await graphqlClient.mutation({
-				updateBillEnactEvents: {
-					__args: {
-						where,
-						update: {
-							...baseUpdate,
-							title: { set: event.title },
-						},
+			const update = changedSets(originalEvent, event, [
+				...baseKeys,
+				'title',
+			] satisfies UpdateFields<BillEnactEventUpdateInput>);
+			if (hasChanges(update)) {
+				await graphqlClient.mutation({
+					updateBillEnactEvents: {
+						__args: { where, update },
+						billEnactEvents: { id: true },
 					},
-					billEnactEvents: { id: true },
-				},
-			});
+				});
+			}
 		} else if (event.__typename === 'BillMergeEvent') {
-			const originalEvent = billData.value?.events?.find(
-				(e) => e.id === event.id,
-			);
 			const originalMainBillId =
 				originalEvent?.__typename === 'BillMergeEvent'
 					? originalEvent.main_bill?.id
 					: undefined;
 			const newMainBillId = event.main_bill?.id;
 			const eventWhere = { where: { node: { id: { eq: event.id } } } };
+			const update = changedSets(originalEvent, event, baseKeys);
 
-			await graphqlClient.mutation({
-				updateBillMergeEvents: {
-					__args: { where, update: baseUpdate },
-					billMergeEvents: { id: true },
-				},
-			});
+			if (hasChanges(update)) {
+				await graphqlClient.mutation({
+					updateBillMergeEvents: {
+						__args: { where, update },
+						billMergeEvents: { id: true },
+					},
+				});
+			}
 
 			if (newMainBillId !== originalMainBillId) {
 				await graphqlClient.mutation({
@@ -459,85 +371,56 @@ async function handleSave() {
 				}
 			}
 		} else if (event.__typename === 'BillRejectEvent') {
-			await graphqlClient.mutation({
-				updateBillRejectEvents: {
-					__args: {
-						where,
-						update: {
-							...baseUpdate,
-							reject_reason: { set: event.reject_reason },
-						},
+			const update = changedSets(originalEvent, event, [
+				...baseKeys,
+				'reject_reason',
+			] satisfies UpdateFields<BillRejectEventUpdateInput>);
+			if (hasChanges(update)) {
+				await graphqlClient.mutation({
+					updateBillRejectEvents: {
+						__args: { where, update },
+						billRejectEvents: { id: true },
 					},
-					billRejectEvents: { id: true },
-				},
-			});
+				});
+			}
 		} else if (event.__typename === 'BillRoyalAssentEvent') {
-			await graphqlClient.mutation({
-				updateBillRoyalAssentEvents: {
-					__args: {
-						where,
-						update: {
-							...baseUpdate,
-							result: { set: event.result },
-						},
+			const update = changedSets(originalEvent, event, [
+				...baseKeys,
+				'result',
+			] satisfies UpdateFields<BillRoyalAssentEventUpdateInput>);
+			if (hasChanges(update)) {
+				await graphqlClient.mutation({
+					updateBillRoyalAssentEvents: {
+						__args: { where, update },
+						billRoyalAssentEvents: { id: true },
 					},
-					billRoyalAssentEvents: { id: true },
-				},
-			});
+				});
+			}
 		} else if (event.__typename === 'BillVoteEvent') {
-			const originalEvent = billData.value?.events?.find(
-				(e) => e.id === event.id,
-			);
 			const originalVoteEventId =
 				originalEvent?.__typename === 'BillVoteEvent'
 					? originalEvent.vote_events?.[0]?.id
 					: undefined;
 			const newVoteEventId = event.vote_events?.[0]?.id;
+			const update = {
+				...changedSets(originalEvent, event, baseKeys),
+				vote_events:
+					newVoteEventId !== originalVoteEventId
+						? relationUpdate(
+								newVoteEventId ? [newVoteEventId] : [],
+								originalVoteEventId ? [originalVoteEventId] : [],
+							)
+						: undefined,
+			};
 
-			await graphqlClient.mutation({
-				updateBillVoteEvents: {
-					__args: {
-						where,
-						update: {
-							...baseUpdate,
-							vote_events: [
-								{
-									connect:
-										newVoteEventId && newVoteEventId !== originalVoteEventId
-											? [
-													{
-														where: {
-															node: {
-																id: {
-																	eq: newVoteEventId,
-																},
-															},
-														},
-													},
-												]
-											: [],
-									disconnect:
-										originalVoteEventId &&
-										originalVoteEventId !== newVoteEventId
-											? [
-													{
-														where: {
-															node: {
-																id: {
-																	eq: originalVoteEventId,
-																},
-															},
-														},
-													},
-												]
-											: [],
-								},
-							],
-						},
+			if (hasChanges(update)) {
+				await graphqlClient.mutation({
+					updateBillVoteEvents: {
+						__args: { where, update },
+						billVoteEvents: { id: true },
 					},
-					billVoteEvents: { id: true },
-				},
-			});
+				});
+			}
 		}
 	}
 

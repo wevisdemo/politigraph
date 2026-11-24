@@ -1,7 +1,20 @@
-import type { Membership } from '@politigraph/graphql/genql';
+import type {
+	Membership,
+	MembershipUpdateInput,
+} from '@politigraph/graphql/genql';
 import { RepresentativeLabel } from '~/types/membership';
 import type { MembershipProp } from '~/types/membership';
+import type { UpdateFields } from '~/utils/update-input';
 import type { Ref } from 'vue';
+
+const membershipFields = [
+	'start_date',
+	'end_date',
+	'label',
+	'province',
+	'district_number',
+	'list_number',
+] as const satisfies UpdateFields<MembershipUpdateInput>;
 
 type OriginalMembership = Partial<Membership> &
 	Pick<MembershipProp, 'memberType' | 'mode'>;
@@ -160,20 +173,36 @@ export function useMembershipMutations(args: {
 					(s) => s.id === membership.id,
 				);
 
-				const originalLinkIds = new Set(
-					originalMembership?.links?.map((l) => l.id) ?? [],
+				const links = diffLinks(
+					originalMembership?.links ?? [],
+					membership.links ?? [],
 				);
-				const currentLinkIds = new Set(
-					membership.links?.map((l) => l.id) ?? [],
-				);
-
-				const newLinks =
-					membership.links?.filter((l) => !originalLinkIds.has(l.id)) ?? [];
-				const deletedLinks =
-					originalMembership?.links?.filter((l) => !currentLinkIds.has(l.id)) ??
-					[];
-				const updatedLinks =
-					membership.links?.filter((l) => originalLinkIds.has(l.id)) ?? [];
+				const linkOperations = [
+					...(links.create.length ? [{ create: links.create }] : []),
+					...(links.deleteIds.length
+						? [{ delete: nodeIdsWhere(links.deleteIds) }]
+						: []),
+					...links.updates.map(({ id, update: node }) => ({
+						update: { where: { node: { id: { eq: id } } }, node },
+					})),
+				];
+				const isDistrict = membership.label === RepresentativeLabel.District;
+				const update = {
+					...changedSets(
+						originalMembership,
+						{
+							...membership,
+							province: isDistrict ? membership.province : null,
+							district_number: isDistrict ? membership.district_number : null,
+							list_number:
+								membership.label === RepresentativeLabel.Partylist
+									? membership.list_number
+									: null,
+						},
+						membershipFields,
+					),
+					links: linkOperations.length ? linkOperations : undefined,
+				};
 
 				const originalPostId = originalMembership?.post?.id;
 				const currentPostId = membership.post?.id;
@@ -185,67 +214,16 @@ export function useMembershipMutations(args: {
 					currentMemberId && currentMemberId !== originalMemberId;
 
 				return [
-					graphqlClient.mutation({
-						updateMemberships: {
-							__args: {
-								where: { id: { eq: membership.id } },
-								update: {
-									start_date: { set: membership.start_date },
-									end_date: { set: membership.end_date },
-									label: { set: membership.label },
-									province: {
-										set:
-											membership.label === RepresentativeLabel.District
-												? membership.province
-												: null,
+					...(hasChanges(update)
+						? [
+								graphqlClient.mutation({
+									updateMemberships: {
+										__args: { where: { id: { eq: membership.id } }, update },
+										memberships: { id: true },
 									},
-									district_number: {
-										set:
-											membership.label === RepresentativeLabel.District
-												? membership.district_number
-												: null,
-									},
-									list_number: {
-										set:
-											membership.label === RepresentativeLabel.Partylist
-												? membership.list_number
-												: null,
-									},
-									links: [
-										...newLinks.map((link) => ({
-											create: [
-												{
-													node: {
-														url: link.url,
-														note: link.note,
-													},
-												},
-											],
-										})),
-										...deletedLinks.map((link) => ({
-											delete: [{ where: { node: { id: { eq: link.id } } } }],
-										})),
-										...updatedLinks.map((link) => ({
-											update: {
-												where: {
-													node: {
-														id: {
-															eq: link.id,
-														},
-													},
-												},
-												node: {
-													url: { set: link.url },
-													note: { set: link.note },
-												},
-											},
-										})),
-									],
-								},
-							},
-							memberships: { id: true },
-						},
-					}),
+								}),
+							]
+						: []),
 					...(postChanged
 						? [
 								relinkMembership(
