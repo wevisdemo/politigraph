@@ -5,6 +5,7 @@ import { assertNoPendingMigrations } from '@politigraph/graphql/migrate';
 import { initNeo4jGraphql } from '@politigraph/graphql/neo4j-graphql';
 import { Elysia, type Context } from 'elysia';
 import { MAX_QUERY_TOKENS } from './constants/graphql';
+import { auditLogPlugin } from './plugins/audit-log';
 import { hideUnpublishedPlugin } from './plugins/hide-unpublished';
 import { usagePlugin } from './plugins/usage';
 import { apollo } from './routes/graphql';
@@ -49,7 +50,12 @@ const app = new Elysia()
 		apollo({
 			schema,
 			...armorProtection,
-			plugins: [...armorPlugins, hideUnpublishedPlugin, usagePlugin],
+			plugins: [
+				...armorPlugins,
+				hideUnpublishedPlugin,
+				usagePlugin,
+				auditLogPlugin,
+			],
 			allowBatchedHttpRequests: true,
 			maxBatching: 5,
 			introspection: true,

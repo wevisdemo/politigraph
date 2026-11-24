@@ -1,12 +1,11 @@
 import { inspect } from 'node:util';
 import { apiKey } from '@better-auth/api-key';
-import { databaseUrl } from '@politigraph/config/postgres';
 import { serverConfig } from '@politigraph/config/server';
 import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { admin, jwt, openAPI } from 'better-auth/plugins';
-import { drizzle } from 'drizzle-orm/bun-sql';
 import * as schema from './auth-schema';
+import { db } from './db';
 
 export const trustedOrigins = [
 	'http://localhost:3000',
@@ -17,8 +16,6 @@ export const trustedOrigins = [
 ];
 
 const EMAIL_PATTERN = /[\w.%+-]+@[\w-]+(\.[\w-]+)+/g;
-
-const db = drizzle(databaseUrl);
 
 export const auth = betterAuth({
 	basePath: 'auth',
@@ -35,7 +32,12 @@ export const auth = betterAuth({
 				enabled: false,
 			},
 		}),
-		jwt(),
+		jwt({
+			jwt: {
+				// Only the id: an API key's session carries the raw key as its token
+				definePayload: ({ user, session }) => ({ ...user, sid: session.id }),
+			},
+		}),
 		...(!serverConfig.isProduction ? [openAPI()] : []),
 	],
 	emailAndPassword: {

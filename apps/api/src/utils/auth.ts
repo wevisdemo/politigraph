@@ -1,10 +1,9 @@
 import { auth } from '@politigraph/auth/auth';
-import { Context } from 'elysia';
 
 export async function getJwtToken(
 	headers: Headers,
 	origin: string,
-): Promise<Context | null> {
+): Promise<{ token: string } | null> {
 	const apiKey = headers.get('x-api-key');
 	const cookie = headers.get('cookie');
 

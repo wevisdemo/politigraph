@@ -29,6 +29,13 @@
 			"when": 1790332198293,
 			"tag": "0003_apikey_reference_id",
 			"breakpoints": true
+		},
+		{
+			"idx": 4,
+			"version": "7",
+			"when": 1795515240111,
+			"tag": "0004_audit_logs",
+			"breakpoints": true
 		}
 	]
 }
