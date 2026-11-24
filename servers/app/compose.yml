@@ -83,7 +83,7 @@ services:
       OPENOBSERVE_PASSWORD: ${OPENOBSERVE_PASSWORD:?}
 
   beszel-agent:
-    image: henrygd/beszel-agent:0.16
+    image: henrygd/beszel-agent:0.21
     container_name: beszel-agent
     restart: always
     privileged: true
