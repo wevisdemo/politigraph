@@ -1,10 +1,9 @@
 import { randomBytes } from 'node:crypto';
-import { databaseUrl } from '@politigraph/config/postgres';
 import { hashPassword } from 'better-auth/crypto';
 import { eq } from 'drizzle-orm';
-import { drizzle } from 'drizzle-orm/bun-sql';
-import { auth } from './auth';
-import * as schema from './auth-schema';
+import { auth } from '../src/auth';
+import { db } from '../src/db';
+import * as schema from '../src/schema/auth';
 
 const SEED_EMAIL = 'admin@wevis.info';
 
@@ -24,8 +23,6 @@ async function seed() {
 			'Refusing to seed in production. Set FORCE_SEED=true to override.',
 		);
 	}
-
-	const db = drizzle(databaseUrl);
 
 	try {
 		const [existing] = await db

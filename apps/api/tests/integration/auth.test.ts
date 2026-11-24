@@ -1,6 +1,6 @@
 import { auth } from '@politigraph/auth/auth';
-import { users } from '@politigraph/auth/auth-schema';
 import { db } from '@politigraph/auth/db';
+import { users } from '@politigraph/auth/schema/auth';
 import { afterAll, describe, expect, test } from 'bun:test';
 import { getJwtToken } from '../../src/utils/auth';
 

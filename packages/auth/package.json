@@ -2,12 +2,18 @@
 	"name": "@politigraph/auth",
 	"type": "module",
 	"private": true,
+	"exports": {
+		"./auth": "./src/auth.ts",
+		"./client": "./src/client.ts",
+		"./db": "./src/db.ts",
+		"./schema/*": "./src/schema/*.ts"
+	},
 	"scripts": {
-		"generate": "bun run --bun better-auth generate -y && bun run --bun drizzle-kit generate",
-		"migrate": "bun migrate.ts",
+		"generate": "bun run --bun better-auth generate -y --config src/auth.ts --output src/schema/auth.ts && bun run --bun drizzle-kit generate",
+		"migrate": "bun scripts/migrate.ts",
 		"lint": "eslint . --fix",
 		"check": "tsc --noEmit",
-		"seed": "bun run seed.ts"
+		"seed": "bun run scripts/seed.ts"
 	},
 	"dependencies": {
 		"@better-auth/api-key": "^1.7.18",

@@ -1,6 +1,6 @@
 import { makeExecutableSchema } from '@graphql-tools/schema';
-import { auditLogs } from '@politigraph/auth/audit-schema';
 import { db } from '@politigraph/auth/db';
+import { auditLogs } from '@politigraph/auth/schema/audit';
 import { beforeEach, describe, expect, spyOn, test } from 'bun:test';
 import { Elysia } from 'elysia';
 import { auditLogPlugin } from '../../src/plugins/audit-log';

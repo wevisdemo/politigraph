@@ -6,7 +6,7 @@ import {
 	UserIdentification16,
 	UserMilitary16,
 } from '@carbon/icons-vue';
-import type { UserWithRole } from '@politigraph/auth/betterauth';
+import type { UserWithRole } from '@politigraph/auth/client';
 import { formatDate } from '~/utils/date';
 
 definePageMeta({

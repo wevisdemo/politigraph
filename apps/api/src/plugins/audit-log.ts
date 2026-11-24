@@ -1,6 +1,6 @@
 import type { ApolloServerPlugin, BaseContext } from '@apollo/server';
-import { auditLogs } from '@politigraph/auth/audit-schema';
 import { db } from '@politigraph/auth/db';
+import { auditLogs } from '@politigraph/auth/schema/audit';
 import {
 	Kind,
 	valueFromASTUntyped,

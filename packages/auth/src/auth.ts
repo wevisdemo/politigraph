@@ -4,8 +4,8 @@ import { serverConfig } from '@politigraph/config/server';
 import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { admin, jwt, openAPI } from 'better-auth/plugins';
-import * as schema from './auth-schema';
 import { db } from './db';
+import * as schema from './schema/auth';
 
 export const trustedOrigins = [
 	'http://localhost:3000',

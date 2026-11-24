@@ -3,7 +3,7 @@ import {
 	apiKeyClient,
 	createAuthClient,
 	type UserWithRole,
-} from '@politigraph/auth/betterauth';
+} from '@politigraph/auth/client';
 import { getSafeRedirectPath } from '~/utils/auth-redirect';
 
 export const isValidatingSession = ref(true);
