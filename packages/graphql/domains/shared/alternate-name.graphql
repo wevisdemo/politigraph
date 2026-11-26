@@ -3,7 +3,7 @@
 """
 type AlternateName @node {
 	"""
-	ID ที่มาจากชื่อองค์กร
+	ID แบบสุ่ม
 	"""
 	id: ID! @id
 	"""
