@@ -1,0 +1,536 @@
+{
+	"version": 8,
+	"dashboardId": "politigraph-usage",
+	"title": "Politigraph Usage",
+	"description": "API usage (api_usage stream) and nginx traffic",
+	"defaultDatetimeDuration": { "type": "relative", "relativeTimePeriod": "7d" },
+	"variables": { "showDynamicFilters": false, "list": [] },
+	"tabs": [
+		{
+			"tabId": "usage",
+			"name": "Usage",
+			"panels": [
+				{
+					"id": "kpi-queries",
+					"type": "metric",
+					"title": "GraphQL queries",
+					"description": "",
+					"queryType": "sql",
+					"queries": [
+						{
+							"query": "SELECT COUNT(*) as y_axis_1 FROM \"api_usage\" WHERE event = 'GraphQL Query'",
+							"vrlFunctionQuery": "",
+							"customQuery": true,
+							"fields": {
+								"stream": "api_usage",
+								"stream_type": "logs",
+								"x": [],
+								"y": [
+									{
+										"label": "Queries",
+										"alias": "y_axis_1",
+										"column": "y_axis_1"
+									}
+								],
+								"z": [],
+								"filter": {
+									"filterType": "group",
+									"logicalOperator": "AND",
+									"conditions": []
+								}
+							},
+							"config": { "promql_legend": "" }
+						}
+					],
+					"layout": { "x": 0, "y": 0, "w": 48, "h": 8, "i": 0 },
+					"config": { "show_legends": false }
+				},
+				{
+					"id": "kpi-visitors",
+					"type": "metric",
+					"title": "Unique visitors",
+					"description": "",
+					"queryType": "sql",
+					"queries": [
+						{
+							"query": "SELECT COUNT(DISTINCT visitor) as y_axis_1 FROM \"api_usage\"",
+							"vrlFunctionQuery": "",
+							"customQuery": true,
+							"fields": {
+								"stream": "api_usage",
+								"stream_type": "logs",
+								"x": [],
+								"y": [
+									{
+										"label": "Visitors",
+										"alias": "y_axis_1",
+										"column": "y_axis_1"
+									}
+								],
+								"z": [],
+								"filter": {
+									"filterType": "group",
+									"logicalOperator": "AND",
+									"conditions": []
+								}
+							},
+							"config": { "promql_legend": "" }
+						}
+					],
+					"layout": { "x": 48, "y": 0, "w": 48, "h": 8, "i": 1 },
+					"config": { "show_legends": false }
+				},
+				{
+					"id": "kpi-mcp-tools",
+					"type": "metric",
+					"title": "MCP tool calls",
+					"description": "",
+					"queryType": "sql",
+					"queries": [
+						{
+							"query": "SELECT COUNT(*) as y_axis_1 FROM \"api_usage\" WHERE event = 'MCP Tool'",
+							"vrlFunctionQuery": "",
+							"customQuery": true,
+							"fields": {
+								"stream": "api_usage",
+								"stream_type": "logs",
+								"x": [],
+								"y": [
+									{
+										"label": "Calls",
+										"alias": "y_axis_1",
+										"column": "y_axis_1"
+									}
+								],
+								"z": [],
+								"filter": {
+									"filterType": "group",
+									"logicalOperator": "AND",
+									"conditions": []
+								}
+							},
+							"config": { "promql_legend": "" }
+						}
+					],
+					"layout": { "x": 96, "y": 0, "w": 48, "h": 8, "i": 2 },
+					"config": { "show_legends": false }
+				},
+				{
+					"id": "kpi-errors",
+					"type": "metric",
+					"title": "GraphQL queries with errors",
+					"description": "",
+					"queryType": "sql",
+					"queries": [
+						{
+							"query": "SELECT COUNT(*) as y_axis_1 FROM \"api_usage\" WHERE event = 'GraphQL Query' AND has_errors = true",
+							"vrlFunctionQuery": "",
+							"customQuery": true,
+							"fields": {
+								"stream": "api_usage",
+								"stream_type": "logs",
+								"x": [],
+								"y": [
+									{
+										"label": "Errors",
+										"alias": "y_axis_1",
+										"column": "y_axis_1"
+									}
+								],
+								"z": [],
+								"filter": {
+									"filterType": "group",
+									"logicalOperator": "AND",
+									"conditions": []
+								}
+							},
+							"config": { "promql_legend": "" }
+						}
+					],
+					"layout": { "x": 144, "y": 0, "w": 48, "h": 8, "i": 3 },
+					"config": { "show_legends": false }
+				},
+				{
+					"id": "queries-by-source",
+					"type": "stacked",
+					"title": "GraphQL queries by source",
+					"description": "",
+					"queryType": "sql",
+					"queries": [
+						{
+							"query": "SELECT histogram(_timestamp) as x_axis_1, source as breakdown_1, COUNT(*) as y_axis_1 FROM \"api_usage\" WHERE event = 'GraphQL Query' GROUP BY x_axis_1, breakdown_1 ORDER BY x_axis_1",
+							"vrlFunctionQuery": "",
+							"customQuery": true,
+							"fields": {
+								"stream": "api_usage",
+								"stream_type": "logs",
+								"x": [
+									{ "label": "Time", "alias": "x_axis_1", "column": "x_axis_1" }
+								],
+								"y": [
+									{
+										"label": "Queries",
+										"alias": "y_axis_1",
+										"column": "y_axis_1"
+									}
+								],
+								"z": [],
+								"breakdown": [
+									{
+										"label": "Source",
+										"alias": "breakdown_1",
+										"column": "breakdown_1"
+									}
+								],
+								"filter": {
+									"filterType": "group",
+									"logicalOperator": "AND",
+									"conditions": []
+								}
+							},
+							"config": { "promql_legend": "" }
+						}
+					],
+					"layout": { "x": 0, "y": 8, "w": 96, "h": 15, "i": 4 },
+					"config": { "show_legends": true }
+				},
+				{
+					"id": "query-duration-p95",
+					"type": "line",
+					"title": "GraphQL duration p95 (ms)",
+					"description": "",
+					"queryType": "sql",
+					"queries": [
+						{
+							"query": "SELECT histogram(_timestamp) as x_axis_1, approx_percentile_cont(duration_ms, 0.95) as y_axis_1 FROM \"api_usage\" WHERE event = 'GraphQL Query' GROUP BY x_axis_1 ORDER BY x_axis_1",
+							"vrlFunctionQuery": "",
+							"customQuery": true,
+							"fields": {
+								"stream": "api_usage",
+								"stream_type": "logs",
+								"x": [
+									{ "label": "Time", "alias": "x_axis_1", "column": "x_axis_1" }
+								],
+								"y": [
+									{ "label": "p95", "alias": "y_axis_1", "column": "y_axis_1" }
+								],
+								"z": [],
+								"breakdown": [],
+								"filter": {
+									"filterType": "group",
+									"logicalOperator": "AND",
+									"conditions": []
+								}
+							},
+							"config": { "promql_legend": "" }
+						}
+					],
+					"layout": { "x": 96, "y": 8, "w": 96, "h": 15, "i": 5 },
+					"config": { "show_legends": false }
+				},
+				{
+					"id": "top-clients",
+					"type": "h-bar",
+					"title": "Top clients",
+					"description": "",
+					"queryType": "sql",
+					"queries": [
+						{
+							"query": "SELECT client as x_axis_1, COUNT(*) as y_axis_1 FROM \"api_usage\" GROUP BY x_axis_1 ORDER BY y_axis_1 DESC LIMIT 10",
+							"vrlFunctionQuery": "",
+							"customQuery": true,
+							"fields": {
+								"stream": "api_usage",
+								"stream_type": "logs",
+								"x": [
+									{
+										"label": "Client",
+										"alias": "x_axis_1",
+										"column": "x_axis_1"
+									}
+								],
+								"y": [
+									{
+										"label": "Events",
+										"alias": "y_axis_1",
+										"column": "y_axis_1"
+									}
+								],
+								"z": [],
+								"breakdown": [],
+								"filter": {
+									"filterType": "group",
+									"logicalOperator": "AND",
+									"conditions": []
+								}
+							},
+							"config": { "promql_legend": "" }
+						}
+					],
+					"layout": { "x": 0, "y": 23, "w": 64, "h": 15, "i": 6 },
+					"config": { "show_legends": false }
+				},
+				{
+					"id": "top-operations",
+					"type": "h-bar",
+					"title": "Top GraphQL operations",
+					"description": "",
+					"queryType": "sql",
+					"queries": [
+						{
+							"query": "SELECT operation_name as x_axis_1, COUNT(*) as y_axis_1 FROM \"api_usage\" WHERE event = 'GraphQL Query' GROUP BY x_axis_1 ORDER BY y_axis_1 DESC LIMIT 10",
+							"vrlFunctionQuery": "",
+							"customQuery": true,
+							"fields": {
+								"stream": "api_usage",
+								"stream_type": "logs",
+								"x": [
+									{
+										"label": "Operation",
+										"alias": "x_axis_1",
+										"column": "x_axis_1"
+									}
+								],
+								"y": [
+									{
+										"label": "Queries",
+										"alias": "y_axis_1",
+										"column": "y_axis_1"
+									}
+								],
+								"z": [],
+								"breakdown": [],
+								"filter": {
+									"filterType": "group",
+									"logicalOperator": "AND",
+									"conditions": []
+								}
+							},
+							"config": { "promql_legend": "" }
+						}
+					],
+					"layout": { "x": 64, "y": 23, "w": 64, "h": 15, "i": 7 },
+					"config": { "show_legends": false }
+				},
+				{
+					"id": "top-mcp-tools",
+					"type": "h-bar",
+					"title": "Top MCP tools",
+					"description": "",
+					"queryType": "sql",
+					"queries": [
+						{
+							"query": "SELECT tool as x_axis_1, COUNT(*) as y_axis_1 FROM \"api_usage\" WHERE event = 'MCP Tool' GROUP BY x_axis_1 ORDER BY y_axis_1 DESC LIMIT 10",
+							"vrlFunctionQuery": "",
+							"customQuery": true,
+							"fields": {
+								"stream": "api_usage",
+								"stream_type": "logs",
+								"x": [
+									{ "label": "Tool", "alias": "x_axis_1", "column": "x_axis_1" }
+								],
+								"y": [
+									{
+										"label": "Calls",
+										"alias": "y_axis_1",
+										"column": "y_axis_1"
+									}
+								],
+								"z": [],
+								"breakdown": [],
+								"filter": {
+									"filterType": "group",
+									"logicalOperator": "AND",
+									"conditions": []
+								}
+							},
+							"config": { "promql_legend": "" }
+						}
+					],
+					"layout": { "x": 128, "y": 23, "w": 64, "h": 15, "i": 8 },
+					"config": { "show_legends": false }
+				},
+				{
+					"id": "deprecated-usage",
+					"type": "table",
+					"title": "Deprecated fields still in use",
+					"description": "",
+					"queryType": "sql",
+					"queries": [
+						{
+							"query": "SELECT deprecated, client, COUNT(*) as requests FROM \"api_usage\" WHERE event = 'GraphQL Query' AND deprecated <> '[]' GROUP BY deprecated, client ORDER BY requests DESC LIMIT 50",
+							"vrlFunctionQuery": "",
+							"customQuery": true,
+							"fields": {
+								"stream": "api_usage",
+								"stream_type": "logs",
+								"x": [],
+								"y": [],
+								"z": [],
+								"filter": {
+									"filterType": "group",
+									"logicalOperator": "AND",
+									"conditions": []
+								}
+							},
+							"config": { "promql_legend": "" }
+						}
+					],
+					"layout": { "x": 0, "y": 38, "w": 192, "h": 15, "i": 9 },
+					"config": { "show_legends": false, "table_dynamic_columns": true }
+				}
+			]
+		},
+		{
+			"tabId": "traffic",
+			"name": "Traffic",
+			"panels": [
+				{
+					"id": "requests-by-status",
+					"type": "stacked",
+					"title": "Requests by status",
+					"description": "",
+					"queryType": "sql",
+					"queries": [
+						{
+							"query": "SELECT histogram(_timestamp) as x_axis_1, status as breakdown_1, COUNT(*) as y_axis_1 FROM \"nginx\" GROUP BY x_axis_1, breakdown_1 ORDER BY x_axis_1",
+							"vrlFunctionQuery": "",
+							"customQuery": true,
+							"fields": {
+								"stream": "nginx",
+								"stream_type": "logs",
+								"x": [
+									{ "label": "Time", "alias": "x_axis_1", "column": "x_axis_1" }
+								],
+								"y": [
+									{
+										"label": "Requests",
+										"alias": "y_axis_1",
+										"column": "y_axis_1"
+									}
+								],
+								"z": [],
+								"breakdown": [
+									{
+										"label": "Status",
+										"alias": "breakdown_1",
+										"column": "breakdown_1"
+									}
+								],
+								"filter": {
+									"filterType": "group",
+									"logicalOperator": "AND",
+									"conditions": []
+								}
+							},
+							"config": { "promql_legend": "" }
+						}
+					],
+					"layout": { "x": 0, "y": 0, "w": 96, "h": 15, "i": 0 },
+					"config": { "show_legends": true }
+				},
+				{
+					"id": "request-time-p95",
+					"type": "line",
+					"title": "Request time p95 (s)",
+					"description": "",
+					"queryType": "sql",
+					"queries": [
+						{
+							"query": "SELECT histogram(_timestamp) as x_axis_1, approx_percentile_cont(request_time, 0.95) as y_axis_1 FROM \"nginx\" GROUP BY x_axis_1 ORDER BY x_axis_1",
+							"vrlFunctionQuery": "",
+							"customQuery": true,
+							"fields": {
+								"stream": "nginx",
+								"stream_type": "logs",
+								"x": [
+									{ "label": "Time", "alias": "x_axis_1", "column": "x_axis_1" }
+								],
+								"y": [
+									{ "label": "p95", "alias": "y_axis_1", "column": "y_axis_1" }
+								],
+								"z": [],
+								"breakdown": [],
+								"filter": {
+									"filterType": "group",
+									"logicalOperator": "AND",
+									"conditions": []
+								}
+							},
+							"config": { "promql_legend": "" }
+						}
+					],
+					"layout": { "x": 96, "y": 0, "w": 96, "h": 15, "i": 1 },
+					"config": { "show_legends": false }
+				},
+				{
+					"id": "server-errors",
+					"type": "table",
+					"title": "Server errors by URI",
+					"description": "",
+					"queryType": "sql",
+					"queries": [
+						{
+							"query": "SELECT uri, status, COUNT(*) as hits FROM \"nginx\" WHERE status >= 500 GROUP BY uri, status ORDER BY hits DESC LIMIT 50",
+							"vrlFunctionQuery": "",
+							"customQuery": true,
+							"fields": {
+								"stream": "nginx",
+								"stream_type": "logs",
+								"x": [],
+								"y": [],
+								"z": [],
+								"filter": {
+									"filterType": "group",
+									"logicalOperator": "AND",
+									"conditions": []
+								}
+							},
+							"config": { "promql_legend": "" }
+						}
+					],
+					"layout": { "x": 0, "y": 15, "w": 96, "h": 15, "i": 2 },
+					"config": { "show_legends": false, "table_dynamic_columns": true }
+				},
+				{
+					"id": "top-uris",
+					"type": "h-bar",
+					"title": "Top URIs",
+					"description": "",
+					"queryType": "sql",
+					"queries": [
+						{
+							"query": "SELECT uri as x_axis_1, COUNT(*) as y_axis_1 FROM \"nginx\" GROUP BY x_axis_1 ORDER BY y_axis_1 DESC LIMIT 10",
+							"vrlFunctionQuery": "",
+							"customQuery": true,
+							"fields": {
+								"stream": "nginx",
+								"stream_type": "logs",
+								"x": [
+									{ "label": "URI", "alias": "x_axis_1", "column": "x_axis_1" }
+								],
+								"y": [
+									{
+										"label": "Requests",
+										"alias": "y_axis_1",
+										"column": "y_axis_1"
+									}
+								],
+								"z": [],
+								"breakdown": [],
+								"filter": {
+									"filterType": "group",
+									"logicalOperator": "AND",
+									"conditions": []
+								}
+							},
+							"config": { "promql_legend": "" }
+						}
+					],
+					"layout": { "x": 96, "y": 15, "w": 96, "h": 15, "i": 3 },
+					"config": { "show_legends": false }
+				}
+			]
+		}
+	]
+}
