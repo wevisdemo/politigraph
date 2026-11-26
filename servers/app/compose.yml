@@ -43,7 +43,7 @@ services:
         max-file: '5'
 
   openobserve:
-    image: public.ecr.aws/zinclabs/openobserve:v1.1.2
+    image: public.ecr.aws/zinclabs/openobserve:v1.2.0
     container_name: openobserve
     restart: always
     network_mode: host
@@ -65,6 +65,9 @@ services:
       ZO_MEMORY_CACHE_ENABLED: false
       ZO_MEM_TABLE_MAX_SIZE: 128
       ZO_TELEMETRY: false
+      ZO_USAGE_REPORTING_ENABLED: false
+      ZO_FEATURE_PROFILING_ENABLED: false
+      ZO_SYNTHETICS_ENABLED: false
 
   vector:
     image: timberio/vector:0.62.0-alpine
@@ -98,7 +101,7 @@ services:
       KEY: $BESZEL_AGENT_KEY
 
   backup:
-    image: offen/docker-volume-backup:v2.50.1
+    image: offen/docker-volume-backup:v2.50.2
     container_name: backup
     restart: always
     network_mode: host
