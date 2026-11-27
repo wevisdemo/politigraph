@@ -29,4 +29,4 @@ Every field is a UTC timestamp, and is `null` when there is no data yet.
 The automation system runs weekly on Sunday night. A successful scrape does not always bring new data. In a week without any vote or bill activity, `lastVoteEventScrapedAt` and `lastBillScrapedAt` change, but `lastNodeUpdatedAt` may not.
 :::
 
-These values are cached for up to an hour, so they may lag slightly behind.
+`lastNodeUpdatedAt` is cached for up to 10 minutes and the scrape times for up to an hour, so they may lag slightly behind.

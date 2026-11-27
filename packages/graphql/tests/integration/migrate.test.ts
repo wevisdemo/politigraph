@@ -113,6 +113,12 @@ describe('runMigrations', () => {
 			[true, '2025-05-26T02:45:16.884Z'],
 			[false, '2024-01-01T00:00:00.000Z'],
 		]);
+		const converted = await run(
+			"MATCH (v:Vote {id: 'iso'}) RETURN v.created_at.epochMillis AS createdAt",
+		);
+		expect(
+			new Date(converted.records[0]?.get('createdAt').toNumber()).toISOString(),
+		).toBe('2025-05-26T02:45:16.884Z');
 		const bills = await run(
 			'MATCH (b:Bill) RETURN [x IN b.lis_ids | toString(x)] AS lis_ids, b.lis_id IS NULL AS removed ORDER BY b.id',
 		);

@@ -3,17 +3,20 @@ import { driver } from '../../neo4j/driver';
 import { typeDefinitions } from '../../support/schema-sdl';
 import { TIMESTAMP_FIELDS } from '../../support/summary';
 
-const CACHE_TTL_MS = 60 * 60 * 1000;
+const NODE_CACHE_TTL_MS = 10 * 60 * 1000;
+const SCRAPE_CACHE_TTL_MS = 60 * 60 * 1000;
 const GITHUB_TIMEOUT_MS = 10 * 1000;
 const AUTOMATION_WORKFLOWS_URL =
 	'https://api.github.com/repos/wevisdemo/politigraph-automation/actions/workflows';
 
-const lastNodeUpdatedAt = cached(queryLastNodeUpdatedAt);
-const lastVoteEventScrapedAt = cached(() =>
-	fetchLastSuccessfulRunAt('scrape_and_ocr_votes.yml'),
+const lastNodeUpdatedAt = cached(queryLastNodeUpdatedAt, NODE_CACHE_TTL_MS);
+const lastVoteEventScrapedAt = cached(
+	() => fetchLastSuccessfulRunAt('scrape_and_ocr_votes.yml'),
+	SCRAPE_CACHE_TTL_MS,
 );
-const lastBillScrapedAt = cached(() =>
-	fetchLastSuccessfulRunAt('scrape_and_update_bills.yml'),
+const lastBillScrapedAt = cached(
+	() => fetchLastSuccessfulRunAt('scrape_and_update_bills.yml'),
+	SCRAPE_CACHE_TTL_MS,
 );
 
 export const getLastNodeUpdatedAt = lastNodeUpdatedAt.get;
@@ -26,7 +29,7 @@ export function resetTimestampsCache() {
 	);
 }
 
-function cached(load: () => Promise<string | null>) {
+function cached(load: () => Promise<string | null>, ttlMs: number) {
 	let cache: { value: string | null; expiresAt: number } | null = null;
 	let inflight: Promise<string | null> | null = null;
 
@@ -38,7 +41,7 @@ function cached(load: () => Promise<string | null>) {
 
 			inflight ??= load()
 				.then((value) => {
-					cache = { value, expiresAt: Date.now() + CACHE_TTL_MS };
+					cache = { value, expiresAt: Date.now() + ttlMs };
 					return value;
 				})
 				.catch((error) => {
@@ -102,11 +105,8 @@ interface WorkflowRun {
 
 /**
  * A top-1 lookup per label and timestamp field, rather than one `MATCH (n)`
- * over the whole graph.
- *
- * Some timestamps are stored as ISO strings instead of the `DateTime` the
- * schema declares, so each value is coerced before ordering — Cypher sorts
- * mixed types by type group, which would otherwise pick the wrong top-1.
+ * over the whole graph. Each field has a range index and holds only `DateTime`
+ * values (migration 0007), so the top-1 is read straight from the index.
  */
 export const latestTimestampQuery = [...typeDefinitions.values()]
 	.flatMap((definition) =>
@@ -118,8 +118,7 @@ export const latestTimestampQuery = [...typeDefinitions.values()]
 		TIMESTAMP_FIELDS.map(
 			(field) =>
 				`MATCH (n:${label}) WHERE n.${field} IS NOT NULL ` +
-				`WITH CASE WHEN n.${field} IS :: STRING THEN datetime(n.${field}) ` +
-				`ELSE n.${field} END AS latest ` +
+				`WITH n.${field} AS latest ` +
 				`ORDER BY latest DESC LIMIT 1 ` +
 				`RETURN latest.epochMillis AS epoch`,
 		),

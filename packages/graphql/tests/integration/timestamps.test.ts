@@ -83,30 +83,6 @@ describe('Query.timestamps.lastNodeUpdatedAt', () => {
 		expect(data?.lastUpdatedAt).toBe('2026-08-05T18:00:00.000Z');
 	});
 
-	test('handles timestamps stored as ISO strings', async () => {
-		await seedPerson(session, {
-			id: 'person-1',
-			firstname: 'สมชาย',
-			lastname: 'สุขสวัสดิ์',
-		});
-		await session.run(
-			`MATCH (p:Person {id: 'person-1'})
-			SET p.created_at = datetime('2024-01-01T00:00:00Z'),
-				p.updated_at = null`,
-		);
-		await seedVoteEvent(session, { id: 'vote-event-1' });
-		await session.run(
-			`MATCH (ve:VoteEvent {id: 'vote-event-1'})
-			SET ve.created_at = '2025-03-14T05:00:00.000Z',
-				ve.updated_at = null`,
-		);
-
-		const { data, errors } = await queryTimestamps();
-
-		expect(errors).toBeUndefined();
-		expect(data?.timestamps.lastNodeUpdatedAt).toBe('2025-03-14T05:00:00.000Z');
-	});
-
 	test('serves a cached value until it is reset', async () => {
 		await seedPerson(session, {
 			id: 'person-1',

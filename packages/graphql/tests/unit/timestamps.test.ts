@@ -33,6 +33,7 @@ const {
 	resetTimestampsCache,
 } = await import('../../domains/timestamps/freshness');
 
+const TEN_MINUTES_MS = 10 * 60 * 1000;
 const HOUR_MS = 60 * 60 * 1000;
 
 afterAll(() => {
@@ -49,12 +50,6 @@ describe('latestTimestampQuery', () => {
 		);
 		expect(latestTimestampQuery).toContain(
 			'MATCH (n:Vote) WHERE n.created_at IS NOT NULL',
-		);
-	});
-
-	test('coerces string timestamps before ordering', () => {
-		expect(latestTimestampQuery).toContain(
-			'CASE WHEN n.created_at IS :: STRING THEN datetime(n.created_at)',
 		);
 	});
 
@@ -79,7 +74,7 @@ describe('getLastNodeUpdatedAt', () => {
 	test('queries once within the cache window', async () => {
 		await getLastNodeUpdatedAt();
 
-		setSystemTime(new Date('2026-08-05T09:59:00Z'));
+		setSystemTime(new Date('2026-08-05T09:09:00Z'));
 		latestEpochMs = Date.parse('2026-08-06T03:00:00Z');
 
 		expect(await getLastNodeUpdatedAt()).toBe('2026-08-05T03:00:00.000Z');
@@ -89,7 +84,7 @@ describe('getLastNodeUpdatedAt', () => {
 	test('re-queries after the cache expires', async () => {
 		await getLastNodeUpdatedAt();
 
-		setSystemTime(new Date(Date.now() + HOUR_MS));
+		setSystemTime(new Date(Date.now() + TEN_MINUTES_MS));
 		latestEpochMs = Date.parse('2026-08-06T03:00:00Z');
 
 		expect(await getLastNodeUpdatedAt()).toBe('2026-08-06T03:00:00.000Z');
