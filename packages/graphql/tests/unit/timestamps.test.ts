@@ -137,10 +137,10 @@ describe('getLastVoteEventScrapedAt', () => {
 		);
 	});
 
-	test('serves the previous value when a reload fails, and throws without one', async () => {
+	test('serves the previous value when a reload fails, and null without one', async () => {
 		fetchSpy.mockResolvedValue(new Response(null, { status: 503 }));
 
-		await expect(getLastVoteEventScrapedAt()).rejects.toThrow('503');
+		expect(await getLastVoteEventScrapedAt()).toBeNull();
 
 		respondWith([
 			{ conclusion: 'success', updated_at: '2026-09-20T19:19:20Z' },

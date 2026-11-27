@@ -13,10 +13,12 @@ const lastNodeUpdatedAt = cached(queryLastNodeUpdatedAt, NODE_CACHE_TTL_MS);
 const lastVoteEventScrapedAt = cached(
 	() => fetchLastSuccessfulRunAt('scrape_and_ocr_votes.yml'),
 	SCRAPE_CACHE_TTL_MS,
+	true,
 );
 const lastBillScrapedAt = cached(
 	() => fetchLastSuccessfulRunAt('scrape_and_update_bills.yml'),
 	SCRAPE_CACHE_TTL_MS,
+	true,
 );
 
 export const getLastNodeUpdatedAt = lastNodeUpdatedAt.get;
@@ -29,7 +31,11 @@ export function resetTimestampsCache() {
 	);
 }
 
-function cached(load: () => Promise<string | null>, ttlMs: number) {
+function cached(
+	load: () => Promise<string | null>,
+	ttlMs: number,
+	nullOnError = false,
+) {
 	let cache: { value: string | null; expiresAt: number } | null = null;
 	let inflight: Promise<string | null> | null = null;
 
@@ -46,6 +52,7 @@ function cached(load: () => Promise<string | null>, ttlMs: number) {
 				})
 				.catch((error) => {
 					if (cache) return cache.value;
+					if (nullOnError) return null;
 					throw error;
 				})
 				.finally(() => {
